@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-src blob:; child-src blob:; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'; manifest-src 'self'">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f4f3ee">
+  <title>Finanças · Orquestrator</title>
+  <script src="tema.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="tema.css">
+  <link rel="manifest" href="manifest.webmanifest"><script type="module" src="static-bridge.js"></script><script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Ir para o conteúdo</a>
+  <header id="entry-masthead" class="masthead">
+    <div class="wordmark"><span class="brand-mark" aria-hidden="true">◇</span> ORQUESTRATOR <span class="division">/ FINANÇAS</span></div>
+    <div class="local-indicator"><span aria-hidden="true"></span> <span data-host-text="indicator">Arquivos locais</span></div>
+    <button class="icon-button theme-toggle" type="button" data-tema-toggle aria-pressed="false" aria-label="Mudar para o modo escuro"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><g class="tema-sol"><circle cx="12" cy="12" r="3.6"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/></g><path class="tema-lua" d="M20 13.2A8 8 0 0 1 10.8 4a6.4 6.4 0 1 0 9.2 9.2z"/></svg></button>
+  </header>
+
+  <main id="main-content">
+    <section id="login-view" class="entrance" aria-labelledby="login-title">
+      <div class="entrance-copy">
+        <p class="eyebrow">A empresa, em perspectiva</p>
+        <h1 id="login-title">Clareza para<br><em>o próximo passo.</em></h1>
+        <p class="entrance-description">Produtos, compromissos e caixa do Orquestrator. Uma visão compartilhada para decidir o que vem primeiro.</p>
+        <div class="entrance-rule" aria-hidden="true"></div>
+        <p class="quiet">Acesso reservado aos sócios.</p>
+      </div>
+      <div class="login-card">
+        <p class="eyebrow">Seu acesso</p>
+        <h2>Entrar nas finanças</h2>
+        <form id="login-form">
+          <div class="field">
+            <label for="login-cpf">CPF <span class="optional">· 11 dígitos</span></label>
+            <input id="login-cpf" name="username" type="text" inputmode="numeric" autocomplete="username" minlength="11" maxlength="11" pattern="[0-9]{11}" required spellcheck="false" autocapitalize="none" aria-describedby="login-help">
+          </div>
+          <div class="field">
+            <label for="login-password">Senha</label>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="4096">
+          </div>
+          <label class="check-label remember"><input id="login-remember" type="checkbox"> <span>Lembrar neste Mac</span></label>
+          <p id="login-error" class="form-error" role="alert" hidden></p>
+          <button id="login-submit" class="button button-primary full-width" type="submit">Entrar <span aria-hidden="true">↗</span></button>
+          <p id="login-help" class="form-help">Sem conta cadastrada? Fale com o Criador.</p>
+        </form>
+      </div>
+    </section>
+
+    <div id="dashboard" class="dashboard" hidden>
+      <header id="app-header" class="app-header">
+        <div class="header-line">
+          <button id="menu-button" class="icon-button menu-button" type="button" aria-label="Abrir menu de páginas" aria-controls="navigation-drawer" aria-expanded="false"><span class="hamburger" aria-hidden="true"><i></i><i></i><i></i></span></button>
+          <div class="header-identity"><p class="eyebrow">ORQUESTRATOR <span>/ FINANÇAS</span></p><div class="header-title-row"><h1 tabindex="-1" id="dashboard-title">Meu painel</h1><button id="page-help" class="icon-button page-help" type="button" aria-label="Como ler esta página" aria-haspopup="dialog" aria-controls="page-help-dialog"><span aria-hidden="true">?</span></button></div></div>
+          <div class="header-actions"><button id="change-password-button" class="button button-quiet" type="button">Trocar senha</button><button id="logout-button" class="button button-outline" type="button">Sair</button><button class="icon-button theme-toggle" type="button" data-tema-toggle aria-pressed="false" aria-label="Mudar para o modo escuro"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><g class="tema-sol"><circle cx="12" cy="12" r="3.6"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/></g><path class="tema-lua" d="M20 13.2A8 8 0 0 1 10.8 4a6.4 6.4 0 1 0 9.2 9.2z"/></svg></button><button id="header-toggle" class="icon-button" type="button" aria-label="Recolher cabeçalho" aria-expanded="true" aria-controls="header-details"><span aria-hidden="true">⌃</span></button></div>
+        </div>
+        <div id="header-details" class="header-details"><p id="page-description">Seus compromissos, com a empresa em perspectiva.</p><p class="read-state"><span aria-hidden="true"></span> <span data-host-text="reading">Arquivos locais</span> <span class="read-state-separator">·</span> <span id="reading-state">Aguardando leitura</span></p></div>
+      </header>
+      <div class="page-stage">
+        <p id="dashboard-error" class="notice notice-error" role="alert" hidden></p>
+        <section id="block-user" class="finance-page" data-finance-page="overview" data-finance-block="user" aria-labelledby="user-title">
+          <div class="section-heading"><div><p class="section-number">SEUS COMPROMISSOS</p><h2 id="user-title">A sua parte, com clareza.</h2></div><div id="user-source" class="source-status"></div></div><div id="user-content"></div>
+        </section>
+        <section id="block-subscriptions" class="finance-page" data-finance-page="subscriptions" data-finance-block="subscriptions" aria-labelledby="subscriptions-title" hidden>
+          <div class="section-heading"><div><p class="section-number">SERVIÇOS DA EMPRESA</p><h2 id="subscriptions-title">Assinaturas</h2></div><div id="subscriptions-source" class="source-status"></div></div>
+          <p class="section-intro">Estado da assinatura e situação da cobrança são registros separados. Alterar o estado aqui não contrata nem cancela o serviço real.</p><div id="subscriptions-content"></div>
+        </section>
+        <section id="block-sell" class="finance-page" data-finance-page="sell" data-finance-block="sell_first" aria-labelledby="sell-title" hidden>
+          <div class="section-heading"><div><p class="section-number">FOCO NO PRÓXIMO PASSO</p><h2 id="sell-title">Vender primeiro</h2></div><div id="sell-source" class="source-status"></div></div><div id="sell-content"></div>
+        </section>
+        <section id="block-inventory" class="finance-page" data-finance-page="portfolio" data-finance-block="inventory" aria-labelledby="inventory-title" hidden>
+          <div class="section-heading"><div><p class="section-number">O QUE ESTAMOS CONSTRUINDO</p><h2 id="inventory-title">Portfólio</h2></div><div id="inventory-source" class="source-status"></div></div><div id="inventory-content"></div>
+        </section>
+        <section id="block-cash" class="finance-page" data-finance-page="cash" data-finance-block="cash" aria-labelledby="cash-title" hidden>
+          <div class="section-heading"><div><p class="section-number">RECURSOS DA EMPRESA</p><h2 id="cash-title">Caixa</h2></div><div id="cash-source" class="source-status"></div></div><div id="cash-content"></div>
+        </section>
+        <section id="block-projection" class="finance-page" data-finance-page="projection" data-finance-block="projection" aria-labelledby="projection-title" hidden>
+          <div class="section-heading"><div><p class="section-number">POSSIBILIDADES, COM SUAS PREMISSAS</p><h2 id="projection-title">Projeção</h2></div><div id="projection-source" class="source-status"></div></div><div id="projection-content"></div>
+        </section>
+        <section id="block-society" class="finance-page" data-finance-page="society" data-finance-block="society" aria-labelledby="society-title" hidden>
+          <div class="section-heading"><div><p class="section-number">QUEM CONSTRÓI</p><h2 id="society-title">Sociedade</h2></div><div id="society-source" class="source-status"></div></div><div id="society-content"></div>
+        </section>
+        <section id="block-lab" class="finance-page" data-finance-page="lab" data-finance-block="lab" aria-labelledby="lab-title" hidden>
+          <div class="section-heading"><div><p class="section-number">LABORATÓRIO DE POSSIBILIDADES</p><h2 id="lab-title">Maquetes, três estados cada</h2></div><div id="lab-source" class="source-status"><p>Dados fictícios · nenhuma operação real</p></div></div><div id="lab-content"></div>
+        </section>
+        <footer class="page-footer"><span>ORQUESTRATOR</span><span data-host-text="footer">Dados da empresa · leitura local</span></footer>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="navigation-drawer" class="navigation-drawer" aria-labelledby="navigation-title">
+    <div class="drawer-heading"><div><p class="eyebrow">ORQUESTRATOR</p><h2 id="navigation-title">Finanças</h2></div><button id="menu-close" class="icon-button" type="button" aria-label="Fechar menu"><span aria-hidden="true">×</span></button></div>
+    <p class="drawer-caption">A empresa, em perspectiva.</p>
+    <nav class="drawer-nav" aria-label="Páginas de Finanças">
+      <button type="button" data-navigate="overview" aria-current="page"><span class="nav-index" aria-hidden="true">01</span><span>Meu painel</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
+      <button type="button" data-navigate="subscriptions"><span class="nav-index" aria-hidden="true">02</span><span>Assinaturas</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
+      <button type="button" data-navigate="sell"><span class="nav-index" aria-hidden="true">03</span><span>Vender primeiro</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
+      <button type="button" data-navigate="portfolio"><span class="nav-index" aria-hidden="true">04</span><span>Portfólio</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
+      <button type="button" data-navigate="cash"><span class="nav-index" aria-hidden="true">05</span><span>Caixa</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
+      <button type="button" data-navigate="projection"><span class="nav-index" aria-hidden="true">06</span><span>Projeção</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
+      <button type="button" data-navigate="society"><span class="nav-index" aria-hidden="true">07</span><span>Sociedade</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
+      <button type="button" data-navigate="lab" id="nav-lab" hidden><span class="nav-index" aria-hidden="true">08</span><span>Laboratório</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
+    </nav>
+    <div class="drawer-footer"><button id="drawer-password" class="button button-quiet" type="button">Trocar minha senha</button><span class="read-state"><span aria-hidden="true"></span> <span data-host-text="drawer">Leitura local</span></span><p>Fontes e entregas identificadas em cada página.</p></div>
+  </dialog>
+  <dialog id="asset-dialog" class="asset-dialog" aria-labelledby="asset-detail-title">
+    <div class="asset-dialog-heading"><div><p id="asset-detail-kind" class="eyebrow">ATLAS DO ORQUESTRATOR</p><h2 id="asset-detail-title" tabindex="-1">Ficha do ativo</h2></div><button id="asset-detail-close" class="icon-button" type="button" aria-label="Fechar ficha"><span aria-hidden="true">×</span></button></div>
+    <div id="asset-detail-content"></div><p id="asset-detail-message" role="status" class="form-help" hidden></p>
+  </dialog>
+  <dialog id="page-help-dialog" class="page-help-dialog" aria-labelledby="page-help-title">
+    <div class="page-help-heading"><div><p class="eyebrow">Como ler esta página</p><h2 id="page-help-title" tabindex="-1">Meu painel</h2></div><button id="page-help-close" class="icon-button" type="button" aria-label="Fechar"><span aria-hidden="true">×</span></button></div>
+    <dl class="page-help-lines"><div><dt>O que é</dt><dd id="page-help-what"></dd></div><div><dt>De onde vem</dt><dd id="page-help-from"></dd></div><div><dt>O que não é</dt><dd id="page-help-not"></dd></div></dl>
+  </dialog>
+  <dialog id="password-dialog" aria-labelledby="password-title" aria-describedby="password-description">
+    <p class="eyebrow">Proteção do acesso</p>
+    <h2 id="password-title">Trocar senha</h2>
+    <p id="password-description" class="form-help">Escolha uma senha diferente da atual, com pelo menos 8 caracteres.</p>
+    <form id="change-form">
+      <div class="field"><label for="change-current">Senha atual</label><input id="change-current" type="password" autocomplete="current-password" required maxlength="4096"></div>
+      <div class="field"><label for="change-new">Nova senha</label><input id="change-new" type="password" autocomplete="new-password" required minlength="8" maxlength="1024"></div>
+      <div class="field"><label for="change-confirm">Confirme a nova senha</label><input id="change-confirm" type="password" autocomplete="new-password" required minlength="8" maxlength="1024"></div>
+      <p id="password-error" class="form-error" role="alert" hidden></p>
+      <div class="dialog-actions"><button id="password-cancel" class="button button-quiet" type="button">Cancelar</button><button id="password-submit" class="button button-primary" type="submit">Salvar senha</button></div>
+    </form>
+  </dialog>
+  <div id="live-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
