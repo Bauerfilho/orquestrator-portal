@@ -1,0 +1,35 @@
+{
+ "version": 1,
+ "aad": "orquestrator-portal/v1",
+ "kdf": {
+  "name": "PBKDF2",
+  "hash": "SHA-256",
+  "iterations": 600000
+ },
+ "members": [
+  {
+   "id": "m53cd6f83946f",
+   "salt": "EOTUzGwqnxxrMu41+h+10w==",
+   "iv": "omwLmoRqo+Qn4ejt",
+   "wrapped": "otZuRKN+O52xRi9J35WXDzqt57uLsVKCsd+ZsLoy/gkIlIrGzO97Aw2PzM+iDzA0"
+  },
+  {
+   "id": "mad0d034a626c",
+   "salt": "QWbZZESnYq4tLmNdKp6SDQ==",
+   "iv": "Y577hcVmImEWM/sj",
+   "wrapped": "bJaGrOaAPGLXo37zK2jWXpFNAFzu2STiAfDLUv0/fbkZtp56aT5AHpCUsmbFsfTY"
+  },
+  {
+   "id": "mad4008b35590",
+   "salt": "CKZNBLa5cBL1DvVXUt+kUA==",
+   "iv": "prr/t34lt469Gw64",
+   "wrapped": "NgGcV6lyXWwvBb3Q4rp1idFNEKNAWUgQAvJEn0ursIdUq3dfBcQuocL9eIytd0JX"
+  }
+ ],
+ "bundle": {
+  "file": "bundle-3617c24784c3.bin",
+  "iv": "yoDA323QJdaZIwyX",
+  "bytes": 465194,
+  "sha256": "3617c24784c3208f5c1263860dce51d841b3a90087178518b5ff90874028ca0e"
+ }
+}

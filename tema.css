@@ -1,0 +1,143 @@
+/* Tema claro do Finanças (Claude, 15/10/2026, a pedido do Criador). Entra depois do style.css do Sol e só vale com
+   html[data-tema=claro]; o escuro continua sendo o style.css intacto. Famílias tipográficas: as mesmas.
+   Desenho: superfícies e luz no lugar de linhas — cartões brancos com sombra difusa, fio de 9% onde precisa separar,
+   raios maiores e consistentes, pílulas tingidas em vez de contornos, vidro no cabeçalho e no menu. */
+.theme-toggle svg{display:block;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.theme-toggle:active svg{transform:rotate(40deg) scale(.9)}
+html:not([data-tema=escuro]) .theme-toggle .tema-sol{display:none}
+html[data-tema=escuro] .theme-toggle .tema-lua{display:none}
+.masthead .local-indicator{margin-left:auto}
+.masthead .theme-toggle{margin-left:4px}
+
+:root[data-tema=claro]{color-scheme:light;
+  --ink:#15211a;--muted:#5a655e;--faint:#6b746e;
+  --gold:#8d6d26;--gold-light:#6f5519;--gold-shape:#cfac69;--gold-hover:#dcbd7c;
+  --bg:#f4f3ee;--panel:#ffffff;--panel-raised:#ffffff;--line:rgba(21,33,26,.09);--line-strong:rgba(21,33,26,.16);
+  --danger:#a63a28;--danger-bg:#fcefeb;
+  --tinta-suave:rgba(21,33,26,.05);--tinta-hover:rgba(21,33,26,.085);
+  --sombra:0 1px 2px rgba(21,33,26,.04),0 12px 32px rgba(21,33,26,.07);
+  --sombra-alta:0 2px 6px rgba(21,33,26,.05),0 28px 70px rgba(21,33,26,.12)}
+
+:root[data-tema=claro] body{background-color:var(--bg);background-image:radial-gradient(circle,rgba(21,33,26,.11) .75px,transparent .9px),radial-gradient(ellipse at 8% -4%,rgba(120,164,124,.26),transparent 50%),radial-gradient(ellipse at 94% 18%,rgba(207,172,105,.22),transparent 46%);background-size:24px 24px,100% 100%,100% 100%}
+:root[data-tema=claro] ::selection{background:rgba(207,172,105,.45);color:var(--ink)}
+:root[data-tema=claro] :focus-visible{outline-color:var(--gold)}
+:root[data-tema=claro] .skip-link{background:var(--ink);color:#fff}
+:root[data-tema=claro] .masthead{border-bottom-color:var(--line)}
+
+/* entrada */
+:root[data-tema=claro] .login-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sombra-alta)}
+:root[data-tema=claro] input:not([type=checkbox]),:root[data-tema=claro] select{background:#fff;border-color:var(--line-strong);border-radius:10px;color:var(--ink);box-shadow:inset 0 1px 2px rgba(21,33,26,.04)}
+:root[data-tema=claro] input:focus,:root[data-tema=claro] select:focus{border-color:var(--gold-shape);box-shadow:0 0 0 3px rgba(207,172,105,.35)}
+:root[data-tema=claro] input[type=checkbox]{accent-color:var(--gold-light)}
+
+/* botões */
+:root[data-tema=claro] .button{border-radius:10px}
+:root[data-tema=claro] .button-primary{background:var(--gold-shape);border-color:var(--gold-shape);color:#1b160a;box-shadow:0 1px 2px rgba(21,33,26,.08),0 6px 18px rgba(207,172,105,.35)}
+:root[data-tema=claro] .button-primary:hover{background:var(--gold-hover);border-color:var(--gold-hover)}
+:root[data-tema=claro] .button-outline{background:var(--tinta-suave);border-color:transparent;color:var(--ink)}
+:root[data-tema=claro] .button-outline:hover{background:var(--tinta-hover);border-color:transparent}
+:root[data-tema=claro] .button-quiet{color:var(--muted)}
+:root[data-tema=claro] .button-quiet:hover{color:var(--ink);background:var(--tinta-suave)}
+:root[data-tema=claro] .icon-button{background:var(--tinta-suave);border-color:transparent;color:var(--ink);border-radius:12px}
+:root[data-tema=claro] .icon-button:hover{background:var(--tinta-hover);border-color:transparent}
+:root[data-tema=claro] .hamburger i{background:var(--ink)}
+
+/* cabeçalho de vidro e menu */
+:root[data-tema=claro] .app-header{background:rgba(247,246,241,.78);border-bottom-color:var(--line);box-shadow:0 8px 24px rgba(21,33,26,.06);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6)}
+:root[data-tema=claro] .read-state>span:first-child{background:#3f9a5a}
+:root[data-tema=claro] .page-footer{border-top-color:var(--line)}
+:root[data-tema=claro] .navigation-drawer{background:rgba(250,249,245,.92);border-right-color:var(--line);box-shadow:24px 0 90px rgba(21,33,26,.18);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+:root[data-tema=claro] .navigation-drawer::backdrop{background:rgba(21,33,26,.28);backdrop-filter:blur(5px)}
+:root[data-tema=claro] .drawer-nav button:hover{background:var(--tinta-suave);color:var(--ink)}
+:root[data-tema=claro] .drawer-nav button[aria-current=page]{background:rgba(207,172,105,.18);border-color:transparent;color:var(--gold-light)}
+:root[data-tema=claro] .drawer-footer{border-top-color:var(--line)}
+
+/* cartões: superfície branca, sombra difusa, fio quase invisível */
+:root[data-tema=claro] .plan-card,:root[data-tema=claro] .product-card,:root[data-tema=claro] .scenario-card,:root[data-tema=claro] .metric-panel,:root[data-tema=claro] .budget-row,:root[data-tema=claro] .table-scroll,:root[data-tema=claro] .asset-card,:root[data-tema=claro] .coverage-tile,:root[data-tema=claro] .overview-stat,:root[data-tema=claro] .upcoming-list,:root[data-tema=claro] .atlas-review-toolbar{background:var(--panel);border-color:var(--line);box-shadow:var(--sombra)}
+:root[data-tema=claro] .plan-card,:root[data-tema=claro] .product-card,:root[data-tema=claro] .scenario-card,:root[data-tema=claro] .metric-panel,:root[data-tema=claro] .budget-row,:root[data-tema=claro] .asset-card,:root[data-tema=claro] .upcoming-list{border-radius:18px}
+:root[data-tema=claro] .table-scroll,:root[data-tema=claro] .coverage-tile,:root[data-tema=claro] .overview-stat,:root[data-tema=claro] .atlas-review-toolbar{border-radius:14px}
+:root[data-tema=claro] .scenario-card{border-top:1px solid var(--line)}
+:root[data-tema=claro] .plan-card.due-soon{border-top:2px solid rgba(207,172,105,.9)}
+:root[data-tema=claro] .plan-card.overdue{border-top:2px solid rgba(166,58,40,.6)}
+:root[data-tema=claro] .empty-state{border-color:var(--line-strong)}
+:root[data-tema=claro] .benefit-card{background:rgba(21,33,26,.035);border-color:transparent;border-radius:14px;box-shadow:none}
+:root[data-tema=claro] .benefit-card[data-expiry-state=expired]{border-color:rgba(166,58,40,.35)}
+:root[data-tema=claro] .benefit-card[data-expiry-state=soon],:root[data-tema=claro] .benefit-card[data-expiry-state=this_month]{border-color:rgba(207,172,105,.55)}
+:root[data-tema=claro] .benefit-condition{border-left-color:var(--gold-shape)}
+:root[data-tema=claro] .plan-benefits,:root[data-tema=claro] .benefit-source,:root[data-tema=claro] .plan-management,:root[data-tema=claro] .amount-pair,:root[data-tema=claro] .upcoming-item+.upcoming-item,:root[data-tema=claro] .document-details,:root[data-tema=claro] .hero-comparison{border-color:var(--line)}
+:root[data-tema=claro] .pilot-proposal{background:rgba(207,172,105,.1);border-color:transparent;border-radius:14px}
+:root[data-tema=claro] .notice{border-color:transparent;background:rgba(207,172,105,.13);border-left-color:var(--gold-shape);border-radius:0 12px 12px 0}
+:root[data-tema=claro] .notice-error{background:var(--danger-bg);border-left-color:var(--danger)}
+:root[data-tema=claro] .portfolio-note{background:rgba(207,172,105,.13);border-left-color:var(--gold-shape)}
+
+/* o painel de abertura: luz quente no canto, números em ouro profundo */
+:root[data-tema=claro] .overview-hero{background:radial-gradient(ellipse at 100% 0%,rgba(207,172,105,.24),transparent 55%),radial-gradient(ellipse at 0% 100%,rgba(120,164,124,.16),transparent 55%),linear-gradient(135deg,#fff,#fbfaf5);border-color:transparent;border-radius:22px;box-shadow:var(--sombra-alta)}
+:root[data-tema=claro] .hero-comparison h3{color:var(--ink)}
+:root[data-tema=claro] .amount-leading{color:var(--gold-light);background:linear-gradient(160deg,#9a7a2f 0%,#6a4f14 60%,#8d6d26 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+:root[data-tema=claro] .hero-comparison .amount-leading{color:var(--ink);background:none;-webkit-text-fill-color:var(--ink)}
+:root[data-tema=claro] .overview-stat strong,:root[data-tema=claro] .coverage-tile strong{color:var(--ink)}
+
+/* estados e etiquetas: pílulas tingidas, sem contorno */
+:root[data-tema=claro] .badge{border-color:transparent;background:var(--tinta-suave);border-radius:999px;padding:3px 9px}
+:root[data-tema=claro] .badge-gold{color:var(--gold-light);background:rgba(207,172,105,.22)}
+:root[data-tema=claro] .badge-danger{color:var(--danger);background:var(--danger-bg)}
+:root[data-tema=claro] .subscription-state{border-color:transparent;background:var(--tinta-suave);color:var(--muted)}
+:root[data-tema=claro] .subscription-light{background:#b7bfb9}
+:root[data-tema=claro] .subscription-state[data-state=active]{color:#2f6b3f;background:rgba(72,150,96,.14)}
+:root[data-tema=claro] .subscription-state[data-state=active] .subscription-light{background:#3f9a5a;box-shadow:0 0 6px rgba(63,154,90,.5)}
+:root[data-tema=claro] .subscription-state[data-state=inactive]{color:var(--muted);background:var(--tinta-suave)}
+:root[data-tema=claro] .subscription-state[data-state=inactive] .subscription-light{border-color:var(--faint)}
+:root[data-tema=claro] .subscription-state[data-state=unconfirmed]{color:#7a5a12;background:rgba(207,172,105,.22)}
+:root[data-tema=claro] .subscription-state[data-state=unconfirmed] .subscription-light{background:#c9a24f}
+:root[data-tema=claro] .asset-chip{border-color:transparent;background:var(--tinta-suave);color:var(--muted);border-radius:999px;padding:3px 9px}
+:root[data-tema=claro] .atlas-tabs{border-bottom-color:var(--line)}
+:root[data-tema=claro] .atlas-tabs button:hover{color:var(--ink);background:var(--tinta-suave)}
+:root[data-tema=claro] .atlas-tabs button[aria-selected=true]{background:rgba(207,172,105,.18);border-color:transparent;color:var(--gold-light)}
+:root[data-tema=claro] .step-label input:checked+span{text-decoration-color:rgba(21,33,26,.35)}
+
+/* tabelas e barras */
+:root[data-tema=claro] th,:root[data-tema=claro] .table-scroll th,:root[data-tema=claro] .comparison-table th{background:#f6f5f0;color:var(--gold-light)}
+:root[data-tema=claro] td{color:#3e4843}
+:root[data-tema=claro] .table-scroll td,:root[data-tema=claro] .table-scroll th{border-bottom-color:var(--line)}
+:root[data-tema=claro] tbody tr:hover,:root[data-tema=claro] .table-scroll tbody tr:hover{background:rgba(21,33,26,.035)}
+:root[data-tema=claro] .budget-track,:root[data-tema=claro] .budget-progress,:root[data-tema=claro] .budget-progress::-webkit-progress-bar{background:rgba(21,33,26,.08)}
+:root[data-tema=claro] .budget-fill,:root[data-tema=claro] .budget-progress::-webkit-progress-value{background:var(--gold-shape)}
+:root[data-tema=claro] .budget-progress::-moz-progress-bar{background:var(--gold-shape)}
+
+/* fichas e diálogos */
+:root[data-tema=claro] dialog{background:var(--panel);border-color:var(--line);border-top:1px solid var(--line);border-radius:20px;box-shadow:var(--sombra-alta)}
+:root[data-tema=claro] dialog::backdrop{background:rgba(21,33,26,.32);backdrop-filter:blur(8px)}
+:root[data-tema=claro] .asset-dialog,:root[data-tema=claro] #password-dialog,:root[data-tema=claro] .asset-compare-dialog{background:var(--panel)}
+:root[data-tema=claro] .asset-compare-dialog::backdrop{background:rgba(21,33,26,.32)}
+:root[data-tema=claro] .asset-compare-dialog .asset-dialog-heading{background:var(--panel)}
+:root[data-tema=claro] .asset-dialog-heading,:root[data-tema=claro] .asset-detail-section,:root[data-tema=claro] .asset-pagination,:root[data-tema=claro] .source-ref,:root[data-tema=claro] .topic-row,:root[data-tema=claro] .asset-state{border-color:var(--line)}
+:root[data-tema=claro] .asset-state{color:var(--muted)}
+:root[data-tema=claro] .asset-detail-summary{color:var(--ink)}
+:root[data-tema=claro] .asset-metrics>div{border-color:transparent;background:var(--tinta-suave);border-radius:12px}
+:root[data-tema=claro] .route-evidence{background:rgba(72,150,96,.09);border-color:transparent;border-radius:12px}
+:root[data-tema=claro] .source-ref a{color:var(--gold-light)}
+:root[data-tema=claro] .relation-button{border-color:transparent;background:var(--tinta-suave);color:var(--ink);border-radius:12px}
+:root[data-tema=claro] .relation-button:hover{background:var(--tinta-hover)}
+
+/* campo da senha com o botão Mostrar/Ocultar (static-bridge.js) */
+.campo-senha{display:flex;gap:8px;align-items:stretch}.campo-senha input{flex:1;min-width:0;width:auto}
+.olho{flex-shrink:0;min-height:44px;padding:0 14px;border:1px solid #44463c;border-radius:4px;background:transparent;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}.olho:hover{color:var(--gold-light);border-color:var(--gold)}
+:root[data-tema=claro] .olho{border-color:transparent;background:var(--tinta-suave);color:var(--ink);border-radius:10px}
+
+/* F2 — prontidão e destino, decisão do Criador, leitura da página e origem dos números no tema claro (pílulas tingidas, sem contorno). */
+:root[data-tema=claro] .readiness-pill{border-color:transparent;background:rgba(207,172,105,.22);color:var(--gold-light)}
+:root[data-tema=claro] .asset-destino{border-color:transparent;background:var(--tinta-suave);color:var(--muted)}
+:root[data-tema=claro] .asset-destino[data-destino=decidir]{border:1px dashed var(--line-strong);background:transparent}
+:root[data-tema=claro] .asset-destino[data-destino=produto] .destino-light{background:var(--gold)}
+:root[data-tema=claro] .asset-destino[data-destino=open_source] .destino-light{background:#3f9a5a}
+:root[data-tema=claro] .asset-destino[data-destino=interno] .destino-light{background:#4f6fa3}
+:root[data-tema=claro] .readiness-faltas li{border-color:transparent;background:var(--tinta-suave);border-radius:12px}
+:root[data-tema=claro] .readiness-faltas li[data-origem=decisao]{border-left:3px solid var(--gold-shape)}
+:root[data-tema=claro] .readiness-criterion-points,:root[data-tema=claro] .readiness-total strong,:root[data-tema=claro] .page-help-lines dt,:root[data-tema=claro] .falta-origem{color:var(--gold-light)}
+:root[data-tema=claro] .source-why{border-color:transparent;background:var(--tinta-suave);color:var(--ink)}
+:root[data-tema=claro] .source-why:hover,:root[data-tema=claro] .source-why[aria-expanded=true]{background:rgba(207,172,105,.25);color:var(--gold-light)}
+:root[data-tema=claro] .source-popover{background:#fff;border-color:var(--line);border-radius:12px;box-shadow:var(--sombra-alta)}
+:root[data-tema=claro] .decision-form{border-top-color:var(--line)}
+:root[data-tema=claro] .app-header .page-help.icon-button,:root[data-tema=claro] .app-header .page-help.icon-button:hover{background:transparent;border-color:transparent}
+:root[data-tema=claro] .app-header .page-help.icon-button::before{background:var(--tinta-suave);border-color:transparent}
+:root[data-tema=claro] .app-header .page-help.icon-button:hover::before{background:rgba(207,172,105,.25)}
