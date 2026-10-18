@@ -1898,6 +1898,45 @@
     return secao;
   }
 
+  // A mesa de teste do Med Painel (só no portal): chamada no fim do bloco e também quando o bloco vem vazio.
+  function mpMesaDeTeste(target) {
+  // A mesa de teste (18/10/2026, pedido do Criador): o painel de verdade ao lado de um documento fictício, só no portal.
+  // Vem selada à parte (painel/<slug>/) e só é baixada quando esta página aparece; o link abre a mesma mesa em tela cheia.
+  if (typeof host().painelUrl === "function") {
+    const mesa = mpSecao("Veja o painel funcionando", "Este é o Med Painel de verdade, rodando aqui dentro. O documento da esquerda faz as vezes do prontuário: busque um CID no painel e clique em Colar; no Bulário, abra um remédio e as gavetas (Copiar trecho e fonte copia para o ⌘V); depois escreva /plano no documento e aperte Tab. No Mac, o painel cola em qualquer app; aqui, cola no documento de teste. Nada é real.");
+    const aviso = element("p", "mp-secao-texto mp-mesa-aviso", "Abrindo a mesa de teste…");
+    mesa.append(aviso);
+    let abrindo = false;
+    const abrir = () => {
+      if (abrindo) return;
+      abrindo = true;
+      Promise.resolve().then(() => host().painelUrl()).then((url) => {
+        const frame = element("iframe", "mp-mesa-frame");
+        frame.setAttribute("sandbox", "allow-scripts allow-popups allow-modals allow-forms");
+        frame.setAttribute("allow", "clipboard-write");
+        frame.setAttribute("referrerpolicy", "no-referrer");
+        frame.title = "Med Painel, mesa de teste";
+        frame.src = String(url);
+        aviso.replaceWith(frame);
+      }).catch((error) => { aviso.textContent = error && error.message ? error.message : "A mesa de teste não veio neste pacote."; });
+    };
+    if (typeof IntersectionObserver === "function") {
+      const observador = new IntersectionObserver((entradas) => { if (entradas.some((entrada) => entrada.isIntersecting)) { observador.disconnect(); abrir(); } });
+      observador.observe(target);
+    } else {
+      abrir();
+    }
+    const link = typeof host().painelLink === "function" ? String(host().painelLink() || "").trim() : "";
+    if (link) {
+      const rodape = element("p", "mp-mesa-link");
+      const a = element("a", "", "Abrir a mesa de teste em tela cheia");
+      a.href = link; a.target = "_blank"; a.rel = "noopener noreferrer";
+      rodape.append(a, element("span", "mp-secao-texto", " · link privado, com senha própria: só quem tem o link e a senha vê a página."));
+      mesa.append(rodape);
+    }
+    target.append(mesa);
+  }
+  }
   function renderMedPainel(block) {
     mpUltimoBloco = block;
     renderSource(byId("medpainel-source"), block.source);
@@ -1905,7 +1944,7 @@
     clear(target);
     const estrategias = array(block.estrategias && block.estrategias.rows);
     const premissas = block.premissas || {};
-    if (!estrategias.length && !Object.keys(premissas).length) { empty(target); return; }
+    if (!estrategias.length && !Object.keys(premissas).length) { empty(target); mpMesaDeTeste(target); return; }
 
     const vender = mpSecao("Como vamos vender", "Cada canal tem cupom ou código próprio, para saber de onde veio cada assinante. Metas são propostas; quem decide é o Bauer.");
     const grade = element("div", "products-grid mp-canais");
@@ -1998,6 +2037,8 @@
       registro.append(table(block.decisoes.columns, decisoes, "Decisões do Bauer sobre o Med Painel"));
       target.append(registro);
     }
+
+    mpMesaDeTeste(target);
   }
 
   // Exposto para a prova automática da conta (sem efeito na tela).

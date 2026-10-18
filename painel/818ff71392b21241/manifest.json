@@ -1,0 +1,23 @@
+{
+ "version": 1,
+ "aad": "med-painel-mesa-v1",
+ "kdf": {
+  "name": "PBKDF2",
+  "hash": "SHA-256",
+  "iterations": 600000
+ },
+ "members": [
+  {
+   "id": "link",
+   "salt": "QvXSJIwnnIqdXYt9GFALRQ==",
+   "iv": "sw9LeCEwxRDSBj6g",
+   "wrapped": "ClftvzteeqnuuMChxdRwiqnL9+59hVpbYl2GilXcp6/wVawkTE5GmiZvzRC6wiKK"
+  }
+ ],
+ "bundle": {
+  "file": "pacote-b1404e9a81d0.bin",
+  "iv": "ihDn6kQuseoaDEjF",
+  "bytes": 7301639,
+  "sha256": "b1404e9a81d0ae3ee549027b22392525770b3db8bd2ce5ea9052f958776fe458"
+ }
+}

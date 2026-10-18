@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-src blob:; child-src blob:; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Med Painel · mesa de teste</title>
+<style>
+  :root{--sans:-apple-system,"SF Pro Text",Helvetica,Arial,sans-serif;--serif:ui-serif,"New York",Georgia,serif;--tinta:#1e2230;--tinta3:#858a99;--ouro:#8d6d26;--linha:#e3e1da}
+  html,body{margin:0;height:100%;font:15px/1.5 var(--sans);color:var(--tinta);background:radial-gradient(1200px 700px at 20% -10%,#fff7e6 0%,transparent 60%),#edebe4}
+  .entrada{min-height:100%;display:grid;place-items:center;padding:24px;box-sizing:border-box}
+  .cartao{width:min(420px,100%);background:#fbfaf6;border:1px solid var(--linha);border-radius:20px;box-shadow:0 18px 50px rgba(30,34,48,.14);padding:28px 28px 24px;box-sizing:border-box}
+  .selo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#c9a85a,#8d6d26);display:grid;place-items:center;color:#fff;margin-bottom:14px}
+  h1{font:500 24px var(--serif);margin:0 0 4px}
+  .sub{color:var(--tinta3);margin:0 0 18px;font-size:13px}
+  label{display:block;font-size:13px;color:var(--tinta3);margin-bottom:6px}
+  input{width:100%;box-sizing:border-box;font:16px var(--sans);padding:11px 12px;border:1px solid var(--linha);border-radius:12px;background:#fff;color:var(--tinta)}
+  input:focus{outline:2px solid #c9a85a;outline-offset:1px}
+  button{margin-top:14px;width:100%;border:0;border-radius:999px;padding:12px;background:linear-gradient(135deg,#c9a85a,#8d6d26);color:#fff;font:500 15px var(--sans);cursor:pointer}
+  button[disabled]{opacity:.6;cursor:wait}
+  .nota{font-size:12px;color:var(--tinta3);margin:12px 0 0}
+  .erro{color:#a63a28;font-size:13px;min-height:18px;margin:10px 0 0}
+  #mesa{display:none;position:fixed;inset:0;width:100%;height:100%;border:0}
+  body.aberta .entrada{display:none}
+  body.aberta #mesa{display:block}
+</style>
+</head>
+<body>
+<div class="entrada">
+  <form class="cartao" id="form" autocomplete="on">
+    <div class="selo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.1L20 9.3l-4.4 3.9L17 19l-5-2.9L7 19l1.4-5.8L4 9.3l5.8-1.2z"/></svg></div>
+    <h1>Med Painel</h1>
+    <p class="sub">mesa de teste · o painel ao lado de um documento fictício</p>
+    <label for="senha">Senha de acesso</label>
+    <input id="senha" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" required>
+    <button id="entrar" type="submit">Entrar</button>
+    <p class="erro" id="erro" role="alert"></p>
+    <p class="nota">Maiúsculas e minúsculas não fazem diferença. Nada desta página fica legível sem a senha. O documento de teste fica só no seu navegador.</p>
+  </form>
+</div>
+<iframe id="mesa" title="Med Painel · mesa de teste" allow="clipboard-write"></iframe>
+<script type="module">
+  import {unlock, fetchManifest, loadBundle} from '../../portal-crypto.js';
+  const base = new URL('./', location.href);
+  const form = document.getElementById('form'), senha = document.getElementById('senha'), erro = document.getElementById('erro'), botao = document.getElementById('entrar');
+  let manifesto = null;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault(); erro.textContent = ''; botao.disabled = true; botao.textContent = 'Abrindo…';
+    try {
+      manifesto ??= await fetchManifest(base);
+      const chave = await unlock(manifesto, senha.value.trim().toLowerCase());
+      if (!chave) { erro.textContent = 'Senha não reconhecida.'; return; }
+      const pacote = await loadBundle(base, manifesto, chave.masterRaw);
+      if (!pacote || typeof pacote.html !== 'string') { erro.textContent = 'O pacote veio incompleto.'; return; }
+      document.getElementById('mesa').src = URL.createObjectURL(new Blob([pacote.html], {type: 'text/html'}));
+      document.body.classList.add('aberta'); senha.value = '';
+    } catch (x) {
+      erro.textContent = 'Não deu para abrir: ' + (x && x.message ? x.message : x);
+    } finally { botao.disabled = false; botao.textContent = 'Entrar'; }
+  });
+  senha.focus();
+</script>
+</body>
+</html>
