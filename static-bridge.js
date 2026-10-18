@@ -1,12 +1,13 @@
 // A ponte estática do Finanças (GitHub Pages): a mesma interface da ponte nativa do AI Cask (financeRequest), com os dados
 // vindos do pacote cifrado e o domínio (domain.js) rodando no navegador. Só leitura: as mutações respondem read_only; as
 // mudanças se fazem na aba Finanças do AI Cask. A chave mestra vive SÓ em memória (nunca em storage): recarregar = entrar de novo.
-import {unlock, fetchManifest, loadBundle} from './portal-crypto.js';
+import {unlock, fetchManifest, loadBundle, b64} from './portal-crypto.js';
 import {buildSnapshot, civilDate, validateState} from './domain.js';
 const $ = id => document.getElementById(id);
 const base = new URL('./', location.href);
 let manifest = null, bundle = null, member = null, state = null, chave = null;
 const blobs = new Map();
+let painelBlob = null;
 const fail = (message, code) => { const error = new Error(message); error.code = code; throw error; };
 const temaAtual = () => document.documentElement.dataset.tema === 'escuro' ? 'escuro' : 'claro';
 const domainMember = m => ({id: m.id, displayName: m.displayName, participationPct: m.participationPct ?? null, role: m.role === 'owner' ? 'owner' : 'member'});
@@ -26,9 +27,24 @@ window.financeHost = {
     return blobs.get(nome);
   },
   galeriaTitle(file) { const nome = String(file || '').replace(/^\.\.\//, '').replace(/#.*$/, ''); return (bundle && bundle.gallery.titles[nome]) || null; },
+  // A mesa de teste do Med Painel (18/10/2026): selada à parte em painel/<slug>/, com a chave mestra dentro deste pacote.
+  // Quem entrou no Finanças abre sem segunda senha; o mesmo endereço, com a senha própria, é o link para quem não é do portal.
+  painelLink() { return bundle && bundle.painel && /^[a-f0-9]{16}$/.test(bundle.painel.slug || '') ? new URL('painel/' + bundle.painel.slug + '/', base).href : ''; },
+  async painelUrl() {
+    if (!bundle) fail('Entre com a senha do portal.', 'unauthenticated');
+    const p = bundle.painel;
+    if (!p || !/^[a-f0-9]{16}$/.test(p.slug || '') || typeof p.masterRaw !== 'string') fail('A mesa de teste não veio neste pacote.', 'not_found');
+    if (!painelBlob) {
+      const raiz = new URL('painel/' + p.slug + '/', base);
+      const conteudo = await loadBundle(raiz, await fetchManifest(raiz), b64.dec(p.masterRaw));
+      if (!conteudo || typeof conteudo.html !== 'string') fail('A mesa de teste veio incompleta.', 'not_found');
+      painelBlob = URL.createObjectURL(new Blob([conteudo.html], {type: 'text/html'}));
+    }
+    return painelBlob;
+  },
 };
 async function getManifest() { return manifest ??= await fetchManifest(base); }
-function esquecer() { chave = bundle = state = member = null; for (const u of blobs.values()) { try { URL.revokeObjectURL(u); } catch {} } blobs.clear(); }
+function esquecer() { chave = bundle = state = member = null; for (const u of blobs.values()) { try { URL.revokeObjectURL(u); } catch {} } blobs.clear(); if (painelBlob) { try { URL.revokeObjectURL(painelBlob); } catch {} painelBlob = null; } }
 async function activate(sess) {
   bundle = await loadBundle(base, await getManifest(), sess.masterRaw);
   const roster = bundle.finance.roster;
