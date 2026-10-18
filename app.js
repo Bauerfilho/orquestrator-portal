@@ -55,6 +55,7 @@
     overview: {title: "Meu painel", description: "Seus compromissos, com a empresa em perspectiva.", help: {what: "A sua parte nos compromissos mensais da empresa e o total que ela paga, lado a lado.", from: "Dos planos de assinatura confirmados e da sua participação cadastrada. A fonte e a data de cada número ficam no botão ao lado dele.", not: "Não é uma cobrança nova nem um extrato bancário. É um rateio calculado para você se situar."}},
     subscriptions: {title: "Assinaturas", description: "Serviços, cobranças e a sua parte em cada compromisso.", help: {what: "Cada serviço que a empresa assina, com valor, vencimento e a sua parte em cada cobrança.", from: "Do arquivo de planos da empresa e dos registros de benefícios e cobranças, lidos a cada abertura.", not: "Mudar o estado aqui não contrata nem cancela nada no serviço real. Só registra o que o painel considera."}},
     sell: {title: "Vender primeiro", description: "Prioridades e próximos passos registrados pela equipe.", help: {what: "As três prioridades de venda e os próximos passos que a equipe registrou para cada uma.", from: "Do documento de prioridades da equipe. Cada caixinha marcada é salva nele.", not: "Não é previsão de receita nem compromisso de prazo. É a lista do que vem primeiro."}},
+    medpainel: {title: "Med Painel", description: "Como vender e o caminho até a meta de assinantes, com o dinheiro de cada mês.", help: {what: "Os canais de venda do Med Painel, a projeção mês a mês até 10 mil assinantes em três cenários, o resultado, a verba de marketing e a parte de cada sócio.", from: "Das estratégias, premissas e decisões do Bauer em mercado/MED-PAINEL-*, do custo fixo dos planos ativos e da sociedade. A conta é refeita na tela a cada leitura.", not: "Não é previsão: os números de aquisição são chutes até o piloto medir. Imposto e taxa de cobrança ainda passam pelo contador."}},
     portfolio: {title: "Portfólio", description: "O que já existe, o que foi conferido e o que ainda falta.", help: {what: "O catálogo do que já existe: cada ativo com estado documental, nota de prontidão e destino.", from: "Do inventário e do atlas de ativos, montados a partir dos arquivos e repositórios conferidos. A prontidão é uma nota documental de 0 a 100, somada de cinco critérios de até 20 pontos.", not: "Prontidão não mede funcionamento, mercado nem preço. Só o Criador decide o destino de cada ativo."}},
     cash: {title: "Caixa", description: "Recursos, despesas e limites da empresa. Moedas sempre separadas.", help: {what: "O dinheiro da empresa: custo fixo mensal, gastos do mês, saldos registrados e teto de consumo.", from: "Dos registros financeiros e do documento de caixa, com a data de cada fonte indicada.", not: "Não é conta bancária ao vivo. Mostra o último registro entregue, moeda por moeda, sem somar moedas diferentes."}},
     projection: {title: "Projeção", description: "Possibilidades acompanhadas de suas fontes e premissas.", help: {what: "Cenários de receita possíveis, cada um com a fórmula que o sustenta.", from: "Do documento de projeção escrito pela equipe. A fórmula fica visível em cada cenário.", not: "Não é promessa nem meta. São possibilidades acompanhadas das suas premissas."}},
@@ -1633,6 +1634,375 @@
     else empty(target);
   }
 
+  // Med Painel (17/10/2026, pedido do Criador): estratégias de venda e o caminho até a meta de assinantes.
+  // A conta é uma função pura (projetarMedPainel) sobre as premissas de mercado/MED-PAINEL-PREMISSAS.csv; os números
+  // de aquisição são chutes rotulados até o piloto medir. Gráficos pela skill dataviz: ênfase (o cenário escolhido no
+  // acento, os outros em cinza de contexto com rótulo na ponta), cores validadas contra as superfícies clara e escura.
+  const mpCenarios = [["pessimista", "Pessimista"], ["base", "Base"], ["otimista", "Otimista"]];
+  const mpMarcos = [100, 500, 1000, 2500, 5000, 10000];
+  let mpCenario = "base";
+  let mpUltimoBloco = null;
+  // Tela estreita: o gráfico é desenhado na largura dela (texto em tamanho real), não encolhido de 760 para 350.
+  const mpEstreita = window.matchMedia ? window.matchMedia("(max-width: 620px)") : null;
+  const mpEhEstreita = () => Boolean(mpEstreita && mpEstreita.matches);
+  if (mpEstreita && mpEstreita.addEventListener) mpEstreita.addEventListener("change", () => { if (mpUltimoBloco) renderMedPainel(mpUltimoBloco); });
+  const mpInteiro = new Intl.NumberFormat("pt-BR", {maximumFractionDigits: 0});
+  const mpReais = new Intl.NumberFormat("pt-BR", {style: "currency", currency: "BRL", maximumFractionDigits: 0});
+  const mpCentavos = new Intl.NumberFormat("pt-BR", {style: "currency", currency: "BRL"});
+  const mpCompacto = (valor) => Math.abs(valor) >= 1000 ? mpInteiro.format(Math.round(valor / 100) / 10).replace(/,0$/, "") + " mil" : mpInteiro.format(Math.round(valor));
+  const mpReaisCompacto = (valor) => (valor < 0 ? "−" : "") + "R$ " + mpCompacto(Math.abs(valor));
+
+  function mpPremissa(block, chave, cenario, padrao) {
+    const item = (block.premissas || {})[chave];
+    const valor = item && typeof item[cenario] === "number" && isFinite(item[cenario]) ? item[cenario] : null;
+    return valor === null ? padrao : valor;
+  }
+
+  function mpCustoFixoEmpresa(block, cambio) {
+    let total = 0;
+    const semConversao = [];
+    array(block.fixed_monthly).forEach((item) => {
+      const valor = Number(item && item.valor) || 0;
+      if (item.moeda === "BRL") total += valor;
+      else if (item.moeda === "USD") total += valor * cambio;
+      else if (valor) semConversao.push(item.moeda);
+    });
+    return {total, semConversao};
+  }
+
+  // Maior resto em centavos, como allocate_minor do core.py: a soma das partes bate o lucro ao centavo.
+  function mpRepartir(totalReais, socios) {
+    const partes = array(socios).filter((socio) => typeof socio.participacao === "number");
+    if (!partes.length || partes.reduce((soma, socio) => soma + socio.participacao, 0) !== 100) return [];
+    const centavos = Math.round(Math.max(0, totalReais) * 100);
+    const exatas = partes.map((socio) => centavos * socio.participacao / 100);
+    const inteiras = exatas.map(Math.floor);
+    const resto = centavos - inteiras.reduce((soma, valor) => soma + valor, 0);
+    exatas.map((valor, indice) => [valor - inteiras[indice], indice]).sort((x, y) => y[0] - x[0] || x[1] - y[1])
+      .slice(0, resto).forEach(([, indice]) => { inteiras[indice] += 1; });
+    return partes.map((socio, indice) => ({nome: socio.nome, participacao: socio.participacao, valor: inteiras[indice] / 100}));
+  }
+
+  function projetarMedPainel(block, cenario) {
+    const P = (chave, padrao) => mpPremissa(block, chave, cenario, padrao);
+    const preco = P("preco", 59.9), churn = P("churn_pct", 5) / 100, indicacao = P("indicacao_pct", 2) / 100;
+    const cambio = P("cambio", 5.3), meta = P("meta", 10000), parteVerba = P("verba_pct", 50) / 100;
+    const meses = Math.min(120, Math.max(1, Math.round(P("meses", 48))));
+    const fixoEmpresa = mpCustoFixoEmpresa(block, cambio).total * P("empresa_fixo_pct", 100) / 100;
+    const fixoProduto = P("servidor_usd", 11) * cambio + P("apple_usd_ano", 99) * cambio / 12 + P("contador", 0);
+    const comissaoPct = P("comissao_pct", 20) / 100, comissaoMeses = Math.max(0, Math.round(P("comissao_meses", 12)));
+    const promotores = P("promotores", 0) * P("conv_promotor", 0);
+    const influenciadores = P("acoes_influencer", 0) * P("conv_acao", 0);
+    const ecossistema = P("eco_usuarios", 0) * P("eco_convite_pct", 0) / 100 * P("conv_teste_pct", 15) / 100;
+    const afiliados = [];
+    let assinantes = Math.max(0, P("inicio_assinantes", 0)), verba = Math.max(0, P("verba_inicial", 0));
+    const linhas = [];
+    for (let mes = 1; mes <= meses; mes++) {
+      const boca = assinantes * indicacao;
+      const pago = verba > 0 ? verba / Math.max(1, P("cac_pago", 150)) : 0;
+      const perdas = assinantes * churn;
+      const entradas = boca + promotores + influenciadores + ecossistema + pago;
+      const novo = Math.max(0, assinantes + entradas - perdas);
+      afiliados.push(influenciadores);
+      let ativosAfiliados = 0;
+      for (let idade = 0; idade < Math.min(comissaoMeses, afiliados.length); idade++) ativosAfiliados += afiliados[afiliados.length - 1 - idade] * Math.pow(1 - churn, idade);
+      const bruta = novo * preco, mesesGratis = boca * preco;
+      const taxas = novo * (preco * P("taxa_pct", 4.69) / 100 + P("taxa_fixa", 0.5));
+      const impostos = Math.max(0, bruta - mesesGratis) * P("imposto_pct", 6) / 100;
+      const comissao = ativosAfiliados * preco * comissaoPct;
+      const resultado = bruta - mesesGratis - taxas - impostos - fixoEmpresa - fixoProduto - comissao - verba;
+      const proximaVerba = resultado > 0 ? resultado * parteVerba : 0;
+      const lucro = resultado > 0 ? resultado - proximaVerba : 0;
+      linhas.push({mes, assinantes: novo, entradas, perdas, canais: {boca, promotores, influenciadores, ecossistema, pago},
+        bruta, mesesGratis, taxas, impostos, fixo: fixoEmpresa + fixoProduto, comissao, verba, resultado, proximaVerba, lucro,
+        aporte: resultado < 0 ? -resultado : 0, socios: mpRepartir(lucro, block.socios)});
+      assinantes = novo;
+      verba = proximaVerba;
+      if (assinantes >= meta) break;
+    }
+    const marcos = mpMarcos.map((marco) => { const linha = linhas.find((item) => item.assinantes >= marco); return linha ? linha.mes : null; });
+    const ultimo = linhas[linhas.length - 1];
+    const fixasFim = promotores + influenciadores + ecossistema + (ultimo ? ultimo.canais.pago : 0);
+    return {cenario, linhas, marcos, meta, fixoEmpresa, fixoProduto, churn, indicacao, fixasFim,
+      teto: churn > indicacao ? fixasFim / (churn - indicacao) : Infinity, chegou: Boolean(ultimo && ultimo.assinantes >= meta)};
+  }
+
+  function mpSvg(tag, atributos, conteudo) {
+    const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(atributos || {}).forEach(([nome, valor]) => node.setAttribute(nome, String(valor)));
+    if (conteudo !== undefined) node.textContent = text(conteudo);
+    return node;
+  }
+
+  function mpPassoBonito(maximo, alvo = 4) {
+    const bruto = Math.max(1e-9, maximo / alvo), potencia = Math.pow(10, Math.floor(Math.log10(bruto)));
+    return [1, 2, 2.5, 5, 10].map((fator) => fator * potencia).find((passo) => passo >= bruto) || 10 * potencia;
+  }
+
+  function mpDica(container) {
+    const dica = element("div", "mp-dica");
+    dica.setAttribute("role", "status");
+    dica.hidden = true;
+    container.append(dica);
+    return dica;
+  }
+
+  function mpMostrarDica(dica, x, y, largura, linhas) {
+    dica.replaceChildren();
+    linhas.forEach(([valor, rotulo, classeChave]) => {
+      const linha = element("div", "mp-dica-linha");
+      if (classeChave) linha.append(element("span", "mp-chave " + classeChave));
+      linha.append(element("strong", "", valor), element("span", "", rotulo));
+      dica.append(linha);
+    });
+    dica.hidden = false;
+    dica.style.left = Math.min(Math.max(8, x + 14), largura - 190) + "px";
+    dica.style.top = Math.max(4, y - 10) + "px";
+  }
+
+  function mpGraficoAssinantes(projecoes, escolhido) {
+    const caixa = element("div", "mp-grafico");
+    const estreita = mpEhEstreita();
+    const W = estreita ? 380 : 760, H = estreita ? 270 : 300, M = estreita ? {t: 14, r: 74, b: 30, l: 40} : {t: 16, r: 104, b: 34, l: 54};
+    const meta = escolhido.meta;
+    const maxMes = Math.max(2, ...projecoes.map((projecao) => projecao.linhas.length));
+    const passo = mpPassoBonito(Math.max(meta, ...projecoes.flatMap((projecao) => projecao.linhas.map((linha) => linha.assinantes))));
+    const topo = Math.ceil(Math.max(meta, ...projecoes.flatMap((projecao) => projecao.linhas.map((linha) => linha.assinantes))) / passo) * passo;
+    const X = (mes) => M.l + (mes - 1) / (maxMes - 1) * (W - M.l - M.r);
+    const Y = (valor) => H - M.b - valor / topo * (H - M.t - M.b);
+    const svg = mpSvg("svg", {viewBox: "0 0 " + W + " " + H, class: "mp-svg", role: "img", tabindex: "0",
+      "aria-label": "Assinantes por mês nos três cenários. Cenário " + escolhido.cenario + ": " + (escolhido.chegou ? "chega a " + mpInteiro.format(meta) + " no mês " + escolhido.linhas.length : "não chega a " + mpInteiro.format(meta) + " em " + escolhido.linhas.length + " meses") + ". Valores na tabela mês a mês."});
+    for (let valor = 0; valor <= topo + 1e-9; valor += passo) {
+      svg.append(mpSvg("line", {x1: M.l, x2: W - M.r, y1: Y(valor), y2: Y(valor), class: "mp-grade"}));
+      svg.append(mpSvg("text", {x: M.l - 8, y: Y(valor) + 4, class: "mp-eixo", "text-anchor": "end"}, mpCompacto(valor)));
+    }
+    [1, 12, 24, 36, 48].filter((mes) => mes <= maxMes).forEach((mes) => svg.append(mpSvg("text", {x: X(mes), y: H - 10, class: "mp-eixo", "text-anchor": "middle"}, (estreita ? "" : "mês ") + mes)));
+    svg.append(mpSvg("line", {x1: M.l, x2: W - M.r, y1: Y(meta), y2: Y(meta), class: "mp-meta"}));
+    svg.append(mpSvg("text", {x: M.l + 6, y: Y(meta) - 6, class: "mp-eixo mp-meta-texto"}, "Meta: " + mpCompacto(meta) + " assinantes"));
+    const ordem = projecoes.slice().sort((a, b) => (a.cenario === escolhido.cenario) - (b.cenario === escolhido.cenario));
+    ordem.forEach((projecao) => {
+      if (!projecao.linhas.length) return;
+      const acento = projecao.cenario === escolhido.cenario;
+      const caminho = projecao.linhas.map((linha, indice) => (indice ? "L" : "M") + X(linha.mes).toFixed(1) + " " + Y(linha.assinantes).toFixed(1)).join(" ");
+      svg.append(mpSvg("path", {d: caminho, class: "mp-linha " + (acento ? "mp-linha-acento" : "mp-linha-contexto") + (projecao.cenario === "pessimista" ? " mp-tracejada" : "")}));
+      const fim = projecao.linhas[projecao.linhas.length - 1];
+      svg.append(mpSvg("circle", {cx: X(fim.mes), cy: Y(fim.assinantes), r: 4, class: acento ? "mp-ponto-acento" : "mp-ponto-contexto"}));
+      const nomeCenario = mpCenarios.find(([chave]) => chave === projecao.cenario)[1];
+      const rotulo = (estreita && nomeCenario.length > 5 ? nomeCenario.slice(0, 4) + "." : nomeCenario) + " " + (estreita ? "" : "· ") + mpCompacto(fim.assinantes);
+      svg.append(mpSvg("text", {x: X(fim.mes) + 8, y: Y(fim.assinantes) + 4, class: "mp-rotulo" + (acento ? " mp-rotulo-acento" : "")}, rotulo));
+    });
+    const cruz = mpSvg("line", {y1: M.t, y2: H - M.b, class: "mp-cruz", visibility: "hidden"});
+    svg.append(cruz);
+    const alvo = mpSvg("rect", {x: M.l, y: M.t, width: W - M.l - M.r, height: H - M.t - M.b, fill: "transparent"});
+    svg.append(alvo);
+    caixa.append(svg);
+    const dica = mpDica(caixa);
+    let mesAtivo = null;
+    const mostrar = (mes) => {
+      mesAtivo = Math.min(maxMes, Math.max(1, mes));
+      cruz.setAttribute("x1", X(mesAtivo)); cruz.setAttribute("x2", X(mesAtivo)); cruz.setAttribute("visibility", "visible");
+      const linhas = [["Mês " + mesAtivo, "", ""]].concat(projecoes.map((projecao) => {
+        const linha = projecao.linhas.find((item) => item.mes === mesAtivo);
+        const nome = mpCenarios.find(([chave]) => chave === projecao.cenario)[1];
+        return [linha ? mpInteiro.format(Math.round(linha.assinantes)) : "meta atingida antes", nome, projecao.cenario === escolhido.cenario ? "mp-chave-acento" : "mp-chave-contexto" + (projecao.cenario === "pessimista" ? " mp-chave-tracejada" : "")];
+      }));
+      const caixaSvg = svg.getBoundingClientRect(), escala = caixaSvg.width / W || 1;
+      mpMostrarDica(dica, X(mesAtivo) * escala, M.t * escala, caixaSvg.width, linhas);
+    };
+    const esconder = () => { cruz.setAttribute("visibility", "hidden"); dica.hidden = true; mesAtivo = null; };
+    alvo.addEventListener("pointermove", (evento) => {
+      const caixaSvg = svg.getBoundingClientRect(), escala = W / (caixaSvg.width || W);
+      mostrar(Math.round(((evento.clientX - caixaSvg.left) * escala - M.l) / (W - M.l - M.r) * (maxMes - 1)) + 1);
+    });
+    alvo.addEventListener("pointerleave", esconder);
+    svg.addEventListener("focus", () => mostrar(Math.min(12, maxMes)));
+    svg.addEventListener("blur", esconder);
+    svg.addEventListener("keydown", (evento) => {
+      if (evento.key !== "ArrowRight" && evento.key !== "ArrowLeft") return;
+      evento.preventDefault();
+      mostrar((mesAtivo || 1) + (evento.key === "ArrowRight" ? 1 : -1));
+    });
+    return caixa;
+  }
+
+  function mpGraficoResultado(projecao) {
+    const caixa = element("div", "mp-grafico mp-grafico-baixo");
+    const estreita = mpEhEstreita();
+    const W = estreita ? 380 : 760, H = estreita ? 210 : 220, M = estreita ? {t: 12, r: 10, b: 28, l: 62} : {t: 14, r: 24, b: 30, l: 64};
+    const linhas = projecao.linhas;
+    if (!linhas.length) { empty(caixa); return caixa; }
+    const maximo = Math.max(0, ...linhas.map((linha) => linha.resultado)), minimo = Math.min(0, ...linhas.map((linha) => linha.resultado));
+    const passo = mpPassoBonito(Math.max(1, maximo - minimo));
+    const topo = Math.ceil(maximo / passo) * passo || passo, fundo = Math.floor(minimo / passo) * passo;
+    const banda = (W - M.l - M.r) / linhas.length, largura = Math.max(2, Math.min(24, banda * 0.62)), raio = Math.min(4, largura / 2);
+    const Y = (valor) => M.t + (topo - valor) / (topo - fundo) * (H - M.t - M.b);
+    const svg = mpSvg("svg", {viewBox: "0 0 " + W + " " + H, class: "mp-svg", role: "img",
+      "aria-label": "Resultado do Med Painel por mês no cenário escolhido: barras acima de zero são resultado positivo, abaixo de zero é aporte necessário. Valores na tabela mês a mês."});
+    for (let valor = fundo; valor <= topo + 1e-9; valor += passo) {
+      svg.append(mpSvg("line", {x1: M.l, x2: W - M.r, y1: Y(valor), y2: Y(valor), class: valor === 0 ? "mp-base" : "mp-grade"}));
+      svg.append(mpSvg("text", {x: M.l - 8, y: Y(valor) + 4, class: "mp-eixo", "text-anchor": "end"}, mpReaisCompacto(valor)));
+    }
+    [1, 12, 24, 36, 48].filter((mes) => mes <= linhas.length).forEach((mes) => svg.append(mpSvg("text", {x: M.l + (mes - 0.5) * banda, y: H - 10, class: "mp-eixo", "text-anchor": "middle"}, (estreita ? "" : "mês ") + mes)));
+    const dica = mpDica(caixa);
+    linhas.forEach((linha, indice) => {
+      const x = M.l + indice * banda + (banda - largura) / 2, zero = Y(0), y = Y(linha.resultado), positivo = linha.resultado >= 0;
+      const altura = Math.abs(zero - y);
+      if (altura >= 0.5) {
+        const r = Math.min(raio, altura);
+        const d = positivo
+          ? "M" + x + " " + zero + " V" + (y + r) + " Q" + x + " " + y + " " + (x + r) + " " + y + " H" + (x + largura - r) + " Q" + (x + largura) + " " + y + " " + (x + largura) + " " + (y + r) + " V" + zero + " Z"
+          : "M" + x + " " + zero + " V" + (y - r) + " Q" + x + " " + y + " " + (x + r) + " " + y + " H" + (x + largura - r) + " Q" + (x + largura) + " " + y + " " + (x + largura) + " " + (y - r) + " V" + zero + " Z";
+        svg.append(mpSvg("path", {d, class: positivo ? "mp-barra-positiva" : "mp-barra-negativa"}));
+      }
+      const alvo = mpSvg("rect", {x: M.l + indice * banda, y: M.t, width: banda, height: H - M.t - M.b, fill: "transparent", tabindex: "0", "aria-label": "Mês " + linha.mes + ": " + (positivo ? "resultado " + mpCentavos.format(linha.resultado) : "aporte necessário " + mpCentavos.format(linha.aporte))});
+      const mostrar = () => {
+        const linhasDica = [[positivo ? mpCentavos.format(linha.resultado) : mpCentavos.format(linha.aporte), "mês " + linha.mes + (positivo ? " · resultado" : " · aporte necessário"), positivo ? "mp-chave-positiva" : "mp-chave-negativa"]];
+        if (positivo) {
+          linhasDica.push([mpCentavos.format(linha.proximaVerba), "verba de marketing do mês seguinte", ""]);
+          linha.socios.forEach((socio) => linhasDica.push([mpCentavos.format(socio.valor), socio.nome + " (" + socio.participacao + "%)", ""]));
+        }
+        const caixaSvg = svg.getBoundingClientRect(), escala = caixaSvg.width / W || 1;
+        mpMostrarDica(dica, (x + largura) * escala, M.t * escala, caixaSvg.width, linhasDica);
+      };
+      alvo.addEventListener("pointerenter", mostrar);
+      alvo.addEventListener("focus", mostrar);
+      alvo.addEventListener("pointerleave", () => { dica.hidden = true; });
+      alvo.addEventListener("blur", () => { dica.hidden = true; });
+      svg.append(alvo);
+    });
+    caixa.append(svg);
+    return caixa;
+  }
+
+  function mpLegenda(itens) {
+    const lista = element("ul", "mp-legenda");
+    itens.forEach(([rotulo, classeChave]) => {
+      const item = element("li");
+      item.append(element("span", "mp-chave " + classeChave), element("span", "", rotulo));
+      lista.append(item);
+    });
+    return lista;
+  }
+
+  function mpBlocoNumero(rotulo, valor, nota) {
+    const painel = element("div", "metric-panel mp-numero");
+    painel.append(element("h3", "", rotulo), element("p", "mp-numero-valor", valor));
+    if (nota) painel.append(element("p", "mp-numero-nota", nota));
+    return painel;
+  }
+
+  function mpSecao(titulo, descricao) {
+    const secao = element("section", "mp-secao");
+    secao.append(element("h3", "mp-secao-titulo", titulo));
+    if (descricao) secao.append(element("p", "mp-secao-texto", descricao));
+    return secao;
+  }
+
+  function renderMedPainel(block) {
+    mpUltimoBloco = block;
+    renderSource(byId("medpainel-source"), block.source);
+    const target = byId("medpainel-content");
+    clear(target);
+    const estrategias = array(block.estrategias && block.estrategias.rows);
+    const premissas = block.premissas || {};
+    if (!estrategias.length && !Object.keys(premissas).length) { empty(target); return; }
+
+    const vender = mpSecao("Como vamos vender", "Cada canal tem cupom ou código próprio, para saber de onde veio cada assinante. Metas são propostas; quem decide é o Bauer.");
+    const grade = element("div", "products-grid mp-canais");
+    estrategias.forEach((linha) => {
+      const cartao = element("article", "product-card mp-canal");
+      cartao.append(element("h4", "mp-canal-nome", linha["Canal"] || ""));
+      const campos = element("dl", "mp-canal-campos");
+      [["Como funciona", "Como funciona"], ["O que custa", "O que custa"], ["Como medir", "Como medir"], ["Meta do canal", "Meta"]].forEach(([coluna, rotulo]) => {
+        if (!linha[coluna]) return;
+        const item = element("div");
+        item.append(element("dt", "", rotulo), element("dd", "", linha[coluna]));
+        campos.append(item);
+      });
+      cartao.append(campos);
+      grade.append(cartao);
+    });
+    vender.append(grade);
+    target.append(vender);
+
+    const projecoes = mpCenarios.map(([chave]) => projetarMedPainel(block, chave));
+    const escolhido = projecoes.find((projecao) => projecao.cenario === mpCenario) || projecoes[1];
+    const caminho = mpSecao("O caminho até " + mpCompacto(escolhido.meta) + " assinantes", "Projeção mês a mês com as premissas abaixo. Os números de aquisição ainda são chutes: viram previsão depois do piloto. O custo por assinante (CAC) fica constante na conta; na vida real ele sobe quando a verba cresce, então a reta final do cenário é otimista.");
+    const seletor = element("div", "mp-cenarios");
+    seletor.setAttribute("role", "group");
+    seletor.setAttribute("aria-label", "Cenário da projeção");
+    mpCenarios.forEach(([chave, rotulo]) => {
+      const botao = element("button", "mp-cenario", rotulo);
+      botao.type = "button";
+      botao.setAttribute("aria-pressed", String(chave === escolhido.cenario));
+      botao.addEventListener("click", () => { mpCenario = chave; renderMedPainel(mpUltimoBloco || block); const novo = byId("medpainel-content").querySelector('.mp-cenario[aria-pressed="true"]'); if (novo) novo.focus(); });
+      seletor.append(botao);
+    });
+    caminho.append(seletor);
+
+    const linhaDoze = escolhido.linhas.find((linha) => linha.mes === 12) || escolhido.linhas[escolhido.linhas.length - 1];
+    const indice500 = mpMarcos.indexOf(500), indiceMeta = mpMarcos.indexOf(escolhido.meta);
+    const numeros = element("div", "mp-numeros");
+    numeros.append(
+      mpBlocoNumero("Assinantes no mês " + (linhaDoze ? linhaDoze.mes : 12), linhaDoze ? mpInteiro.format(Math.round(linhaDoze.assinantes)) : "—"),
+      mpBlocoNumero("Chega a 500 no", escolhido.marcos[indice500] ? "mês " + escolhido.marcos[indice500] : "não chega", "primeira meta"),
+      mpBlocoNumero("Chega a " + mpCompacto(escolhido.meta) + " no", escolhido.chegou ? "mês " + escolhido.linhas.length : "não chega em " + escolhido.linhas.length + " meses", "o objetivo"),
+      mpBlocoNumero("Lucro do mês " + (linhaDoze ? linhaDoze.mes : 12), linhaDoze ? mpReais.format(linhaDoze.lucro) : "—", linhaDoze && linhaDoze.socios.length ? linhaDoze.socios.map((socio) => (socio.nome.length > 12 ? socio.nome.split(" ")[0] : socio.nome) + " " + mpReais.format(socio.valor)).join(" · ") : "a sociedade não soma 100%")
+    );
+    caminho.append(numeros);
+    caminho.append(mpLegenda(mpCenarios.map(([chave, rotulo]) => [rotulo + (chave === escolhido.cenario ? " (escolhido)" : ""), chave === escolhido.cenario ? "mp-chave-acento" : "mp-chave-contexto" + (chave === "pessimista" ? " mp-chave-tracejada" : "")])));
+    caminho.append(mpGraficoAssinantes(projecoes, escolhido));
+    const teto = Number.isFinite(escolhido.teto)
+      ? "Com perda de " + mpInteiro.format(escolhido.churn * 100) + "% ao mês e indicação de " + mpInteiro.format(escolhido.indicacao * 100) + "%, as entradas que não dependem da base (" + mpInteiro.format(Math.round(escolhido.fixasFim)) + " por mês no fim da projeção) sustentam no máximo cerca de " + mpInteiro.format(Math.round(escolhido.teto)) + " assinantes. Para sustentar " + mpCompacto(escolhido.meta) + ", elas precisam chegar a " + mpInteiro.format(Math.ceil(escolhido.meta * (escolhido.churn - escolhido.indicacao))) + " por mês."
+      : "Neste cenário a indicação boca a boca supera a perda: a base cresce sem teto enquanto as premissas valerem.";
+    caminho.append(element("p", "mp-teto", teto));
+    target.append(caminho);
+
+    const dinheiro = mpSecao("Dinheiro mês a mês (cenário " + mpCenarios.find(([chave]) => chave === escolhido.cenario)[1].toLowerCase() + ")", "Resultado = receita − meses grátis − taxas − impostos − custo fixo da empresa e do produto − comissões − verba do mês. Metade do resultado positivo vira verba do mês seguinte; a outra metade é o lucro dos sócios. Abaixo de zero, é aporte.");
+    const fixo = mpCustoFixoEmpresa(block, mpPremissa(block, "cambio", escolhido.cenario, 5.3));
+    dinheiro.append(element("p", "mp-secao-texto", "Custo fixo carregado: empresa " + mpReais.format(escolhido.fixoEmpresa) + " por mês (planos ativos" + (fixo.semConversao.length ? "; sem conversão: " + fixo.semConversao.join(", ") : "") + (block.incomplete_costs ? "; " + block.incomplete_costs + " plano(s) sem valor confirmado ficaram de fora" : "") + ") + produto " + mpReais.format(escolhido.fixoProduto) + " por mês."));
+    dinheiro.append(mpLegenda([["Resultado positivo", "mp-chave-positiva mp-chave-barra"], ["Aporte necessário", "mp-chave-negativa mp-chave-barra"]]));
+    dinheiro.append(mpGraficoResultado(escolhido));
+    const nomes = array(block.socios).map((socio) => socio.nome);
+    const colunas = ["Mês", "Assinantes", "Entradas", "Perdas", "Receita", "Taxas e impostos", "Custo fixo", "Aquisição", "Resultado", "Verba do mês seguinte", "Lucro"].concat(nomes, ["Aporte"]);
+    const linhasTabela = escolhido.linhas.map((linha) => {
+      const registro = {"Mês": String(linha.mes), "Assinantes": mpInteiro.format(Math.round(linha.assinantes)), "Entradas": mpInteiro.format(Math.round(linha.entradas)), "Perdas": mpInteiro.format(Math.round(linha.perdas)),
+        "Receita": mpReais.format(linha.bruta - linha.mesesGratis), "Taxas e impostos": mpReais.format(linha.taxas + linha.impostos), "Custo fixo": mpReais.format(linha.fixo),
+        "Aquisição": mpReais.format(linha.comissao + linha.verba), "Resultado": mpReais.format(linha.resultado), "Verba do mês seguinte": mpReais.format(linha.proximaVerba), "Lucro": mpReais.format(linha.lucro), "Aporte": linha.aporte ? mpReais.format(linha.aporte) : "—"};
+      nomes.forEach((nome) => { const socio = linha.socios.find((item) => item.nome === nome); registro[nome] = socio ? mpCentavos.format(socio.valor) : "—"; });
+      return registro;
+    });
+    const detalhes = element("details", "mp-detalhes");
+    detalhes.append(element("summary", "", "Ver a projeção mês a mês"), table(colunas, linhasTabela, "Projeção do Med Painel mês a mês"));
+    dinheiro.append(detalhes);
+    target.append(dinheiro);
+
+    const marcos = mpSecao("Metas", "Em que mês cada cenário passa por cada marco.");
+    marcos.append(table(["Marco"].concat(mpCenarios.map(([, rotulo]) => rotulo)), mpMarcos.map((marco, indice) => {
+      const registro = {"Marco": mpInteiro.format(marco) + " assinantes"};
+      mpCenarios.forEach(([chave, rotulo], posicao) => { const mes = projecoes[posicao].marcos[indice]; registro[rotulo] = mes ? "mês " + mes : "não chega"; });
+      return registro;
+    }), "Metas por cenário"));
+    target.append(marcos);
+
+    const base = mpSecao("Premissas", "Do arquivo MED-PAINEL-PREMISSAS.csv. Troque um número ali e a projeção inteira se refaz. \"Chute\" quer dizer que ainda não foi medido.");
+    base.append(table(["Premissa", "Pessimista", "Base", "Otimista", "Unidade", "Fonte"], Object.values(premissas).map((item) => ({
+      "Premissa": item.nome || "", "Pessimista": item.pessimista === null || item.pessimista === undefined ? "—" : String(item.pessimista).replace(".", ","),
+      "Base": item.base === null || item.base === undefined ? "—" : String(item.base).replace(".", ","), "Otimista": item.otimista === null || item.otimista === undefined ? "—" : String(item.otimista).replace(".", ","),
+      "Unidade": item.unidade || "", "Fonte": typeof item.origem === "string" ? item.origem : ""})), "Premissas da projeção"));
+    target.append(base);
+
+    const decisoes = array(block.decisoes && block.decisoes.rows);
+    if (decisoes.length) {
+      const registro = mpSecao("Decisões do Bauer", "Registro só de acréscimo, em MED-PAINEL-DECISOES.md.");
+      registro.append(table(block.decisoes.columns, decisoes, "Decisões do Bauer sobre o Med Painel"));
+      target.append(registro);
+    }
+  }
+
+  // Exposto para a prova automática da conta (sem efeito na tela).
+  window.financeMedPainel = {projetar: projetarMedPainel, repartir: mpRepartir};
+
   // Laboratório: a galeria de maquetes vive num iframe isolado (sandbox só com scripts), carregado na primeira visita.
   // O tema viaja no fragmento (#tema=claro|escuro): trocar só o fragmento dispara hashchange dentro do iframe, sem recarregar.
   let labFile = "index.html";
@@ -1839,6 +2209,7 @@
     renderCash(blocks.cash || {});
     renderProjection(blocks.projection || {});
     renderSociety(blocks.society || {});
+    renderMedPainel(blocks.medpainel || {});
     byId("reading-state").textContent = "Leitura às " + new Intl.DateTimeFormat("pt-BR", {hour: "2-digit", minute: "2-digit"}).format(new Date());
     const scheduledFocusGeneration = focusGeneration;
     const scheduledFocus = document.activeElement;
@@ -1970,7 +2341,7 @@
     updateNavigation();
     document.querySelectorAll("[data-finance-page]").forEach((page) => { page.hidden = page.dataset.financePage !== "overview"; });
     if (byId("navigation-drawer").open) closeNavigation(false);
-    ["user", "subscriptions", "sell", "inventory", "cash", "projection", "society"].forEach((name) => {
+    ["user", "subscriptions", "sell", "inventory", "cash", "projection", "society", "medpainel"].forEach((name) => {
       clear(byId(name + "-content")); clear(byId(name + "-source"));
     });
     clearLab();
