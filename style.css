@@ -158,3 +158,60 @@ html[data-surface="grid"] body{background-image:linear-gradient(rgba(151,182,148
 /* F3 (brain, 16/10) — masthead em telas estreitas: o rótulo do portal ("Dados compartilhados") é mais longo que o local ("Arquivos locais")
    e, com o alternador de tema, estourava 390 px. A divisão "/ FINANÇAS" some e o indicador pode quebrar linha. */
 @media(max-width:480px){.masthead .division{display:none}.masthead .local-indicator{white-space:normal;min-width:0;text-align:right;line-height:1.2}}
+
+/* Med Painel (Claude, 17/10/2026): estratégias de venda e projeção até 10 mil assinantes. Cores do gráfico validadas pela
+   skill dataviz contra as superfícies do painel (escuro #191a17, claro #fff): acento ouro, contexto cinza (com rótulo na
+   ponta e tabela, pela regra de alívio), negativo para aporte. Texto sempre nos tokens de tinta, nunca na cor da série. */
+.mp-root{--mp-acento:#bd8a24;--mp-contexto:#6e6b63;--mp-negativo:#b8475e;display:flex;flex-direction:column;gap:38px}
+:root[data-tema=claro] .mp-root{--mp-acento:#b07c10;--mp-contexto:#a9aea8;--mp-negativo:#a63a28}
+.mp-secao{display:flex;flex-direction:column;gap:12px;min-width:0}
+.mp-secao-titulo{font-family:var(--serif);font-size:22px;font-weight:500;margin:0;color:var(--ink)}
+.mp-secao-texto{margin:0;color:var(--muted);max-width:80ch;font-size:14px}
+.mp-canais{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.mp-canal{border-radius:14px}
+.mp-canal-nome{margin:0 0 10px;font-size:15px;color:var(--ink)}
+.mp-canal-campos{margin:0;display:grid;gap:9px}
+.mp-canal-campos dt{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.mp-canal-campos dd{margin:2px 0 0;font-size:13.5px;color:var(--ink)}
+.mp-cenarios{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:999px;align-self:flex-start}
+.mp-cenario{border:0;background:transparent;color:var(--muted);padding:7px 16px;border-radius:999px;font:500 13px var(--sans);cursor:pointer;transition:background .2s,color .2s}
+.mp-cenario:hover{color:var(--ink)}
+.mp-cenario[aria-pressed=true]{background:var(--mp-acento);color:#16120a}
+.mp-cenario:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.mp-numeros{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.mp-numero{border-radius:14px}
+.mp-numero-valor{margin:6px 0 0;font-size:26px;font-weight:600;color:var(--ink);line-height:1.2}
+.mp-numero-nota{margin:5px 0 0;font-size:12px;color:var(--muted)}
+.mp-legenda{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--muted)}
+.mp-legenda li{display:flex;align-items:center;gap:8px}
+.mp-chave{display:inline-block;flex:none;width:18px;height:0;border-top:2px solid var(--mp-contexto)}
+.mp-chave-acento{border-top:3px solid var(--mp-acento)}
+.mp-chave-tracejada{border-top-style:dashed}
+.mp-chave-barra{width:12px;height:12px;border:0;border-radius:3px}
+.mp-chave-positiva{border:0;width:12px;height:12px;border-radius:3px;background:var(--mp-acento)}
+.mp-chave-negativa{border:0;width:12px;height:12px;border-radius:3px;background:var(--mp-negativo)}
+.mp-grafico{position:relative;border:1px solid var(--line);border-radius:16px;padding:14px 10px 6px;background:var(--panel);min-width:0}
+.mp-svg{display:block;width:100%;height:auto;overflow:visible}
+.mp-svg:focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:8px}
+.mp-grade{stroke:var(--line);stroke-width:1}
+.mp-base,.mp-meta,.mp-cruz{stroke:var(--muted);stroke-width:1}
+.mp-eixo{fill:var(--faint);font-size:11px;font-family:var(--sans);font-variant-numeric:tabular-nums}
+.mp-meta-texto{fill:var(--muted)}
+.mp-linha{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.mp-linha-acento{stroke:var(--mp-acento);stroke-width:2.5}
+.mp-linha-contexto{stroke:var(--mp-contexto)}
+.mp-tracejada{stroke-dasharray:5 5}
+.mp-ponto-acento{fill:var(--mp-acento);stroke:var(--panel);stroke-width:2}
+.mp-ponto-contexto{fill:var(--mp-contexto);stroke:var(--panel);stroke-width:2}
+.mp-rotulo{fill:var(--muted);font-size:11.5px;font-family:var(--sans)}
+.mp-rotulo,.mp-meta-texto{paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+.mp-rotulo-acento{fill:var(--ink);font-weight:600}
+.mp-barra-positiva{fill:var(--mp-acento)}
+.mp-barra-negativa{fill:var(--mp-negativo)}
+.mp-dica{position:absolute;z-index:3;min-width:170px;max-width:250px;padding:9px 11px;border-radius:12px;background:var(--panel-raised);border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,0,0,.25);font-size:12px;pointer-events:none}
+.mp-dica-linha{display:flex;align-items:center;gap:7px;line-height:1.55}
+.mp-dica-linha strong{color:var(--ink);font-variant-numeric:tabular-nums}
+.mp-dica-linha span:last-child{color:var(--muted)}
+.mp-teto{margin:0;padding:12px 15px;border-left:3px solid var(--mp-acento);background:var(--tinta-suave,rgba(255,255,255,.035));border-radius:0 12px 12px 0;color:var(--ink);font-size:13.5px;max-width:86ch}
+.mp-detalhes summary{cursor:pointer;color:var(--gold);font-size:13.5px;margin:6px 0 10px}
+@media(max-width:620px){.mp-cenario{padding:6px 12px}.mp-numero-valor{font-size:22px}.mp-secao-titulo{font-size:19px}}

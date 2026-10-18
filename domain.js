@@ -7,7 +7,7 @@ export const MINOR_DIGITS = Object.freeze({BRL: 2, USD: 2, EUR: 2, GBP: 2, CAD: 
 const PERIODS = {mensal: [1, 1], mes: [1, 1], monthly: [1, 1], anual: [1, 12], ano: [1, 12], yearly: [1, 12], trimestral: [1, 3], semestral: [1, 6], semanal: [52, 12], quinzenal: [26, 12], diario: [365, 12]};
 const FORBIDDEN_KEYS = new Set(['cpf', 'senha', 'password', 'hash', 'token', 'secret', 'api_key', 'apikey', 'access_token', 'refresh_token', 'auth_token', 'credential', 'credentials', 'path', 'file_path', 'local_path', 'root', 'users_path', 'records_path']);
 const MUTATIONS = new Set(['toggle_step', 'edit_plan', 'set_subscription']);
-const STATICS = ['inventory', 'cash', 'projection', 'society', 'atlas'];
+const STATICS = ['inventory', 'cash', 'projection', 'society', 'atlas', 'medpainel'];   // medpainel: 17/10, decisão dele (tudo no portal, cifrado)
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const list = value => Array.isArray(value) ? value : [];
 const normalized = value => String(value ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
@@ -321,6 +321,8 @@ export function buildSnapshot(state, member, today) {
     allocation_balanced: context.balanced,
   };
   blocks.cash.fixed_monthly = userBlock.summary.fixed_monthly;
+  // Med Painel (17/10): no portal os sócios vêm do cadastro (o exportador omite nomes completos dos documentos).
+  if (record(blocks.medpainel) && blocks.medpainel.availability !== WITHHELD) blocks.medpainel.socios = state.members.map(row => ({nome: safeText(row.displayName) || 'Sócio', participacao: percent(row.participationPct) === null ? null : row.participationPct}));   // percent() é validador (BigInt); publica-se o número original, como na sociedade
   blocks.cash.incomplete_costs = userBlock.summary.incomplete_costs;
   blocks.atlas = {schema_version: 1, assets: [], sources: [], coverage: {}, ...blocks.atlas};
   const user = {nome: safeText(context.selected.displayName) || 'Sócio', participacao_pct: context.share, quota: userBlock.summary};
