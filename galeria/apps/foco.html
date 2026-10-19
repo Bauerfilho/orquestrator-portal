@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foco · Maquete</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "foco",
+  "nome": "Foco",
+  "colecao": "referencia",
+  "tipo": "App web",
+  "tela": "ampla",
+  "resumo": "Timer pomodoro para trabalho profundo: um relógio enorme que anda de verdade, tarefas estimadas em pomodoros, pausas com respiração guiada e um relatório honesto da semana.",
+  "referencias": [
+    {
+      "nome": "Super Productivity",
+      "modelo": "open source",
+      "licenca": "MIT"
+    },
+    {
+      "nome": "Pomofocus",
+      "modelo": "gratuito"
+    },
+    {
+      "nome": "Session",
+      "modelo": "pago"
+    }
+  ],
+  "direcao": "Um timer enorme em numerais finos e tabulares, com muito ar em volta. O ambiente inteiro muda de cor com o modo: tomate quente no foco, verde-água calmo na pausa, papel neutro no relatório. Marca fictícia: Ritmo. Poucos elementos, cantos generosos, sombras quase nulas e um brilho difuso atrás do relógio; no escuro, carvão aquecido no foco e petróleo profundo na pausa.",
+  "estados": [
+    {
+      "nome": "Foco em curso",
+      "descricao": "Contagem regressiva de verdade (17:24 de 25:00) com pausar, retomar, pular e reiniciar; anel de progresso com ponteiro, pomodoros do ciclo, tarefa atual e a lista do dia com estimativas em pomodoros: marcar, escolher e adicionar tarefas. Espaço pausa e retoma."
+    },
+    {
+      "nome": "Pausa",
+      "descricao": "O ambiente vira verde-água: pausa curta de 5:00 correndo, disco de respiração guiada (inspire 4 s, segure 4 s, solte 6 s) dentro do anel, mais 1 minuto, pular, sugestões para a pausa e a tarefa que vem a seguir."
+    },
+    {
+      "nome": "Relatório",
+      "descricao": "Os últimos 7 dias: tempo focado, pomodoros, sequência e meta diária; barras por dia contra a meta de 3 h, distribuição por projeto, mapa de melhores horários e tarefas concluídas. As setas voltam semanas; o timer segue correndo no topo."
+    }
+  ],
+  "paleta": [
+    {
+      "nome": "Papel rosado",
+      "hex": "#fbf0ea"
+    },
+    {
+      "nome": "Tomate",
+      "hex": "#d13d24"
+    },
+    {
+      "nome": "Tinta quente",
+      "hex": "#2b1a16"
+    },
+    {
+      "nome": "Bruma",
+      "hex": "#e8f3f0"
+    },
+    {
+      "nome": "Verde-água",
+      "hex": "#0d7a6d"
+    },
+    {
+      "nome": "Areia",
+      "hex": "#f5f3ef"
+    },
+    {
+      "nome": "Carvão",
+      "hex": "#1a1210"
+    },
+    {
+      "nome": "Petróleo",
+      "hex": "#0b1918"
+    }
+  ],
+  "tipografia": "Numerais do timer em SF Pro Display (cai para Inter Display) peso 200, com algarismos tabulares para o relógio não dançar e tamanho em unidades do contêiner (28 cqi); interface em SF Pro Text ou Inter a 14–15 px, títulos em 650 e rótulos em 11 px caixa-alta espaçada.",
+  "componentes": [
+    "Abas de modo (Foco, Pausa curta, Pausa longa)",
+    "Timer gigante com anel e ponteiro",
+    "Controles pausar, pular, reiniciar e mais 1 minuto",
+    "Pomodoros do ciclo",
+    "Tarefa atual em destaque",
+    "Lista de tarefas com estimativa em pomodoros",
+    "Compositor de tarefa com passo de estimativa",
+    "Disco de respiração guiada",
+    "Sugestões de pausa e próxima tarefa",
+    "Barras por dia contra a meta",
+    "Rosca por projeto",
+    "Mapa de melhores horários"
+  ],
+  "replicar": [
+    "Modelo de dados: Tarefa (título, projeto, estimativa, pomodoros feitos, concluída_em, ordem) e Sessao (tipo foco | pausa_curta | pausa_longa, início, fim, duração planejada e real, tarefa_id, interrompida). O relatório é só agregação de Sessao por dia, hora e projeto.",
+    "O timer não conta tiques: guarde o instante de término e calcule o restante a partir de Date.now(), como aqui; aba em segundo plano, computador dormindo ou celular bloqueado não atrasam o relógio.",
+    "Pilha sugerida: SvelteKit ou Next.js como PWA instalável, dados locais em SQLite (wa-sqlite/OPFS) com sincronização opcional; Notification API e um som curto ao fim de cada bloco; Tauri para a versão de desktop com o tempo na barra de menus.",
+    "Integrações: importar tarefas do Todoist, Linear ou GitHub Issues, status 'em foco' no Slack, bloqueio de sites por extensão durante o foco e exportação das sessões para CSV ou para o calendário.",
+    "Corte do MVP: foco e pausa curta com durações fixas, uma lista de tarefas sem projetos e um relatório de 7 dias; pausa longa configurável, projetos e o mapa de horários entram depois."
+  ],
+  "proposta": "Gratuito",
+  "modelo_negocio": "Grátis e sem anúncios, como porta de entrada da marca; a receita viria de um app irmão ou de doações, não do timer."
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+/* Ritmo · pomodoro. Tudo mora em #app. O ambiente muda com o estado: 1 foco (tomate), 2 pausa (verde-água), 3 relatório (areia). */
+#app{
+  --f-fundo:#fbf0ea;--f-papel:#fffaf7;--f-campo:#fff;--f-tinta:#2b1a16;--f-suave:#6b524b;--f-fraco:#7a5f58;
+  --f-fio:rgba(43,26,22,.09);--f-fio-2:rgba(43,26,22,.16);--f-tingido:rgba(43,26,22,.05);--f-tingido-2:rgba(43,26,22,.09);
+  --f-acento:#d13d24;--f-acento-forte:#b8321c;--f-acento-texto:#b0301a;--f-sobre:#fff;--f-acento-suave:rgba(209,61,36,.11);--f-brilho:rgba(242,112,82,.30);
+  --f-sombra:0 1px 2px rgba(43,26,22,.04),0 10px 30px -12px rgba(43,26,22,.16);
+  --f-sombra-alta:0 2px 8px rgba(43,26,22,.08),0 24px 54px -16px rgba(43,26,22,.32);
+  --p-clinica:#d9482f;--p-estudos:#7a55e0;--p-ensino:#2f74d0;--p-app:#1f8a5b;--p-pessoal:#c98a12;
+  --f-sans:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",system-ui,sans-serif;
+  --f-display:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Inter Display","Inter","Segoe UI",system-ui,sans-serif;
+  container:app / inline-size;position:relative;display:flex;flex-direction:column;background:var(--f-fundo);color:var(--f-tinta);
+  font:400 14.5px/1.5 var(--f-sans);-webkit-font-smoothing:antialiased;color-scheme:light}
+#app[data-estado="2"]{
+  --f-fundo:#e8f3f0;--f-papel:#f6fbfa;--f-tinta:#0f2a27;--f-suave:#46625e;--f-fraco:#4f6b67;
+  --f-fio:rgba(15,42,39,.09);--f-fio-2:rgba(15,42,39,.16);--f-tingido:rgba(15,42,39,.05);--f-tingido-2:rgba(15,42,39,.09);
+  --f-acento:#0d7a6d;--f-acento-forte:#0a665b;--f-acento-texto:#0a665b;--f-acento-suave:rgba(13,122,109,.12);--f-brilho:rgba(64,196,176,.32)}
+#app[data-estado="3"]{
+  --f-fundo:#f5f3ef;--f-papel:#fff;--f-tinta:#23201c;--f-suave:#625d56;--f-fraco:#6c665e;
+  --f-fio:rgba(35,32,28,.09);--f-fio-2:rgba(35,32,28,.16);--f-tingido:rgba(35,32,28,.05);--f-tingido-2:rgba(35,32,28,.09)}
+:root[data-tema=escuro] #app{
+  --f-fundo:#1a1210;--f-papel:#241916;--f-campo:#1e1513;--f-tinta:#f7ebe6;--f-suave:#c0a69e;--f-fraco:#a88f87;
+  --f-fio:rgba(247,235,230,.08);--f-fio-2:rgba(247,235,230,.16);--f-tingido:rgba(247,235,230,.05);--f-tingido-2:rgba(247,235,230,.1);
+  --f-acento:#ff6b4f;--f-acento-forte:#ff8a72;--f-acento-texto:#ff8a72;--f-sobre:#1a1210;--f-acento-suave:rgba(255,107,79,.14);--f-brilho:rgba(255,96,64,.20);
+  --f-sombra:0 1px 2px rgba(0,0,0,.3),0 10px 30px -12px rgba(0,0,0,.6);
+  --f-sombra-alta:0 2px 8px rgba(0,0,0,.4),0 24px 60px -14px rgba(0,0,0,.75);
+  --p-clinica:#ff7a5f;--p-estudos:#a98bff;--p-ensino:#5ea2ff;--p-app:#45cf8e;--p-pessoal:#f2b84b;
+  color-scheme:dark}
+:root[data-tema=escuro] #app[data-estado="2"]{
+  --f-fundo:#0b1918;--f-papel:#112523;--f-campo:#0e201e;--f-tinta:#e3f3ef;--f-suave:#93b5ae;--f-fraco:#82a39c;
+  --f-fio:rgba(227,243,239,.08);--f-fio-2:rgba(227,243,239,.16);--f-tingido:rgba(227,243,239,.05);--f-tingido-2:rgba(227,243,239,.1);
+  --f-acento:#3fd1bd;--f-acento-forte:#6fe0d0;--f-acento-texto:#6fe0d0;--f-sobre:#0b1918;--f-acento-suave:rgba(63,209,189,.14);--f-brilho:rgba(63,209,189,.16)}
+:root[data-tema=escuro] #app[data-estado="3"]{
+  --f-fundo:#141311;--f-papel:#1d1c19;--f-campo:#191815;--f-tinta:#f1eee8;--f-suave:#a9a49b;--f-fraco:#98938a;
+  --f-fio:rgba(241,238,232,.08);--f-fio-2:rgba(241,238,232,.16);--f-tingido:rgba(241,238,232,.05);--f-tingido-2:rgba(241,238,232,.1)}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app button,#app input,#app select{font:inherit;color:inherit}
+#app button{background:none;border:0;margin:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app svg{flex:none;display:block}
+#app :focus-visible{outline:2.5px solid var(--f-acento);outline-offset:3px}
+#app .f-olho{font:650 11px/1.2 var(--f-sans);letter-spacing:.13em;text-transform:uppercase;color:var(--f-fraco)}
+#app [data-proj=clinica]{--pc:var(--p-clinica)}#app [data-proj=estudos]{--pc:var(--p-estudos)}#app [data-proj=ensino]{--pc:var(--p-ensino)}#app [data-proj=app]{--pc:var(--p-app)}#app [data-proj=pessoal]{--pc:var(--p-pessoal)}
+
+/* ── casca ────────────────────────────────────────────────────────────── */
+#app .f-casca{flex:1;display:flex;flex-direction:column;overflow-x:clip;position:relative}
+#app .f-casca::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 55% at 36% 46%,var(--f-brilho),transparent 70%)}
+#app[data-estado="3"] .f-casca::before{display:none}
+#app .f-topo{position:relative;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;height:76px;padding:0 32px}
+#app .f-marca{display:flex;align-items:center;gap:10px;font:650 18px/1 var(--f-display);letter-spacing:-.02em}
+#app .f-marca svg{color:var(--f-acento)}
+#app .f-modos{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--f-tingido)}
+#app .f-modos button{display:inline-flex;align-items:baseline;gap:7px;height:36px;padding:0 16px;border-radius:999px;font:600 13.5px/36px var(--f-sans);color:var(--f-suave);transition:background-color .25s ease,color .25s ease,box-shadow .25s ease}
+#app .f-modos button small{font:500 12px/1 var(--f-sans);font-variant-numeric:tabular-nums;opacity:.75}
+#app .f-modos button:hover{color:var(--f-tinta)}
+#app .f-modos button[aria-pressed=true]{background:var(--f-papel);color:var(--f-tinta);box-shadow:0 1px 2px rgba(0,0,0,.06),0 6px 16px -6px rgba(0,0,0,.18)}
+#app[data-estado="3"] .f-modos{display:none}
+#app .f-direita{display:flex;justify-content:flex-end;align-items:center;gap:10px}
+#app .f-nav{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--f-tingido)}
+#app .f-nav button{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border-radius:9px;font:600 13px/1 var(--f-sans);color:var(--f-suave);transition:background-color .2s ease,color .2s ease}
+#app .f-nav button:hover{color:var(--f-tinta)}
+#app[data-estado="1"] .f-nav [data-ir="1"],#app[data-estado="2"] .f-nav [data-ir="1"],#app[data-estado="3"] .f-nav [data-ir="3"]{background:var(--f-papel);color:var(--f-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+#app .f-mini{display:none;align-items:center;gap:8px;height:38px;padding:0 14px 0 12px;border-radius:999px;background:var(--f-papel);box-shadow:var(--f-sombra);font:600 13.5px/1 var(--f-sans);font-variant-numeric:tabular-nums}
+#app .f-mini i{width:8px;height:8px;border-radius:50%;background:var(--p-clinica)}
+#app .f-mini.is-pausa i{background:#1fa08e}
+#app .f-mini.is-parado i{background:var(--f-fraco)}
+#app .f-mini small{font-weight:500;color:var(--f-suave)}
+#app[data-estado="3"] .f-mini{display:inline-flex}
+#app .f-corpo{position:relative;flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,400px);gap:32px;width:100%;max-width:1360px;margin:0 auto;padding:8px 32px 40px;align-items:center}
+#app[data-estado="3"] .f-corpo{display:none}
+#app .f-relatorio{display:none}
+#app[data-estado="3"] .f-relatorio{display:grid}
+#app[data-estado="1"] [data-so]:not([data-so~="1"]),#app[data-estado="2"] [data-so]:not([data-so~="2"]),#app[data-estado="3"] [data-so]{display:none!important}
+
+/* ── palco: relógio ───────────────────────────────────────────────────── */
+#app .f-palco{display:grid;justify-items:center;align-content:center;gap:26px;min-height:620px;padding:12px 0}
+#app .f-relogio{position:relative;width:min(440px,100%);aspect-ratio:1;container-type:inline-size}
+#app .f-anel{position:absolute;inset:0;width:100%;height:100%}
+#app .f-marcas line{stroke:var(--f-fio-2);stroke-width:2;stroke-linecap:round}
+#app .f-marcas line.maior{stroke:var(--f-suave);opacity:.5;stroke-width:2.4}
+#app .f-trilho{fill:none;stroke:var(--f-tingido-2);stroke-width:9}
+#app .f-progresso{fill:none;stroke:var(--f-acento);stroke-width:9;stroke-linecap:round}
+#app .f-ponta circle{fill:var(--f-papel);stroke:var(--f-acento);stroke-width:4}
+#app .f-respira{position:absolute;inset:14%;border-radius:50%;background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--f-acento) 30%,transparent),color-mix(in srgb,var(--f-acento) 13%,transparent) 72%);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--f-acento) 26%,transparent),0 0 0 14px color-mix(in srgb,var(--f-acento) 6%,transparent),0 0 70px color-mix(in srgb,var(--f-acento) 22%,transparent);transform:scale(.7);opacity:0}
+#app[data-estado="2"] .f-respira{opacity:1}
+#app .f-respira.inspira,#app .f-respira.segura{transform:scale(1)}
+#app .f-respira.solta{transform:scale(.7)}
+#app .f-meio{position:absolute;inset:0;display:grid;justify-items:center;align-content:center;text-align:center}
+#app .f-ciclo{display:flex;gap:7px;margin-bottom:3cqi}
+#app .f-ciclo i{width:11px;height:11px;border-radius:50%;border:2px solid var(--f-fio-2)}
+#app .f-ciclo i.on{border-color:var(--f-acento);background:var(--f-acento)}
+#app .f-ciclo i.agora{border-color:var(--f-acento);background:linear-gradient(90deg,var(--f-acento) 50%,transparent 50%)}
+#app .f-fase{margin-bottom:2cqi;font:600 4.4cqi/1 var(--f-display);letter-spacing:.01em;color:var(--f-acento-texto);min-height:1em}
+#app .f-tempo{display:block;font:200 28cqi/1 var(--f-display);letter-spacing:-.045em;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;margin:0 0 1cqi -1cqi}
+#app .f-fim{font:500 3.5cqi/1.3 var(--f-sans);color:var(--f-suave);font-variant-numeric:tabular-nums}
+#app .f-relogio.is-parado .f-tempo{opacity:.62}
+#app .f-atual{display:grid;justify-items:center;gap:8px;max-width:520px;text-align:center}
+#app .f-atual strong{font:600 21px/1.3 var(--f-display);letter-spacing:-.015em}
+#app .f-atual-meta{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--f-suave)}
+#app .f-link{font:600 13px/1 var(--f-sans);color:var(--f-acento-texto);text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;transition:text-decoration-color .2s ease}
+#app .f-link:hover{text-decoration-color:currentColor}
+#app .f-controles{display:flex;align-items:center;gap:18px}
+#app .f-ctl{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--f-papel);box-shadow:var(--f-sombra);color:var(--f-tinta);transition:transform .15s ease,background-color .2s ease}
+#app .f-ctl:hover{background:color-mix(in srgb,var(--f-papel) 85%,var(--f-acento))}
+#app .f-ctl:active{transform:scale(.94)}
+#app .f-ctl.f-ctl-txt{width:auto;padding:0 20px;border-radius:999px;font:650 14px/1 var(--f-sans);white-space:nowrap}
+#app .f-play{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:188px;height:68px;padding:0 30px;border-radius:999px;background:var(--f-acento);color:var(--f-sobre);font:650 17px/1 var(--f-sans);letter-spacing:.01em;box-shadow:0 12px 30px -10px color-mix(in srgb,var(--f-acento) 70%,transparent);transition:transform .15s ease,background-color .2s ease,box-shadow .2s ease}
+#app .f-play:hover{background:var(--f-acento-forte)}
+#app .f-play:active{transform:scale(.97)}
+#app .f-atalho{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--f-fraco)}
+#app kbd{display:inline-block;padding:3px 7px;border-radius:6px;border:1px solid var(--f-fio-2);border-bottom-width:2px;font:600 11px/1 var(--f-sans);color:var(--f-suave);background:var(--f-papel)}
+#app .f-guia{max-width:420px;text-align:center;color:var(--f-suave);font-size:14px}
+#app .f-guia b{color:var(--f-tinta);font-weight:600}
+
+/* ── painel lateral ───────────────────────────────────────────────────── */
+#app .f-painel{display:grid;gap:18px;align-self:center}
+#app .f-card{background:var(--f-papel);border-radius:24px;box-shadow:var(--f-sombra);padding:22px 22px}
+#app .f-card-cab{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+#app .f-card h2,#app .f-card h3{margin-top:4px;font:650 18px/1.25 var(--f-display);letter-spacing:-.015em}
+#app .f-resumo{display:grid;gap:8px;margin-bottom:14px}
+#app .f-resumo-linha{display:flex;justify-content:space-between;font-size:13px;color:var(--f-suave);font-variant-numeric:tabular-nums}
+#app .f-resumo-linha b{color:var(--f-tinta);font-weight:600}
+#app .f-barra{height:6px;border-radius:999px;background:var(--f-tingido-2);overflow:hidden}
+#app .f-barra i{display:block;height:100%;border-radius:inherit;background:var(--f-acento);transition:width .5s ease}
+#app .f-tarefas{display:grid;gap:2px;margin:0 -10px}
+#app .f-tarefa{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;transition:background-color .2s ease}
+#app .f-tarefa:hover{background:var(--f-tingido)}
+#app .f-tarefa.is-atual{background:var(--f-acento-suave)}
+#app .f-marca-t{position:relative;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:2px solid var(--f-fio-2);color:var(--f-sobre);transition:background-color .2s ease,border-color .2s ease}
+#app .f-marca-t:hover{border-color:var(--f-acento)}
+#app .f-marca-t svg{opacity:0;transform:scale(.6);transition:opacity .2s ease,transform .2s ease}
+#app .f-marca-t[aria-pressed=true]{background:var(--f-acento);border-color:var(--f-acento)}
+#app .f-marca-t[aria-pressed=true] svg{opacity:1;transform:none}
+#app .f-tarefa-corpo{min-width:0;display:grid;gap:3px;text-align:left;padding:2px 0}
+#app .f-tarefa-corpo strong{font:550 14px/1.3 var(--f-sans);font-weight:560;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .f-tarefa.is-ok .f-tarefa-corpo strong{color:var(--f-fraco);text-decoration:line-through;text-decoration-color:var(--f-fio-2)}
+#app .f-proj{display:inline-flex;align-items:center;gap:6px;font:500 12px/1.2 var(--f-sans);color:var(--f-suave)}
+#app .f-proj i{width:7px;height:7px;border-radius:50%;background:var(--pc)}
+#app .f-proj em{font-style:normal;color:var(--f-acento-texto);font-weight:650}
+#app .f-est{display:flex;align-items:center;gap:3px;padding-left:4px}
+#app .f-est i{width:9px;height:9px;border-radius:50%;border:1.6px solid color-mix(in srgb,var(--f-acento) 55%,transparent)}
+#app .f-est i.on{background:var(--f-acento);border-color:var(--f-acento)}
+#app .f-est small{margin-left:4px;font:600 11.5px/1 var(--f-sans);color:var(--f-suave);font-variant-numeric:tabular-nums}
+#app .f-nova{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--f-fio)}
+#app .f-input{width:100%;height:42px;padding:0 14px;border-radius:12px;border:1.5px solid var(--f-fio-2);background:var(--f-campo);font:500 14px/1 var(--f-sans);transition:border-color .2s ease,box-shadow .2s ease}
+#app .f-input::placeholder{color:var(--f-fraco)}
+#app .f-input:focus{outline:none;border-color:var(--f-acento);box-shadow:0 0 0 4px var(--f-acento-suave)}
+#app .f-passo{display:flex;align-items:center;gap:2px;height:42px;padding:0 4px;border-radius:12px;border:1.5px solid var(--f-fio-2);background:var(--f-campo)}
+#app .f-passo button{display:grid;place-items:center;width:28px;height:30px;border-radius:8px;color:var(--f-suave)}
+#app .f-passo button:hover{background:var(--f-tingido);color:var(--f-tinta)}
+#app .f-passo span{display:flex;align-items:center;gap:4px;min-width:34px;justify-content:center;font:650 14px/1 var(--f-sans);font-variant-numeric:tabular-nums}
+#app .f-passo span i{width:9px;height:9px;border-radius:50%;background:var(--f-acento)}
+#app .f-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 16px;border-radius:12px;background:var(--f-tinta);color:var(--f-fundo);font:650 13.5px/1 var(--f-sans);white-space:nowrap;transition:opacity .2s ease,transform .12s ease}
+#app .f-btn:hover{opacity:.9}
+#app .f-btn:active{transform:scale(.97)}
+#app .f-btn-ic{width:42px;padding:0}
+#app .f-btn-suave{background:var(--f-tingido-2);color:var(--f-tinta)}
+#app .f-btn-acento{background:var(--f-acento);color:var(--f-sobre)}
+#app .f-rodape{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12.5px;color:var(--f-fraco)}
+#app .f-proxima{display:grid;gap:12px}
+#app .f-proxima strong{font:600 17px/1.35 var(--f-display);letter-spacing:-.01em}
+#app .f-proxima-meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--f-suave)}
+#app .f-sugs{display:grid;gap:4px;margin:0 -8px}
+#app .f-sug{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:12px;padding:9px 8px;border-radius:14px;text-align:left;transition:background-color .2s ease}
+#app .f-sug:hover{background:var(--f-tingido)}
+#app .f-sug>span:first-child{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--f-acento-suave);color:var(--f-acento-texto)}
+#app .f-sug strong{display:block;font:560 14px/1.3 var(--f-sans);font-weight:560}
+#app .f-sug small{display:block;font-size:12px;color:var(--f-fraco)}
+#app .f-sug .f-marca-t{width:22px;height:22px}
+#app .f-sug[aria-pressed=true] .f-marca-t{background:var(--f-acento);border-color:var(--f-acento)}
+#app .f-sug[aria-pressed=true] .f-marca-t svg{opacity:1;transform:none}
+#app .f-sug[aria-pressed=true] strong{color:var(--f-fraco)}
+#app .f-ciclo-linha{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:var(--f-tingido);font-size:13px;color:var(--f-suave)}
+#app .f-ciclo-linha .f-ciclo{margin:0}
+
+/* ── relatório ────────────────────────────────────────────────────────── */
+#app .f-relatorio{position:relative;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px;width:100%;max-width:1280px;margin:0 auto;padding:12px 32px 48px}
+#app .f-rel-cab{grid-column:1/-1;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:4px 0 6px}
+#app .f-rel-cab h1{margin-top:6px;font:650 34px/1.05 var(--f-display);letter-spacing:-.03em}
+#app .f-semana-nav{display:flex;align-items:center;gap:6px}
+#app .f-semana-nav span{min-width:150px;text-align:center;font:600 14px/1.2 var(--f-sans);font-variant-numeric:tabular-nums}
+#app .f-redondo{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--f-papel);box-shadow:var(--f-sombra);transition:transform .15s ease,opacity .2s ease}
+#app .f-redondo:hover{transform:translateY(-1px)}
+#app .f-redondo:disabled{opacity:.35;cursor:not-allowed;transform:none}
+#app .f-kpi{grid-column:span 3;padding:20px 22px}
+#app .f-kpi b{display:block;margin-top:12px;font:300 40px/1 var(--f-display);letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+#app .f-kpi b small{font:500 16px/1 var(--f-sans);letter-spacing:0;color:var(--f-suave);margin-left:2px}
+#app .f-kpi p{display:flex;align-items:center;gap:6px;margin-top:12px;font-size:12.5px;color:var(--f-suave)}
+#app .f-delta{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;font:650 12px/1 var(--f-sans);font-variant-numeric:tabular-nums}
+#app .f-delta.sobe{background:rgba(31,138,91,.12);color:#16704a}
+#app .f-delta.desce{background:rgba(209,61,36,.11);color:#a82e19}
+:root[data-tema=escuro] #app .f-delta.sobe{background:rgba(69,207,142,.14);color:#6fe0a9}
+:root[data-tema=escuro] #app .f-delta.desce{background:rgba(255,107,79,.15);color:#ff9a85}
+#app .f-metas{display:flex;gap:5px;margin-top:14px}
+#app .f-metas i{flex:1;height:8px;border-radius:999px;background:var(--f-tingido-2)}
+#app .f-metas i.on{background:var(--p-clinica)}
+#app .f-metas i.fut{background:transparent;box-shadow:inset 0 0 0 1px var(--f-fio-2)}
+#app .f-c8{grid-column:span 8}#app .f-c4{grid-column:span 4}#app .f-c7{grid-column:span 7}#app .f-c5{grid-column:span 5}
+#app .f-grafico{position:relative;display:grid;grid-template-columns:40px minmax(0,1fr);height:260px;margin-top:6px}
+#app .f-eixo{position:relative}
+#app .f-eixo span{position:absolute;right:10px;transform:translateY(50%);font:500 11.5px/1 var(--f-sans);color:var(--f-fraco);font-variant-numeric:tabular-nums}
+#app .f-area{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:14px;padding-bottom:30px}
+#app .f-linha{position:absolute;left:0;right:0;border-top:1px solid var(--f-fio)}
+#app .f-meta-linha{position:absolute;left:0;right:0;border-top:2px dashed color-mix(in srgb,var(--p-clinica) 65%,transparent);z-index:1}
+#app .f-meta-linha span{position:absolute;right:0;top:-22px;padding:3px 8px;border-radius:999px;background:var(--f-papel);font:650 11px/1 var(--f-sans);color:var(--f-acento-texto)}
+#app .f-dia{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;z-index:2}
+#app .f-dia .f-col{position:relative;width:min(46px,100%);border-radius:10px 10px 6px 6px;background:color-mix(in srgb,var(--p-clinica) 38%,transparent);transition:height .5s cubic-bezier(.3,1,.4,1)}
+#app .f-dia .f-col.meta{background:var(--p-clinica)}
+#app .f-dia .f-col.hoje{background:repeating-linear-gradient(135deg,var(--p-clinica) 0 6px,color-mix(in srgb,var(--p-clinica) 70%,transparent) 6px 12px)}
+#app .f-dia .f-col.vazio{background:transparent;box-shadow:inset 0 0 0 1.5px var(--f-fio-2);min-height:6px}
+#app .f-dia em{position:absolute;left:50%;transform:translateX(-50%);font:650 12px/1 var(--f-sans);font-style:normal;white-space:nowrap;font-variant-numeric:tabular-nums}
+#app .f-dia>.f-dia-rot{position:absolute;bottom:-26px;font:600 12px/1.2 var(--f-sans);color:var(--f-suave);white-space:nowrap}
+#app .f-dia>.f-dia-rot b{color:var(--f-tinta)}
+#app .f-rosca{display:grid;grid-template-columns:150px minmax(0,1fr);align-items:center;gap:22px}
+#app .f-rosca-svg{position:relative;width:150px;height:150px}
+#app .f-rosca-svg svg{width:100%;height:100%;transform:rotate(-90deg)}
+#app .f-rosca-svg circle{fill:none;stroke-width:18;transition:opacity .25s ease}
+#app .f-rosca-svg.foco circle{opacity:.22}
+#app .f-rosca-svg.foco circle.on{opacity:1}
+#app .f-rosca-meio{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+#app .f-rosca-meio b{font:300 26px/1 var(--f-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+#app .f-rosca-meio small{display:block;margin-top:4px;font-size:11.5px;color:var(--f-fraco)}
+#app .f-legenda{display:grid;gap:4px}
+#app .f-legenda button{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:10px;text-align:left;transition:background-color .2s ease}
+#app .f-legenda button:hover,#app .f-legenda button[aria-pressed=true]{background:var(--f-tingido)}
+#app .f-legenda i{width:10px;height:10px;border-radius:3px;background:var(--pc)}
+#app .f-legenda span{min-width:0;font:550 13.5px/1.2 var(--f-sans);font-weight:560;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .f-legenda small{display:block;margin-top:2px;font:500 12px/1.2 var(--f-sans);color:var(--f-fraco);font-variant-numeric:tabular-nums}
+#app .f-legenda b{font:650 13px/1 var(--f-sans);font-variant-numeric:tabular-nums}
+#app .f-mapa{display:grid;grid-template-columns:34px minmax(0,1fr);gap:6px 10px}
+#app .f-mapa-horas{grid-column:2;display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:4px;font:500 11px/1 var(--f-sans);color:var(--f-fraco)}
+#app .f-mapa-dias{display:grid;gap:4px;font:600 11.5px/1 var(--f-sans);color:var(--f-suave)}
+#app .f-mapa-dias span{display:flex;align-items:center;height:100%}
+#app .f-mapa-grade{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:4px}
+#app .f-mapa-grade i{height:26px;border-radius:7px;background:var(--f-tingido)}
+#app .f-mapa-grade i.n1{background:color-mix(in srgb,var(--p-clinica) 30%,transparent)}
+#app .f-mapa-grade i.n2{background:color-mix(in srgb,var(--p-clinica) 60%,transparent)}
+#app .f-mapa-grade i.n3{background:var(--p-clinica)}
+#app .f-mapa-leg{display:flex;align-items:center;gap:6px;margin-top:16px;font-size:12px;color:var(--f-fraco)}
+#app .f-mapa-leg i{width:14px;height:14px;border-radius:4px;background:var(--f-tingido)}
+#app .f-insight{display:flex;gap:12px;margin-top:16px;padding:14px 16px;border-radius:16px;background:var(--f-tingido);font-size:13.5px;color:var(--f-suave)}
+#app .f-insight svg{color:var(--f-acento-texto);margin-top:1px}
+#app .f-insight b{color:var(--f-tinta);font-weight:600}
+#app .f-feitas{display:grid}
+#app .f-feitas li{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--f-fio)}
+#app .f-feitas li:first-child{border-top:0;padding-top:0}
+#app .f-feitas .f-ok{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--pc);color:#fff}
+:root[data-tema=escuro] #app .f-feitas .f-ok{color:#141311}
+#app .f-feitas strong{display:block;font:560 14px/1.3 var(--f-sans);font-weight:560;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .f-feitas small{display:block;margin-top:2px;font-size:12px;color:var(--f-fraco)}
+#app .f-feitas .f-est small{margin:0 0 0 6px}
+
+/* ── aviso ────────────────────────────────────────────────────────────── */
+#app .f-aviso{position:fixed;left:50%;bottom:28px;z-index:30;display:flex;align-items:center;gap:14px;max-width:calc(100% - 32px);padding:12px 12px 12px 18px;border-radius:16px;background:var(--f-tinta);color:var(--f-fundo);box-shadow:var(--f-sombra-alta);font:550 14px/1.35 var(--f-sans);font-weight:560;transform:translate(-50%,20px);opacity:0;pointer-events:none;transition:transform .3s cubic-bezier(.3,1.3,.5,1),opacity .2s ease}
+#app .f-aviso.is-on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+#app .f-aviso button{height:30px;padding:0 12px;border-radius:9px;background:color-mix(in srgb,var(--f-fundo) 16%,transparent);font:650 13px/1 var(--f-sans)}
+
+/* ── telas médias ─────────────────────────────────────────────────────── */
+@container app (max-width: 1100px){
+  #app .f-corpo{grid-template-columns:minmax(0,1fr) 340px;gap:24px}
+  #app .f-kpi{grid-column:span 6}
+  #app .f-c8,#app .f-c4,#app .f-c7,#app .f-c5{grid-column:1/-1}
+  #app .f-nav button span{display:none}
+}
+/* ── celular ──────────────────────────────────────────────────────────── */
+@container app (max-width: 760px){
+  #app .f-topo{grid-template-columns:1fr auto;height:auto;padding:18px 18px 12px;gap:14px}
+  #app .f-modos{grid-column:1/-1;grid-row:2;justify-content:stretch}
+  #app .f-modos button{flex:1;justify-content:center;padding:0 8px;font-size:13px}
+  #app .f-modos button small{display:none}
+  #app .f-corpo{grid-template-columns:1fr;gap:20px;padding:4px 16px 32px}
+  #app .f-palco{min-height:0;gap:22px;padding:8px 0 4px}
+  #app .f-relogio{width:min(330px,100%)}
+  #app .f-atual strong{font-size:18px}
+  #app .f-controles{gap:14px}
+  #app .f-ctl{width:50px;height:50px}
+  #app .f-play{min-width:150px;height:60px;padding:0 24px;font-size:16px}
+  #app .f-atalho{display:none}
+  #app .f-card{padding:18px;border-radius:22px}
+  #app .f-relatorio{gap:14px;padding:6px 16px 36px}
+  #app .f-rel-cab{flex-direction:column;align-items:flex-start;gap:14px}
+  #app .f-rel-cab h1{font-size:28px}
+  #app .f-semana-nav{width:100%;justify-content:space-between}
+  #app .f-kpi{padding:16px 16px 18px}
+  #app .f-kpi b{font-size:32px}
+  #app .f-kpi p{flex-wrap:wrap}
+  #app .f-grafico{grid-template-columns:30px minmax(0,1fr);height:220px}
+  #app .f-area{gap:6px}
+  #app .f-dia em{font-size:10.5px}
+  #app .f-dia>.f-dia-rot{font-size:11px}
+  #app .f-rosca{grid-template-columns:120px minmax(0,1fr);gap:16px}
+  #app .f-rosca-svg{width:120px;height:120px}
+  #app .f-rosca-meio b{font-size:20px}
+  #app .f-ctl.f-ctl-txt{padding:0 16px}
+  #app .f-mapa{grid-template-columns:28px minmax(0,1fr);gap:5px 6px}
+  #app .f-mapa-grade,#app .f-mapa-horas,#app .f-mapa-dias{gap:2px}
+  #app .f-mapa-grade i{height:20px;border-radius:5px}
+  #app .f-mapa-horas{font-size:9.5px}
+  #app .f-mini small{display:none}
+  #app .f-aviso{position:absolute;bottom:20px}
+}
+@container app (max-width: 380px){
+  #app .f-kpi{grid-column:1/-1}
+  #app .f-nav button{padding:0 10px}
+  #app .f-play{min-width:132px}
+}
+
+/* ── movimento ────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference){
+  #app{transition:background-color .8s ease}
+  #app .f-progresso{transition:stroke-dashoffset .3s linear,stroke .8s ease}
+  #app .f-ponta{transition:transform .3s linear}
+  #app .f-respira{transition:transform 4s cubic-bezier(.45,0,.55,1),opacity .6s ease}
+  #app .f-respira.solta{transition-duration:6s}
+  #app .f-tarefa.entra{animation:f-entra .4s ease}
+  #app .f-corpo>*,#app .f-relatorio>*{animation:f-entra .45s ease both}
+  #app .f-relatorio>*:nth-child(n+2){animation-delay:.04s}
+  #app .f-relatorio>*:nth-child(n+6){animation-delay:.08s}
+}
+@media (prefers-reduced-motion: reduce){
+  #app .f-respira.inspira,#app .f-respira.segura,#app .f-respira.solta{transform:none}
+  #app .f-respira.solta{opacity:.55}
+}
+@keyframes f-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1">
+  <div class="f-casca">
+    <header class="f-topo">
+      <div class="f-marca">
+        <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true"><circle cx="14" cy="15" r="10" fill="none" stroke="currentColor" stroke-opacity=".22" stroke-width="3.2"/><path d="M14 5a10 10 0 1 1-9.4 6.6" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M14 2.2c1.6 0 3.2.6 4.2 1.8-1.6.4-3 .3-4.2-.4-1.2.7-2.6.8-4.2.4 1-1.2 2.6-1.8 4.2-1.8z" fill="currentColor"/></svg>
+        Ritmo
+      </div>
+      <div class="f-modos" role="group" aria-label="Modo do timer">
+        <button type="button" data-modo="foco" aria-pressed="true">Foco <small>25</small></button>
+        <button type="button" data-modo="curta" aria-pressed="false">Pausa curta <small>5</small></button>
+        <button type="button" data-modo="longa" aria-pressed="false">Pausa longa <small>15</small></button>
+      </div>
+      <div class="f-direita">
+        <button type="button" class="f-mini" id="f-mini" data-voltar-timer aria-label="Voltar ao timer"><i></i><span id="f-mini-t">17:24</span><small id="f-mini-m">Foco</small></button>
+        <nav class="f-nav" aria-label="Seções">
+          <button type="button" data-ir="1" aria-label="Timer"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 1 0 0-15z"/><path d="M12 9.5V13l2.2 1.6"/><path d="M10 2.5h4"/></svg><span>Timer</span></button>
+          <button type="button" data-ir="3" aria-label="Relatório"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11"/><path d="M12 20V5"/><path d="M19 20v-6"/></svg><span>Relatório</span></button>
+        </nav>
+      </div>
+    </header>
+
+    <div class="f-corpo">
+      <section class="f-palco" aria-label="Timer">
+        <div class="f-relogio" id="f-relogio" role="timer" aria-label="Tempo restante">
+          <svg class="f-anel" viewBox="0 0 440 440" aria-hidden="true">
+            <g class="f-marcas" id="f-marcas"></g>
+            <circle class="f-trilho" cx="220" cy="220" r="186"/>
+            <circle class="f-progresso" id="f-progresso" cx="220" cy="220" r="186" transform="rotate(-90 220 220)" stroke-dasharray="1168.67" stroke-dashoffset="0"/>
+            <g class="f-ponta" id="f-ponta"><circle cx="220" cy="34" r="11"/></g>
+          </svg>
+          <div class="f-respira" id="f-respira" aria-hidden="true"></div>
+          <div class="f-meio">
+            <div class="f-ciclo" data-so="1" id="f-ciclo" aria-label="Pomodoros do ciclo"></div>
+            <span class="f-fase" data-so="2" id="f-fase" aria-live="polite">Inspire</span>
+            <b class="f-tempo" id="f-tempo">17:24</b>
+            <span class="f-fim" id="f-fim">termina às 11:04</span>
+          </div>
+        </div>
+
+        <div class="f-atual" data-so="1">
+          <span class="f-olho">Trabalhando em</span>
+          <strong id="f-atual-tit">Escrever o relatório trimestral da clínica</strong>
+          <span class="f-atual-meta"><span class="f-proj" id="f-atual-proj" data-proj="clinica"><i></i>Clínica</span><span id="f-atual-pom">pomodoro 3 de 4</span></span>
+        </div>
+        <p class="f-guia" data-so="2" id="f-guia">Inspire pelo nariz em <b>4 tempos</b>, segure <b>4</b> e solte pela boca em <b>6</b>. Acompanhe o disco.</p>
+
+        <div class="f-controles">
+          <button type="button" class="f-ctl" data-acao="reiniciar" data-so="1" aria-label="Reiniciar o pomodoro" title="Reiniciar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg></button>
+          <button type="button" class="f-ctl f-ctl-txt" data-acao="mais" data-so="2" aria-label="Mais um minuto de pausa">+1 min</button>
+          <button type="button" class="f-play" id="f-play" data-acao="alternar"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true" id="f-play-ic"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg><span id="f-play-txt">Pausar</span></button>
+          <button type="button" class="f-ctl" data-acao="pular" id="f-pular" aria-label="Pular para a pausa" title="Pular"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5.5l9 6.5-9 6.5z"/><path d="M18.5 5.5v13"/></svg></button>
+        </div>
+        <p class="f-atalho"><kbd>Espaço</kbd> pausa e retoma · <kbd>R</kbd> reinicia</p>
+      </section>
+
+      <aside class="f-painel" aria-label="Painel">
+        <section class="f-card" data-so="1">
+          <div class="f-card-cab"><div><p class="f-olho">Segunda, 19 de outubro</p><h2>Tarefas de hoje</h2></div><button type="button" class="f-link" data-limpar>Limpar feitas</button></div>
+          <div class="f-resumo">
+            <div class="f-resumo-linha"><span><b id="f-feitos-n">6</b> de <span id="f-est-n">14</span> pomodoros</span><span id="f-termina">termina ≈ 15:40</span></div>
+            <div class="f-barra"><i id="f-barra-dia" style="width:43%"></i></div>
+          </div>
+          <ul class="f-tarefas" id="f-tarefas"></ul>
+          <div class="f-nova">
+            <input class="f-input" id="f-nova-tit" type="text" maxlength="80" placeholder="Adicionar tarefa…" aria-label="Nova tarefa" autocomplete="off">
+            <div class="f-passo" role="group" aria-label="Estimativa em pomodoros">
+              <button type="button" data-est="-1" aria-label="Menos um pomodoro"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg></button>
+              <span><i></i><b id="f-nova-est">1</b></span>
+              <button type="button" data-est="1" aria-label="Mais um pomodoro"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12"/><path d="M6 12h12"/></svg></button>
+            </div>
+            <button type="button" class="f-btn f-btn-ic" data-adicionar aria-label="Adicionar tarefa" title="Adicionar tarefa"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
+          </div>
+          <div class="f-rodape"><span id="f-hoje-tempo">Hoje: 2 h 30 de foco</span><span>Meta: 3 h</span></div>
+        </section>
+
+        <section class="f-card" data-so="2">
+          <div class="f-card-cab"><div><p class="f-olho">A seguir</p><h2 id="f-prox-quando">Foco às 11:12</h2></div></div>
+          <div class="f-proxima">
+            <strong id="f-prox-tit">Escrever o relatório trimestral da clínica</strong>
+            <div class="f-proxima-meta"><span class="f-proj" id="f-prox-proj" data-proj="clinica"><i></i>Clínica</span><span id="f-prox-pom">pomodoro 3 de 4</span></div>
+            <button type="button" class="f-btn f-btn-acento" data-acao="comecar-ja">Encerrar a pausa e focar</button>
+          </div>
+        </section>
+        <section class="f-card" data-so="2">
+          <div class="f-card-cab"><div><p class="f-olho">Para esta pausa</p><h3>Longe da tela</h3></div><span class="f-olho" id="f-sugs-n">0 de 4</span></div>
+          <div class="f-sugs" id="f-sugs"></div>
+          <div class="f-ciclo-linha" style="margin-top:14px"><div class="f-ciclo" id="f-ciclo-2"></div><span id="f-ciclo-txt">Pausa longa de 15 min depois do 4º pomodoro</span></div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="f-relatorio" aria-label="Relatório" id="f-relatorio"></section>
+
+    <div class="f-aviso" id="f-aviso" role="status" aria-live="polite"><span id="f-aviso-txt"></span><button type="button" id="f-aviso-btn" hidden>Desfazer</button></div>
+  </div>
+</main>
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura do Ritmo: timer grande com anel tomate e lista de tarefas">
+  <defs><radialGradient id="mf-brilho" cx="38%" cy="50%" r="55%"><stop offset="0" stop-color="#f27052" stop-opacity=".35"/><stop offset="1" stop-color="#f27052" stop-opacity="0"/></radialGradient></defs>
+  <rect width="320" height="180" fill="#fbf0ea"/>
+  <rect width="320" height="180" fill="url(#mf-brilho)"/>
+  <circle cx="112" cy="90" r="62" fill="none" stroke="#2b1a16" stroke-opacity=".08" stroke-width="6"/>
+  <circle cx="112" cy="90" r="62" fill="none" stroke="#d13d24" stroke-width="6" stroke-linecap="round" stroke-dasharray="270 390" stroke-dashoffset="-120" transform="rotate(-90 112 90)"/>
+  <circle cx="170" cy="112" r="6" fill="#fffaf7" stroke="#d13d24" stroke-width="3"/>
+  <text x="112" y="101" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="32" font-weight="200" fill="#2b1a16" letter-spacing="-1">17:24</text>
+  <rect x="78" y="160" width="68" height="10" rx="5" fill="#d13d24"/>
+  <rect x="206" y="24" width="98" height="132" rx="14" fill="#fffaf7"/>
+  <rect x="216" y="38" width="50" height="7" rx="3.5" fill="#2b1a16" fill-opacity=".75"/>
+  <rect x="212" y="54" width="86" height="20" rx="7" fill="#d13d24" fill-opacity=".12"/>
+  <circle cx="222" cy="64" r="4" fill="none" stroke="#d13d24" stroke-width="1.6"/><rect x="230" y="61" width="44" height="6" rx="3" fill="#2b1a16" fill-opacity=".6"/>
+  <circle cx="222" cy="86" r="4" fill="#d13d24"/><rect x="230" y="83" width="38" height="6" rx="3" fill="#2b1a16" fill-opacity=".3"/>
+  <circle cx="222" cy="104" r="4" fill="none" stroke="#2b1a16" stroke-opacity=".25" stroke-width="1.6"/><rect x="230" y="101" width="50" height="6" rx="3" fill="#2b1a16" fill-opacity=".6"/>
+  <circle cx="222" cy="122" r="4" fill="none" stroke="#2b1a16" stroke-opacity=".25" stroke-width="1.6"/><rect x="230" y="119" width="34" height="6" rx="3" fill="#2b1a16" fill-opacity=".6"/>
+  <circle cx="222" cy="140" r="4" fill="none" stroke="#2b1a16" stroke-opacity=".25" stroke-width="1.6"/><rect x="230" y="137" width="42" height="6" rx="3" fill="#2b1a16" fill-opacity=".6"/>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Ritmo · pomodoro. O relógio guarda o instante de término e calcula o restante por Date.now(): não atrasa em segundo plano.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  function q(s) { return app.querySelector(s); }
+  function qa(s) { return Array.prototype.slice.call(app.querySelectorAll(s)); }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+  var reduz = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ── relógio fictício: segunda, 19 de outubro, 10:47, andando com o tempo real ──
+  var T0 = Date.now(), BASE_MIN = 10 * 60 + 47;
+  function agoraMin() { return BASE_MIN + (Date.now() - T0) / 60000; }
+  function hhmm(min) { min = Math.round(min) % 1440; var h = Math.floor(min / 60), m = min % 60; return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m; }
+  function mmss(seg) { seg = Math.max(0, Math.ceil(seg)); var m = Math.floor(seg / 60), s = seg % 60; return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s; }
+  function durTxt(min) { min = Math.round(min); var h = Math.floor(min / 60), m = min % 60; return h ? h + " h" + (m ? " " + (m < 10 ? "0" : "") + m : "") : m + " min"; }
+
+  var ICONES = {
+    check: "M5.5 12.5l4.2 4.2 8.8-9.2",
+    play: "M8 5.2v13.6L19 12z",
+    pausa: "M7 5h3.5v14H7zM13.5 5H17v14h-3.5z",
+    esq: "M15 18l-6-6 6-6", dir: "M9 6l6 6-6 6",
+    alongar: "M12 4.5a1.8 1.8 0 1 0 0 .1|M5 9.5l7 1.5 7-1.5|M12 11v4.5|M12 15.5l-3 5|M12 15.5l3 5",
+    agua: "M12 3.2c3.2 3.7 6 7.3 6 10.7a6 6 0 0 1-12 0c0-3.4 2.8-7 6-10.7z",
+    olho: "M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z|M12 9.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 1 0 0-5.6z",
+    celular: "M7.5 3h9a1.5 1.5 0 0 1 1.5 1.5v15a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19.5v-15A1.5 1.5 0 0 1 7.5 3z|M10.5 18h3|M4 4l16 16",
+    luz: "M9 18h6|M10 21h4|M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"
+  };
+  function ic(n, t, sw, cheio) {
+    t = t || 18;
+    if (cheio) return '<svg viewBox="0 0 24 24" width="' + t + '" height="' + t + '" fill="currentColor" aria-hidden="true"><path d="' + ICONES[n] + '"/></svg>';
+    return '<svg viewBox="0 0 24 24" width="' + t + '" height="' + t + '" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONES[n].split("|").map(function (p) { return '<path d="' + p + '"/>'; }).join("") + "</svg>";
+  }
+
+  // ── dados ──────────────────────────────────────────────────────────────
+  var PROJ = {clinica: "Clínica", estudos: "Estudos", ensino: "Ensino", app: "App Agenda", pessoal: "Pessoal"};
+  var tarefas = [
+    {id: 1, titulo: "Escrever o relatório trimestral da clínica", proj: "clinica", est: 4, feitos: 2, ok: false},
+    {id: 2, titulo: "Preparar a aula de quinta: ECG básico", proj: "ensino", est: 3, feitos: 1, ok: false},
+    {id: 3, titulo: "Revisar o PR do lembrete por WhatsApp", proj: "app", est: 2, feitos: 0, ok: false},
+    {id: 4, titulo: "Questões de cardiologia para a prova de título", proj: "estudos", est: 2, feitos: 1, ok: false},
+    {id: 5, titulo: "Conferir a fatura do cartão de outubro", proj: "pessoal", est: 1, feitos: 0, ok: false},
+    {id: 6, titulo: "Responder os e-mails do convênio", proj: "clinica", est: 1, feitos: 1, ok: true},
+    {id: 7, titulo: "Planejar a semana", proj: "pessoal", est: 1, feitos: 1, ok: true}
+  ];
+  var proxId = 8, atual = 1, novaEst = 1;
+  var DUR = {foco: 25 * 60, curta: 5 * 60, longa: 15 * 60};
+  var NOME_MODO = {foco: "Foco", curta: "Pausa curta", longa: "Pausa longa"};
+  var t = {modo: "foco", dur: DUR.foco, restante: 17 * 60 + 24, rodando: true, fimEm: 0};
+  var pomHoje = 6, focoMinHojeBase = 6 * 25;
+  t.fimEm = Date.now() + t.restante * 1000;
+  var sugs = [
+    {ic: "alongar", t: "Levante e alongue ombros e pescoço", s: "1 minuto, devagar", ok: false},
+    {ic: "agua", t: "Beba um copo d'água", s: "a garrafa está quase vazia", ok: false},
+    {ic: "olho", t: "Olhe para algo a 6 metros", s: "20 segundos, a regra 20-20-20", ok: false},
+    {ic: "celular", t: "Deixe o celular onde está", s: "a pausa é para o cérebro, não para o feed", ok: false}
+  ];
+
+  // ── relógio ────────────────────────────────────────────────────────────
+  var C = 2 * Math.PI * 186;
+  (function marcas() {
+    var g = "";
+    for (var i = 0; i < 60; i++) {
+      var a = i * 6 * Math.PI / 180, maior = i % 5 === 0, r1 = maior ? 208 : 211, r2 = 216;
+      g += '<line class="' + (maior ? "maior" : "") + '" x1="' + (220 + r1 * Math.sin(a)).toFixed(1) + '" y1="' + (220 - r1 * Math.cos(a)).toFixed(1) + '" x2="' + (220 + r2 * Math.sin(a)).toFixed(1) + '" y2="' + (220 - r2 * Math.cos(a)).toFixed(1) + '"/>';
+    }
+    q("#f-marcas").innerHTML = g;
+  })();
+  function restanteAgora() { return t.rodando ? Math.max(0, (t.fimEm - Date.now()) / 1000) : t.restante; }
+  function pintarRelogio() {
+    var r = restanteAgora(), frac = 1 - r / t.dur, txt = mmss(r);
+    q("#f-tempo").textContent = txt;
+    q("#f-progresso").setAttribute("stroke-dashoffset", (-C * frac).toFixed(2));
+    q("#f-progresso").setAttribute("stroke-dasharray", C.toFixed(2));
+    q("#f-ponta").setAttribute("transform", "rotate(" + (frac * 360).toFixed(2) + " 220 220)");
+    q("#f-relogio").classList.toggle("is-parado", !t.rodando);
+    q("#f-relogio").setAttribute("aria-label", txt + " restantes de " + NOME_MODO[t.modo].toLowerCase());
+    var fim = agoraMin() + r / 60;
+    q("#f-fim").textContent = t.rodando ? (t.modo === "foco" ? "termina às " : "volta ao foco às ") + hhmm(fim) : (r === t.dur ? NOME_MODO[t.modo].toLowerCase() + " de " + t.dur / 60 + " min" : "pausado · faltam " + Math.ceil(r / 60) + " min");
+    q("#f-mini-t").textContent = txt;
+    q("#f-prox-quando").textContent = t.modo === "foco" ? "Foco agora" : "Foco às " + hhmm(fim);
+    q("#f-mini-m").textContent = t.rodando ? NOME_MODO[t.modo] : "Pausado";
+    var mini = q("#f-mini"); mini.classList.toggle("is-pausa", t.modo !== "foco"); mini.classList.toggle("is-parado", !t.rodando);
+    document.title = (t.rodando ? txt + " · " + NOME_MODO[t.modo] : "Pausado · " + txt) + " — Ritmo";
+  }
+  function pintarControles() {
+    var parado = !t.rodando, cheio = t.restante >= t.dur - .5;
+    q("#f-play-ic").innerHTML = '<path d="' + (parado ? ICONES.play : ICONES.pausa) + '"/>';
+    q("#f-play-txt").textContent = parado ? (cheio ? "Começar" : "Retomar") : "Pausar";
+    q("#f-play").setAttribute("aria-label", parado ? (cheio ? "Começar " : "Retomar ") + NOME_MODO[t.modo].toLowerCase() : "Pausar o timer");
+    q("#f-pular").setAttribute("aria-label", t.modo === "foco" ? "Pular para a pausa" : "Pular a pausa");
+    q("#f-pular").title = t.modo === "foco" ? "Pular para a pausa" : "Pular a pausa";
+    qa(".f-modos [data-modo]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-modo") === t.modo)); });
+  }
+  function pintarCiclo() {
+    var pos = pomHoje % 4, html = "";
+    for (var i = 0; i < 4; i++) html += '<i class="' + (i < pos ? "on" : i === pos && t.modo === "foco" ? "agora" : "") + '"></i>';
+    q("#f-ciclo").innerHTML = html; q("#f-ciclo").setAttribute("aria-label", "Pomodoro " + (pos + 1) + " de 4 do ciclo");
+    var html2 = ""; for (var j = 0; j < 4; j++) html2 += '<i class="' + (j < (pos || (t.modo === "longa" ? 4 : 0)) ? "on" : "") + '"></i>';
+    q("#f-ciclo-2").innerHTML = html2;
+    var faltam = 4 - pos;
+    q("#f-ciclo-txt").textContent = t.modo === "longa" ? "Ciclo completo: esta é a pausa longa de 15 min." : "Pausa longa de 15 min depois de mais " + faltam + " pomodoro" + (faltam > 1 ? "s" : "") + ".";
+  }
+  function iniciar() { if (t.rodando) return; t.fimEm = Date.now() + t.restante * 1000; t.rodando = true; pintarControles(); pintarRelogio(); }
+  function pausar() { if (!t.rodando) return; t.restante = restanteAgora(); t.rodando = false; pintarControles(); pintarRelogio(); }
+  function definirModo(modo, rodar, restante) {
+    t.modo = modo; t.dur = DUR[modo]; t.restante = restante != null ? restante : t.dur; t.rodando = false;
+    if (rodar) iniciar();
+    pintarControles(); pintarRelogio(); pintarCiclo();
+  }
+  function concluirBloco(pulado) {
+    if (t.modo === "foco") {
+      var feitoMin = (t.dur - restanteAgora()) / 60;
+      if (!pulado || feitoMin >= 12.5) {
+        pomHoje++;
+        var ta = tarefa(atual); if (ta) ta.feitos++;
+        renderTarefas();
+        avisar(pulado ? "Pomodoro registrado com " + Math.round(feitoMin) + " min de foco." : "Pomodoro concluído. Hora de respirar.");
+      } else avisar("Pomodoro pulado: " + Math.round(feitoMin) + " min não contam para o relatório.");
+      var longa = pomHoje % 4 === 0 && (!pulado || feitoMin >= 12.5);
+      definirModo(longa ? "longa" : "curta", true);
+      if (app.getAttribute("data-estado") !== "3") irPara(2, true);
+    } else {
+      definirModo("foco", !!pulado);
+      if (!pulado) avisar("Pausa encerrada. Pronto para o pomodoro " + (pomHoje % 4 + 1) + " de 4?");
+      if (app.getAttribute("data-estado") !== "3") irPara(1, true);
+    }
+    renderRelatorioSeVisivel();
+  }
+  var ultimoSeg = -1;
+  setInterval(function () {
+    var r = restanteAgora(), s = Math.ceil(r);
+    if (t.rodando && r <= 0) { t.rodando = false; t.restante = 0; concluirBloco(false); return; }
+    if (s !== ultimoSeg) { ultimoSeg = s; pintarRelogio(); }
+  }, 200);
+
+  // ── respiração guiada (só no estado 2) ─────────────────────────────────
+  var FASES = [["inspira", "Inspire", 4], ["segura", "Segure", 4], ["solta", "Solte", 6]], fase = 0, faseT = null, contaT = null;
+  function respirar() {
+    clearTimeout(faseT); clearInterval(contaT);
+    var disco = q("#f-respira");
+    if (app.getAttribute("data-estado") !== "2") { disco.className = "f-respira"; return; }
+    var f = FASES[fase], resta = f[2];
+    disco.className = "f-respira " + f[0];
+    q("#f-fase").textContent = f[1] + " · " + resta;
+    contaT = setInterval(function () { resta--; if (resta > 0) q("#f-fase").textContent = f[1] + " · " + resta; }, 1000);
+    faseT = setTimeout(function () { fase = (fase + 1) % FASES.length; respirar(); }, f[2] * 1000);
+  }
+
+  // ── tarefas ────────────────────────────────────────────────────────────
+  function tarefa(id) { for (var i = 0; i < tarefas.length; i++) if (tarefas[i].id === id) return tarefas[i]; return null; }
+  function estimativa(x) {
+    if (x.est > 5) return '<span class="f-est" aria-label="' + x.feitos + " de " + x.est + ' pomodoros"><i class="on"></i><small>' + x.feitos + "/" + x.est + "</small></span>";
+    var h = ""; for (var i = 0; i < Math.max(x.est, x.feitos); i++) h += '<i class="' + (i < x.feitos ? "on" : "") + '"></i>';
+    return '<span class="f-est" aria-label="' + x.feitos + " de " + x.est + ' pomodoros">' + h + "</span>";
+  }
+  function renderTarefas(novaId) {
+    var abertas = tarefas.filter(function (x) { return !x.ok; }), feitas = tarefas.filter(function (x) { return x.ok; });
+    q("#f-tarefas").innerHTML = abertas.concat(feitas).map(function (x) {
+      var eAtual = x.id === atual && !x.ok;
+      return '<li class="f-tarefa' + (eAtual ? " is-atual" : "") + (x.ok ? " is-ok" : "") + (x.id === novaId ? " entra" : "") + '" data-proj="' + x.proj + '">' +
+        '<button type="button" class="f-marca-t" data-concluir="' + x.id + '" aria-pressed="' + x.ok + '" aria-label="Concluir ' + esc(x.titulo) + '">' + ic("check", 13, 3) + "</button>" +
+        '<button type="button" class="f-tarefa-corpo" data-escolher="' + x.id + '"' + (x.ok ? " disabled" : "") + ' aria-label="Focar em ' + esc(x.titulo) + '"><strong>' + esc(x.titulo) + '</strong><span class="f-proj"><i></i>' + PROJ[x.proj] + (eAtual ? " · <em>em foco</em>" : "") + "</span></button>" +
+        estimativa(x) + "</li>";
+    }).join("");
+    var est = 0, feitos = 0, falta = 0;
+    tarefas.forEach(function (x) { est += Math.max(x.est, x.feitos); feitos += Math.min(x.feitos, Math.max(x.est, x.feitos)); if (!x.ok) falta += Math.max(0, x.est - x.feitos); });
+    q("#f-feitos-n").textContent = feitos; q("#f-est-n").textContent = est;
+    q("#f-barra-dia").style.width = (est ? Math.round(feitos / est * 100) : 0) + "%";
+    q("#f-termina").textContent = falta ? "termina ≈ " + hhmm(agoraMin() + falta * 30 + (falta >= 4 ? 10 : 0)) : "tudo estimado está feito";
+    q("#f-hoje-tempo").textContent = "Hoje: " + durTxt(pomHoje * 25) + " de foco";
+    var a = tarefa(atual);
+    if (a) {
+      q("#f-atual-tit").textContent = a.titulo; q("#f-prox-tit").textContent = a.titulo;
+      [q("#f-atual-proj"), q("#f-prox-proj")].forEach(function (el) { el.setAttribute("data-proj", a.proj); el.innerHTML = "<i></i>" + PROJ[a.proj]; });
+      var n = Math.min(a.feitos + 1, Math.max(a.est, a.feitos + 1));
+      q("#f-atual-pom").textContent = "pomodoro " + n + " de " + Math.max(a.est, n);
+      q("#f-prox-pom").textContent = "pomodoro " + n + " de " + Math.max(a.est, n) + " · " + Math.max(0, a.est - a.feitos) * 25 + " min estimados";
+    } else {
+      q("#f-atual-tit").textContent = "Foco livre"; q("#f-prox-tit").textContent = "Foco livre, sem tarefa escolhida";
+      q("#f-atual-pom").textContent = "escolha uma tarefa na lista"; q("#f-prox-pom").textContent = "escolha uma tarefa na lista";
+    }
+  }
+  function adicionarTarefa() {
+    var campo = q("#f-nova-tit"), tit = campo.value.trim();
+    if (!tit) { campo.focus(); return; }
+    var id = proxId++;
+    var lastOpen = -1; tarefas.forEach(function (x, i) { if (!x.ok) lastOpen = i; });
+    tarefas.splice(lastOpen + 1, 0, {id: id, titulo: tit, proj: /aula|slide|turma/i.test(tit) ? "ensino" : /estud|quest|prova|anki/i.test(tit) ? "estudos" : /app|bug|pr\b|deploy/i.test(tit) ? "app" : /fatura|casa|mercado|banco/i.test(tit) ? "pessoal" : "clinica", est: novaEst, feitos: 0, ok: false});
+    campo.value = ""; novaEst = 1; q("#f-nova-est").textContent = "1";
+    renderTarefas(id); avisar("Tarefa adicionada com " + tarefa(id).est + " pomodoro" + (tarefa(id).est > 1 ? "s" : "") + ".");
+    campo.focus();
+  }
+  function renderSugs() {
+    q("#f-sugs").innerHTML = sugs.map(function (s, i) {
+      return '<button type="button" class="f-sug" data-sug="' + i + '" aria-pressed="' + s.ok + '"><span>' + ic(s.ic, 18) + "</span><span><strong>" + s.t + "</strong><small>" + s.s + '</small></span><span class="f-marca-t">' + ic("check", 12, 3) + "</span></button>";
+    }).join("");
+    q("#f-sugs-n").textContent = sugs.filter(function (s) { return s.ok; }).length + " de " + sugs.length;
+  }
+
+  // ── relatório ──────────────────────────────────────────────────────────
+  var SEM = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"], MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  var HOJE = new Date(2026, 9, 19), janela = 0;
+  function semente(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; var x = Math.imul(s ^ s >>> 15, 1 | s); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }; }
+  var PESOS_UTIL = [1, 3, 6, 7, 5, 2, 1, 4, 5, 4, 2, 1, 1, 2, 2, 1], PESOS_FDS = [0, 1, 2, 3, 3, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 0];
+  var POOL = [["Slides da aula: ritmos sinusais", "ensino", 3], ["Revisar o capítulo 4: arritmias", "estudos", 4], ["Fechar o orçamento da reforma do consultório", "clinica", 2], ["Corrigir o bug do lembrete duplicado", "app", 2],
+    ["Protocolo de sepse: revisão com a equipe", "clinica", 3], ["Simulado de clínica médica", "estudos", 4], ["Escrever o resumo para o congresso", "clinica", 3], ["Tela de agendamento no app", "app", 3], ["Declaração do imposto: recibos", "pessoal", 2], ["Correção das provas da turma B", "ensino", 2]];
+  function dadosJanela(k) {
+    var r = semente(77 + k * 1013), dias = [];
+    var base = k === 0 ? [8, 6, 10, 9, 3, 2, null] : null;
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(HOJE); d.setDate(d.getDate() - i - 7 * k);
+      var fds = d.getDay() === 0 || d.getDay() === 6, p;
+      if (base) p = base[6 - i] == null ? pomHoje : base[6 - i];
+      else p = fds ? Math.floor(r() * 4) : 3 + Math.floor(r() * 8);
+      dias.push({d: d, p: p, hoje: k === 0 && i === 0, fds: fds});
+    }
+    var total = dias.reduce(function (s, x) { return s + x.p; }, 0);
+    var projs = k === 0 ? {clinica: 16, estudos: 11, ensino: 9, app: 5, pessoal: 3} : null;
+    if (!projs) {
+      var w = {clinica: .3 + r() * .2, estudos: .2 + r() * .15, ensino: .1 + r() * .15, app: .05 + r() * .12, pessoal: .03 + r() * .06}, sw = 0, acc = 0, ks = Object.keys(w);
+      ks.forEach(function (x) { sw += w[x]; }); projs = {};
+      ks.forEach(function (x, j) { projs[x] = j === ks.length - 1 ? total - acc : Math.round(total * w[x] / sw); acc += projs[x]; });
+    } else { var dif = total - 44; projs.clinica += dif; }
+    // mapa: distribui os pomodoros de cada dia pelas horas (7h às 22h)
+    // minutos focados por hora: o peso de cada hora varia um pouco de dia para dia, como na vida
+    var rm = semente(311 + k * 57);
+    var mapa = dias.map(function (x) {
+      var pesos = (x.fds ? PESOS_FDS : PESOS_UTIL).map(function (pw) { return pw * pw * (0.5 + rm()); }), soma = pesos.reduce(function (a, b) { return a + b; }, 0) || 1;
+      return pesos.map(function (pw) { var m = x.p * 25 * pw / soma; return m < 6 ? 0 : Math.min(60, Math.round(m)); });
+    });
+    var feitas;
+    if (k === 0) feitas = [["Planejar a semana", "pessoal", 1, "hoje, 08:35"], ["Responder os e-mails do convênio", "clinica", 1, "hoje, 09:10"], ["Corrigir o bug do lembrete duplicado", "app", 2, "sex, 16 out"], ["Slides da aula: ritmos sinusais", "ensino", 3, "qui, 15 out"], ["Revisar o capítulo 4: arritmias", "estudos", 4, "qua, 14 out"], ["Fechar o orçamento da reforma do consultório", "clinica", 2, "ter, 13 out"]];
+    else {
+      feitas = [];
+      var usados = {};
+      for (var f = 0; f < 5; f++) { var idx = Math.floor(r() * POOL.length); while (usados[idx]) idx = (idx + 1) % POOL.length; usados[idx] = 1; var dd = dias[6 - f]; feitas.push([POOL[idx][0], POOL[idx][1], POOL[idx][2], SEM[dd.d.getDay()] + ", " + dd.d.getDate() + " " + MESES[dd.d.getMonth()]]); }
+    }
+    var seq = k === 0 ? 11 : 4 + Math.floor(r() * 9);
+    return {dias: dias, total: total, projs: projs, mapa: mapa, feitas: feitas, seq: seq};
+  }
+  var extrasFeitas = [];
+  function renderRelatorio() {
+    var D = dadosJanela(janela), A = dadosJanela(janela + 1);
+    var min = D.total * 25, minAnt = A.total * 25, delta = minAnt ? Math.round((min - minAnt) / minAnt * 100) : 0;
+    var metaMin = 180, dentro = D.dias.filter(function (x) { return x.p * 25 >= metaMin; }).length;
+    var ini = D.dias[0].d, fim = D.dias[6].d;
+    var periodo = ini.getDate() + (ini.getMonth() !== fim.getMonth() ? " " + MESES[ini.getMonth()] : "") + " – " + fim.getDate() + " " + MESES[fim.getMonth()];
+    var MAX = 300, linhas = "", eixo = "";
+    for (var h = 0; h <= 5; h++) { var y = (h * 60 / MAX * 100).toFixed(2); linhas += '<div class="f-linha" style="bottom:calc(30px + (100% - 30px) * ' + h * 60 / MAX + ')"></div>'; eixo += '<span style="bottom:calc(30px + (100% - 30px) * ' + h * 60 / MAX + ')">' + h + " h</span>"; }
+    var barras = D.dias.map(function (x) {
+      var m = x.p * 25, alt = Math.min(100, m / MAX * 100), cls = x.p === 0 ? "vazio" : x.hoje ? "hoje" : m >= metaMin ? "meta" : "";
+      return '<div class="f-dia" title="' + SEM[x.d.getDay()] + " " + x.d.getDate() + ": " + x.p + " pomodoros, " + durTxt(m) + '"><span class="f-col ' + cls + '" style="height:' + (x.p ? alt : 0) + '%"></span><em style="bottom:calc(' + alt + '% + 8px)">' + (x.p ? durTxt(m).replace(" h ", "h") : "—") + '</em><span class="f-dia-rot">' + (x.hoje ? "<b>hoje</b>" : SEM[x.d.getDay()] + " <b>" + x.d.getDate() + "</b>") + "</span></div>";
+    }).join("");
+    var ks = ["clinica", "estudos", "ensino", "app", "pessoal"], R = 60, CC = 2 * Math.PI * R, off = 0, segs = "", leg = "";
+    ks.forEach(function (k) {
+      var v = D.projs[k] || 0, len = D.total ? v / D.total * CC : 0;
+      segs += '<circle data-proj="' + k + '" class="' + (focoProj === k ? "on" : "") + '" cx="75" cy="75" r="' + R + '" stroke="var(--p-' + k + ')" stroke-dasharray="' + Math.max(0, len - 2).toFixed(2) + " " + CC.toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '"/>';
+      off += len;
+      leg += '<button type="button" data-proj="' + k + '" data-rosca="' + k + '" aria-pressed="' + (focoProj === k) + '"><i></i><span>' + PROJ[k] + "<small>" + durTxt(v * 25) + "</small></span><b>" + (D.total ? Math.round(v / D.total * 100) : 0) + "%</b></button>";
+    });
+    var horas = "", celulas = "", diasL = "", somaHora = new Array(16).fill(0);
+    for (var hh = 0; hh < 16; hh++) horas += "<span>" + (hh % 3 === 0 ? (7 + hh) + "h" : "") + "</span>";
+    var maxCel = Math.max.apply(null, D.mapa.map(function (l) { return Math.max.apply(null, l); })) || 1;
+    D.mapa.forEach(function (lin, di) {
+      diasL += "<span>" + SEM[D.dias[di].d.getDay()] + "</span>";
+      lin.forEach(function (v, hh2) { somaHora[hh2] += v; var nv = v ? Math.max(1, Math.ceil(v / maxCel * 3)) : 0; celulas += '<i class="' + (nv ? "n" + nv : "") + '" title="' + SEM[D.dias[di].d.getDay()] + ", " + (7 + hh2) + "h: " + v + ' min de foco"></i>'; });
+    });
+    var pico = 0; for (var p = 1; p < 15; p++) if (somaHora[p] + somaHora[p + 1] > somaHora[pico] + somaHora[pico + 1]) pico = p;
+    var feitas = (janela === 0 ? extrasFeitas : []).concat(D.feitas).slice(0, 6).map(function (f) {
+      return '<li data-proj="' + f[1] + '"><span class="f-ok">' + ic("check", 12, 3) + "</span><div><strong>" + esc(f[0]) + "</strong><small>" + PROJ[f[1]] + " · " + f[3] + "</small></div>" + estimativa({est: f[2], feitos: f[2]}) + "</li>";
+    }).join("");
+    var metas = D.dias.map(function (x) { return '<i class="' + (x.p * 25 >= metaMin ? "on" : "") + '" title="' + SEM[x.d.getDay()] + " " + x.d.getDate() + '"></i>'; }).join("");
+    q("#f-relatorio").innerHTML =
+      '<div class="f-rel-cab"><div><p class="f-olho">' + (janela === 0 ? "Últimos 7 dias" : janela === 1 ? "7 dias antes" : janela * 7 + " a " + (janela * 7 + 6) + " dias atrás") + "</p><h1>Seu ritmo da semana</h1></div>" +
+      '<div class="f-semana-nav"><button type="button" class="f-redondo" data-janela="1" aria-label="7 dias anteriores"' + (janela >= 5 ? " disabled" : "") + ">" + ic("esq", 18, 2.2) + "</button><span>" + periodo + " de 2026</span>" +
+      '<button type="button" class="f-redondo" data-janela="-1" aria-label="7 dias seguintes"' + (janela === 0 ? " disabled" : "") + ">" + ic("dir", 18, 2.2) + "</button></div></div>" +
+      '<div class="f-card f-kpi"><p class="f-olho">Tempo focado</p><b>' + durTxt(min).replace(/ h ?/, '<small>h</small> ').replace(" min", "<small>min</small>") + '</b><p><span class="f-delta ' + (delta >= 0 ? "sobe" : "desce") + '">' + (delta >= 0 ? "+" : "") + delta + "%</span>vs. 7 dias anteriores</p></div>" +
+      '<div class="f-card f-kpi"><p class="f-olho">Pomodoros</p><b>' + D.total + "</b><p>média de " + (D.total / 7).toFixed(1).replace(".", ",") + " por dia · " + D.dias.filter(function (x) { return x.p; }).length + " dias ativos</p></div>" +
+      '<div class="f-card f-kpi"><p class="f-olho">Sequência</p><b>' + D.seq + "<small>dias</small></b><p>com ao menos um pomodoro · recorde de 23</p></div>" +
+      '<div class="f-card f-kpi"><p class="f-olho">Meta de 3 h/dia</p><b>' + dentro + "<small>de 7</small></b><div class=\"f-metas\">" + metas + "</div></div>" +
+      '<section class="f-card f-c8"><div class="f-card-cab"><div><p class="f-olho">Horas focadas por dia</p><h2>' + (dentro >= 4 ? "Semana acima da meta" : dentro ? "Meta batida em " + dentro + " dia" + (dentro > 1 ? "s" : "") : "Semana leve") + "</h2></div></div>" +
+      '<div class="f-grafico"><div class="f-eixo">' + eixo + '</div><div class="f-area">' + linhas + '<div class="f-meta-linha" style="bottom:calc(30px + (100% - 30px) * ' + metaMin / MAX + ')"><span>meta 3 h</span></div>' + barras + "</div></div></section>" +
+      '<section class="f-card f-c4"><div class="f-card-cab"><div><p class="f-olho">Por projeto</p><h2>Onde o tempo foi</h2></div></div><div class="f-rosca"><div class="f-rosca-svg' + (focoProj ? " foco" : "") + '"><svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="' + R + '" stroke="var(--f-tingido)"/>' + segs + '</svg><div class="f-rosca-meio"><b>' + (focoProj ? durTxt((D.projs[focoProj] || 0) * 25) : durTxt(min)) + "</b><small>" + (focoProj ? PROJ[focoProj] : "no total") + '</small></div></div><div class="f-legenda" role="group" aria-label="Projetos">' + leg + "</div></div></section>" +
+      '<section class="f-card f-c7"><div class="f-card-cab"><div><p class="f-olho">Melhores horários</p><h2>Quando você rende</h2></div></div><div class="f-mapa"><div class="f-mapa-horas">' + horas + '</div><div class="f-mapa-dias" style="grid-template-rows:repeat(7,26px)">' + diasL + '</div><div class="f-mapa-grade" role="img" aria-label="Pomodoros por hora e dia">' + celulas + "</div></div>" +
+      '<div class="f-mapa-leg">menos <i></i><i style="background:color-mix(in srgb,var(--p-clinica) 30%,transparent)"></i><i style="background:color-mix(in srgb,var(--p-clinica) 60%,transparent)"></i><i style="background:var(--p-clinica)"></i> mais</div>' +
+      '<p class="f-insight">' + ic("luz", 20) + "<span>Seu pico é das <b>" + (7 + pico) + "h às " + (9 + pico) + "h</b>: " + durTxt(somaHora[pico] + somaHora[pico + 1]) + " de foco nessas duas horas ao longo da semana. Proteja esse horário de reuniões e deixe e-mail para depois do almoço.</span></p></section>" +
+      '<section class="f-card f-c5"><div class="f-card-cab"><div><p class="f-olho">Concluídas</p><h2>' + ((janela === 0 ? extrasFeitas.length : 0) + D.feitas.length) + ' tarefas fechadas</h2></div></div><ul class="f-feitas">' + feitas + "</ul></section>";
+    var mapaDias = q(".f-mapa-dias"); if (mapaDias && app.clientWidth <= 760) mapaDias.style.gridTemplateRows = "repeat(7,20px)";
+  }
+  var focoProj = null;
+  function renderRelatorioSeVisivel() { if (app.getAttribute("data-estado") === "3") renderRelatorio(); }
+
+  // ── aviso ──────────────────────────────────────────────────────────────
+  var avisoT = null, avisoFn = null;
+  function avisar(txt, desfazer) {
+    q("#f-aviso-txt").textContent = txt; avisoFn = desfazer || null; q("#f-aviso-btn").hidden = !desfazer;
+    q("#f-aviso").classList.add("is-on"); clearTimeout(avisoT);
+    avisoT = setTimeout(function () { q("#f-aviso").classList.remove("is-on"); avisoFn = null; }, desfazer ? 5000 : 3200);
+  }
+
+  // ── estados ────────────────────────────────────────────────────────────
+  function irPara(n, interno) { app.setAttribute("data-estado", String(n)); aoEstado(n, !interno ? false : "interno"); }
+  function aoEstado(n, origem) {
+    if (origem === true) {
+      // o stand pediu este estado: o app se arruma para mostrá-lo como ele é
+      if (n === 1 && t.modo !== "foco") definirModo("foco", true);
+      if (n === 1 && !t.rodando) iniciar();
+      if (n === 2 && t.modo === "foco") definirModo("curta", true);
+      if (n === 2 && !t.rodando) iniciar();
+    }
+    if (n === 3) renderRelatorio();
+    if (n === 2) { fase = 0; renderSugs(); }
+    respirar(); pintarCiclo(); pintarControles(); pintarRelogio();
+    app.scrollTop = 0; if (window.scrollY > 0) window.scrollTo(0, 0);
+  }
+
+  // ── eventos ────────────────────────────────────────────────────────────
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b || !app.contains(b)) return;
+    var acao = b.getAttribute("data-acao");
+    if (acao === "alternar") { t.rodando ? pausar() : iniciar(); return; }
+    if (acao === "reiniciar") { definirModo(t.modo, false); avisar("Pomodoro reiniciado em " + mmss(t.dur) + "."); return; }
+    if (acao === "pular") { concluirBloco(true); return; }
+    if (acao === "mais") { if (t.rodando) t.fimEm += 60000; else t.restante += 60; t.dur += 60; pintarRelogio(); avisar("Mais um minuto de pausa."); return; }
+    if (acao === "comecar-ja") { definirModo("foco", true); irPara(1, true); return; }
+    if (b.hasAttribute("data-modo")) {
+      var m = b.getAttribute("data-modo"); if (m === t.modo) return;
+      var tinha = t.rodando; definirModo(m, tinha);
+      irPara(m === "foco" ? 1 : 2, true); return;
+    }
+    if (b.hasAttribute("data-ir")) { irPara(+b.getAttribute("data-ir") === 3 ? 3 : (t.modo === "foco" ? 1 : 2), true); return; }
+    if (b.hasAttribute("data-voltar-timer")) { irPara(t.modo === "foco" ? 1 : 2, true); return; }
+    if (b.hasAttribute("data-escolher")) { atual = +b.getAttribute("data-escolher"); renderTarefas(); avisar("Em foco: " + tarefa(atual).titulo + "."); return; }
+    if (b.hasAttribute("data-concluir")) {
+      var x = tarefa(+b.getAttribute("data-concluir")); x.ok = !x.ok;
+      if (x.ok) {
+        extrasFeitas.unshift([x.titulo, x.proj, Math.max(1, x.feitos), "hoje, " + hhmm(agoraMin())]);
+        if (atual === x.id) { var prox = tarefas.filter(function (y) { return !y.ok; })[0]; atual = prox ? prox.id : null; }
+        renderTarefas();
+        avisar("“" + x.titulo + "” concluída.", function () { x.ok = false; extrasFeitas.shift(); if (atual == null) atual = x.id; renderTarefas(); });
+      } else { extrasFeitas = extrasFeitas.filter(function (f) { return f[0] !== x.titulo; }); renderTarefas(); }
+      return;
+    }
+    if (b.hasAttribute("data-limpar")) {
+      var removidas = tarefas.filter(function (y) { return y.ok; });
+      if (!removidas.length) { avisar("Nenhuma tarefa feita para limpar."); return; }
+      tarefas = tarefas.filter(function (y) { return !y.ok; }); renderTarefas();
+      avisar(removidas.length + " tarefa" + (removidas.length > 1 ? "s" : "") + " feita" + (removidas.length > 1 ? "s" : "") + " fora da lista.", function () { tarefas = tarefas.concat(removidas); renderTarefas(); });
+      return;
+    }
+    if (b.hasAttribute("data-est")) { novaEst = Math.max(1, Math.min(8, novaEst + +b.getAttribute("data-est"))); q("#f-nova-est").textContent = novaEst; return; }
+    if (b.hasAttribute("data-adicionar")) { adicionarTarefa(); return; }
+    if (b.hasAttribute("data-sug")) { var s = sugs[+b.getAttribute("data-sug")]; s.ok = !s.ok; renderSugs(); if (sugs.every(function (z) { return z.ok; })) avisar("Pausa bem usada. O próximo pomodoro agradece."); return; }
+    if (b.hasAttribute("data-janela")) { janela = Math.max(0, Math.min(5, janela + +b.getAttribute("data-janela"))); renderRelatorio(); return; }
+    if (b.hasAttribute("data-rosca")) { var k = b.getAttribute("data-rosca"); focoProj = focoProj === k ? null : k; renderRelatorio(); return; }
+    if (b.id === "f-aviso-btn") { var fn = avisoFn; q("#f-aviso").classList.remove("is-on"); avisoFn = null; if (fn) fn(); return; }
+  });
+  app.addEventListener("keydown", function (e) { if (e.target.id === "f-nova-tit" && e.key === "Enter") { e.preventDefault(); adicionarTarefa(); } });
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(alvo.tagName))) return;
+    if (document.querySelector("dialog[open]") || app.getAttribute("data-estado") === "3") return;
+    if (e.key === " ") { e.preventDefault(); t.rodando ? pausar() : iniciar(); }
+    else if (e.key === "r" || e.key === "R") { definirModo(t.modo, false); avisar("Reiniciado em " + mmss(t.dur) + "."); }
+  });
+  app.addEventListener("maquete:estado", function (e) { aoEstado(e.detail && e.detail.estado ? +e.detail.estado : +app.getAttribute("data-estado"), true); });
+
+  renderTarefas(); renderSugs(); pintarCiclo(); pintarControles(); pintarRelogio();
+  var inicial = +app.getAttribute("data-estado") || 1; if (inicial !== 1) aoEstado(inicial, true); else respirar();
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>
