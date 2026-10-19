@@ -1,0 +1,32 @@
+{
+  "name": "Céu",
+  "short_name": "Céu",
+  "description": "App de clima em que o céu inteiro é a interface: o fundo muda com a condição e a hora, a temperatura ocupa a tela, os cartões são de vidro e os ícones se mexem. Quatro cidades, previsão por hora, dez dias e um alerta de tempestade severa.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1f5fc0",
+  "theme_color": "#1f5fc0",
+  "icons": [
+    {
+      "src": "icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "gerado_por": "laboratorio/publicar.py"
+}

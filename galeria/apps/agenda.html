@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agenda · Maquete</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "agenda",
+  "nome": "Agenda",
+  "colecao": "referencia",
+  "tipo": "App web",
+  "tela": "ampla",
+  "resumo": "Página pública de agendamento de consulta: o paciente escolhe o dia no calendário, o horário no seu fuso e confirma com três campos. Marca fictícia: Encontro, com a agenda da Dra. Helena Prado.",
+  "referencias": [
+    {
+      "nome": "Cal.com",
+      "modelo": "open source",
+      "licenca": "AGPL-3.0"
+    },
+    {
+      "nome": "Easy!Appointments",
+      "modelo": "open source",
+      "licenca": "GPL-3.0"
+    },
+    {
+      "nome": "Calendly",
+      "modelo": "freemium"
+    }
+  ],
+  "direcao": "Limpa e acolhedora: creme quente de fundo, papel quase branco, tinta verde-escura e um único acento verde-petróleo (#0b5c63). Títulos em serifa humanista, interface em sans arredondada e cantos generosos. Perfil à esquerda, calendário ao centro, horários à direita; no celular cada passo vira uma tela, em sequência.",
+  "estados": [
+    {
+      "nome": "Escolher dia",
+      "descricao": "Perfil da Dra. Helena Prado, calendário mensal com os dias livres em verde e navegação de mês, atalhos de 'mais cedo possível' com horários clicáveis, fuso e modalidade (presencial ou vídeo). No celular é a primeira tela."
+    },
+    {
+      "nome": "Escolher horário",
+      "descricao": "Faixa dos próximos dias livres, horários do dia em manhã e tarde no fuso America/Sao_Paulo (com outros fusos do Brasil), alternância 24 h/12 h e formulário curto de nome, e-mail e observação com validação."
+    },
+    {
+      "nome": "Confirmado",
+      "descricao": "Confirmação com resumo (quando, com quem, onde), 'Adicionar à agenda' de mentira, lista do que levar, remarcar (volta ao calendário) e cancelar com motivo, com opção de desfazer."
+    }
+  ],
+  "paleta": [
+    {
+      "nome": "Creme",
+      "hex": "#f3efe7"
+    },
+    {
+      "nome": "Papel",
+      "hex": "#fffdf9"
+    },
+    {
+      "nome": "Tinta verde",
+      "hex": "#14282b"
+    },
+    {
+      "nome": "Verde-petróleo",
+      "hex": "#0b5c63"
+    },
+    {
+      "nome": "Menta",
+      "hex": "#dfeeed"
+    },
+    {
+      "nome": "Areia",
+      "hex": "#e9d9c0"
+    },
+    {
+      "nome": "Coral",
+      "hex": "#b9532a"
+    },
+    {
+      "nome": "Petróleo no escuro",
+      "hex": "#17807b"
+    }
+  ],
+  "tipografia": "Títulos em serifa humanista (Iowan Old Style, Charter, Georgia) para acolher; interface em sans arredondada do sistema (Avenir Next, Nunito Sans, Segoe UI), em 15 a 16 px; dias e horários em algarismos tabulares, para as colunas não dançarem entre 09:30 e 10:00.",
+  "componentes": [
+    "Cartão de perfil com selo de verificação",
+    "Seletor de modalidade (presencial ou vídeo)",
+    "Indicador de passos",
+    "Calendário mensal com dias livres",
+    "Navegação de mês com limites",
+    "Atalhos de mais cedo possível",
+    "Faixa de próximos dias livres",
+    "Grade de horários por período",
+    "Seletor de fuso e alternância 24 h/12 h",
+    "Formulário curto com validação",
+    "Confirmação com menu Adicionar à agenda",
+    "Painel de cancelamento com desfazer"
+  ],
+  "replicar": [
+    "Modelo de dados: Profissional (nome, especialidade, fuso, antecedência mínima), TipoDeConsulta (nome, duração, preço, modalidades), Disponibilidade (dia da semana, início, fim), Bloqueio (data, motivo), Paciente (nome, e-mail, telefone) e Reserva (tipo_id, inicio_utc, paciente_id, status: confirmada | cancelada | remarcada). Guarde horários em UTC e converta pelo fuso do paciente.",
+    "Pilha sugerida: Next.js ou SvelteKit com Postgres; o cálculo de horários livres (disponibilidade menos reservas e bloqueios) roda no servidor, e a escolha do horário segura a vaga por 5 minutos para evitar reserva dupla.",
+    "Integrações: Google Calendar e Outlook por OAuth (checar conflitos e criar o evento), arquivo ICS para quem não conecta nada, e-mail transacional e WhatsApp Business para confirmação e lembrete 24 h antes, link de videochamada gerado por reserva.",
+    "Regras que a versão real precisa: antecedência mínima e janela máxima de marcação, intervalo entre consultas, feriados nacionais e municipais, limite de remarcações e prazo de cancelamento (aqui, 24 h antes).",
+    "Privacidade (LGPD): consentimento explícito no formulário, observação sem dado sensível obrigatório, retenção definida e exclusão sob pedido. Meça o abandono entre dia, horário e confirmação.",
+    "Corte do MVP: um tipo de consulta, calendário, horários e confirmação por e-mail. Fusos, vídeo, remarcação, cancelamento com motivo e integração com agendas entram depois."
+  ],
+  "proposta": "Freemium",
+  "modelo_negocio": "Um tipo de consulta grátis; o pago libera vários tipos, lembretes por WhatsApp, cobrança antecipada via PIX e agenda de equipe."
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+/* Encontro · página de agendamento (marca fictícia). Tudo mora dentro de #app. Claro por padrão; escuro em :root[data-tema=escuro]. */
+:root{
+  --a-fundo:#f3efe7;--a-papel:#fffdf9;--a-papel2:#f9f6ef;--a-realce:#efeadf;
+  --a-tinta:#14282b;--a-suave:#4f6367;--a-mudo:#556a6e;
+  --a-fio:rgba(20,40,43,.1);--a-fio2:rgba(20,40,43,.18);
+  --a-acento:#0b5c63;--a-acento-h:#08474d;--a-acento-tx:#0b5c63;--a-acento-bg:#dfeeed;--a-acento-bg2:#c9e3e1;
+  --a-areia:#e9d9c0;--a-coral:#a4441d;--a-coral-bg:#fbe9df;
+  --a-ok:#0b6b45;--a-ok-bg:#dff1e7;--a-erro:#b3243f;--a-erro-bg:#fbe4e8;
+  --a-sombra-1:0 1px 2px rgba(20,40,43,.06);
+  --a-sombra-2:0 2px 6px rgba(20,40,43,.05),0 28px 60px -20px rgba(20,60,64,.28);
+  --a-vidro:rgba(243,239,231,.82);
+  --a-brilho1:rgba(20,140,130,.11);--a-brilho2:rgba(217,126,84,.13);
+}
+:root[data-tema=escuro]{
+  --a-fundo:#0c1416;--a-papel:#121c1f;--a-papel2:#0f1819;--a-realce:#1b292c;
+  --a-tinta:#e8f1f0;--a-suave:#9eb2b4;--a-mudo:#8ca1a3;
+  --a-fio:rgba(232,241,240,.1);--a-fio2:rgba(232,241,240,.19);
+  --a-acento:#17807b;--a-acento-h:#1c948e;--a-acento-tx:#62d3cb;--a-acento-bg:rgba(54,170,163,.16);--a-acento-bg2:rgba(54,170,163,.28);
+  --a-areia:#3a3223;--a-coral:#f0a07a;--a-coral-bg:rgba(240,160,122,.14);
+  --a-ok:#58d9a1;--a-ok-bg:rgba(88,217,161,.14);--a-erro:#ff8aa0;--a-erro-bg:rgba(255,138,160,.14);
+  --a-sombra-1:0 1px 2px rgba(0,0,0,.4);
+  --a-sombra-2:0 2px 6px rgba(0,0,0,.3),0 28px 70px -20px rgba(0,0,0,.7);
+  --a-vidro:rgba(12,20,22,.8);
+  --a-brilho1:rgba(23,128,123,.22);--a-brilho2:rgba(240,160,122,.08);
+}
+/* base da página, fora do #app: o código exportado abre sem a margem padrão do navegador */
+html,body{margin:0}
+body{background:var(--a-fundo)}
+#app{container:app / inline-size;--a-sans:"Avenir Next",Avenir,"Nunito Sans","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --a-serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Charter,"Bitstream Charter",Georgia,serif;
+  position:relative;color:var(--a-tinta);font:400 15.5px/1.55 var(--a-sans);-webkit-font-smoothing:antialiased;overflow-x:clip;
+  background:radial-gradient(900px 520px at 8% -8%,var(--a-brilho1),transparent 62%),radial-gradient(760px 480px at 100% 0,var(--a-brilho2),transparent 60%),var(--a-fundo)}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app :where(h1,h2,h3,h4,p,ul,ol,dl,dd,figure){margin:0}
+#app :where(ul,ol){padding:0;list-style:none}
+#app button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+#app input,#app select,#app textarea{font:inherit;color:inherit}
+#app button:focus-visible,#app input:focus-visible,#app select:focus-visible,#app textarea:focus-visible,#app [tabindex]:focus-visible{outline:3px solid color-mix(in srgb,var(--a-acento) 55%,transparent);outline-offset:2px}
+#app h1[tabindex="-1"]:focus,#app h2[tabindex="-1"]:focus{outline:none}
+#app svg{display:block}
+#app .a-ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app .a-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .a-pagina{display:flex;flex-direction:column;min-height:100%;max-width:1200px;margin:0 auto;padding:0 28px}
+
+/* ── topo ── */
+#app .a-topo{display:flex;align-items:center;justify-content:space-between;gap:16px;height:84px}
+#app .a-marca{display:inline-flex;align-items:center;gap:11px;font:700 22px/1 var(--a-serif);letter-spacing:-.02em;color:var(--a-tinta)}
+#app .a-marca svg{width:34px;height:34px}
+#app .a-marca small{font:500 13px/1 var(--a-sans);letter-spacing:0;color:var(--a-mudo);padding-left:12px;margin-left:2px;border-left:1px solid var(--a-fio2)}
+#app .a-topo-dir{display:flex;align-items:center;gap:6px}
+#app .a-chip-seg{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;font:500 13.5px/1 var(--a-sans);color:var(--a-suave)}
+#app .a-chip-seg .a-ic{width:16px;height:16px;color:var(--a-ok)}
+#app .a-btn-t{padding:9px 14px;border-radius:12px;font:600 14px/1 var(--a-sans);color:var(--a-suave);transition:background-color .15s,color .15s}
+#app .a-btn-t:hover{background:var(--a-realce);color:var(--a-tinta)}
+
+/* ── etapas ── */
+#app .a-passos{display:flex;align-items:center;justify-content:center;gap:10px;margin:2px 0 22px;font:600 13.5px/1 var(--a-sans);color:var(--a-mudo)}
+#app .a-passos li{display:inline-flex;align-items:center;gap:9px}
+#app .a-passos li+li::before{content:"";width:34px;height:2px;border-radius:2px;background:var(--a-fio2);margin-right:1px}
+#app .a-passos i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--a-realce);font:700 12px/1 var(--a-sans);font-style:normal;color:var(--a-suave);transition:background-color .2s,color .2s}
+#app .a-passos li.feito{color:var(--a-ok)}
+#app .a-passos li.feito i{background:var(--a-ok);color:#fff}
+#app .a-passos li.feito i .a-ic{width:13px;height:13px;stroke-width:3}
+#app .a-passos li.atual{color:var(--a-tinta)}
+#app .a-passos li.atual i{background:var(--a-acento);color:#fff}
+:root[data-tema=escuro] #app .a-passos li.feito i{color:#06210f}
+
+/* ── cartão de reserva ── */
+#app .a-cartao{display:grid;grid-template-columns:316px minmax(0,1fr) 308px;margin:0 auto;width:100%;background:var(--a-papel);border:1px solid var(--a-fio);border-radius:32px;box-shadow:var(--a-sombra-2);overflow:hidden}
+#app .a-passo{display:none}
+#app[data-estado="1"] .a-passo[data-passo="1"],#app[data-estado="2"] .a-passo[data-passo="2"],#app[data-estado="3"] .a-passo[data-passo="3"]{display:contents}
+#app[data-estado="3"] .a-cartao{max-width:680px;grid-template-columns:minmax(0,1fr)}
+#app[data-estado="3"] .a-perfil{display:none}
+@media (prefers-reduced-motion:no-preference){
+  #app[data-estado] .a-cartao{animation:a-entra .45s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes a-entra{from{opacity:.0;transform:translateY(10px)}to{opacity:1;transform:none}}
+}
+
+/* perfil */
+#app .a-perfil{display:flex;flex-direction:column;gap:20px;padding:34px 30px 28px;background:linear-gradient(180deg,var(--a-papel2),var(--a-papel));border-right:1px solid var(--a-fio)}
+#app .a-medico{display:flex;align-items:center;gap:14px}
+#app .a-avatar{position:relative;display:grid;place-items:center;width:64px;height:64px;flex:none;border-radius:50%;font:600 24px/1 var(--a-serif);color:#fff;letter-spacing:.02em;background:radial-gradient(circle at 30% 25%,#2d8f94,#0b5c63 62%,#08474d);box-shadow:0 0 0 3px var(--a-papel),0 0 0 4.5px var(--a-areia)}
+#app .a-avatar i{position:absolute;right:-3px;bottom:-1px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--a-ok);color:#fff;box-shadow:0 0 0 2.5px var(--a-papel)}
+#app .a-avatar i .a-ic{width:12px;height:12px;stroke-width:3}
+#app .a-medico b{display:block;font:650 17px/1.25 var(--a-sans);letter-spacing:-.015em}
+#app .a-medico small{display:block;margin-top:2px;font-size:13.5px;line-height:1.35;color:var(--a-suave)}
+#app .a-nota{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--a-suave)}
+#app .a-estrelas{display:flex;gap:2px;color:#d9962b}
+#app .a-estrelas svg{width:14px;height:14px;fill:currentColor}
+#app .a-nota b{color:var(--a-tinta);font-weight:650}
+#app .a-evento h1{font:500 31px/1.12 var(--a-serif);letter-spacing:-.02em;text-wrap:balance}
+#app .a-evento p{margin-top:10px;font-size:14.5px;line-height:1.55;color:var(--a-suave);text-wrap:pretty}
+#app .a-meta{display:grid;gap:13px;padding-top:20px;border-top:1px solid var(--a-fio)}
+#app .a-meta li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;line-height:1.4}
+#app .a-meta .a-ic{width:19px;height:19px;margin-top:1px;color:var(--a-acento-tx)}
+#app .a-meta small{display:block;margin-top:1px;font-size:13px;color:var(--a-suave)}
+#app .a-meta b{font-weight:650}
+#app .a-modo{display:grid;gap:8px}
+#app .a-modo>span{font:650 11.5px/1 var(--a-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--a-mudo)}
+#app .a-seg{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:4px;border-radius:14px;background:var(--a-realce)}
+#app .a-seg::before{content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:10px;background:var(--a-papel);box-shadow:0 1px 3px rgba(20,40,43,.2),0 0 0 1px var(--a-fio);transition:transform .26s cubic-bezier(.3,.8,.3,1)}
+#app .a-seg[data-v="1"]::before{transform:translateX(100%)}
+#app .a-seg button{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;border-radius:10px;font:600 14px/1 var(--a-sans);color:var(--a-suave);text-align:center;transition:color .2s}
+#app .a-seg button[aria-pressed=true]{color:var(--a-tinta)}
+#app .a-seg .a-ic{width:16px;height:16px}
+#app .a-perfil-rodape{margin-top:auto;display:flex;align-items:center;gap:9px;padding-top:6px;font-size:12.5px;color:var(--a-mudo)}
+#app .a-perfil-rodape .a-ic{width:15px;height:15px}
+
+/* colunas do centro e da direita */
+#app .a-centro{min-width:0;padding:34px 32px 30px}
+#app .a-direita{min-width:0;padding:34px 30px 30px 0}
+#app .a-cab-passo{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}
+#app .a-cab-passo h2{font:500 25px/1.15 var(--a-serif);letter-spacing:-.015em;text-wrap:balance}
+#app .a-cab-passo p{margin-top:6px;font-size:14.5px;color:var(--a-suave)}
+#app .a-aviso-remarcar{display:none;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;margin:-4px 0 20px;padding:12px 16px;border-radius:16px;background:var(--a-coral-bg);color:var(--a-coral);font-size:14px;line-height:1.4}
+#app .a-aviso-remarcar.ativo{display:grid}
+#app .a-aviso-remarcar .a-ic{width:19px;height:19px}
+#app .a-aviso-remarcar b{color:inherit;font-weight:700}
+#app .a-aviso-remarcar button{padding:8px 13px;border-radius:10px;background:var(--a-papel);color:var(--a-tinta);font:600 13px/1 var(--a-sans);box-shadow:var(--a-sombra-1)}
+#app .a-aviso-remarcar button:hover{background:var(--a-realce)}
+
+/* calendário */
+#app .a-mes{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+#app .a-mes h3{font:650 18px/1 var(--a-sans);letter-spacing:-.015em;text-transform:capitalize}
+#app .a-mes h3 span{font-weight:500;color:var(--a-mudo)}
+#app .a-setas{display:flex;gap:6px}
+#app .a-seta{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--a-fio2);background:var(--a-papel);transition:background-color .15s,border-color .15s,transform .12s}
+#app .a-seta:hover:not([disabled]){background:var(--a-acento-bg);border-color:var(--a-acento)}
+#app .a-seta:active:not([disabled]){transform:scale(.94)}
+#app .a-seta[disabled]{opacity:.35;cursor:not-allowed}
+#app .a-seta .a-ic{width:18px;height:18px}
+#app .a-seta.v-esq .a-ic{transform:scaleX(-1)}
+#app .a-semana{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;text-align:center;font:650 11.5px/1 var(--a-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--a-mudo)}
+#app .a-grade{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+#app .a-dia{position:relative;aspect-ratio:1;display:grid;place-items:center;border-radius:16px;font:500 16px/1 var(--a-sans);font-variant-numeric:tabular-nums;color:var(--a-mudo);transition:background-color .15s,color .15s,transform .12s,box-shadow .15s}
+#app .a-dia.vazio{pointer-events:none}
+#app .a-dia[aria-disabled=true]{cursor:default;opacity:.72}
+#app .a-dia.livre{background:var(--a-acento-bg);color:var(--a-acento-tx);font-weight:700;cursor:pointer}
+#app .a-dia.livre:hover{background:var(--a-acento-bg2);transform:translateY(-1px)}
+#app .a-dia.livre:active{transform:scale(.95)}
+#app .a-dia.sel,#app .a-dia.sel:hover{background:var(--a-acento);color:#fff;box-shadow:0 8px 18px -6px color-mix(in srgb,var(--a-acento) 70%,transparent)}
+#app .a-dia.hoje::after{content:"";position:absolute;bottom:7px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--a-coral)}
+#app .a-dia.sel.hoje::after{background:#fff}
+#app .a-dia.feriado{color:var(--a-coral)}
+#app .a-cal-rodape{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;margin-top:22px;padding-top:18px;border-top:1px solid var(--a-fio)}
+#app .a-legenda{display:flex;gap:16px;font-size:13px;color:var(--a-suave)}
+#app .a-legenda span{display:inline-flex;align-items:center;gap:7px}
+#app .a-legenda i{width:14px;height:14px;border-radius:5px;background:var(--a-acento-bg);box-shadow:inset 0 0 0 1px var(--a-acento-bg2)}
+#app .a-legenda i.n{background:none;box-shadow:inset 0 0 0 1px var(--a-fio2)}
+/* fuso */
+#app .a-fuso{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--a-suave)}
+#app .a-fuso .a-ic{width:16px;height:16px}
+#app .a-sel{position:relative;display:inline-flex}
+#app .a-sel select{appearance:none;-webkit-appearance:none;height:38px;padding:0 34px 0 12px;border-radius:11px;border:1px solid var(--a-fio2);background:var(--a-papel);font:600 13.5px/1 var(--a-sans);color:var(--a-tinta);max-width:100%;cursor:pointer;transition:border-color .15s}
+#app .a-sel select:hover{border-color:var(--a-acento)}
+#app .a-sel::after{content:"";position:absolute;right:13px;top:50%;width:7px;height:7px;margin-top:-5px;border-right:2px solid var(--a-suave);border-bottom:2px solid var(--a-suave);transform:rotate(45deg);pointer-events:none}
+
+/* próximos horários (estado 1, coluna da direita) */
+#app .a-prox h2{font:650 16px/1.2 var(--a-sans);letter-spacing:-.015em}
+#app .a-prox>p{margin-top:5px;font-size:13.5px;color:var(--a-suave)}
+#app .a-prox-lista{display:grid;gap:12px;margin-top:18px}
+#app .a-prox-bloco{padding:14px;border-radius:18px;background:var(--a-papel2);border:1px solid var(--a-fio)}
+#app .a-prox-bloco b{display:block;font:650 14px/1.2 var(--a-sans)}
+#app .a-prox-bloco small{display:block;margin:3px 0 11px;font-size:12.5px;color:var(--a-suave)}
+#app .a-chips{display:flex;flex-wrap:wrap;gap:7px}
+#app .a-chip{padding:8px 12px;border-radius:11px;border:1.5px solid var(--a-acento-bg2);background:var(--a-papel);font:650 13.5px/1 var(--a-sans);font-variant-numeric:tabular-nums;color:var(--a-acento-tx);transition:background-color .15s,border-color .15s,color .15s,transform .12s}
+#app .a-chip:hover{background:var(--a-acento);border-color:var(--a-acento);color:#fff;transform:translateY(-1px)}
+#app .a-chip:active{transform:scale(.96)}
+#app .a-chip.mais{border-style:dashed;color:var(--a-suave);font-weight:600}
+#app .a-chip.mais:hover{background:var(--a-realce);border-color:var(--a-fio2);color:var(--a-tinta)}
+#app .a-ajuda{display:flex;gap:11px;align-items:flex-start;margin-top:18px;padding:14px;border-radius:18px;background:var(--a-acento-bg);font-size:13.5px;line-height:1.45;color:var(--a-suave)}
+#app .a-ajuda .a-ic{width:19px;height:19px;color:var(--a-acento-tx);margin-top:1px}
+#app .a-ajuda button{display:inline;font-weight:650;color:var(--a-acento-tx);text-decoration:underline;text-underline-offset:3px}
+
+/* horários (estado 2) */
+#app .a-voltar{display:inline-flex;align-items:center;gap:7px;margin-bottom:14px;padding:5px 11px 5px 7px;border-radius:999px;font:600 13.5px/1 var(--a-sans);color:var(--a-suave);transition:background-color .15s,color .15s}
+#app .a-voltar:hover{background:var(--a-realce);color:var(--a-tinta)}
+#app .a-voltar .a-ic{width:17px;height:17px;transform:scaleX(-1)}
+#app .a-tira{display:grid;grid-template-columns:auto repeat(6,1fr) auto;gap:6px;align-items:stretch;margin-bottom:22px}
+#app .a-tira .a-seta{width:36px;height:auto;min-height:36px;align-self:center}
+#app .a-tira-dia{display:grid;justify-items:center;gap:3px;padding:10px 4px 9px;border-radius:16px;border:1.5px solid var(--a-fio);background:var(--a-papel);transition:background-color .15s,border-color .15s,color .15s,transform .12s;text-align:center}
+#app .a-tira-dia small{font:650 11px/1 var(--a-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--a-mudo)}
+#app .a-tira-dia b{font:650 19px/1.1 var(--a-sans);font-variant-numeric:tabular-nums}
+#app .a-tira-dia span{font-size:11.5px;color:var(--a-ok);font-weight:600}
+#app .a-tira-dia:hover{border-color:var(--a-acento);background:var(--a-acento-bg)}
+#app .a-tira-dia[aria-pressed=true]{background:var(--a-acento);border-color:var(--a-acento);color:#fff;box-shadow:0 8px 18px -8px color-mix(in srgb,var(--a-acento) 80%,transparent)}
+#app .a-tira-dia[aria-pressed=true] small,#app .a-tira-dia[aria-pressed=true] span{color:#fff}
+#app .a-barra-fuso{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:18px}
+#app .a-seg-h{display:inline-grid;grid-template-columns:1fr 1fr;position:relative;padding:3px;border-radius:11px;background:var(--a-realce)}
+#app .a-seg-h::before{content:"";position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);border-radius:8px;background:var(--a-papel);box-shadow:0 1px 3px rgba(20,40,43,.2),0 0 0 1px var(--a-fio);transition:transform .24s cubic-bezier(.3,.8,.3,1)}
+#app .a-seg-h[data-v="1"]::before{transform:translateX(100%)}
+#app .a-seg-h button{position:relative;height:32px;padding:0 14px;border-radius:8px;font:650 13px/1 var(--a-sans);color:var(--a-suave);text-align:center}
+#app .a-seg-h button[aria-pressed=true]{color:var(--a-tinta)}
+#app .a-periodo{display:flex;align-items:center;gap:10px;margin:18px 0 11px;font:650 12px/1 var(--a-sans);letter-spacing:.09em;text-transform:uppercase;color:var(--a-mudo)}
+#app .a-periodo::after{content:"";flex:1;height:1px;background:var(--a-fio)}
+#app .a-periodo .a-ic{width:16px;height:16px}
+#app .a-slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+#app .a-slot{position:relative;display:grid;place-items:center;height:48px;border-radius:14px;border:1.5px solid var(--a-acento-bg2);background:var(--a-papel);font:650 15px/1 var(--a-sans);font-variant-numeric:tabular-nums;color:var(--a-acento-tx);transition:background-color .15s,border-color .15s,color .15s,transform .12s,box-shadow .15s}
+#app .a-slot:hover{border-color:var(--a-acento);background:var(--a-acento-bg)}
+#app .a-slot:active{transform:scale(.97)}
+#app .a-slot[aria-pressed=true]{background:var(--a-acento);border-color:var(--a-acento);color:#fff;box-shadow:0 10px 20px -8px color-mix(in srgb,var(--a-acento) 80%,transparent)}
+#app .a-slot[aria-pressed=true]::after{content:"";position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:#fff}
+@media (prefers-reduced-motion:no-preference){#app .a-slot{animation:a-pop .35s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 14ms)}@keyframes a-pop{from{opacity:0;transform:translateY(6px)}}}
+#app .a-vazio{display:grid;gap:10px;justify-items:start;padding:22px;border-radius:18px;background:var(--a-papel2);border:1px dashed var(--a-fio2);font-size:14.5px;color:var(--a-suave)}
+#app .a-vazio b{color:var(--a-tinta);font-size:16px}
+#app .a-contagem{margin-top:6px;font-size:13px;color:var(--a-suave)}
+
+/* formulário (estado 2, direita) */
+#app .a-form{display:grid;gap:16px;padding:22px;border-radius:24px;background:var(--a-papel2);border:1px solid var(--a-fio)}
+#app .a-form h2{font:650 16px/1.2 var(--a-sans);letter-spacing:-.015em}
+#app .a-escolha{display:grid;gap:3px;padding:14px 16px;border-radius:16px;background:var(--a-acento-bg);border:1px solid var(--a-acento-bg2)}
+#app .a-escolha.vazia{background:none;border:1.5px dashed var(--a-fio2);color:var(--a-suave);font-size:14px}
+#app .a-escolha small{font:650 11.5px/1 var(--a-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--a-acento-tx)}
+#app .a-escolha b{font:650 16px/1.3 var(--a-sans);letter-spacing:-.01em}
+#app .a-escolha span{font-size:13.5px;color:var(--a-suave)}
+#app .a-campo{display:grid;gap:7px;min-width:0}
+#app .a-campo label{display:flex;justify-content:space-between;gap:10px;font:650 13.5px/1.2 var(--a-sans)}
+#app .a-campo label span{font-weight:500;color:var(--a-mudo)}
+#app .a-campo input,#app .a-campo textarea{width:100%;padding:0 14px;height:48px;border-radius:13px;border:1px solid var(--a-fio2);background:var(--a-papel);font-size:15.5px;transition:border-color .15s,box-shadow .15s}
+#app .a-campo textarea{height:auto;min-height:118px;padding:12px 14px;resize:vertical;line-height:1.45}
+#app .a-campo input::placeholder,#app .a-campo textarea::placeholder{color:var(--a-mudo)}
+#app .a-campo input:hover,#app .a-campo textarea:hover{border-color:color-mix(in srgb,var(--a-acento) 45%,var(--a-fio2))}
+#app .a-campo input:focus,#app .a-campo textarea:focus{outline:none;border-color:var(--a-acento);box-shadow:0 0 0 4px var(--a-acento-bg2)}
+#app .a-campo[data-estado=erro] input,#app .a-campo[data-estado=erro] textarea{border-color:var(--a-erro);background:color-mix(in srgb,var(--a-erro) 5%,var(--a-papel))}
+#app .a-msg{display:none;align-items:center;gap:6px;font-size:13px;line-height:1.3;color:var(--a-erro)}
+#app .a-msg .a-ic{width:15px;height:15px}
+#app .a-campo[data-estado=erro] .a-msg{display:flex}
+#app .a-lembrete{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;line-height:1.4;color:var(--a-suave);cursor:pointer}
+#app .a-lembrete input{position:absolute;opacity:0;width:1px;height:1px}
+#app .a-caixa{flex:none;display:grid;place-items:center;width:21px;height:21px;margin-top:0;border-radius:7px;border:1.5px solid var(--a-fio2);background:var(--a-papel);color:#fff;transition:background-color .15s,border-color .15s}
+#app .a-caixa .a-ic{width:13px;height:13px;stroke-width:3;opacity:0}
+#app .a-lembrete input:checked+.a-caixa{background:var(--a-acento);border-color:var(--a-acento)}
+#app .a-lembrete input:checked+.a-caixa .a-ic{opacity:1}
+#app .a-lembrete input:focus-visible+.a-caixa{outline:3px solid color-mix(in srgb,var(--a-acento) 55%,transparent);outline-offset:2px}
+#app .a-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:50px;padding:0 24px;border-radius:15px;font:650 15.5px/1 var(--a-sans);letter-spacing:-.005em;text-align:center;white-space:nowrap;transition:transform .15s,background-color .15s,box-shadow .15s,border-color .15s,opacity .15s}
+#app .a-btn .a-ic{width:18px;height:18px}
+#app .a-btn-p{background:var(--a-acento);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 22px -10px color-mix(in srgb,var(--a-acento) 85%,transparent)}
+#app .a-btn-p:hover:not([disabled]){background:var(--a-acento-h);transform:translateY(-1px)}
+#app .a-btn-p:active:not([disabled]){transform:scale(.985)}
+#app .a-btn-p[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+#app .a-btn-s{background:var(--a-papel);border:1px solid var(--a-fio2);box-shadow:var(--a-sombra-1)}
+#app .a-btn-s:hover{border-color:var(--a-acento);background:var(--a-acento-bg)}
+#app .a-btn-b{width:100%}
+#app .a-btn-p.carregando{pointer-events:none}
+#app .a-giro{width:18px;height:18px;border-radius:50%;border:2.4px solid rgba(255,255,255,.35);border-top-color:#fff;animation:a-gira .8s linear infinite}
+@keyframes a-gira{to{transform:rotate(360deg)}}
+#app .a-form-nota{display:flex;gap:8px;align-items:center;justify-content:center;font-size:12.5px;color:var(--a-mudo);text-align:center}
+#app .a-form-nota .a-ic{width:14px;height:14px}
+
+/* confirmação (estado 3) */
+#app .a-conf{padding:44px 44px 38px;text-align:center}
+#app .a-selo{position:relative;display:grid;place-items:center;width:88px;height:88px;margin:0 auto 24px;border-radius:50%;background:var(--a-ok-bg);color:var(--a-ok)}
+#app .a-selo::before,#app .a-selo::after{content:"";position:absolute;border-radius:50%;border:2px solid var(--a-ok-bg)}
+#app .a-selo::before{inset:-9px}#app .a-selo::after{inset:-20px;opacity:.5}
+#app .a-selo svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:42;stroke-dashoffset:0}
+@media (prefers-reduced-motion:no-preference){#app[data-estado="3"] .a-selo svg{animation:a-traco .6s .2s ease-out both}@keyframes a-traco{from{stroke-dashoffset:42}}}
+#app .a-conf h1{font:500 clamp(28px,4cqi,36px)/1.1 var(--a-serif);letter-spacing:-.02em}
+#app .a-conf>p{max-width:460px;margin:12px auto 0;font-size:15.5px;color:var(--a-suave);text-wrap:pretty}
+#app .a-resumo{display:grid;gap:0;margin:28px 0 0;text-align:left;border-radius:22px;background:var(--a-papel2);border:1px solid var(--a-fio);overflow:hidden}
+#app .a-resumo>li{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;padding:16px 20px}
+#app .a-resumo>li+li{border-top:1px solid var(--a-fio)}
+#app .a-resumo .a-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--a-acento-bg);color:var(--a-acento-tx)}
+#app .a-dt{display:block;font:650 11.5px/1 var(--a-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--a-mudo)}
+#app .a-dd{display:block;margin-top:5px;font:650 16px/1.35 var(--a-sans);letter-spacing:-.01em}
+#app .a-dd small{display:block;margin-top:2px;font:400 14px/1.4 var(--a-sans);letter-spacing:0;color:var(--a-suave)}
+#app .a-acoes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:26px}
+#app .a-menu-caixa{position:relative}
+#app .a-menu{position:absolute;left:50%;bottom:calc(100% + 8px);z-index:5;display:none;min-width:240px;padding:6px;border-radius:16px;background:var(--a-papel);border:1px solid var(--a-fio2);box-shadow:var(--a-sombra-2);text-align:left;transform:translateX(-50%)}
+#app .a-menu.aberto{display:block}
+#app .a-menu button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border-radius:11px;font:600 14.5px/1.2 var(--a-sans)}
+#app .a-menu button:hover{background:var(--a-acento-bg)}
+#app .a-menu .a-ic{width:18px;height:18px;color:var(--a-acento-tx)}
+#app .a-link-perigo{padding:11px 14px;border-radius:12px;font:650 14.5px/1 var(--a-sans);color:var(--a-erro);transition:background-color .15s}
+#app .a-link-perigo:hover{background:var(--a-erro-bg)}
+#app .a-antes{margin-top:26px;padding:20px 22px;border-radius:22px;background:var(--a-acento-bg);text-align:left}
+#app .a-antes h2{font:650 15px/1.2 var(--a-sans);letter-spacing:-.01em}
+#app .a-antes ul{display:grid;gap:10px;margin-top:14px}
+#app .a-antes label{display:flex;gap:11px;align-items:flex-start;font-size:14.5px;line-height:1.4;cursor:pointer}
+#app .a-antes label input{position:absolute;opacity:0;width:1px;height:1px}
+#app .a-antes label input:checked+.a-caixa{background:var(--a-acento);border-color:var(--a-acento)}
+#app .a-antes label input:checked+.a-caixa .a-ic{opacity:1}
+#app .a-antes label input:checked~span:last-child{color:var(--a-suave);text-decoration:line-through;text-decoration-color:var(--a-mudo)}
+#app .a-antes label input:focus-visible+.a-caixa{outline:3px solid color-mix(in srgb,var(--a-acento) 55%,transparent);outline-offset:2px}
+#app .a-cancelar{display:none;margin-top:22px;padding:20px;border-radius:20px;background:var(--a-erro-bg);text-align:left}
+#app .a-cancelar.aberto{display:block}
+#app .a-cancelar h2{font:650 16px/1.25 var(--a-sans);color:var(--a-erro)}
+#app .a-cancelar p{margin-top:4px;font-size:14px;color:var(--a-suave)}
+#app .a-cancelar .a-sel{display:flex;margin-top:14px}
+#app .a-cancelar .a-sel select{width:100%;height:46px;font-size:14.5px;font-weight:500}
+#app .a-cancelar-acoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+#app .a-btn-perigo{background:var(--a-erro);color:#fff;height:46px;font-size:14.5px}
+:root[data-tema=escuro] #app .a-btn-perigo{color:#2a0610}
+#app .a-btn-perigo:hover{filter:brightness(1.08)}
+#app .a-conf[data-fase=cancelada] .a-selo{background:var(--a-erro-bg);color:var(--a-erro)}
+#app .a-conf[data-fase=cancelada] .a-selo::before,#app .a-conf[data-fase=cancelada] .a-selo::after{border-color:var(--a-erro-bg)}
+#app .a-conf[data-fase=cancelada] [data-so-ativa]{display:none}
+#app .a-conf:not([data-fase=cancelada]) [data-so-cancelada]{display:none}
+
+/* rodapé */
+#app .a-rodape{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 22px;margin-top:auto;padding:32px 0 36px;font-size:13px;color:var(--a-mudo)}
+#app .a-rodape button{padding:4px 2px;border-radius:6px;color:var(--a-suave)}
+#app .a-rodape button:hover{color:var(--a-tinta);text-decoration:underline;text-underline-offset:3px}
+#app .a-avisos{position:sticky;bottom:22px;z-index:60;height:0;display:flex;justify-content:center;pointer-events:none}
+#app .a-avisos>div{position:absolute;bottom:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+#app .a-toast{max-width:min(440px,calc(100cqi - 32px));padding:13px 18px;border-radius:14px;background:#10282b;color:#fff;font:500 14.5px/1.4 var(--a-sans);box-shadow:0 14px 40px -10px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14);animation:a-toast-in .3s cubic-bezier(.2,.8,.2,1) both;pointer-events:auto}
+#app .a-toast.sai{opacity:0;transform:translateY(8px);transition:opacity .3s,transform .3s}
+@keyframes a-toast-in{from{opacity:0;transform:translateY(12px) scale(.97)}}
+
+/* ── responsivo (largura do contêiner) ── */
+@container app (max-width: 1100px){
+  #app .a-cartao{grid-template-columns:288px minmax(0,1fr) 270px}
+  #app .a-perfil{padding:30px 24px 24px}
+  #app .a-centro{padding:30px 26px 28px}
+  #app .a-direita{padding:30px 24px 28px 0}
+  #app .a-slots{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@container app (max-width: 900px){
+  #app .a-pagina{padding:0 20px}
+  #app .a-cartao{grid-template-columns:minmax(0,1fr)}
+  #app .a-perfil{display:grid;grid-template-columns:auto 1fr;gap:18px 28px;border-right:0;border-bottom:1px solid var(--a-fio)}
+  #app .a-perfil .a-evento{grid-column:2;grid-row:1 / span 2}
+  #app .a-perfil .a-medico{grid-column:1}
+  #app .a-perfil .a-nota{grid-column:1;align-self:start}
+  #app .a-perfil .a-meta{grid-column:1 / -1;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:18px}
+  #app .a-perfil .a-modo{grid-column:1 / -1}
+  #app .a-perfil-rodape{display:none}
+  #app .a-centro{padding:28px 24px 8px}
+  #app .a-direita{padding:20px 24px 28px}
+  #app .a-slots{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@container app (max-width: 700px){
+  #app .a-pagina{padding:0 12px}
+  #app .a-topo{height:64px}
+  #app .a-marca{font-size:20px}
+  #app .a-marca small,#app .a-chip-seg{display:none}
+  #app .a-passos{gap:6px;margin-bottom:14px;font-size:12.5px}
+  #app .a-passos li+li::before{width:16px}
+  #app .a-passos li:not(.atual) span{display:none}
+  #app .a-cartao{border-radius:26px}
+  #app .a-perfil{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:14px;padding:20px 18px 18px}
+  #app .a-perfil .a-medico{flex:1 1 100%}
+  #app .a-avatar{width:52px;height:52px;font-size:20px}
+  #app .a-nota,#app .a-evento p,#app .a-modo>span{display:none}
+  #app .a-evento{flex:1 1 100%}
+  #app .a-evento h1{font-size:27px}
+  #app .a-perfil .a-meta{flex:1 1 100%;grid-template-columns:1fr;gap:10px;padding-top:14px}
+  #app .a-meta .a-det{display:none}
+  #app .a-perfil .a-modo{flex:1 1 100%}
+  #app[data-estado="2"] .a-perfil .a-meta,#app[data-estado="2"] .a-perfil .a-modo{display:none}
+  #app .a-centro{padding:22px 16px 6px}
+  #app .a-direita{padding:18px 16px 22px}
+  #app .a-cab-passo h2{font-size:22px}
+  #app .a-grade,#app .a-semana{gap:4px}
+  #app .a-dia{border-radius:13px;font-size:15px}
+  #app .a-cal-rodape{margin-top:16px}
+  #app .a-tira{grid-template-columns:repeat(6,1fr)}
+  #app .a-tira .a-seta{display:none}
+  #app .a-tira-dia{padding:9px 2px 8px;border-radius:14px}
+  #app .a-tira-dia b{font-size:17px}
+  #app .a-slots{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  #app .a-form{padding:18px;border-radius:20px}
+  #app .a-conf{padding:32px 20px 28px}
+  #app .a-resumo>li{grid-template-columns:38px 1fr;gap:12px;padding:14px 14px}
+  #app .a-resumo .a-ico{width:38px;height:38px;border-radius:12px}
+  #app .a-acoes .a-btn{flex:1 1 100%}
+  #app .a-menu-caixa{flex:1 1 100%}
+  #app .a-menu-caixa .a-btn{width:100%}
+  #app .a-tira-dia span i{display:none}
+  #app .a-menu{left:0;right:0;transform:none;min-width:0}
+  #app .a-aviso-remarcar{grid-template-columns:auto minmax(0,1fr)}
+  #app .a-aviso-remarcar button{grid-column:1 / -1}
+}
+@media (prefers-reduced-motion:reduce){
+  #app *{scroll-behavior:auto!important}
+  #app .a-dia,#app .a-slot,#app .a-btn,#app .a-chip,#app .a-seg::before,#app .a-seg-h::before{transition:none!important}
+}
+
+#app .a-passos i .ck{display:none}
+#app .a-passos li.feito i .ck{display:block}
+#app .a-passos li.feito i .n{display:none}
+#app .a-selo .nao{display:none}
+#app .a-conf[data-fase=cancelada] .a-selo .ok{display:none}
+#app .a-conf[data-fase=cancelada] .a-selo .nao{display:block}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="a-i-ck" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol><symbol id="a-i-seta" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></symbol><symbol id="a-i-relogio" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 8v4.5l3 1.5"/></symbol><symbol id="a-i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><path d="M12 12a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2z"/></symbol><symbol id="a-i-carteira" viewBox="0 0 24 24"><path d="M4 7h14a2 2 0 0 1 2 2v9H4z"/><path d="M4 7l11-3v3"/><path d="M16 13.5h.1"/></symbol><symbol id="a-i-video" viewBox="0 0 24 24"><path d="M3 7h12v10H3z"/><path d="M15 11l6-3.5v9L15 13z"/></symbol><symbol id="a-i-calendario" viewBox="0 0 24 24"><path d="M4 6h16v14H4z"/><path d="M4 10h16"/><path d="M8 3v4"/><path d="M16 3v4"/></symbol><symbol id="a-i-globo" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 3.8 5.4 3.8 9s-1.2 6.6-3.8 9c-2.6-2.4-3.8-5.4-3.8-9S9.4 5.4 12 3z"/></symbol><symbol id="a-i-sol" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M12 2.5v2"/><path d="M12 19.5v2"/><path d="M2.5 12h2"/><path d="M19.5 12h2"/><path d="M5.3 5.3l1.4 1.4"/><path d="M17.3 17.3l1.4 1.4"/><path d="M5.3 18.7l1.4-1.4"/><path d="M17.3 6.7l1.4-1.4"/></symbol><symbol id="a-i-tarde" viewBox="0 0 24 24"><path d="M5 17a7 7 0 0 1 14 0"/><path d="M2.5 17h19"/><path d="M12 5v3"/><path d="M5.2 9.2l1.6 1.6"/><path d="M18.8 9.2l-1.6 1.6"/><path d="M7 21h10"/></symbol><symbol id="a-i-escudo" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol><symbol id="a-i-info" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 11v5"/><path d="M12 8v.1"/></symbol><symbol id="a-i-troca" viewBox="0 0 24 24"><path d="M20 8a8 8 0 0 0-14-2L4 8"/><path d="M4 4v4h4"/><path d="M4 16a8 8 0 0 0 14 2l2-2"/><path d="M20 20v-4h-4"/></symbol><symbol id="a-i-baixar" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></symbol><symbol id="a-i-mail" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></symbol><symbol id="a-i-usuario" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4.5 20c.8-3.5 3.8-5.5 7.5-5.5s6.7 2 7.5 5.5"/></symbol><symbol id="a-i-estrela" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5l-5.3 2.9 1.2-6L3.4 9.3l6-.7z" fill="currentColor" stroke="none"/></symbol><symbol id="a-i-cadeado" viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3"/><path d="M5.5 11h13v9h-13z"/></symbol><symbol id="a-i-balao" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol></defs></svg>
+  <div class="a-pagina">
+    <header class="a-topo">
+      <div class="a-marca"><svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="#0b5c63"/><circle cx="13.5" cy="17" r="6.5" fill="none" stroke="#fffdf9" stroke-width="2.4"/><circle cx="21" cy="17" r="6.5" fill="#e9d9c0" opacity=".95"/></svg><span>Encontro</span><small>Agendamento online</small></div>
+      <div class="a-topo-dir">
+        <span class="a-chip-seg"><svg class="a-ic" aria-hidden="true"><use href="#a-i-escudo"/></svg>Reserva segura</span>
+        <button class="a-btn-t" type="button" data-aviso="Aqui abriria a central de ajuda. Esta é só uma maquete.">Ajuda</button>
+      </div>
+    </header>
+
+    <ol class="a-passos" aria-label="Etapas do agendamento" data-passos>
+      <li><i><b class="n">1</b><svg class="a-ic ck" aria-hidden="true"><use href="#a-i-ck"/></svg></i><span>Dia</span></li>
+      <li><i><b class="n">2</b><svg class="a-ic ck" aria-hidden="true"><use href="#a-i-ck"/></svg></i><span>Horário e dados</span></li>
+      <li><i><b class="n">3</b><svg class="a-ic ck" aria-hidden="true"><use href="#a-i-ck"/></svg></i><span>Confirmação</span></li>
+    </ol>
+
+    <div class="a-cartao">
+      <aside class="a-perfil" aria-label="Sobre a consulta">
+        <div class="a-medico">
+          <div class="a-avatar" aria-hidden="true">HP<i><svg class="a-ic"><use href="#a-i-ck"/></svg></i></div>
+          <div><b>Dra. Helena Prado</b><small>Endocrinologista · Recife</small></div>
+        </div>
+        <div class="a-nota">
+          <span class="a-estrelas" role="img" aria-label="Nota 4,9 de 5"><svg><use href="#a-i-estrela"/></svg><svg><use href="#a-i-estrela"/></svg><svg><use href="#a-i-estrela"/></svg><svg><use href="#a-i-estrela"/></svg><svg><use href="#a-i-estrela"/></svg></span>
+          <span><b>4,9</b> · 312 avaliações</span>
+        </div>
+        <div class="a-evento">
+          <h1 id="a-h1" tabindex="-1">Consulta de retorno</h1>
+          <p>Para quem já foi atendido nos últimos 12 meses: revisão do tratamento, ajuste de doses e leitura dos exames. Traga os resultados mais recentes.</p>
+        </div>
+        <ul class="a-meta">
+          <li><svg class="a-ic" aria-hidden="true"><use href="#a-i-relogio"/></svg><div><b>30 minutos</b></div></li>
+          <li><svg class="a-ic" aria-hidden="true"><use data-modo-icone href="#a-i-pin"/></svg><div><b data-modo-titulo>Presencial</b><small class="a-det" data-modo-detalhe>Av. Boa Viagem, 1200, sala 1304 · Recife (PE)</small></div></li>
+          <li><svg class="a-ic" aria-hidden="true"><use href="#a-i-carteira"/></svg><div><b>R$ 320,00</b><small class="a-det">pagamento no dia, no consultório</small></div></li>
+        </ul>
+        <div class="a-modo">
+          <span id="a-modo-rotulo">Como você prefere?</span>
+          <div class="a-seg" data-seg-modo data-v="0" role="group" aria-labelledby="a-modo-rotulo">
+            <button type="button" data-modo="presencial" aria-pressed="true"><svg class="a-ic" aria-hidden="true"><use href="#a-i-pin"/></svg>Presencial</button>
+            <button type="button" data-modo="video" aria-pressed="false"><svg class="a-ic" aria-hidden="true"><use href="#a-i-video"/></svg>Por vídeo</button>
+          </div>
+        </div>
+        <div class="a-perfil-rodape"><svg class="a-ic" aria-hidden="true"><use href="#a-i-escudo"/></svg>Seus dados ficam protegidos (LGPD)</div>
+      </aside>
+
+      <!-- ═════ ESTADO 1 · ESCOLHER DIA ═════ -->
+      <div class="a-passo" data-passo="1">
+        <section class="a-centro" aria-labelledby="a-h2-dia">
+          <div class="a-aviso-remarcar" data-aviso-remarcar role="status">
+            <svg class="a-ic" aria-hidden="true"><use href="#a-i-troca"/></svg>
+            <span>Você está remarcando a consulta de <b data-remarcando-quando>terça-feira, 20 de outubro, às 10:00</b>.</span>
+            <button type="button" data-manter>Manter o horário atual</button>
+          </div>
+          <div class="a-cab-passo">
+            <div><h2 id="a-h2-dia" tabindex="-1">Escolha o dia</h2><p>Os dias em verde têm horários livres. Atendimento às segundas, terças, quintas e sextas.</p></div>
+          </div>
+          <div class="a-mes">
+            <h3 data-mes-titulo aria-live="polite">Outubro <span>2026</span></h3>
+            <div class="a-setas">
+              <button class="a-seta v-esq" type="button" data-mes="-1" aria-label="Mês anterior"><svg class="a-ic" aria-hidden="true"><use href="#a-i-seta"/></svg></button>
+              <button class="a-seta" type="button" data-mes="1" aria-label="Próximo mês"><svg class="a-ic" aria-hidden="true"><use href="#a-i-seta"/></svg></button>
+            </div>
+          </div>
+          <div class="a-semana" aria-hidden="true"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div>
+          <div class="a-grade" role="group" aria-label="Dias do mês" data-grade></div>
+          <div class="a-cal-rodape">
+            <div class="a-legenda"><span><i></i>Com horários</span><span><i class="n"></i>Sem horários</span></div>
+            <div class="a-fuso"><svg class="a-ic" aria-hidden="true"><use href="#a-i-globo"/></svg><label class="a-sr" for="a-fuso-1">Fuso horário</label><span class="a-sel"><select id="a-fuso-1" data-fuso></select></span></div>
+          </div>
+        </section>
+        <section class="a-direita a-prox" aria-labelledby="a-h2-prox">
+          <h2 id="a-h2-prox">Mais cedo possível</h2>
+          <p>Prefere não procurar? Escolha direto um destes horários.</p>
+          <div class="a-prox-lista" data-prox></div>
+          <div class="a-ajuda"><svg class="a-ic" aria-hidden="true"><use href="#a-i-balao"/></svg><p>Nenhum horário serve? <button type="button" data-aviso="Aqui abriria o WhatsApp da recepção. Esta é só uma maquete.">Fale com a recepção</button> e a gente encontra uma vaga.</p></div>
+        </section>
+      </div>
+
+      <!-- ═════ ESTADO 2 · ESCOLHER HORÁRIO ═════ -->
+      <div class="a-passo" data-passo="2">
+        <section class="a-centro" aria-labelledby="a-h2-hor">
+          <button class="a-voltar" type="button" data-ir="1"><svg class="a-ic" aria-hidden="true"><use href="#a-i-seta"/></svg>Trocar o dia</button>
+          <div class="a-cab-passo">
+            <div><h2 id="a-h2-hor" tabindex="-1" data-titulo-dia>Horários de terça-feira, 20 de outubro</h2><p data-contagem>9 horários livres · consulta de 30 minutos</p></div>
+          </div>
+          <div class="a-tira" data-tira role="group" aria-label="Próximos dias com horários"></div>
+          <div class="a-barra-fuso">
+            <div class="a-fuso"><svg class="a-ic" aria-hidden="true"><use href="#a-i-globo"/></svg><label class="a-sr" for="a-fuso-2">Fuso horário</label><span class="a-sel"><select id="a-fuso-2" data-fuso></select></span></div>
+            <div class="a-seg-h" data-seg-h data-v="0" role="group" aria-label="Formato da hora">
+              <button type="button" data-h24="1" aria-pressed="true">24 h</button>
+              <button type="button" data-h24="0" aria-pressed="false">12 h</button>
+            </div>
+          </div>
+          <div data-slots></div>
+        </section>
+        <section class="a-direita" aria-labelledby="a-h2-dados">
+          <div class="a-form" data-form>
+            <h2 id="a-h2-dados">Seus dados</h2>
+            <div class="a-escolha vazia" data-escolha aria-live="polite">Escolha um horário ao lado para continuar.</div>
+            <div class="a-campo" data-campo>
+              <label for="a-nome">Nome completo</label>
+              <input id="a-nome" type="text" autocomplete="name" value="Carolina Mendes" aria-describedby="a-m-nome">
+              <span class="a-msg" id="a-m-nome"><svg class="a-ic" aria-hidden="true"><use href="#a-i-info"/></svg><span></span></span>
+            </div>
+            <div class="a-campo" data-campo>
+              <label for="a-email">E-mail</label>
+              <input id="a-email" type="email" autocomplete="email" value="carol.mendes@gmail.com" aria-describedby="a-m-email">
+              <span class="a-msg" id="a-m-email"><svg class="a-ic" aria-hidden="true"><use href="#a-i-info"/></svg><span></span></span>
+            </div>
+            <div class="a-campo" data-campo>
+              <label for="a-obs">Observação <span data-obs-cont>0/280</span></label>
+              <textarea id="a-obs" maxlength="280" placeholder="O que você gostaria de tratar na consulta?" aria-describedby="a-m-obs">Quero rever a dose da levotiroxina. Tenho os exames de setembro (TSH e T4 livre).</textarea>
+              <span class="a-msg" id="a-m-obs"><svg class="a-ic" aria-hidden="true"><use href="#a-i-info"/></svg><span></span></span>
+            </div>
+            <label class="a-lembrete"><input type="checkbox" id="a-lembrete" checked><span class="a-caixa"><svg class="a-ic" aria-hidden="true"><use href="#a-i-ck"/></svg></span><span>Receber um lembrete por WhatsApp 24 horas antes</span></label>
+            <button class="a-btn a-btn-p a-btn-b" type="button" data-confirmar disabled><span data-confirmar-rotulo>Escolha um horário</span></button>
+            <p class="a-form-nota"><svg class="a-ic" aria-hidden="true"><use href="#a-i-cadeado"/></svg>Seus dados são usados só para este agendamento.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- ═════ ESTADO 3 · CONFIRMADO ═════ -->
+      <div class="a-passo" data-passo="3">
+        <section class="a-conf" data-conf data-fase="ok" aria-labelledby="a-h1-conf">
+          <div class="a-selo"><svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><svg class="nao" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></div>
+          <h1 id="a-h1-conf" tabindex="-1" data-conf-titulo>Consulta confirmada</h1>
+          <p data-conf-texto>Enviamos os detalhes para <b data-conf-email>carol.mendes@gmail.com</b>. Se marcou o lembrete, a gente avisa por WhatsApp 24 horas antes.</p>
+          <ul class="a-resumo">
+            <li><span class="a-ico"><svg class="a-ic" aria-hidden="true"><use href="#a-i-calendario"/></svg></span><div><span class="a-dt">Quando</span><strong class="a-dd" data-conf-quando>terça-feira, 20 de outubro de 2026<small data-conf-hora>10:00 às 10:30 · America/Sao_Paulo</small></strong></div></li>
+            <li><span class="a-ico"><svg class="a-ic" aria-hidden="true"><use href="#a-i-usuario"/></svg></span><div><span class="a-dt">Com quem</span><strong class="a-dd">Dra. Helena Prado<small>Consulta de retorno · 30 minutos · R$ 320,00 no dia</small></strong></div></li>
+            <li><span class="a-ico"><svg class="a-ic" aria-hidden="true"><use data-conf-onde-icone href="#a-i-pin"/></svg></span><div><span class="a-dt">Onde</span><strong class="a-dd" data-conf-onde>Consultório, Boa Viagem<small data-conf-onde-det>Av. Boa Viagem, 1200, sala 1304 · Recife (PE). Chegue 10 minutos antes.</small></strong></div></li>
+            <li><span class="a-ico"><svg class="a-ic" aria-hidden="true"><use href="#a-i-mail"/></svg></span><div><span class="a-dt">Paciente</span><strong class="a-dd" data-conf-paciente>Carolina Mendes<small data-conf-email2>carol.mendes@gmail.com</small></strong></div></li>
+          </ul>
+          <div class="a-acoes" data-so-ativa>
+            <div class="a-menu-caixa">
+              <button class="a-btn a-btn-p" type="button" data-menu-cal aria-haspopup="true" aria-expanded="false"><svg class="a-ic" aria-hidden="true"><use href="#a-i-calendario"/></svg>Adicionar à agenda</button>
+              <div class="a-menu" data-menu role="menu" aria-label="Adicionar à agenda">
+                <button type="button" role="menuitem" data-cal="Google Agenda"><svg class="a-ic" aria-hidden="true"><use href="#a-i-calendario"/></svg>Google Agenda</button>
+                <button type="button" role="menuitem" data-cal="Outlook"><svg class="a-ic" aria-hidden="true"><use href="#a-i-calendario"/></svg>Outlook</button>
+                <button type="button" role="menuitem" data-cal="arquivo .ics"><svg class="a-ic" aria-hidden="true"><use href="#a-i-baixar"/></svg>Baixar arquivo .ics</button>
+              </div>
+            </div>
+            <button class="a-btn a-btn-s" type="button" data-remarcar><svg class="a-ic" aria-hidden="true"><use href="#a-i-troca"/></svg>Remarcar</button>
+            <button class="a-link-perigo" type="button" data-cancelar-abrir aria-expanded="false">Cancelar consulta</button>
+          </div>
+          <div class="a-cancelar" data-cancelar role="group" aria-labelledby="a-h2-canc">
+            <h2 id="a-h2-canc">Cancelar esta consulta?</h2>
+            <p>O horário volta a ficar livre para outros pacientes. Cancelamentos até 24 horas antes não têm custo.</p>
+            <span class="a-sel"><select data-motivo aria-label="Motivo do cancelamento">
+              <option>Tive um imprevisto de trabalho</option>
+              <option>Vou remarcar para outro dia</option>
+              <option>Já estou me sentindo melhor</option>
+              <option>Prefiro não informar</option>
+            </select></span>
+            <div class="a-cancelar-acoes">
+              <button class="a-btn a-btn-perigo" type="button" data-cancelar-confirmar>Cancelar consulta</button>
+              <button class="a-btn a-btn-s" style="height:46px;font-size:14.5px" type="button" data-cancelar-fechar>Manter a consulta</button>
+            </div>
+          </div>
+          <div class="a-antes" data-so-ativa>
+            <h2>Antes da consulta</h2>
+            <ul>
+              <li><label><input type="checkbox"><span class="a-caixa"><svg class="a-ic" aria-hidden="true"><use href="#a-i-ck"/></svg></span><span>Separar os exames de setembro (TSH e T4 livre)</span></label></li>
+              <li><label><input type="checkbox"><span class="a-caixa"><svg class="a-ic" aria-hidden="true"><use href="#a-i-ck"/></svg></span><span>Levar um documento com foto e a carteirinha do convênio</span></label></li>
+              <li><label><input type="checkbox"><span class="a-caixa"><svg class="a-ic" aria-hidden="true"><use href="#a-i-ck"/></svg></span><span>Anotar as dúvidas e os sintomas das últimas semanas</span></label></li>
+            </ul>
+          </div>
+          <div class="a-acoes" data-so-cancelada>
+            <button class="a-btn a-btn-p" type="button" data-novo>Agendar um novo horário</button>
+            <button class="a-btn a-btn-s" type="button" data-desfazer>Desfazer o cancelamento</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="a-rodape">
+      <span>Encontro · agendamento online · marca fictícia</span>
+      <button type="button" data-aviso-auto>Termos de uso</button>
+      <button type="button" data-aviso-auto>Privacidade e LGPD</button>
+      <button type="button" data-aviso-auto>Sou profissional de saúde</button>
+    </footer>
+  </div>
+  <div class="a-avisos" aria-live="polite"><div data-avisos></div></div>
+</main>
+
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura da Agenda: cartão de agendamento com perfil, calendário e horários">
+  <rect width="320" height="180" fill="#f3efe7"/><circle cx="20" cy="-6" r="90" fill="#0b5c63" opacity=".1"/>
+  <rect x="14" y="12" width="12" height="12" rx="4" fill="#0b5c63"/><rect x="32" y="15" width="34" height="6" rx="3" fill="#14282b"/>
+  <rect x="14" y="34" width="292" height="160" rx="16" fill="#fffdf9" stroke="#e1dccf"/>
+  <line x1="92" y1="34" x2="92" y2="180" stroke="#ece7da"/><line x1="236" y1="34" x2="236" y2="180" stroke="#ece7da"/>
+  <circle cx="34" cy="58" r="12" fill="#0b5c63"/><rect x="24" y="78" width="58" height="8" rx="4" fill="#14282b"/><rect x="24" y="92" width="44" height="5" rx="2.5" fill="#b9c4c4"/>
+  <rect x="24" y="108" width="50" height="5" rx="2.5" fill="#d3dcdc"/><rect x="24" y="119" width="40" height="5" rx="2.5" fill="#d3dcdc"/><rect x="24" y="130" width="46" height="5" rx="2.5" fill="#d3dcdc"/>
+  <rect x="104" y="46" width="62" height="8" rx="4" fill="#14282b"/>
+  <g fill="#dfeeed">
+    <rect x="104" y="66" width="20" height="16" rx="5"/><rect x="128" y="66" width="20" height="16" rx="5" fill="#0b5c63"/><rect x="152" y="66" width="20" height="16" rx="5"/><rect x="176" y="66" width="20" height="16" rx="5"/><rect x="200" y="66" width="20" height="16" rx="5" fill="#ece7da"/>
+    <rect x="104" y="88" width="20" height="16" rx="5"/><rect x="128" y="88" width="20" height="16" rx="5" fill="#ece7da"/><rect x="152" y="88" width="20" height="16" rx="5"/><rect x="176" y="88" width="20" height="16" rx="5"/><rect x="200" y="88" width="20" height="16" rx="5"/>
+    <rect x="104" y="110" width="20" height="16" rx="5" fill="#ece7da"/><rect x="128" y="110" width="20" height="16" rx="5"/><rect x="152" y="110" width="20" height="16" rx="5"/><rect x="176" y="110" width="20" height="16" rx="5" fill="#ece7da"/><rect x="200" y="110" width="20" height="16" rx="5"/>
+    <rect x="104" y="132" width="20" height="16" rx="5"/><rect x="128" y="132" width="20" height="16" rx="5"/><rect x="152" y="132" width="20" height="16" rx="5" fill="#ece7da"/><rect x="176" y="132" width="20" height="16" rx="5"/>
+  </g>
+  <rect x="248" y="48" width="48" height="7" rx="3.5" fill="#14282b"/>
+  <g fill="none" stroke="#bcd9d6" stroke-width="1.5"><rect x="248" y="66" width="48" height="16" rx="6"/><rect x="248" y="88" width="48" height="16" rx="6"/><rect x="248" y="110" width="48" height="16" rx="6"/></g>
+  <rect x="248" y="88" width="48" height="16" rx="6" fill="#0b5c63"/><rect x="258" y="94" width="28" height="4" rx="2" fill="#fffdf9"/>
+  <rect x="258" y="72" width="28" height="4" rx="2" fill="#0b5c63"/><rect x="258" y="116" width="28" height="4" rx="2" fill="#0b5c63"/>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Encontro · página de agendamento. O app sozinho: funciona sem o stand (é o que o botão "Código" entrega).
+// Mudar de estado = escrever #app[data-estado] (1 escolher dia, 2 escolher horário, 3 confirmado).
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  var raiz = document.documentElement;
+  function $(s, r) { return (r || app).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || app).querySelectorAll(s)); }
+  var mqReduz = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : {matches: false};
+  function reduz() { return mqReduz.matches; }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+
+  // ── a agenda da Dra. Helena (dados fictícios, calculados no navegador) ───
+  var HOJE = new Date(2026, 9, 19);                       // segunda-feira, 19 de outubro de 2026
+  var MES_MIN = new Date(2026, 9, 1), MES_MAX = new Date(2027, 2, 1);
+  var SEMANA = {1: [["08:00", "12:00"], ["14:00", "18:00"]], 2: [["09:00", "12:30"], ["14:00", "17:30"]], 4: [["08:00", "12:00"], ["14:00", "18:00"]], 5: [["08:00", "12:00"]]};
+  var FERIADOS = {"2026-11-02": "Finados", "2026-11-15": "Proclamação da República", "2026-11-20": "Consciência Negra", "2026-12-25": "Natal", "2027-01-01": "Confraternização Universal", "2027-02-08": "Carnaval", "2027-02-09": "Carnaval"};
+  var FOLGAS = {"2026-10-30": "congresso", "2026-12-24": "recesso", "2026-12-31": "recesso"};
+  var LOTADOS = {"2026-10-22": true};
+  var FUSOS = [
+    {id: "America/Sao_Paulo", nome: "Brasília", gmt: "GMT−3", min: 0},
+    {id: "America/Recife", nome: "Recife", gmt: "GMT−3", min: 0},
+    {id: "America/Manaus", nome: "Manaus", gmt: "GMT−4", min: -60},
+    {id: "America/Rio_Branco", nome: "Rio Branco", gmt: "GMT−5", min: -120},
+    {id: "America/Noronha", nome: "Fernando de Noronha", gmt: "GMT−2", min: 60}
+  ];
+  var reservas = {};
+
+  var S = {mes: new Date(2026, 9, 1), data: null, hora: null, fuso: "America/Sao_Paulo", h24: true, modo: "presencial",
+           tiraIni: 0, remarcando: null, confirmada: null, remarcada: false, cancelada: false};
+
+  function chave(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function dataDe(k) { var p = k.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function minutos(h) { var p = h.split(":"); return +p[0] * 60 + +p[1]; }
+  function hash(s) { var h = 7; for (var i = 0; i < s.length; i++) h = (h * 33 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+  function fusoAtual() { return FUSOS.filter(function (f) { return f.id === S.fuso; })[0]; }
+  function fmtHora(h) {
+    var t = ((minutos(h) + fusoAtual().min) % 1440 + 1440) % 1440, hh = Math.floor(t / 60), mm = t % 60;
+    if (S.h24) return pad(hh) + ":" + pad(mm);
+    return (hh % 12 || 12) + ":" + pad(mm) + (hh >= 12 ? " PM" : " AM");
+  }
+  function exibido(h) { return ((minutos(h) + fusoAtual().min) % 1440 + 1440) % 1440; }
+  function somar(h, m) { var t = minutos(h) + m; return pad(Math.floor(t / 60)) + ":" + pad(t % 60); }
+  var FMT_LONGO = new Intl.DateTimeFormat("pt-BR", {weekday: "long", day: "numeric", month: "long"});
+  var FMT_COMPLETO = new Intl.DateTimeFormat("pt-BR", {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+  var FMT_CURTO = new Intl.DateTimeFormat("pt-BR", {weekday: "short"});
+  var FMT_MES = new Intl.DateTimeFormat("pt-BR", {month: "long"});
+
+  function todosOsHorarios(k) {
+    var d = dataDe(k), faixas = SEMANA[d.getDay()] || [], out = [];
+    faixas.forEach(function (f) { for (var m = minutos(f[0]); m < minutos(f[1]); m += 30) out.push(pad(Math.floor(m / 60)) + ":" + pad(m % 60)); });
+    return out;
+  }
+  function livres(k) {
+    if (FERIADOS[k] || FOLGAS[k] || LOTADOS[k]) return [];
+    return todosOsHorarios(k).filter(function (h) { return !reservas[k + " " + h] && hash(k + h) % 100 >= 27; });
+  }
+  function infoDia(d) {
+    var k = chave(d);
+    if (d <= HOJE) return {tipo: "passado", n: 0};
+    if (FERIADOS[k]) return {tipo: "feriado", n: 0, nota: FERIADOS[k]};
+    if (FOLGAS[k]) return {tipo: "folga", n: 0, nota: FOLGAS[k]};
+    if (!SEMANA[d.getDay()]) return {tipo: "folga", n: 0};
+    var n = livres(k).length;
+    return {tipo: n ? "livre" : "lotado", n: n};
+  }
+  function diasLivres() {
+    var out = [], d = new Date(HOJE);
+    d.setDate(d.getDate() + 1);
+    while (d < MES_MAX && out.length < 90) { if (infoDia(d).tipo === "livre") out.push(chave(d)); d.setDate(d.getDate() + 1); }
+    return out;
+  }
+  function slotPadrao(k) { var l = livres(k); return l.filter(function (h) { return h >= "10:00"; })[0] || l[0] || null; }
+
+  // ── avisos ──────────────────────────────────────────────────────────────
+  var pilha = $("[data-avisos]");
+  function toast(msg) {
+    var d = document.createElement("div");
+    d.className = "a-toast"; d.textContent = msg;
+    pilha.appendChild(d);
+    while (pilha.children.length > 3) pilha.removeChild(pilha.firstChild);
+    setTimeout(function () { d.classList.add("sai"); setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 320); }, 3400);
+  }
+
+  // ── navegação entre os passos ───────────────────────────────────────────
+  var paginaAtual = 1;
+  function estado() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function eRolavel() { var o = getComputedStyle(app).overflowY; return o === "auto" || o === "scroll"; }
+  function rolarTopo() { if (eRolavel()) app.scrollTop = 0; else window.scrollTo(0, 0); }
+  function marcarPassos() {
+    var n = estado();
+    $$("[data-passos] li").forEach(function (li, i) {
+      li.classList.toggle("feito", i + 1 < n || (n === 3 && !S.cancelada));
+      li.classList.toggle("atual", i + 1 === n && !(n === 3 && !S.cancelada));
+      if (i + 1 === n && !(n === 3 && !S.cancelada)) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current");
+    });
+  }
+  function garantir(n, doStand) {
+    if (n >= 2 && !S.data) { var l = diasLivres(); S.data = l[0]; S.mes = new Date(dataDe(S.data).getFullYear(), dataDe(S.data).getMonth(), 1); }
+    if (n >= 2 && !S.hora && (doStand || n === 3)) S.hora = slotPadrao(S.data);
+    if (n === 3) {
+      if (S.cancelada && doStand) { S.cancelada = false; S.confirmada = null; }
+      if (!S.confirmada && S.hora) reservar();
+    }
+  }
+  function mudou(n, foco, doStand) {
+    var troca = n !== paginaAtual;
+    paginaAtual = n;
+    garantir(n, doStand);
+    renderTudo();
+    if (troca || doStand) rolarTopo();
+    if (foco && troca) {
+      var h = $(n === 1 ? "#a-h2-dia" : n === 2 ? "#a-h2-hor" : "#a-h1-conf");
+      if (h) { try { h.focus({preventScroll: true}); } catch (e) { /* sem foco programático */ } }
+    }
+  }
+  function ir(n) { app.setAttribute("data-estado", String(n)); mudou(n, true, false); }
+  app.addEventListener("maquete:estado", function (e) { mudou(e.detail.estado, false, true); });
+
+  // ── calendário ──────────────────────────────────────────────────────────
+  var grade = $("[data-grade]");
+  function renderCal() {
+    var ano = S.mes.getFullYear(), mes = S.mes.getMonth(), primeiro = new Date(ano, mes, 1).getDay(), total = new Date(ano, mes + 1, 0).getDate();
+    var tit = $("[data-mes-titulo]");
+    tit.textContent = FMT_MES.format(S.mes) + " ";
+    var sp = document.createElement("span"); sp.textContent = String(ano); tit.appendChild(sp);
+    $('[data-mes="-1"]').disabled = S.mes <= MES_MIN;
+    $('[data-mes="1"]').disabled = S.mes >= MES_MAX;
+    while (grade.firstChild) grade.removeChild(grade.firstChild);
+    var alvo = null;
+    for (var i = 0; i < primeiro; i++) { var v = document.createElement("span"); v.className = "a-dia vazio"; v.setAttribute("aria-hidden", "true"); grade.appendChild(v); }
+    for (var d = 1; d <= total; d++) {
+      var dt = new Date(ano, mes, d), k = chave(dt), inf = infoDia(dt), b = document.createElement("button");
+      b.type = "button"; b.textContent = String(d); b.setAttribute("data-k", k);
+      b.className = "a-dia" + (inf.tipo === "livre" ? " livre" : "") + (inf.tipo === "feriado" ? " feriado" : "") + (k === chave(HOJE) ? " hoje" : "") + (k === S.data ? " sel" : "");
+      var rotulo = cap(FMT_LONGO.format(dt));
+      if (inf.tipo === "livre") rotulo += ": " + inf.n + (inf.n === 1 ? " horário livre" : " horários livres");
+      else if (inf.tipo === "feriado") rotulo += ": feriado, " + inf.nota;
+      else if (inf.tipo === "lotado") rotulo += ": sem horários livres";
+      else if (inf.tipo === "folga") rotulo += ": sem atendimento" + (inf.nota ? " (" + inf.nota + ")" : "");
+      else rotulo += ": data passada";
+      b.setAttribute("aria-label", rotulo);
+      if (inf.tipo !== "livre") b.setAttribute("aria-disabled", "true");
+      if (k === S.data) b.setAttribute("aria-pressed", "true");
+      b.tabIndex = -1;
+      if (!alvo && (k === S.data || (!S.data && inf.tipo === "livre"))) alvo = b;
+      grade.appendChild(b);
+    }
+    var todos = $$(".a-dia:not(.vazio)", grade);
+    (alvo || todos[0]).tabIndex = 0;
+  }
+  grade.addEventListener("click", function (e) {
+    var b = e.target.closest(".a-dia");
+    if (!b || b.getAttribute("aria-disabled") === "true" || b.classList.contains("vazio")) return;
+    S.data = b.getAttribute("data-k"); S.hora = null;
+    ir(2);
+  });
+  grade.addEventListener("keydown", function (e) {
+    var passo = {ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7}[e.key];
+    if (passo === undefined) return;
+    var todos = $$(".a-dia:not(.vazio)", grade), i = todos.indexOf(document.activeElement), j = i + passo;
+    if (i < 0 || j < 0 || j >= todos.length) return;
+    e.preventDefault();
+    todos[i].tabIndex = -1; todos[j].tabIndex = 0; todos[j].focus();
+  });
+  $$("[data-mes]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var m = new Date(S.mes.getFullYear(), S.mes.getMonth() + parseInt(b.getAttribute("data-mes"), 10), 1);
+      if (m < MES_MIN || m > MES_MAX) return;
+      S.mes = m; renderCal();
+    });
+  });
+
+  // ── "mais cedo possível" ────────────────────────────────────────────────
+  function renderProx() {
+    var box = $("[data-prox]"), lista = diasLivres().slice(0, 3);
+    while (box.firstChild) box.removeChild(box.firstChild);
+    lista.forEach(function (k) {
+      var l = livres(k), bloco = document.createElement("div"), t = document.createElement("b"), s = document.createElement("small"), ch = document.createElement("div");
+      bloco.className = "a-prox-bloco"; ch.className = "a-chips";
+      t.textContent = cap(FMT_LONGO.format(dataDe(k)));
+      s.textContent = l.length + (l.length === 1 ? " horário livre" : " horários livres");
+      l.slice(0, 3).forEach(function (h) { ch.appendChild(chip(fmtHora(h), k, h, "Escolher " + fmtHora(h) + ", " + FMT_LONGO.format(dataDe(k)))); });
+      if (l.length > 3) ch.appendChild(chip("+" + (l.length - 3), k, null, "Ver os outros " + (l.length - 3) + " horários de " + FMT_LONGO.format(dataDe(k)), true));
+      bloco.append(t, s, ch);
+      box.appendChild(bloco);
+    });
+  }
+  function chip(txt, k, h, rotulo, mais) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "a-chip" + (mais ? " mais" : ""); b.textContent = txt;
+    b.setAttribute("data-k", k); if (h) b.setAttribute("data-h", h); b.setAttribute("aria-label", rotulo);
+    return b;
+  }
+  $("[data-prox]").addEventListener("click", function (e) {
+    var b = e.target.closest(".a-chip"); if (!b) return;
+    S.data = b.getAttribute("data-k"); S.hora = b.getAttribute("data-h") || null;
+    ir(2);
+  });
+
+  // ── fuso, formato da hora e modalidade ──────────────────────────────────
+  var selFusos = $$("[data-fuso]");
+  selFusos.forEach(function (sel) {
+    FUSOS.forEach(function (f) { var o = document.createElement("option"); o.value = f.id; o.textContent = f.id + " (" + f.gmt + ")"; o.title = f.nome; sel.appendChild(o); });
+    sel.addEventListener("change", function () { S.fuso = sel.value; renderTudo(); });
+  });
+  $$("[data-h24]").forEach(function (b) {
+    b.addEventListener("click", function () { S.h24 = b.getAttribute("data-h24") === "1"; renderTudo(); });
+  });
+  $$("[data-modo]").forEach(function (b) {
+    b.addEventListener("click", function () { S.modo = b.getAttribute("data-modo"); renderTudo(); });
+  });
+  function renderOpcoes() {
+    selFusos.forEach(function (s) { s.value = S.fuso; });
+    $("[data-seg-h]").setAttribute("data-v", S.h24 ? "0" : "1");
+    $$("[data-h24]").forEach(function (b) { b.setAttribute("aria-pressed", String((b.getAttribute("data-h24") === "1") === S.h24)); });
+    var video = S.modo === "video";
+    $("[data-seg-modo]").setAttribute("data-v", video ? "1" : "0");
+    $$("[data-modo]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-modo") === S.modo)); });
+    $("[data-modo-titulo]").textContent = video ? "Por vídeo" : "Presencial";
+    $("[data-modo-detalhe]").textContent = video ? "O link da chamada chega por e-mail e WhatsApp" : "Av. Boa Viagem, 1200, sala 1304 · Recife (PE)";
+    $("[data-modo-icone]").setAttribute("href", video ? "#a-i-video" : "#a-i-pin");
+    $("[data-conf-onde-icone]").setAttribute("href", video ? "#a-i-video" : "#a-i-pin");
+  }
+
+  // ── horários do dia ─────────────────────────────────────────────────────
+  function renderTira() {
+    var box = $("[data-tira]"), lista = diasLivres(), idx = lista.indexOf(S.data);
+    if (idx >= 0) { if (idx < S.tiraIni) S.tiraIni = idx; if (idx > S.tiraIni + 5) S.tiraIni = idx - 5; }
+    S.tiraIni = Math.max(0, Math.min(S.tiraIni, Math.max(0, lista.length - 6)));
+    while (box.firstChild) box.removeChild(box.firstChild);
+    function seta(dir) {
+      var b = document.createElement("button"), ic = document.createElementNS("http://www.w3.org/2000/svg", "svg"), u = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      b.type = "button"; b.className = "a-seta" + (dir < 0 ? " v-esq" : ""); b.setAttribute("aria-label", dir < 0 ? "Dias anteriores" : "Próximos dias");
+      ic.setAttribute("class", "a-ic"); ic.setAttribute("aria-hidden", "true"); u.setAttribute("href", "#a-i-seta"); ic.appendChild(u); b.appendChild(ic);
+      b.disabled = dir < 0 ? S.tiraIni === 0 : S.tiraIni >= lista.length - 6;
+      b.setAttribute("data-dir", String(dir));
+      b.addEventListener("click", function () { S.tiraIni += dir * 3; renderTira(); var nb = $('[data-tira] [data-dir="' + dir + '"]'); if (nb && !nb.disabled) nb.focus(); });
+      return b;
+    }
+    box.appendChild(seta(-1));
+    lista.slice(S.tiraIni, S.tiraIni + 6).forEach(function (k) {
+      var d = dataDe(k), n = livres(k).length, b = document.createElement("button");
+      b.type = "button"; b.className = "a-tira-dia"; b.setAttribute("data-k", k); b.setAttribute("aria-pressed", String(k === S.data));
+      b.setAttribute("aria-label", cap(FMT_LONGO.format(d)) + ": " + n + " horários livres");
+      var a = document.createElement("small"), c = document.createElement("b"), e = document.createElement("span");
+      a.textContent = FMT_CURTO.format(d).replace(".", ""); c.textContent = String(d.getDate()); e.textContent = n + " ";
+      var li = document.createElement("i"); li.style.fontStyle = "normal"; li.textContent = "livres"; e.appendChild(li);
+      b.append(a, c, e);
+      box.appendChild(b);
+    });
+    box.appendChild(seta(1));
+  }
+  $("[data-tira]").addEventListener("click", function (e) {
+    var b = e.target.closest(".a-tira-dia"); if (!b) return;
+    S.data = b.getAttribute("data-k"); S.hora = null; renderTudo();
+    var nb = $('.a-tira-dia[data-k="' + S.data + '"]'); if (nb) nb.focus();
+  });
+  function renderSlots() {
+    var box = $("[data-slots]"), k = S.data;
+    while (box.firstChild) box.removeChild(box.firstChild);
+    if (!k) return;
+    var l = livres(k), d = dataDe(k);
+    $("[data-titulo-dia]").textContent = "Horários de " + FMT_LONGO.format(d);
+    $("[data-contagem]").textContent = l.length + (l.length === 1 ? " horário livre" : " horários livres") + " · consulta de 30 minutos · " + S.fuso;
+    if (!l.length) {
+      var v = document.createElement("div"), t = document.createElement("b"), p = document.createElement("span"), bt = document.createElement("button");
+      v.className = "a-vazio"; t.textContent = "Sem horários livres neste dia"; p.textContent = "Escolha outro dia na faixa acima ou veja o calendário completo.";
+      bt.type = "button"; bt.className = "a-btn a-btn-s"; bt.textContent = "Ver o calendário"; bt.setAttribute("data-ir", "1");
+      v.append(t, p, bt); box.appendChild(v); return;
+    }
+    var i = 0;
+    [["Manhã", "#a-i-sol", function (h) { return exibido(h) < 720; }], ["Tarde", "#a-i-tarde", function (h) { return exibido(h) >= 720; }]].forEach(function (g) {
+      var lista = l.filter(g[2]); if (!lista.length) return;
+      var cab = document.createElement("div"), ic = document.createElementNS("http://www.w3.org/2000/svg", "svg"), u = document.createElementNS("http://www.w3.org/2000/svg", "use"), gr = document.createElement("div");
+      cab.className = "a-periodo"; ic.setAttribute("class", "a-ic"); ic.setAttribute("aria-hidden", "true"); u.setAttribute("href", g[1]); ic.appendChild(u);
+      cab.appendChild(ic); cab.appendChild(document.createTextNode(g[0]));
+      gr.className = "a-slots"; gr.setAttribute("role", "group"); gr.setAttribute("aria-label", "Horários da " + g[0].toLowerCase());
+      lista.forEach(function (h) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "a-slot"; b.style.setProperty("--i", String(i++)); b.setAttribute("data-h", h);
+        b.textContent = fmtHora(h); b.setAttribute("aria-pressed", String(h === S.hora));
+        b.setAttribute("aria-label", fmtHora(h) + ", " + FMT_LONGO.format(d));
+        gr.appendChild(b);
+      });
+      box.append(cab, gr);
+    });
+  }
+  $("[data-slots]").addEventListener("click", function (e) {
+    var b = e.target.closest(".a-slot"); if (!b) return;
+    S.hora = b.getAttribute("data-h");
+    $$(".a-slot").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    renderEscolha();
+  });
+
+  // ── formulário ──────────────────────────────────────────────────────────
+  function renderEscolha() {
+    var box = $("[data-escolha]"), btn = $("[data-confirmar]"), rot = $("[data-confirmar-rotulo]");
+    while (box.firstChild) box.removeChild(box.firstChild);
+    if (!S.data || !S.hora) {
+      box.className = "a-escolha vazia"; box.textContent = "Escolha um horário ao lado para continuar.";
+      btn.disabled = true; rot.textContent = "Escolha um horário"; return;
+    }
+    box.className = "a-escolha";
+    var a = document.createElement("small"), b = document.createElement("b"), c = document.createElement("span");
+    a.textContent = S.remarcando ? "Novo horário" : "Seu horário";
+    b.textContent = cap(FMT_LONGO.format(dataDe(S.data)));
+    c.textContent = fmtHora(S.hora) + " às " + fmtHora(somar(S.hora, 30)) + " · 30 min · " + (S.modo === "video" ? "Por vídeo" : "Presencial");
+    box.append(a, b, c);
+    btn.disabled = false; rot.textContent = S.remarcando ? "Confirmar a remarcação" : "Confirmar agendamento";
+  }
+  var obs = $("#a-obs");
+  function contarObs() { $("[data-obs-cont]").textContent = obs.value.length + "/280"; }
+  obs.addEventListener("input", contarObs);
+  var REGRAS = {
+    "a-nome": function (v) { return v.trim().split(/\s+/).filter(Boolean).length >= 2 ? "" : "Informe nome e sobrenome."; },
+    "a-email": function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? "" : "Use um e-mail válido, como nome@email.com.br."; },
+    "a-obs": function (v) { return v.length <= 280 ? "" : "Use no máximo 280 caracteres."; }
+  };
+  function validar(id) {
+    var inp = document.getElementById(id), msg = REGRAS[id](inp.value), campo = inp.closest("[data-campo]");
+    campo.setAttribute("data-estado", msg ? "erro" : "");
+    campo.querySelector(".a-msg span").textContent = msg;
+    inp.setAttribute("aria-invalid", msg ? "true" : "false");
+    return msg;
+  }
+  // clicar num botão tira o foco do campo; validar na hora faria a mensagem empurrar o botão e o clique se perderia
+  var apertando = false;
+  app.addEventListener("pointerdown", function () { apertando = true; setTimeout(function () { apertando = false; }, 450); }, true);
+  Object.keys(REGRAS).forEach(function (id) {
+    var inp = document.getElementById(id);
+    inp.addEventListener("blur", function () { if (!apertando) validar(id); });
+    inp.addEventListener("input", function () { if (inp.closest("[data-campo]").getAttribute("data-estado") === "erro") validar(id); });
+  });
+  var enviando = false, tEnvio = 0;
+  function confirmar() {
+    if (enviando || !S.hora) return;
+    var erros = Object.keys(REGRAS).filter(validar);
+    if (erros.length) { document.getElementById(erros[0]).focus(); return; }
+    enviando = true;
+    var btn = $("[data-confirmar]"), sp = document.createElement("span");
+    sp.className = "a-giro"; btn.classList.add("carregando"); btn.insertBefore(sp, btn.firstChild);
+    tEnvio = setTimeout(function () {
+      enviando = false; btn.classList.remove("carregando"); sp.remove();
+      if (S.remarcando) { delete reservas[S.remarcando.k + " " + S.remarcando.h]; S.remarcada = true; }
+      S.remarcando = null; S.cancelada = false;
+      reservar();
+      ir(3);
+    }, reduz() ? 200 : 1000);
+  }
+  $("[data-confirmar]").addEventListener("click", confirmar);
+  $("[data-form]").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.tagName === "INPUT" && e.target.type !== "checkbox") { e.preventDefault(); confirmar(); }
+  });
+  function reservar() { S.confirmada = {k: S.data, h: S.hora}; reservas[S.data + " " + S.hora] = true; }
+
+  // ── confirmação ─────────────────────────────────────────────────────────
+  var conf = $("[data-conf]");
+  function renderConf() {
+    var c = S.confirmada, nome = $("#a-nome").value.trim(), email = $("#a-email").value.trim(), video = S.modo === "video";
+    conf.setAttribute("data-fase", S.cancelada ? "cancelada" : "ok");
+    if (!c) return;
+    var d = dataDe(c.k);
+    $("[data-conf-titulo]").textContent = S.cancelada ? "Consulta cancelada" : S.remarcada ? "Consulta remarcada" : "Consulta confirmada";
+    var t = $("[data-conf-texto]");
+    while (t.firstChild) t.removeChild(t.firstChild);
+    if (S.cancelada) {
+      t.appendChild(document.createTextNode("O horário de " + FMT_LONGO.format(d) + ", às " + fmtHora(c.h) + ", voltou a ficar livre. Enviamos a confirmação do cancelamento para "));
+      var be = document.createElement("b"); be.textContent = email; t.append(be, document.createTextNode("."));
+    } else {
+      t.appendChild(document.createTextNode((S.remarcada ? "O novo horário já está na sua agenda. " : "") + "Enviamos os detalhes para "));
+      var b2 = document.createElement("b"); b2.textContent = email;
+      t.append(b2, document.createTextNode(". Se marcou o lembrete, a gente avisa por WhatsApp 24 horas antes."));
+    }
+    var q = $("[data-conf-quando]");
+    q.firstChild.nodeValue = FMT_COMPLETO.format(d);
+    $("[data-conf-hora]").textContent = fmtHora(c.h) + " às " + fmtHora(somar(c.h, 30)) + " · " + S.fuso;
+    $("[data-conf-onde]").firstChild.nodeValue = video ? "Consulta por vídeo" : "Consultório, Boa Viagem";
+    $("[data-conf-onde-det]").textContent = video ? "O link da chamada foi enviado por e-mail. Entre 5 minutos antes, com boa conexão e fones." : "Av. Boa Viagem, 1200, sala 1304 · Recife (PE). Chegue 10 minutos antes.";
+    $("[data-conf-paciente]").firstChild.nodeValue = nome;
+    $("[data-conf-email2]").textContent = email;
+  }
+  $("[data-menu-cal]").addEventListener("click", function (e) {
+    e.stopPropagation();
+    var m = $("[data-menu]"), abre = !m.classList.contains("aberto");
+    m.classList.toggle("aberto", abre); this.setAttribute("aria-expanded", String(abre));
+  });
+  function fecharMenu() { var m = $("[data-menu]"); if (m.classList.contains("aberto")) { m.classList.remove("aberto"); $("[data-menu-cal]").setAttribute("aria-expanded", "false"); } }
+  document.addEventListener("click", function (e) { if (!e.target.closest(".a-menu-caixa")) fecharMenu(); });
+  $$("[data-cal]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var alvo = b.getAttribute("data-cal");
+      toast(alvo === "arquivo .ics" ? "Arquivo consulta-helena-prado.ics baixado (demonstração)." : "Consulta adicionada ao " + alvo + " (demonstração).");
+      fecharMenu();
+    });
+  });
+  $("[data-remarcar]").addEventListener("click", function () {
+    S.remarcando = {k: S.confirmada.k, h: S.confirmada.h}; S.hora = null;
+    ir(1);
+  });
+  $("[data-manter]").addEventListener("click", function () { S.remarcando = null; S.hora = S.confirmada.h; S.data = S.confirmada.k; ir(3); });
+  var painelCancelar = $("[data-cancelar]"), abrirCancelar = $("[data-cancelar-abrir]");
+  function alternarCancelar(abre) {
+    painelCancelar.classList.toggle("aberto", abre); abrirCancelar.setAttribute("aria-expanded", String(abre));
+    if (abre) { $("[data-motivo]").focus(); painelCancelar.scrollIntoView({block: "nearest", behavior: reduz() ? "auto" : "smooth"}); }
+  }
+  abrirCancelar.addEventListener("click", function () { alternarCancelar(!painelCancelar.classList.contains("aberto")); });
+  $("[data-cancelar-fechar]").addEventListener("click", function () { alternarCancelar(false); abrirCancelar.focus(); });
+  $("[data-cancelar-confirmar]").addEventListener("click", function () {
+    delete reservas[S.confirmada.k + " " + S.confirmada.h];
+    S.cancelada = true; alternarCancelar(false);
+    renderTudo(); rolarTopo();
+    var h = $("#a-h1-conf"); if (h) { try { h.focus({preventScroll: true}); } catch (e) { /* sem foco */ } }
+    toast("Consulta cancelada. O horário foi liberado.");
+  });
+  $("[data-desfazer]").addEventListener("click", function () {
+    reservas[S.confirmada.k + " " + S.confirmada.h] = true; S.cancelada = false;
+    renderTudo(); rolarTopo(); toast("Cancelamento desfeito. A consulta está de volta na agenda.");
+  });
+  $("[data-novo]").addEventListener("click", function () { S.confirmada = null; S.cancelada = false; S.remarcada = false; S.hora = null; S.data = null; ir(1); });
+
+  app.addEventListener("click", function (e) {
+    var el;
+    if ((el = e.target.closest("[data-ir]"))) { ir(parseInt(el.getAttribute("data-ir"), 10)); return; }
+    if ((el = e.target.closest("[data-aviso]"))) { toast(el.getAttribute("data-aviso")); return; }
+    if ((el = e.target.closest("[data-aviso-auto]"))) { toast("Num site de verdade, isto abriria “" + el.textContent.trim() + "”."); return; }
+  });
+  app.addEventListener("keydown", function (e) { if (e.key === "Escape") fecharMenu(); });
+
+  // ── desenho ─────────────────────────────────────────────────────────────
+  function renderTudo() {
+    renderOpcoes(); marcarPassos();
+    var banner = $("[data-aviso-remarcar]");
+    banner.classList.toggle("ativo", !!S.remarcando);
+    if (S.remarcando) $("[data-remarcando-quando]").textContent = FMT_LONGO.format(dataDe(S.remarcando.k)) + ", às " + fmtHora(S.remarcando.h);
+    renderCal(); renderProx(); renderTira(); renderSlots(); renderEscolha(); renderConf(); contarObs();
+  }
+  paginaAtual = estado();
+  garantir(paginaAtual, false);
+  renderTudo();
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>

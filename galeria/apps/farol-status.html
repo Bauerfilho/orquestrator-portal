@@ -1,0 +1,1671 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farol · Página de status</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "farol-status",
+  "nome": "Farol",
+  "colecao": "referencia",
+  "tipo": "Site",
+  "tela": "ampla",
+  "resumo": "Página de status pública para uma nuvem brasileira: disponibilidade de 90 dias por componente, incidentes ao vivo, histórico com post-mortem e avisos por e-mail.",
+  "referencias": [
+    {
+      "nome": "Upptime",
+      "modelo": "open source",
+      "licenca": "MIT"
+    },
+    {
+      "nome": "Cachet",
+      "modelo": "open source",
+      "licenca": "BSD-3-Clause"
+    },
+    {
+      "nome": "Atlassian Statuspage",
+      "modelo": "pago"
+    }
+  ],
+  "direcao": "Confiável e mínima: muito branco, uma coluna estreita, tipografia limpa do sistema e cor só onde ela informa. Barras de disponibilidade de 90 dias por componente (verde, âmbar, laranja, vermelho e azul de manutenção) com dica por dia, faixa de status sólida no topo e cartões de borda fina com cantos de 12 px. A marca da empresa aparece pouco: o que importa é o estado.",
+  "estados": [
+    {
+      "nome": "Tudo operacional",
+      "descricao": "Faixa verde, componentes agrupados (Plataforma, Pagamentos PIX, Webhooks, CDN São Paulo e Fortaleza) com barras de 90 dias, disponibilidade em %, tempo de resposta da API, manutenção programada, últimos 7 dias e assinatura de avisos por e-mail."
+    },
+    {
+      "nome": "Incidente em andamento",
+      "descricao": "Faixa âmbar, cartão do incidente com etapas Investigando → Identificado → Monitorando e as atualizações em ordem cronológica, Pagamentos PIX e Webhooks degradados e o gráfico do tempo de confirmação com o pico."
+    },
+    {
+      "nome": "Histórico",
+      "descricao": "Incidentes passados agrupados por mês com duração, impacto e post-mortem curto que abre na própria linha, manutenções concluídas, filtro por componente, calendário de disponibilidade e o resumo de 90 dias."
+    }
+  ],
+  "paleta": [
+    {
+      "nome": "Fundo",
+      "hex": "#ffffff"
+    },
+    {
+      "nome": "Tinta",
+      "hex": "#111814"
+    },
+    {
+      "nome": "Operacional",
+      "hex": "#16824a"
+    },
+    {
+      "nome": "Degradado",
+      "hex": "#f5b324"
+    },
+    {
+      "nome": "Interrupção parcial",
+      "hex": "#ec6a1f"
+    },
+    {
+      "nome": "Interrupção grave",
+      "hex": "#d63c3c"
+    },
+    {
+      "nome": "Manutenção",
+      "hex": "#3b6fd6"
+    },
+    {
+      "nome": "Fio",
+      "hex": "#e4e8e5"
+    }
+  ],
+  "tipografia": "Pilha do sistema (SF Pro, Inter, Segoe UI) em 15 px; títulos em 600 com tracking levemente negativo; percentuais, horários e durações com algarismos tabulares; rótulos pequenos em 12,5 px e cinza 6:1 de contraste.",
+  "componentes": [
+    "Faixa de status",
+    "Grupo recolhível de componentes",
+    "Barras de 90 dias com dica por dia",
+    "Selo de impacto",
+    "Cartão de incidente",
+    "Etapas do incidente",
+    "Atualizações cronológicas",
+    "Gráfico de tempo de resposta",
+    "Manutenção programada",
+    "Formulário de assinatura",
+    "Histórico por mês com post-mortem",
+    "Calendário de disponibilidade"
+  ],
+  "replicar": [
+    "Modelo de dados: Componente (grupo, nome, descrição, ordem), Ocorrência diária (componente, dia, nível, minutos), Incidente (título, impacto, componentes[], atualizações[] com fase e horário, post-mortem) e Assinante (e-mail, componentes[], confirmado).",
+    "Pilha sugerida: site estático gerado a cada mudança (Astro ou Eleventy) servido por CDN, com um JSON de estado; checagens sintéticas a cada minuto (o padrão do Upptime com GitHub Actions resolve o MVP); painel interno pequeno para escrever incidentes.",
+    "Integrações: monitoração (Prometheus/Alertmanager, Uptime Kuma ou checagens próprias) abrindo incidente em rascunho; e-mail transacional com confirmação dupla; webhook e RSS para clientes; métrica de latência vinda do APM.",
+    "Regras que dão confiança: a página fica fora da infraestrutura que ela monitora, horários sempre com fuso (BRT), cada atualização é imutável e o post-mortem sai em até 5 dias úteis para incidentes de impacto alto.",
+    "MVP: componentes, barras de 90 dias e incidentes manuais com 4 fases. Fica para depois: SMS, assinatura por componente, páginas privadas por cliente, SLA calculado por contrato e tradução."
+  ],
+  "proposta": "Freemium",
+  "modelo_negocio": "Uma página de status grátis no subdomínio; o pago traz domínio próprio, avisos por SMS/WhatsApp e componentes ilimitados."
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+:root{
+  --f-fundo:#ffffff;--f-cinza:#f6f7f6;--f-cinza-2:#eef1ef;--f-cartao:#ffffff;--f-tinta:#111814;--f-suave:#5b6560;--f-fraco:#6b746f;
+  --f-fio:#e4e8e5;--f-fio-forte:#d3d9d5;--f-sem:#e1e5e2;
+  --f-ok:#16824a;--f-ok-barra:#1f9d5c;--f-ok-texto:#137a46;--f-ok-claro:#eaf6ef;
+  --f-deg:#f5b324;--f-deg-barra:#f0aa16;--f-deg-texto:#8a5d00;--f-deg-claro:#fdf4dc;--f-deg-sobre:#2b1d00;
+  --f-par:#ec6a1f;--f-par-texto:#b04a0c;--f-par-claro:#fdeee4;
+  --f-gra:#d63c3c;--f-gra-texto:#b02a2a;--f-gra-claro:#fdeceb;
+  --f-man:#3b6fd6;--f-man-texto:#2d58b0;--f-man-claro:#edf2fd;
+  --f-marca:#127a52;--f-foco:#2d58b0;
+  --f-faixa-ok:#16824a;--f-faixa-ok-tinta:#ffffff;--f-faixa-deg:#f5b324;--f-faixa-deg-tinta:#2b1d00;
+  --f-sombra:0 1px 2px rgba(17,24,20,.04),0 4px 14px rgba(17,24,20,.05);
+  --f-sombra-alta:0 2px 6px rgba(17,24,20,.08),0 18px 44px rgba(17,24,20,.16);
+  --f-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --f-mono:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",Consolas,monospace}
+:root[data-tema=escuro]{
+  --f-fundo:#0d110f;--f-cinza:#121815;--f-cinza-2:#18201c;--f-cartao:#121815;--f-tinta:#e8eeea;--f-suave:#a3aea8;--f-fraco:#909b95;
+  --f-fio:#212a25;--f-fio-forte:#2c3631;--f-sem:#26302b;
+  --f-ok:#2fbf74;--f-ok-barra:#2fb26c;--f-ok-texto:#5fd394;--f-ok-claro:rgba(47,191,116,.12);
+  --f-deg:#f0b429;--f-deg-barra:#f0b429;--f-deg-texto:#f5c55a;--f-deg-claro:rgba(240,180,41,.12);--f-deg-sobre:#1f1500;
+  --f-par:#f58a4a;--f-par-texto:#f8a06b;--f-par-claro:rgba(245,138,74,.13);
+  --f-gra:#f26b68;--f-gra-texto:#f58b88;--f-gra-claro:rgba(242,107,104,.13);
+  --f-man:#7ea4f2;--f-man-texto:#9ab8f5;--f-man-claro:rgba(126,164,242,.13);
+  --f-marca:#4cc38a;--f-foco:#9ab8f5;
+  --f-faixa-ok:#123d27;--f-faixa-ok-tinta:#e5f7ec;--f-faixa-deg:#3b2c08;--f-faixa-deg-tinta:#ffe2a0;
+  --f-sombra:0 1px 2px rgba(0,0,0,.3);
+  --f-sombra-alta:0 2px 6px rgba(0,0,0,.4),0 18px 44px rgba(0,0,0,.55)}
+
+#app{container:app / inline-size;background:var(--f-fundo);color:var(--f-tinta);font:400 15px/1.55 var(--f-sans);-webkit-font-smoothing:antialiased}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ol,#app ul,#app dl,#app dd,#app figure{margin:0}
+#app ol,#app ul{padding:0;list-style:none}
+#app button,#app input,#app select{font:inherit;color:inherit;margin:0}
+#app button{cursor:pointer}
+#app :focus-visible{outline:2px solid var(--f-foco);outline-offset:2px;border-radius:6px}
+#app .f-casca{max-width:1000px;margin:0 auto;padding-left:32px;padding-right:32px}
+#app .f-oculto{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .f-num{font-variant-numeric:tabular-nums}
+
+/* topo */
+#app .f-topo{border-bottom:1px solid var(--f-fio)}
+#app .f-topo .f-casca{display:flex;align-items:center;gap:24px;height:72px}
+#app .f-marca{display:inline-flex;align-items:center;gap:10px;padding:0;border:0;background:none;color:var(--f-tinta);text-align:left}
+#app .f-marca svg{flex:none;color:var(--f-marca)}
+#app .f-marca-nome{font:700 19px/1 var(--f-sans);letter-spacing:-.02em}
+#app .f-marca-nome span{font-weight:400;color:var(--f-suave);margin-left:6px}
+#app .f-nav{display:flex;gap:4px;margin-left:auto}
+#app .f-nav button{height:36px;padding:0 12px;white-space:nowrap;border:0;border-radius:8px;background:none;color:var(--f-suave);font-weight:550;font-size:14.5px}
+#app .f-nav button:hover{background:var(--f-cinza);color:var(--f-tinta)}
+#app .f-nav button[aria-current=page]{color:var(--f-tinta);background:var(--f-cinza-2)}
+#app .f-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border:1px solid transparent;border-radius:10px;font-weight:600;font-size:14px;white-space:nowrap;transition:background-color .15s,border-color .15s,color .15s,box-shadow .15s}
+#app .f-btn-tinta{background:var(--f-tinta);color:var(--f-fundo)}
+#app .f-btn-tinta:hover{box-shadow:0 0 0 4px var(--f-cinza-2)}
+#app .f-btn-fio{background:var(--f-cartao);border-color:var(--f-fio-forte);color:var(--f-tinta)}
+#app .f-btn-fio:hover{border-color:var(--f-suave)}
+#app .f-btn-fio[aria-pressed=true]{background:var(--f-ok-claro);border-color:var(--f-ok);color:var(--f-ok-texto)}
+#app .f-btn-peq{height:34px;padding:0 12px;font-size:13.5px;border-radius:9px}
+
+/* páginas */
+#app .f-pag{display:none;padding-top:36px;padding-bottom:56px}
+#app[data-estado="1"] .f-pag-status,#app[data-estado="2"] .f-pag-status,#app[data-estado="3"] .f-pag-hist{display:block}
+#app[data-estado="1"] .f-so-2,#app[data-estado="2"] .f-so-1{display:none!important}
+
+/* faixa */
+#app .f-faixa{display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:14px;background:var(--f-faixa-ok);color:var(--f-faixa-ok-tinta)}
+#app .f-faixa-deg{background:var(--f-faixa-deg);color:var(--f-faixa-deg-tinta)}
+#app .f-faixa-icone{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18)}
+#app .f-faixa-deg .f-faixa-icone{background:rgba(43,29,0,.12)}
+#app .f-faixa>div{flex:1;min-width:0}
+#app .f-faixa strong{display:block;font-weight:650;font-size:19px;letter-spacing:-.015em;line-height:1.25}
+#app .f-faixa span.f-faixa-sub{display:block;margin-top:2px;font-size:14px;opacity:.88}
+#app .f-faixa-hora{margin-left:auto;flex:none;font-size:13.5px;opacity:.9;text-align:right}
+#app .f-faixa-hora b{font-weight:650}
+#app .f-resumo{display:flex;flex-wrap:wrap;gap:6px 22px;margin:14px 4px 0;font-size:13.5px;color:var(--f-suave)}
+#app .f-resumo b{color:var(--f-tinta);font-weight:600}
+#app .f-resumo span{display:inline-flex;align-items:center;gap:7px}
+#app .f-resumo i{width:7px;height:7px;border-radius:50%;background:var(--f-ok)}
+
+/* cartões */
+#app .f-secao{margin-top:40px}
+#app .f-secao-cab{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:14px}
+#app .f-h2{font:650 18px/1.3 var(--f-sans);letter-spacing:-.015em}
+#app .f-secao-cab p{font-size:13.5px;color:var(--f-suave)}
+#app .f-cartao{position:relative;background:var(--f-cartao);border:1px solid var(--f-fio);border-radius:14px;box-shadow:var(--f-sombra)}
+
+/* componentes */
+#app .f-legenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--f-suave)}
+#app .f-legenda span{display:inline-flex;align-items:center;gap:6px}
+#app .f-legenda i{width:9px;height:9px;border-radius:2px;background:var(--f-ok-barra)}
+#app .f-legenda i.f-l-deg{background:var(--f-deg-barra)}
+#app .f-legenda i.f-l-par{background:var(--f-par)}
+#app .f-legenda i.f-l-gra{background:var(--f-gra)}
+#app .f-legenda i.f-l-man{background:var(--f-man)}
+#app .f-comp{padding:18px 22px 16px;border-top:1px solid var(--f-fio)}
+#app .f-comp:first-child{border-top:0}
+#app .f-comp.f-filho{padding-left:48px;background:linear-gradient(90deg,var(--f-cinza) 0,var(--f-cinza) 3px,transparent 3px) 32px 0/100% 100% no-repeat}
+#app .f-comp-cab{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-height:24px}
+#app .f-comp-nome{font-weight:600;font-size:15px;letter-spacing:-.005em}
+#app .f-filho .f-comp-nome{font-weight:500}
+#app .f-abrir{display:inline-flex;align-items:center;gap:8px;padding:2px 6px 2px 2px;margin-left:-4px;border:0;border-radius:7px;background:none;font-weight:600;font-size:15px;color:var(--f-tinta)}
+#app .f-abrir:hover{background:var(--f-cinza)}
+#app .f-abrir svg{color:var(--f-suave);transition:transform .2s}
+#app .f-abrir[aria-expanded=true] svg{transform:rotate(90deg)}
+#app .f-abrir small{font-weight:500;font-size:12.5px;color:var(--f-fraco)}
+#app .f-info{position:relative;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;color:var(--f-fraco);cursor:help}
+#app .f-info:hover,#app .f-info:focus-visible{color:var(--f-tinta)}
+#app .f-info span{display:none;position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);z-index:5;width:max-content;max-width:240px;padding:7px 10px;border-radius:8px;background:var(--f-tinta);color:var(--f-fundo);font-size:12.5px;line-height:1.4;font-weight:500;text-align:center;box-shadow:var(--f-sombra-alta)}
+#app .f-info:hover span,#app .f-info:focus-visible span{display:block}
+#app .f-estado{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--f-ok-texto);white-space:nowrap}
+#app .f-estado i{width:8px;height:8px;border-radius:50%;background:currentColor}
+#app .f-estado.f-deg{color:var(--f-deg-texto)}
+#app .f-estado.f-par{color:var(--f-par-texto)}
+#app .f-estado.f-gra{color:var(--f-gra-texto)}
+#app .f-estado.f-man{color:var(--f-man-texto)}
+#app .f-barras{display:grid;grid-template-columns:repeat(90,minmax(0,1fr));gap:2px;height:34px;margin-top:12px;border-radius:4px}
+#app .f-barras:focus-visible{outline-offset:4px}
+#app .f-dia{display:block;border-radius:2px;background:var(--f-ok-barra);transition:opacity .12s,transform .12s}
+#app .f-dia.f-deg{background:var(--f-deg-barra)}
+#app .f-dia.f-par{background:var(--f-par)}
+#app .f-dia.f-gra{background:var(--f-gra)}
+#app .f-dia.f-man{background:var(--f-man)}
+#app .f-barras:hover .f-dia{opacity:.55}
+#app .f-barras:hover .f-dia:hover,#app .f-dia.f-cursor{opacity:1;transform:scaleY(1.12)}
+#app .f-barras .f-dia.f-cursor{box-shadow:0 0 0 2px var(--f-fundo),0 0 0 3.5px var(--f-tinta)}
+#app .f-comp-pe{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12.5px;color:var(--f-fraco)}
+#app .f-comp-pe::before,#app .f-comp-pe::after{content:"";order:2;flex:1;height:1px;background:var(--f-fio)}
+#app .f-comp-pe::after{order:4}
+#app .f-comp-pe .f-pe-ini{order:1}
+#app .f-comp-pe .f-pe-uptime{order:3;color:var(--f-suave);font-weight:550}
+#app .f-comp-pe .f-pe-fim{order:5}
+#app .f-30{display:none}
+#app .f-dica{position:absolute;z-index:10;width:250px;padding:12px 14px;border-radius:12px;background:var(--f-cartao);border:1px solid var(--f-fio-forte);box-shadow:var(--f-sombra-alta);font-size:13px;line-height:1.45;pointer-events:none}
+#app .f-dica[hidden]{display:none}
+#app .f-dica strong{display:block;font-weight:650;font-size:13.5px}
+#app .f-dica .f-dica-sub{color:var(--f-suave);font-size:12.5px}
+#app .f-dica ul{margin-top:8px;padding-top:8px;border-top:1px solid var(--f-fio);display:grid;gap:6px}
+#app .f-dica li{display:grid;grid-template-columns:10px 1fr;gap:8px}
+#app .f-dica li i{width:8px;height:8px;margin-top:5px;border-radius:2px;background:var(--f-ok-barra)}
+#app .f-dica li i.f-deg{background:var(--f-deg-barra)}
+#app .f-dica li i.f-par{background:var(--f-par)}
+#app .f-dica li i.f-gra{background:var(--f-gra)}
+#app .f-dica li i.f-man{background:var(--f-man)}
+#app .f-dica li small{display:block;color:var(--f-suave);font-size:12px}
+
+/* incidente ao vivo */
+#app .f-incidente{margin-top:20px;padding:24px 26px 22px;border-left:4px solid var(--f-deg)}
+#app .f-inc-topo{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+#app .f-selo{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}
+#app .f-selo i{width:7px;height:7px;border-radius:50%;background:currentColor}
+#app .f-selo-deg{background:var(--f-deg-claro);color:var(--f-deg-texto)}
+#app .f-selo-par{background:var(--f-par-claro);color:var(--f-par-texto)}
+#app .f-selo-gra{background:var(--f-gra-claro);color:var(--f-gra-texto)}
+#app .f-selo-man{background:var(--f-man-claro);color:var(--f-man-texto)}
+#app .f-selo-ok{background:var(--f-ok-claro);color:var(--f-ok-texto)}
+#app .f-selo-neutro{background:var(--f-cinza-2);color:var(--f-suave)}
+#app .f-inc-id{font:500 12.5px/1 var(--f-mono);color:var(--f-fraco)}
+#app .f-inc-tempo{margin-left:auto;font-size:13px;color:var(--f-suave)}
+#app .f-inc-tempo b{color:var(--f-tinta);font-weight:600}
+#app .f-incidente h2{margin-top:12px;font:650 24px/1.25 var(--f-sans);letter-spacing:-.02em}
+#app .f-afeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;font-size:13.5px;color:var(--f-suave)}
+#app .f-chip{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:8px;background:var(--f-cinza-2);color:var(--f-tinta);font-size:13px;font-weight:500}
+#app .f-etapas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:22px;counter-reset:etapa}
+#app .f-etapa{position:relative;padding-top:22px;font-size:13px;color:var(--f-fraco)}
+#app .f-etapa::before{content:"";position:absolute;top:7px;left:0;right:0;height:3px;background:var(--f-fio)}
+#app .f-etapa::after{content:"";position:absolute;top:2px;left:0;width:13px;height:13px;border-radius:50%;background:var(--f-cartao);border:2px solid var(--f-fio-forte)}
+#app .f-etapa b{display:block;font-weight:600;font-size:13.5px;color:var(--f-suave)}
+#app .f-etapa.f-feita::before{background:var(--f-ok)}
+#app .f-etapa.f-feita::after{background:var(--f-ok);border-color:var(--f-ok)}
+#app .f-etapa.f-feita b{color:var(--f-tinta)}
+#app .f-etapa.f-atual::before{background:linear-gradient(90deg,var(--f-deg) 0 40%,var(--f-fio) 40%)}
+#app .f-etapa.f-atual::after{background:var(--f-deg);border-color:var(--f-deg);box-shadow:0 0 0 4px var(--f-deg-claro)}
+#app .f-etapa.f-atual b{color:var(--f-deg-texto)}
+#app .f-atualizacoes{margin-top:22px;border-top:1px solid var(--f-fio)}
+#app .f-atu{display:grid;grid-template-columns:140px minmax(0,1fr);gap:18px;padding:16px 0;border-bottom:1px solid var(--f-fio)}
+#app .f-atu:last-child{border-bottom:0;padding-bottom:4px}
+#app .f-atu-fase{font-weight:650;font-size:14px}
+#app .f-atu-fase small{display:block;margin-top:2px;font-weight:500;font-size:12.5px;color:var(--f-fraco);font-variant-numeric:tabular-nums}
+#app .f-atu p{font-size:14.5px;line-height:1.6;color:var(--f-tinta)}
+#app .f-atu.f-atu-atual .f-atu-fase{color:var(--f-deg-texto)}
+#app .f-inc-acoes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px;padding-top:18px;border-top:1px solid var(--f-fio)}
+#app .f-inc-acoes .f-nota{margin-left:auto;font-size:12.5px;color:var(--f-fraco)}
+
+/* métrica */
+#app .f-metrica{padding:20px 22px 14px}
+#app .f-metrica-cab{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px}
+#app .f-metrica-valor{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+#app .f-metrica-valor b{font:650 30px/1.1 var(--f-sans);letter-spacing:-.025em;font-variant-numeric:tabular-nums}
+#app .f-metrica-valor span{font-size:13px;color:var(--f-suave)}
+#app .f-metrica-rot{font-size:13.5px;font-weight:600;color:var(--f-suave)}
+#app .f-seg{display:inline-flex;padding:3px;border-radius:10px;background:var(--f-cinza-2)}
+#app .f-seg button{height:28px;padding:0 11px;border:0;border-radius:7px;background:none;font-size:13px;font-weight:600;color:var(--f-suave)}
+#app .f-seg button:hover{color:var(--f-tinta)}
+#app .f-seg button[aria-pressed=true],#app .f-seg button[aria-selected=true]{background:var(--f-cartao);color:var(--f-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+#app .f-grafico{display:block;width:100%;height:auto;margin-top:12px;overflow:visible}
+#app .f-svg-grade{stroke:var(--f-fio);stroke-width:1}
+#app .f-svg-rot{font:500 11px var(--f-sans);fill:var(--f-fraco)}
+#app .f-svg-linha{fill:none;stroke:var(--f-tinta);stroke-width:1.75;stroke-linejoin:round}
+#app .f-svg-area{fill:var(--f-cinza-2)}
+#app .f-svg-linha.f-svg-deg{stroke:var(--f-deg-texto)}
+#app .f-svg-faixa{fill:var(--f-deg-claro)}
+#app .f-svg-area.f-svg-deg{fill:var(--f-deg);fill-opacity:.22}
+#app .f-svg-ponto{fill:var(--f-tinta);stroke:var(--f-cartao);stroke-width:2.5}
+#app .f-svg-cursor{stroke:var(--f-suave);stroke-width:1;stroke-dasharray:3 3}
+#app .f-grafico-leitura{min-height:20px;margin-top:4px;font-size:12.5px;color:var(--f-suave);font-variant-numeric:tabular-nums}
+
+/* duas colunas */
+#app .f-duas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-top:40px}
+#app .f-duas>.f-secao{margin-top:0;display:flex;flex-direction:column}
+#app .f-duas>.f-secao>.f-cartao{flex:1}
+#app .f-manut{padding:20px 22px;border-left:4px solid var(--f-man)}
+#app .f-manut h3{margin-top:10px;font:650 16.5px/1.35 var(--f-sans);letter-spacing:-.01em}
+#app .f-manut p{margin-top:6px;font-size:14px;color:var(--f-suave)}
+#app .f-manut .f-quando{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+#app .f-manut .f-quando svg{color:var(--f-man-texto)}
+#app .f-manut .f-btn{margin-top:14px}
+#app .f-assinar{padding:20px 22px}
+#app .f-assinar h3{font:650 16.5px/1.35 var(--f-sans);letter-spacing:-.01em}
+#app .f-assinar>p{margin-top:6px;font-size:14px;color:var(--f-suave)}
+#app .f-form-linha{display:flex;gap:8px;margin-top:14px}
+#app .f-campo{flex:1;min-width:0;height:40px;padding:0 12px;border:1px solid var(--f-fio-forte);border-radius:10px;background:var(--f-fundo);font-size:14.5px;color:var(--f-tinta)}
+#app .f-campo::placeholder{color:var(--f-fraco)}
+#app .f-campo:focus{outline:0;border-color:var(--f-foco);box-shadow:0 0 0 3px var(--f-man-claro)}
+#app .f-campo[aria-invalid=true]{border-color:var(--f-gra);box-shadow:0 0 0 3px var(--f-gra-claro)}
+#app .f-erro{margin-top:8px;font-size:13px;font-weight:550;color:var(--f-gra-texto)}
+#app .f-escolha{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:13.5px}
+#app .f-escolha label{display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+#app .f-escolha input,#app .f-lista-comp input{accent-color:var(--f-tinta);width:15px;height:15px}
+#app .f-lista-comp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin-top:10px;padding:12px;border-radius:10px;background:var(--f-cinza);font-size:13.5px}
+#app .f-lista-comp label{display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+#app .f-lista-comp[hidden]{display:none}
+#app .f-sucesso{display:flex;gap:12px;margin-top:14px;padding:14px;border-radius:12px;background:var(--f-ok-claro);color:var(--f-tinta);font-size:14px}
+#app .f-sucesso svg{flex:none;color:var(--f-ok-texto)}
+#app .f-sucesso b{font-weight:650}
+#app .f-sucesso button{margin-top:6px;padding:0;border:0;background:none;font-size:13px;font-weight:600;color:var(--f-ok-texto);text-decoration:underline;text-underline-offset:3px}
+#app .f-sucesso[hidden],#app .f-erro[hidden]{display:none}
+
+/* últimos dias */
+#app .f-dias li{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:baseline;gap:14px;padding:13px 22px;border-top:1px solid var(--f-fio);font-size:14px}
+#app .f-dias li:first-child{border-top:0}
+#app .f-dias time{font-weight:600;font-variant-numeric:tabular-nums}
+#app .f-dias .f-nada{color:var(--f-fraco)}
+#app .f-dias button.f-link{padding:0;border:0;background:none;text-align:left;font-weight:550;color:var(--f-tinta);text-decoration:underline;text-decoration-color:var(--f-fio-forte);text-underline-offset:4px}
+#app .f-dias button.f-link:hover{text-decoration-color:currentColor}
+#app .f-dias small{font-size:12.5px;color:var(--f-suave);white-space:nowrap}
+#app .f-dias .f-dia-ok{display:inline-flex;align-items:center;gap:6px;color:var(--f-ok-texto);font-weight:550}
+#app .f-dias .f-dia-ok i{width:6px;height:6px;border-radius:50%;background:currentColor}
+#app .f-mais{display:flex;justify-content:flex-end;margin-top:12px}
+#app .f-link-seta{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:none;font-weight:600;font-size:14px;color:var(--f-tinta)}
+#app .f-link-seta:hover{text-decoration:underline;text-underline-offset:4px}
+
+/* histórico */
+#app .f-migalha{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:none;font-size:13.5px;font-weight:600;color:var(--f-suave)}
+#app .f-migalha:hover{color:var(--f-tinta)}
+#app .f-h1{margin-top:14px;font:700 34px/1.15 var(--f-sans);letter-spacing:-.03em}
+#app .f-sub{margin-top:8px;max-width:60ch;font-size:15px;color:var(--f-suave)}
+#app .f-ferramentas{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:24px;padding-bottom:18px;border-bottom:1px solid var(--f-fio)}
+#app .f-select{height:36px;padding:0 32px 0 12px;border:1px solid var(--f-fio-forte);border-radius:10px;background:var(--f-cartao) no-repeat right 10px center/12px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b746f' stroke-width='2.4'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");appearance:none;-webkit-appearance:none;font-size:13.5px;font-weight:550;color:var(--f-tinta);cursor:pointer}
+#app .f-periodo{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
+#app .f-periodo span{min-width:150px;text-align:center;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+#app .f-icone-btn{display:inline-grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid var(--f-fio-forte);border-radius:9px;background:var(--f-cartao);color:var(--f-tinta)}
+#app .f-icone-btn:hover:not(:disabled){border-color:var(--f-suave)}
+#app .f-icone-btn:disabled{opacity:.4;cursor:default}
+#app .f-hist-grade{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:40px;margin-top:8px}
+#app .f-mes{margin-top:26px}
+#app .f-mes h2{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--f-fio);font:650 16px/1.3 var(--f-sans);letter-spacing:-.01em}
+#app .f-mes h2 small{font-size:12.5px;font-weight:500;color:var(--f-fraco)}
+#app .f-mes-vazio{padding:14px 0;font-size:14px;color:var(--f-fraco)}
+#app .f-item{display:grid;grid-template-columns:52px minmax(0,1fr);gap:16px;padding:18px 0;border-bottom:1px solid var(--f-fio)}
+#app .f-item-data{text-align:center;padding-top:2px}
+#app .f-item-data b{display:block;font:650 22px/1 var(--f-sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#app .f-item-data span{display:block;margin-top:3px;font-size:12px;font-weight:600;color:var(--f-fraco);text-transform:uppercase;letter-spacing:.04em}
+#app .f-item h3{font:600 16px/1.35 var(--f-sans);letter-spacing:-.01em}
+#app .f-item h3 button{padding:0;border:0;background:none;text-align:left;font:inherit;color:var(--f-tinta)}
+#app .f-item h3 button:hover{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--f-fio-forte)}
+#app .f-item-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px;font-size:13px;color:var(--f-suave);font-variant-numeric:tabular-nums}
+#app .f-item-resumo{margin-top:8px;font-size:14px;color:var(--f-suave);line-height:1.55}
+#app .f-pm-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:0;border:0;background:none;font-size:13.5px;font-weight:600;color:var(--f-tinta)}
+#app .f-pm-btn svg{transition:transform .2s;color:var(--f-suave)}
+#app .f-pm-btn[aria-expanded=true] svg{transform:rotate(90deg)}
+#app .f-pm{margin-top:12px;padding:16px 18px;border-radius:12px;background:var(--f-cinza);font-size:14px;line-height:1.6}
+#app .f-pm[hidden]{display:none}
+#app .f-pm h4{margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--f-suave)}
+#app .f-pm p{margin:0 0 12px}
+#app .f-pm ol{display:grid;gap:4px;margin:0 0 12px;font-size:13.5px;font-variant-numeric:tabular-nums}
+#app .f-pm ol b{display:inline-block;min-width:48px;font-weight:600}
+#app .f-pm ul{display:grid;gap:4px;margin:0;padding-left:18px;list-style:disc}
+#app .f-lado{display:flex;flex-direction:column;gap:16px;padding-top:26px}
+#app .f-lado .f-cartao{padding:18px 18px 16px}
+#app .f-lado h3{font:650 14px/1.3 var(--f-sans);letter-spacing:-.005em}
+#app .f-kpis{display:grid;gap:12px;margin-top:12px}
+#app .f-kpis div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:13.5px;color:var(--f-suave)}
+#app .f-kpis b{font-weight:650;font-size:15px;color:var(--f-tinta);font-variant-numeric:tabular-nums}
+#app .f-kpis .f-kpi-grande{flex-direction:column;align-items:flex-start;gap:2px;padding-bottom:12px;border-bottom:1px solid var(--f-fio)}
+#app .f-kpis .f-kpi-grande b{font-size:30px;letter-spacing:-.025em;line-height:1.1}
+#app .f-lado .f-legenda{display:grid;gap:8px;margin-top:12px;font-size:13px}
+#app .f-lado p{margin-top:8px;font-size:13.5px;color:var(--f-suave)}
+#app .f-lado .f-btn{width:100%;margin-top:12px}
+#app .f-cal-grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:22px}
+#app .f-cal{padding:16px 16px 14px}
+#app .f-cal-cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+#app .f-cal-cab strong{font-weight:650;font-size:14.5px}
+#app .f-cal-cab span{font-size:12.5px;font-weight:600;color:var(--f-ok-texto);font-variant-numeric:tabular-nums}
+#app .f-cal-sem{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px}
+#app .f-cal-sem span{font-size:11px;font-weight:600;color:var(--f-fraco);text-align:center}
+#app .f-cal-dias{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:6px}
+#app .f-cal-dias i{aspect-ratio:1;border-radius:4px;background:var(--f-ok-barra)}
+#app .f-cal-dias i.f-vazio{background:none}
+#app .f-cal-dias i.f-futuro{background:var(--f-sem)}
+#app .f-cal-dias i.f-deg{background:var(--f-deg-barra)}
+#app .f-cal-dias i.f-par{background:var(--f-par)}
+#app .f-cal-dias i.f-gra{background:var(--f-gra)}
+#app .f-cal-dias i.f-man{background:var(--f-man)}
+#app .f-aba[hidden]{display:none}
+
+/* rodapé */
+#app .f-rodape{border-top:1px solid var(--f-fio);background:var(--f-cinza)}
+#app .f-rodape .f-casca{display:flex;flex-wrap:wrap;align-items:center;gap:10px 24px;padding-top:22px;padding-bottom:26px;font-size:13px;color:var(--f-suave)}
+#app .f-rodape button{padding:0;border:0;background:none;font-size:13px;font-weight:550;color:var(--f-suave)}
+#app .f-rodape button:hover{color:var(--f-tinta);text-decoration:underline;text-underline-offset:3px}
+#app .f-feito{margin-left:auto;display:inline-flex;align-items:center;gap:7px}
+#app .f-feito b{font-weight:650;color:var(--f-tinta)}
+
+/* aviso */
+#app .f-avisos{position:sticky;bottom:0;height:0;z-index:30}
+#app .f-aviso{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;width:max-content;max-width:calc(100cqi - 32px);padding:11px 16px;border-radius:12px;background:var(--f-tinta);color:var(--f-fundo);font-size:13.5px;font-weight:550;box-shadow:var(--f-sombra-alta)}
+#app .f-aviso[hidden]{display:none}
+
+@media (prefers-reduced-motion:no-preference){
+  #app .f-faixa-deg .f-faixa-icone{animation:f-pulso 2.4s ease-in-out infinite}
+  #app .f-etapa.f-atual::after{animation:f-pulso-ponto 2s ease-in-out infinite}
+  #app .f-aviso{animation:f-subir .22s ease-out}
+  #app .f-dica:not([hidden]){animation:f-surgir .12s ease-out}
+}
+@keyframes f-pulso{50%{box-shadow:0 0 0 6px rgba(43,29,0,.08)}}
+@keyframes f-pulso-ponto{50%{box-shadow:0 0 0 7px var(--f-deg-claro)}}
+@keyframes f-subir{from{opacity:0;transform:translate(-50%,8px)}}
+@keyframes f-surgir{from{opacity:0;transform:translateY(3px)}}
+
+@container app (max-width: 860px){
+  #app .f-hist-grade{grid-template-columns:minmax(0,1fr)}
+  #app .f-lado{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding-top:8px}
+  #app .f-cal-grade{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@container app (max-width: 720px){
+  #app .f-duas{grid-template-columns:minmax(0,1fr)}
+  #app .f-barras{grid-template-columns:repeat(30,minmax(0,1fr));gap:3px}
+  #app .f-barras .f-dia:nth-child(-n+60){display:none}
+  #app .f-90{display:none}
+  #app .f-30{display:inline}
+}
+@container app (max-width: 600px){
+  #app{font-size:14.5px}
+  #app .f-casca{padding-left:16px;padding-right:16px}
+  #app .f-topo .f-casca{height:60px;gap:10px}
+  #app .f-marca-nome{font-size:17px}
+  #app .f-marca-nome span,#app .f-longo{display:none}
+  #app .f-nav button{padding:0 9px;font-size:13.5px}
+  #app .f-topo .f-btn{width:38px;padding:0}
+  #app .f-topo .f-btn span{display:none}
+  #app .f-pag{padding-top:20px}
+  #app .f-faixa{flex-wrap:wrap;align-items:flex-start;gap:6px 14px;padding:16px}
+  #app .f-faixa strong{font-size:17px}
+  #app .f-faixa-icone{width:32px;height:32px}
+  #app .f-faixa-hora{flex-basis:100%;margin-left:0;padding-left:46px;text-align:left}
+  #app .f-comp{padding:16px 16px 14px}
+  #app .f-comp.f-filho{padding-left:30px;background-position:16px 0}
+  #app .f-comp-pe{font-size:12px}
+  #app .f-abrir small{display:none}
+  #app .f-estado{font-size:13px}
+  #app .f-incidente{padding:18px 16px 16px}
+  #app .f-incidente h2{font-size:20px}
+  #app .f-inc-tempo{margin-left:0;width:100%}
+  #app .f-etapas{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:14px}
+  #app .f-atu{grid-template-columns:minmax(0,1fr);gap:6px}
+  #app .f-inc-acoes .f-nota{margin-left:0;width:100%}
+  #app .f-metrica{padding:16px 16px 10px}
+  #app .f-form-linha{flex-direction:column}
+  #app .f-form-linha .f-campo{flex:none;width:100%}
+  #app .f-lista-comp{grid-template-columns:minmax(0,1fr)}
+  #app .f-dias li{grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:12px 16px}
+  #app .f-dias li>span{grid-column:1/-1;grid-row:2}
+  #app .f-h1{font-size:27px}
+  #app .f-periodo{margin-left:0;width:100%;justify-content:space-between}
+  #app .f-ferramentas .f-seg,#app .f-ferramentas .f-select{flex:1 1 auto}
+  #app .f-item{grid-template-columns:40px minmax(0,1fr);gap:12px}
+  #app .f-item-data b{font-size:19px}
+  #app .f-item-meta{gap:6px 12px}
+  #app .f-sep{display:none}
+  #app .f-lado{grid-template-columns:minmax(0,1fr)}
+  #app .f-cal-grade{grid-template-columns:minmax(0,1fr)}
+  #app .f-feito{margin-left:0}
+}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1">
+  <header class="f-topo">
+    <div class="f-casca">
+      <button type="button" class="f-marca" data-ir-status aria-label="Mandacaru Status: status atual">
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M14 4.5a2.5 2.5 0 0 1 5 0V28h-5z"/><path d="M8 11.5a2 2 0 0 1 4 0V16a1 1 0 0 0 1 1h1v3.4h-2.6A3.4 3.4 0 0 1 8 17z"/><path d="M24 8.5a2 2 0 0 0-4 0V13a1 1 0 0 1-1 1h0v3.4h1.6A3.4 3.4 0 0 0 24 14z"/><rect x="6" y="27" width="20" height="2" rx="1"/></svg>
+        <span class="f-marca-nome">mandacaru<span>status</span></span>
+      </button>
+      <nav class="f-nav" aria-label="Páginas">
+        <button type="button" data-ir-status>Status<span class="f-longo"> atual</span></button>
+        <button type="button" data-ir="3">Histórico</button>
+      </nav>
+      <button type="button" class="f-btn f-btn-tinta" id="f-assinar-topo" aria-label="Assinar avisos por e-mail"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Assinar avisos</span></button>
+    </div>
+  </header>
+
+  <!-- status: estados 1 e 2 -->
+  <section class="f-pag f-pag-status f-casca" aria-labelledby="f-faixa-titulo">
+    <div class="f-faixa f-so-1" role="status">
+      <span class="f-faixa-icone" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <div><strong id="f-faixa-titulo">Todos os sistemas operacionais</strong><span class="f-faixa-sub">Nenhum incidente em andamento</span></div>
+      <span class="f-faixa-hora">Atualizado há <b data-atualizado>12 s</b></span>
+    </div>
+    <div class="f-faixa f-faixa-deg f-so-2" role="status">
+      <span class="f-faixa-icone" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><path d="M12 16.5v.5"/><path d="M10.3 3.9L2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+      <div><strong>Instabilidade em Pagamentos PIX e Webhooks</strong><span class="f-faixa-sub">Cobranças são criadas normalmente; a confirmação está atrasando</span></div>
+      <span class="f-faixa-hora">Em andamento há <b data-andamento>56 min</b></span>
+    </div>
+    <p class="f-resumo f-so-1"><span><i aria-hidden="true"></i><b>9 dias</b>&nbsp;sem incidentes</span><span>Disponibilidade em 90 dias: <b data-geral>99,981%</b></span><span>Horários em Brasília (BRT)</span></p>
+
+    <article class="f-cartao f-incidente f-so-2" aria-labelledby="f-inc-titulo">
+      <div class="f-inc-topo">
+        <span class="f-selo f-selo-deg"><i aria-hidden="true"></i>Degradação parcial</span>
+        <span class="f-inc-id">INC-2610-19A</span>
+        <span class="f-inc-tempo">Começou às <b>14:14</b> · última atualização às <b>15:02</b></span>
+      </div>
+      <h2 id="f-inc-titulo">Atraso na confirmação de cobranças PIX</h2>
+      <p class="f-afeta">Afeta <span class="f-chip">Cobrança imediata</span><span class="f-chip">QR dinâmico</span><span class="f-chip">Webhooks</span></p>
+      <ol class="f-etapas" aria-label="Fases do incidente">
+        <li class="f-etapa f-feita"><b>Investigando</b>14:14</li>
+        <li class="f-etapa f-feita"><b>Identificado</b>14:38</li>
+        <li class="f-etapa f-atual" aria-current="step"><b>Monitorando</b>desde 15:02</li>
+        <li class="f-etapa"><b>Resolvido</b>—</li>
+      </ol>
+      <ol class="f-atualizacoes" aria-label="Atualizações, da mais recente para a mais antiga">
+        <li class="f-atu f-atu-atual"><div class="f-atu-fase">Monitorando<small>19/10 · 15:02 BRT</small></div><p>A correção foi aplicada e as confirmações voltaram a chegar em menos de 3 segundos. Os webhooks que ficaram para trás estão sendo reenviados em ordem, e devem zerar até 15:30. Nenhuma cobrança foi perdida ou duplicada.</p></li>
+        <li class="f-atu"><div class="f-atu-fase">Identificado<small>19/10 · 14:38 BRT</small></div><p>Encontramos a causa: a fila que recebe as confirmações do SPI ficou sem capacidade depois de um pico de cobranças no horário de almoço. Estamos dobrando os consumidores dessa fila.</p></li>
+        <li class="f-atu"><div class="f-atu-fase">Investigando<small>19/10 · 14:14 BRT</small></div><p>Estamos investigando atrasos de até 4 minutos na confirmação de cobranças PIX e no envio dos webhooks correspondentes. A criação de cobranças e a leitura de QR continuam funcionando.</p></li>
+      </ol>
+      <div class="f-inc-acoes">
+        <button type="button" class="f-btn f-btn-fio f-btn-peq" id="f-seguir" aria-pressed="false">Assinar este incidente</button>
+        <button type="button" class="f-btn f-btn-fio f-btn-peq" id="f-copiar">Copiar link</button>
+        <span class="f-nota">Próxima atualização prevista até 15:30</span>
+      </div>
+    </article>
+
+    <section class="f-secao" aria-labelledby="f-h2-comp">
+      <div class="f-secao-cab">
+        <h2 class="f-h2" id="f-h2-comp">Componentes</h2>
+        <div class="f-legenda" aria-hidden="true"><span><i></i>Operacional</span><span><i class="f-l-deg"></i>Degradado</span><span><i class="f-l-par"></i>Interrupção parcial</span><span><i class="f-l-gra"></i>Interrupção grave</span><span><i class="f-l-man"></i>Manutenção</span></div>
+      </div>
+      <div class="f-cartao" id="f-componentes">
+        <div id="f-lista-comp"></div>
+        <div class="f-dica" id="f-dica" role="tooltip" aria-live="polite" hidden></div>
+      </div>
+    </section>
+
+    <section class="f-secao" aria-labelledby="f-metrica-titulo">
+      <div class="f-cartao f-metrica">
+        <div class="f-metrica-cab">
+          <div>
+            <h2 class="f-metrica-rot" id="f-metrica-titulo">Tempo de resposta da API · mediana</h2>
+            <p class="f-metrica-valor"><b id="f-metrica-valor">142 ms</b><span id="f-metrica-nota">agora · média de 24 h: 136 ms</span></p>
+          </div>
+          <div class="f-seg" id="f-periodo-graf" role="group" aria-label="Período do gráfico">
+            <button type="button" data-p="24" aria-pressed="true">24 h</button>
+            <button type="button" data-p="7" aria-pressed="false">7 dias</button>
+          </div>
+        </div>
+        <svg class="f-grafico" id="f-grafico" viewBox="0 0 900 180" role="img" aria-label="Gráfico do tempo de resposta"></svg>
+        <p class="f-grafico-leitura" id="f-leitura" aria-live="polite">Passe o cursor sobre o gráfico para ler um ponto.</p>
+      </div>
+    </section>
+
+    <div class="f-duas">
+      <section class="f-secao" aria-labelledby="f-h2-manut">
+        <div class="f-secao-cab"><h2 class="f-h2" id="f-h2-manut">Manutenção programada</h2></div>
+        <div class="f-cartao f-manut">
+          <span class="f-selo f-selo-man"><i aria-hidden="true"></i>Programada</span>
+          <h3>Atualização do cluster de Webhooks</h3>
+          <p>Durante a janela, eventos podem chegar com até 5 minutos de atraso. Nada será perdido: tudo fica na fila e é entregue em ordem.</p>
+          <p class="f-quando"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Seg., 26 de outubro · 02:00 às 04:00</p>
+          <button type="button" class="f-btn f-btn-fio f-btn-peq" id="f-lembrar" aria-pressed="false">Avisar-me no início</button>
+        </div>
+      </section>
+      <section class="f-secao" aria-labelledby="f-h2-assinar">
+        <div class="f-secao-cab"><h2 class="f-h2" id="f-h2-assinar">Avisos por e-mail</h2></div>
+        <div class="f-cartao f-assinar">
+          <h3>Saiba antes do seu cliente</h3>
+          <p>Mandamos um e-mail quando um incidente começa, muda de fase ou termina. Sem propaganda.</p>
+          <form id="f-form" novalidate>
+            <div class="f-form-linha">
+              <label class="f-oculto" for="f-email">Seu e-mail</label>
+              <input class="f-campo" type="email" id="f-email" placeholder="voce@empresa.com.br" autocomplete="email" aria-describedby="f-erro">
+              <button type="submit" class="f-btn f-btn-tinta">Assinar</button>
+            </div>
+            <p class="f-erro" id="f-erro" hidden></p>
+            <div class="f-escolha" role="radiogroup" aria-label="Quais componentes">
+              <label><input type="radio" name="f-quais" value="todos" checked> Todos os componentes</label>
+              <label><input type="radio" name="f-quais" value="escolher"> Escolher</label>
+            </div>
+            <div class="f-lista-comp" id="f-lista-escolha" hidden></div>
+          </form>
+          <div class="f-sucesso" id="f-sucesso" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 10"/></svg><div><b>Quase lá.</b> <span id="f-sucesso-texto"></span><br><button type="button" id="f-refazer">Usar outro e-mail</button></div></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="f-secao" aria-labelledby="f-h2-dias">
+      <div class="f-secao-cab"><h2 class="f-h2" id="f-h2-dias">Últimos 7 dias</h2><p>Incidentes e manutenções por dia</p></div>
+      <ul class="f-cartao f-dias" id="f-dias"></ul>
+      <div class="f-mais"><button type="button" class="f-link-seta" data-ir="3">Ver o histórico completo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+    </section>
+  </section>
+
+  <!-- histórico: estado 3 -->
+  <section class="f-pag f-pag-hist f-casca" aria-labelledby="f-h1-hist">
+    <button type="button" class="f-migalha" data-ir-status><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Status atual</button>
+    <h1 class="f-h1" id="f-h1-hist">Histórico de incidentes</h1>
+    <p class="f-sub">Tudo o que afetou a Mandacaru nos últimos meses. Incidentes de impacto alto ganham post-mortem em até 5 dias úteis.</p>
+    <div class="f-ferramentas">
+      <div class="f-seg" id="f-abas" role="tablist" aria-label="Visualização">
+        <button type="button" role="tab" id="f-tab-inc" aria-controls="f-aba-inc" aria-selected="true" data-aba="inc">Incidentes</button>
+        <button type="button" role="tab" id="f-tab-cal" aria-controls="f-aba-cal" aria-selected="false" data-aba="cal">Disponibilidade</button>
+      </div>
+      <label class="f-oculto" for="f-filtro">Componente</label>
+      <select class="f-select" id="f-filtro"></select>
+      <div class="f-periodo">
+        <button type="button" class="f-icone-btn" id="f-ant" aria-label="Meses anteriores"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span id="f-periodo-rot" aria-live="polite">ago. – out. de 2026</span>
+        <button type="button" class="f-icone-btn" id="f-prox" aria-label="Meses seguintes" disabled><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
+    <div class="f-hist-grade">
+      <div>
+        <div class="f-aba" id="f-aba-inc" role="tabpanel" aria-labelledby="f-tab-inc"></div>
+        <div class="f-aba" id="f-aba-cal" role="tabpanel" aria-labelledby="f-tab-cal" hidden></div>
+      </div>
+      <aside class="f-lado" aria-label="Resumo">
+        <div class="f-cartao">
+          <h3>Últimos 90 dias</h3>
+          <div class="f-kpis">
+            <div class="f-kpi-grande"><b data-geral>99,981%</b>disponibilidade média</div>
+            <div>Incidentes<b>7</b></div>
+            <div>Manutenções<b>2</b></div>
+            <div>Tempo médio até resolver<b>48 min</b></div>
+            <div>Maior incidente<b>2 h 05</b></div>
+          </div>
+        </div>
+        <div class="f-cartao">
+          <h3>Como ler as cores</h3>
+          <div class="f-legenda"><span><i></i>Operacional o dia todo</span><span><i class="f-l-deg"></i>Lento ou com atraso</span><span><i class="f-l-par"></i>Parte dos clientes sem acesso</span><span><i class="f-l-gra"></i>Fora do ar</span><span><i class="f-l-man"></i>Manutenção avisada</span></div>
+        </div>
+        <div class="f-cartao">
+          <h3>Fique sabendo primeiro</h3>
+          <p>Receba por e-mail cada mudança de fase, com o horário em BRT.</p>
+          <button type="button" class="f-btn f-btn-tinta" data-assinar>Assinar avisos</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="f-rodape">
+    <div class="f-casca">
+      <span>© 2026 Mandacaru Cloud · São Paulo e Fortaleza</span>
+      <button type="button" data-ir="3">Histórico</button>
+      <button type="button" data-assinar>Assinar avisos</button>
+      <span class="f-feito"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21l1.5-11h3L15 21z"/><path d="M8.5 10h7"/><path d="M10 7h4l-.5-3h-3z"/><path d="M4 6l3 1M20 6l-3 1"/></svg>Página de status feita com <b>Farol</b></span>
+    </div>
+  </footer>
+  <div class="f-avisos"><div class="f-aviso" id="f-aviso" role="status" hidden></div></div>
+</main>
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura do Farol: página de status com faixa verde e barras de 90 dias">
+  <rect width="320" height="180" fill="#ffffff"/>
+  <rect y="0" width="320" height="26" fill="#ffffff"/><rect y="26" width="320" height="1" fill="#e4e8e5"/>
+  <g fill="#127a52"><rect x="22" y="7" width="4" height="13" rx="2"/><rect x="17" y="11" width="3" height="5" rx="1.5"/><rect x="28" y="10" width="3" height="5" rx="1.5"/></g>
+  <text x="36" y="17.5" font-family="-apple-system,'Inter','Segoe UI',sans-serif" font-size="9" font-weight="700" fill="#111814">mandacaru</text>
+  <text x="84" y="17.5" font-family="-apple-system,'Inter','Segoe UI',sans-serif" font-size="9" fill="#5b6560">status</text>
+  <rect x="252" y="7" width="52" height="13" rx="4" fill="#111814"/><text x="278" y="16" text-anchor="middle" font-family="-apple-system,'Inter',sans-serif" font-size="6" font-weight="600" fill="#fff">Assinar</text>
+  <rect x="16" y="36" width="288" height="30" rx="7" fill="#16824a"/>
+  <circle cx="32" cy="51" r="7" fill="#fff" fill-opacity=".2"/><path d="M28.5 51l2.4 2.4 4.6-4.8" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="46" y="54.5" font-family="-apple-system,'Inter','Segoe UI',sans-serif" font-size="9.5" font-weight="650" fill="#fff">Todos os sistemas operacionais</text>
+  <rect x="16" y="74" width="288" height="98" rx="7" fill="#fff" stroke="#e4e8e5"/>
+  <g font-family="-apple-system,'Inter','Segoe UI',sans-serif" font-size="7" font-weight="600" fill="#111814">
+    <text x="26" y="88">API REST</text><text x="26" y="111">Pagamentos PIX</text><text x="26" y="134">Webhooks</text><text x="26" y="157">CDN Fortaleza</text>
+  </g>
+  <g font-family="-apple-system,'Inter','Segoe UI',sans-serif" font-size="6.5" font-weight="600" fill="#137a46" text-anchor="end">
+    <text x="294" y="88">Operacional</text><text x="294" y="111">Operacional</text><text x="294" y="134">Operacional</text><text x="294" y="157">Operacional</text>
+  </g>
+  <g fill="#1f9d5c">
+    <rect x="26" y="92" width="268" height="8" rx="1.5"/><rect x="26" y="115" width="268" height="8" rx="1.5"/><rect x="26" y="138" width="268" height="8" rx="1.5"/><rect x="26" y="161" width="268" height="8" rx="1.5"/>
+  </g>
+  <g fill="#ffffff">
+    <rect x="35" y="92" width="1" height="77"/><rect x="44" y="92" width="1" height="77"/><rect x="53" y="92" width="1" height="77"/><rect x="62" y="92" width="1" height="77"/><rect x="71" y="92" width="1" height="77"/><rect x="80" y="92" width="1" height="77"/><rect x="89" y="92" width="1" height="77"/><rect x="98" y="92" width="1" height="77"/><rect x="107" y="92" width="1" height="77"/><rect x="116" y="92" width="1" height="77"/><rect x="125" y="92" width="1" height="77"/><rect x="134" y="92" width="1" height="77"/><rect x="143" y="92" width="1" height="77"/><rect x="152" y="92" width="1" height="77"/><rect x="161" y="92" width="1" height="77"/><rect x="170" y="92" width="1" height="77"/><rect x="179" y="92" width="1" height="77"/><rect x="188" y="92" width="1" height="77"/><rect x="197" y="92" width="1" height="77"/><rect x="206" y="92" width="1" height="77"/><rect x="215" y="92" width="1" height="77"/><rect x="224" y="92" width="1" height="77"/><rect x="233" y="92" width="1" height="77"/><rect x="242" y="92" width="1" height="77"/><rect x="251" y="92" width="1" height="77"/><rect x="260" y="92" width="1" height="77"/><rect x="269" y="92" width="1" height="77"/><rect x="278" y="92" width="1" height="77"/><rect x="287" y="92" width="1" height="77"/>
+    <rect x="26" y="100" width="268" height="15"/><rect x="26" y="123" width="268" height="15"/><rect x="26" y="146" width="268" height="15"/>
+  </g>
+  <rect x="117" y="92" width="8" height="8" fill="#d63c3c"/><rect x="225" y="115" width="8" height="8" fill="#f0aa16"/><rect x="189" y="138" width="8" height="8" fill="#ec6a1f"/><rect x="270" y="138" width="8" height="8" fill="#f0aa16"/><rect x="243" y="161" width="8" height="8" fill="#ec6a1f"/><rect x="153" y="161" width="8" height="8" fill="#3b6fd6"/>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Farol: página de status. App autossuficiente com dados fictícios; o estado vive em #app[data-estado].
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var $ = function (s) { return app.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(app.querySelectorAll(s)); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;"}[c]; }); }
+  function dois(n) { return (n < 10 ? "0" : "") + n; }
+  var MESES = ["jan.", "fev.", "mar.", "abr.", "maio", "jun.", "jul.", "ago.", "set.", "out.", "nov.", "dez."];
+  var MESES_LONGOS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  var SEMANA = ["dom.", "seg.", "ter.", "qua.", "qui.", "sex.", "sáb."];
+
+  // hoje: segunda, 19/10/2026, 15:10 BRT (o relógio anda)
+  var HOJE = new Date(2026, 9, 19);
+  var AGORA0 = new Date(2026, 9, 19, 15, 10, 24).getTime(), t0 = Date.now();
+  function agora() { return new Date(AGORA0 + Date.now() - t0); }
+  function diaDe(i) { return new Date(2026, 9, 19 - (89 - i)); }
+  function dataCurta(d) { return d.getDate() + " de " + MESES[d.getMonth()] + " de " + d.getFullYear(); }
+
+  // ── estado ───────────────────────────────────────────────────────────────
+  function estado() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function ir(n) { app.setAttribute("data-estado", String(n)); }
+  var ultimoStatus = estado() === 3 ? 1 : estado(), visto = estado();
+  function aoMudar() {
+    var n = estado();
+    if (n !== 3) ultimoStatus = n;
+    $$(".f-nav button").forEach(function (b) {
+      var eh = b.hasAttribute("data-ir-status") ? n !== 3 : n === 3;
+      if (eh) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    if (n !== visto) {
+      visto = n;
+      if (app.scrollTop) app.scrollTop = 0;
+      if (window.scrollY) window.scrollTo(0, 0);
+      if (n === 2) abertos.pix = true;
+      desenharComponentes(); desenharGrafico(); desenharDias();
+    }
+  }
+  new MutationObserver(aoMudar).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  app.addEventListener("maquete:estado", aoMudar);
+
+  var aviso = $("#f-aviso"), avisoT = 0;
+  function avisar(t) { aviso.textContent = t; aviso.hidden = false; clearTimeout(avisoT); avisoT = setTimeout(function () { aviso.hidden = true; }, 3200); }
+
+  // ── dados ────────────────────────────────────────────────────────────────
+  var NIVEL = {ok: {rot: "Operacional", peso: 0, ord: 0}, man: {rot: "Em manutenção", peso: 0, ord: 1}, deg: {rot: "Desempenho degradado", peso: .25, ord: 2}, par: {rot: "Interrupção parcial", peso: .5, ord: 3}, gra: {rot: "Interrupção grave", peso: 1, ord: 4}};
+  var COMP = [
+    {id: "plataforma", nome: "Plataforma", filhos: ["api", "painel", "auth"]},
+    {id: "api", nome: "API REST", desc: "api.mandacaru.cloud, versões 2 e 3", pai: "plataforma"},
+    {id: "painel", nome: "Painel do cliente", desc: "painel web e aplicativo", pai: "plataforma"},
+    {id: "auth", nome: "Autenticação", desc: "login, SSO e chaves de API", pai: "plataforma"},
+    {id: "pix", nome: "Pagamentos PIX", filhos: ["cob", "qr", "med"]},
+    {id: "cob", nome: "Cobrança imediata", desc: "criação e confirmação de cobranças", pai: "pix"},
+    {id: "qr", nome: "QR dinâmico", desc: "geração de QR com vencimento", pai: "pix"},
+    {id: "med", nome: "Devoluções (MED)", desc: "devoluções e mecanismo especial", pai: "pix"},
+    {id: "webhooks", nome: "Webhooks", desc: "entrega de eventos para os seus sistemas"},
+    {id: "cdn", nome: "CDN", filhos: ["gru", "for"]},
+    {id: "gru", nome: "São Paulo · GRU", desc: "borda principal, 14 pontos de presença", pai: "cdn"},
+    {id: "for", nome: "Fortaleza · FOR", desc: "borda Nordeste, junto aos cabos submarinos", pai: "cdn"}
+  ];
+  var porId = {};
+  COMP.forEach(function (c) { porId[c.id] = c; });
+  // ocorrências por componente e dia (0 = 22/07, 89 = hoje)
+  var OCORR = [
+    {c: "api", d: 2, n: "deg", t: "Lentidão nas consultas da API de extrato", m: 30, inc: "i0724"},
+    {c: "api", d: 37, n: "gra", t: "Indisponibilidade da API em São Paulo", m: 17, inc: "i0828"},
+    {c: "med", d: 24, n: "deg", t: "Atraso nas devoluções PIX", m: 65, inc: "i0815"},
+    {c: "gru", d: 42, n: "man", t: "Troca de certificados TLS", m: 30, inc: "m0902"},
+    {c: "for", d: 42, n: "man", t: "Troca de certificados TLS", m: 30, inc: "m0902"},
+    {c: "webhooks", d: 51, n: "par", t: "Webhooks duplicados para alguns clientes", m: 125, inc: "i0911"},
+    {c: "painel", d: 62, n: "deg", t: "Lentidão no login do Painel", m: 41, inc: "i0922"},
+    {c: "auth", d: 62, n: "deg", t: "Lentidão no login do Painel", m: 41, inc: "i0922"},
+    {c: "for", d: 73, n: "par", t: "Erros 502 na CDN Fortaleza", m: 23, inc: "i1003"},
+    {c: "painel", d: 84, n: "man", t: "Atualização do banco de dados do Painel", m: 70, inc: "m1014"},
+    {c: "webhooks", d: 80, n: "deg", t: "Lentidão no envio de webhooks", m: 34, inc: "i1010"},
+    {c: "cob", d: 89, n: "deg", t: "Atraso na confirmação de cobranças PIX", m: 56, so2: true},
+    {c: "qr", d: 89, n: "deg", t: "Atraso na confirmação de cobranças PIX", m: 56, so2: true},
+    {c: "webhooks", d: 89, n: "deg", t: "Atraso na confirmação de cobranças PIX", m: 56, so2: true}
+  ];
+  function ocorrencias(id) {
+    var c = porId[id], s2 = estado() === 2;
+    var ids = c.filhos || [id];
+    return OCORR.filter(function (o) { return ids.indexOf(o.c) >= 0 && (!o.so2 || s2); });
+  }
+  function dias(id) {
+    var arr = [], lista = ocorrencias(id);
+    for (var i = 0; i < 90; i++) arr.push({n: "ok", itens: []});
+    lista.forEach(function (o) {
+      var dia = arr[o.d];
+      if (!dia.itens.some(function (x) { return x.t === o.t; })) dia.itens.push(o);
+      if (NIVEL[o.n].ord > NIVEL[dia.n].ord) dia.n = o.n;
+    });
+    return arr;
+  }
+  function uptime(id) {
+    var c = porId[id];
+    if (c.filhos) return c.filhos.reduce(function (t, f) { return t + uptime(f); }, 0) / c.filhos.length;
+    var perda = ocorrencias(id).reduce(function (t, o) { return t + o.m * NIVEL[o.n].peso; }, 0);
+    return 100 * (1 - perda / (90 * 1440));
+  }
+  function pct(v) { return v.toFixed(3).replace(".", ",") + "%"; }
+  function geral() {
+    var tops = COMP.filter(function (c) { return !c.pai; });
+    var v = pct(tops.reduce(function (t, c) { return t + uptime(c.id); }, 0) / tops.length);
+    $$("[data-geral]").forEach(function (b) { b.textContent = v; });
+  }
+  function estadoAtual(id) {
+    var d = dias(id)[89];
+    return estado() === 2 ? d.n : "ok";
+  }
+
+  // ── componentes ─────────────────────────────────────────────────────────
+  var abertos = {plataforma: true, pix: false, cdn: false};
+  var SETA = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+  var INFO = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/></svg>';
+  function linha(c, filho) {
+    var ds = dias(c.id), st = estadoAtual(c.id);
+    var barras = ds.map(function (d, i) { return '<span class="f-dia' + (d.n !== "ok" ? " f-" + d.n : "") + '" data-i="' + i + '"></span>'; }).join("");
+    var cab = c.filhos
+      ? '<button type="button" class="f-abrir" data-grupo="' + c.id + '" aria-expanded="' + !!abertos[c.id] + '" aria-controls="f-filhos-' + c.id + '">' + SETA + c.nome + ' <small>' + c.filhos.length + ' componentes</small></button>'
+      : '<span class="f-comp-nome">' + c.nome + '</span><span class="f-info" tabindex="0" aria-label="Sobre ' + esc(c.nome) + ': ' + esc(c.desc) + '">' + INFO + '<span aria-hidden="true">' + esc(c.desc) + '</span></span>';
+    return '<div class="f-comp' + (filho ? " f-filho" : "") + '" data-comp="' + c.id + '"><div class="f-comp-cab">' + cab +
+      '<span class="f-estado' + (st !== "ok" ? " f-" + st : "") + '"><i aria-hidden="true"></i>' + NIVEL[st].rot + '</span></div>' +
+      '<div class="f-barras" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="89" aria-valuenow="89" aria-valuetext="Hoje: ' + NIVEL[st].rot + '" data-comp="' + c.id + '" aria-label="' + esc(c.nome) + ', ' + pct(uptime(c.id)) + ' de disponibilidade em 90 dias. Setas percorrem os dias.">' + barras + '</div>' +
+      '<div class="f-comp-pe"><span class="f-pe-ini"><span class="f-90">90 dias atrás</span><span class="f-30">30 dias atrás</span></span><span class="f-pe-uptime f-num">' + pct(uptime(c.id)) + ' de disponibilidade</span><span class="f-pe-fim">Hoje</span></div></div>';
+  }
+  function desenharComponentes() {
+    var html = "";
+    COMP.forEach(function (c) {
+      if (c.pai) return;
+      html += linha(c, false);
+      if (c.filhos) {
+        html += '<div id="f-filhos-' + c.id + '"' + (abertos[c.id] ? "" : " hidden") + '>' + c.filhos.map(function (f) { return linha(porId[f], true); }).join("") + '</div>';
+      }
+    });
+    $("#f-lista-comp").innerHTML = html;
+    esconderDica();
+    geral();
+  }
+  $("#f-lista-comp").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-grupo]");
+    if (!b) return;
+    var id = b.getAttribute("data-grupo");
+    abertos[id] = !abertos[id];
+    b.setAttribute("aria-expanded", String(abertos[id]));
+    $("#f-filhos-" + id).hidden = !abertos[id];
+  });
+
+  // dica por dia
+  var dica = $("#f-dica"), cartao = $("#f-componentes");
+  function textoDica(id, i) {
+    var d = dias(id)[i], data = diaDe(i);
+    var cab = "<strong>" + SEMANA[data.getDay()] + ", " + dataCurta(data) + "</strong>";
+    if (!d.itens.length) return cab + '<span class="f-dica-sub">Sem ocorrências. Operacional o dia todo.</span>';
+    return cab + '<span class="f-dica-sub">' + (d.itens.length === 1 ? "1 ocorrência" : d.itens.length + " ocorrências") + (i === 89 && estado() === 2 ? " · em andamento" : "") + '</span><ul>' +
+      d.itens.map(function (o) { return '<li><i class="f-' + o.n + '"></i><span>' + esc(o.t) + '<small>' + NIVEL[o.n].rot + " · " + duracao(o.m) + (porId[id].filhos ? " · " + porId[o.c].nome : "") + '</small></span></li>'; }).join("") + '</ul>';
+  }
+  function duracao(m) { return m >= 60 ? Math.floor(m / 60) + " h " + dois(m % 60) : m + " min"; }
+  function mostrarDica(barra, i) {
+    var id = barra.getAttribute("data-comp");
+    var el = barra.children[i];
+    if (!el || el.offsetParent === null) return;
+    dica.innerHTML = textoDica(id, i);
+    dica.hidden = false;
+    var rc = cartao.getBoundingClientRect(), rb = el.getBoundingClientRect();
+    var w = dica.offsetWidth, h = dica.offsetHeight;
+    var x = rb.left - rc.left + rb.width / 2 - w / 2;
+    x = Math.max(8, Math.min(rc.width - w - 8, x));
+    var y = rb.top - rc.top - h - 10;
+    if (y < 4) y = rb.bottom - rc.top + 10;
+    dica.style.left = x + "px"; dica.style.top = y + "px";
+  }
+  function esconderDica() { dica.hidden = true; $$(".f-dia.f-cursor").forEach(function (d) { d.classList.remove("f-cursor"); }); }
+  var lista = $("#f-lista-comp");
+  lista.addEventListener("mouseover", function (e) {
+    var d = e.target.closest(".f-dia");
+    if (!d) return;
+    mostrarDica(d.parentNode, +d.getAttribute("data-i"));
+  });
+  lista.addEventListener("mouseleave", esconderDica);
+  lista.addEventListener("mouseout", function (e) { if (e.target.closest(".f-barras") && !e.relatedTarget?.closest?.(".f-barras")) esconderDica(); });
+  var cursor = {};
+  lista.addEventListener("focusin", function (e) {
+    var b = e.target.closest(".f-barras");
+    if (!b) return;
+    var id = b.getAttribute("data-comp");
+    if (cursor[id] == null) cursor[id] = 89;
+    marcar(b, cursor[id]);
+  });
+  lista.addEventListener("focusout", function (e) { if (e.target.closest(".f-barras")) esconderDica(); });
+  lista.addEventListener("keydown", function (e) {
+    var b = e.target.closest(".f-barras");
+    if (!b) return;
+    var id = b.getAttribute("data-comp"), i = cursor[id] == null ? 89 : cursor[id];
+    var min = getComputedStyle(b.children[0]).display === "none" ? 60 : 0;
+    if (e.key === "ArrowLeft") i = Math.max(min, i - 1);
+    else if (e.key === "ArrowRight") i = Math.min(89, i + 1);
+    else if (e.key === "Home") i = min;
+    else if (e.key === "End") i = 89;
+    else if (e.key === "Escape") { esconderDica(); return; }
+    else return;
+    e.preventDefault();
+    cursor[id] = i;
+    marcar(b, i);
+  });
+  function marcar(b, i) {
+    $$(".f-dia.f-cursor").forEach(function (d) { d.classList.remove("f-cursor"); });
+    b.children[i].classList.add("f-cursor");
+    mostrarDica(b, i);
+    b.setAttribute("aria-valuenow", String(i));
+    b.setAttribute("aria-valuetext", (dica.innerText || dica.textContent).replace(/\s+/g, " ").trim());
+  }
+
+  // ── gráfico ──────────────────────────────────────────────────────────────
+  var periodo = 24, largurasG = 0;
+  function serie() {
+    var v = [], i, h;
+    if (estado() === 2 && periodo === 24) {
+      for (i = 0; i <= 61; i++) {
+        h = i / 4; // de 00:00 a 15:15, a cada 15 min
+        var base = 1.4 + Math.sin(i / 5) * .25 + (h > 11 && h < 14 ? .5 : 0);
+        if (h >= 14.2 && h < 15.05) base = h < 14.6 ? 40 + (h - 14.2) * 500 : 236 - (h - 14.6) * 470;
+        if (h >= 15.05) base = 2.8 - (h - 15.05) * 4;
+        v.push(Math.max(1.1, base));
+      }
+      v[v.length - 1] = 2.8;
+      return {vals: v, rotulos: ["00h", "04h", "08h", "12h", "15h"], un: "s"};
+    }
+    if (periodo === 7) {
+      for (i = 0; i < 7 * 24; i++) { h = i % 24; v.push(118 + (h >= 8 && h <= 19 ? 22 + Math.sin((h - 8) / 11 * Math.PI) * 18 : 0) + Math.sin(i * 1.7) * 5 + (i % 24 === 13 ? 9 : 0)); }
+      return {vals: v, rotulos: ["ter.", "qua.", "qui.", "sex.", "sáb.", "dom.", "seg."], un: "ms"};
+    }
+    for (i = 0; i <= 61; i++) { h = i / 4; v.push(114 + (h >= 8 ? 20 + Math.sin(Math.min(1, (h - 8) / 10) * Math.PI) * 16 : 0) + Math.sin(i * 1.3) * 4.5 + (h > 12 && h < 13.5 ? 8 : 0)); }
+    v[v.length - 1] = 142;
+    return {vals: v, rotulos: ["00h", "04h", "08h", "12h", "15h"], un: "ms"};
+  }
+  function fmt(v, un) {
+    if (un === "ms") return Math.round(v) + " ms";
+    if (v >= 60) return Math.floor(v / 60) + " min " + dois(Math.round(v % 60)) + " s";
+    return v.toFixed(1).replace(".", ",") + " s";
+  }
+  var dadosG = null;
+  function desenharGrafico() {
+    var svg = $("#f-grafico");
+    var w = Math.round(svg.getBoundingClientRect().width); if (w > 0) largurasG = w;
+    var W = largurasG || 900, H = W < 520 ? 150 : 180, x0 = 40, x1 = W - 6, topo = 10, base = H - 26;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    var s = serie(), vals = s.vals, max = Math.max.apply(null, vals), min = s.un === "s" ? 0 : 80;
+    var teto = s.un === "s" ? 240 : 180;
+    if (max > teto) teto = Math.ceil(max / 60) * 60;
+    var y = function (v) { return base - (v - min) / (teto - min) * (base - topo); };
+    var passo = (x1 - x0) / (vals.length - 1);
+    var d = vals.map(function (v, i) { return (i ? "L" : "M") + (x0 + i * passo).toFixed(1) + " " + y(v).toFixed(1); }).join("");
+    var marcas = s.un === "s" ? [0, 120, 240] : [80, 130, 180];
+    var g = marcas.map(function (m) { return '<line class="f-svg-grade" x1="' + x0 + '" x2="' + W + '" y1="' + y(m).toFixed(1) + '" y2="' + y(m).toFixed(1) + '"/><text class="f-svg-rot" x="0" y="' + (y(m) + 4).toFixed(1) + '">' + (s.un === "s" ? (m ? m / 60 + " min" : "0") : m + " ms") + '</text>'; }).join("");
+    if (s.un === "s") {
+      var xa = x0 + 14.2 * 4 * passo, xb = x0 + 15.05 * 4 * passo;
+      g += '<rect class="f-svg-faixa" x="' + xa.toFixed(1) + '" y="' + topo + '" width="' + (xb - xa).toFixed(1) + '" height="' + (base - topo) + '"/><text class="f-svg-rot" x="' + (xa - 6).toFixed(1) + '" y="' + (topo + 12) + '" text-anchor="end">incidente</text>';
+    }
+    var area = d + "L" + x1.toFixed(1) + " " + base + "L" + x0 + " " + base + "Z";
+    g += '<path class="f-svg-area' + (s.un === "s" ? " f-svg-deg" : "") + '" d="' + area + '"/><path class="f-svg-linha' + (s.un === "s" ? " f-svg-deg" : "") + '" d="' + d + '"/>';
+    var n = s.rotulos.length;
+    s.rotulos.forEach(function (r, i) { var x = x0 + (x1 - x0) * (periodo === 7 ? (i + .5) / n : i / (n - 1)); g += '<text class="f-svg-rot" x="' + x.toFixed(1) + '" y="' + (H - 6) + '" text-anchor="' + (periodo === 7 ? "middle" : i === 0 ? "start" : i === n - 1 ? "end" : "middle") + '">' + r + '</text>'; });
+    var ul = vals.length - 1;
+    g += '<circle class="f-svg-ponto" cx="' + (x0 + ul * passo).toFixed(1) + '" cy="' + y(vals[ul]).toFixed(1) + '" r="4"/>';
+    g += '<line class="f-svg-cursor" id="f-cursor-g" x1="0" x2="0" y1="' + topo + '" y2="' + base + '" visibility="hidden"/>';
+    svg.innerHTML = g;
+    dadosG = {x0: x0, passo: passo, vals: vals, un: s.un, W: W};
+    var s2 = estado() === 2 && periodo === 24;
+    $("#f-metrica-titulo").textContent = s2 ? "Confirmação de cobranças PIX · p95" : "Tempo de resposta da API · mediana";
+    $("#f-metrica-valor").textContent = s2 ? "2,8 s" : periodo === 7 ? "134 ms" : "142 ms";
+    $("#f-metrica-nota").textContent = s2 ? "agora · pico de 3 min 10 s às 14:30" : periodo === 7 ? "média dos últimos 7 dias" : "agora · média de 24 h: 136 ms";
+    svg.setAttribute("aria-label", s2 ? "Tempo de confirmação PIX hoje: perto de 1,5 s até 14:14, pico de 3 minutos e 10 segundos às 14:30 e volta para 2,8 s depois das 15:02." : "Tempo de resposta da API: entre 110 e 160 ms, mais alto em horário comercial.");
+  }
+  $("#f-grafico").addEventListener("mousemove", function (e) {
+    if (!dadosG) return;
+    var r = this.getBoundingClientRect(), x = (e.clientX - r.left) * dadosG.W / r.width;
+    var i = Math.max(0, Math.min(dadosG.vals.length - 1, Math.round((x - dadosG.x0) / dadosG.passo)));
+    var cx = dadosG.x0 + i * dadosG.passo, c = $("#f-cursor-g");
+    c.setAttribute("x1", cx); c.setAttribute("x2", cx); c.setAttribute("visibility", "visible");
+    var quando;
+    if (periodo === 7) { var dd = new Date(2026, 9, 13 + Math.floor(i / 24)); quando = SEMANA[dd.getDay()] + " " + dd.getDate() + "/10, " + dois(i % 24) + ":00"; }
+    else { var mi = i * 15; quando = "hoje, " + dois(Math.floor(mi / 60)) + ":" + dois(mi % 60); }
+    $("#f-leitura").textContent = quando + " · " + fmt(dadosG.vals[i], dadosG.un);
+  });
+  $("#f-grafico").addEventListener("mouseleave", function () { var c = $("#f-cursor-g"); if (c) c.setAttribute("visibility", "hidden"); $("#f-leitura").textContent = "Passe o cursor sobre o gráfico para ler um ponto."; });
+  $("#f-periodo-graf").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-p]");
+    if (!b) return;
+    periodo = +b.getAttribute("data-p");
+    $$("#f-periodo-graf button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    desenharGrafico();
+  });
+
+  // ── últimos 7 dias ───────────────────────────────────────────────────────
+  function desenharDias() {
+    var html = "";
+    for (var k = 0; k < 7; k++) {
+      var d = new Date(2026, 9, 19 - k), txt;
+      var data = d.getDate() + " " + MESES[d.getMonth()];
+      if (k === 0 && estado() === 2) txt = '<span><button type="button" class="f-link" data-rolar-inc>Atraso na confirmação de cobranças PIX</button></span><small><span class="f-selo f-selo-deg">Monitorando</span></small>';
+      else if (k === 5) txt = '<span><button type="button" class="f-link" data-abrir-inc="m1014">Manutenção concluída: banco de dados do Painel</button></span><small>02:00 às 03:10</small>';
+      else txt = '<span class="f-nada">' + (k === 0 ? "Nenhum incidente registrado hoje." : "Nenhum incidente.") + '</span><small class="f-dia-ok"><i aria-hidden="true"></i>Operacional</small>';
+      html += '<li><time datetime="2026-10-' + dois(19 - k) + '">' + (k === 0 ? "Hoje" : k === 1 ? "Ontem" : data) + '</time>' + txt + '</li>';
+    }
+    $("#f-dias").innerHTML = html;
+  }
+  $("#f-dias").addEventListener("click", function (e) {
+    var a = e.target.closest("[data-abrir-inc]");
+    if (a) { abrirNoHistorico(a.getAttribute("data-abrir-inc")); return; }
+    if (e.target.closest("[data-rolar-inc]")) { var inc = $(".f-incidente"); if (inc && inc.scrollIntoView) inc.scrollIntoView({behavior: "smooth", block: "start"}); }
+  });
+
+  // ── assinatura ───────────────────────────────────────────────────────────
+  var form = $("#f-form"), email = $("#f-email"), erro = $("#f-erro"), sucesso = $("#f-sucesso");
+  $("#f-lista-escolha").innerHTML = COMP.filter(function (c) { return !c.filhos; }).map(function (c) { return '<label><input type="checkbox" value="' + c.id + '"' + (c.pai === "pix" || c.id === "webhooks" ? " checked" : "") + '> ' + c.nome + '</label>'; }).join("");
+  form.addEventListener("change", function (e) {
+    if (e.target.name === "f-quais") $("#f-lista-escolha").hidden = e.target.value !== "escolher";
+  });
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = email.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+      erro.textContent = v ? "Esse e-mail parece incompleto. Confira o domínio (ex.: voce@empresa.com.br)." : "Escreva o e-mail que vai receber os avisos.";
+      erro.hidden = false; email.setAttribute("aria-invalid", "true"); email.focus();
+      return;
+    }
+    var escolher = form.querySelector('input[name="f-quais"]:checked').value === "escolher";
+    var n = escolher ? $$("#f-lista-escolha input:checked").length : 0;
+    if (escolher && !n) { erro.textContent = "Escolha pelo menos um componente."; erro.hidden = false; return; }
+    erro.hidden = true; email.removeAttribute("aria-invalid");
+    $("#f-sucesso-texto").textContent = "Enviamos um link de confirmação para " + v + (escolher ? " (" + n + (n === 1 ? " componente)." : " componentes).") : ".") + " Os avisos começam assim que você clicar nele.";
+    form.hidden = true; sucesso.hidden = false;
+  });
+  email.addEventListener("input", function () { if (email.hasAttribute("aria-invalid")) { email.removeAttribute("aria-invalid"); erro.hidden = true; } });
+  $("#f-refazer").addEventListener("click", function () { form.hidden = false; sucesso.hidden = true; email.value = ""; email.focus(); });
+  function irAssinar() {
+    if (estado() === 3) ir(ultimoStatus);
+    requestAnimationFrame(function () {
+      var alvo = $(".f-assinar");
+      if (alvo.scrollIntoView) alvo.scrollIntoView({behavior: "smooth", block: "center"});
+      setTimeout(function () { if (!form.hidden) email.focus({preventScroll: true}); }, 350);
+    });
+  }
+  $("#f-assinar-topo").addEventListener("click", irAssinar);
+
+  // ── incidente ao vivo ────────────────────────────────────────────────────
+  $("#f-seguir").addEventListener("click", function () {
+    var on = this.getAttribute("aria-pressed") !== "true";
+    this.setAttribute("aria-pressed", String(on));
+    this.textContent = on ? "Assinando este incidente ✓" : "Assinar este incidente";
+    avisar(on ? "Você recebe as próximas atualizações deste incidente por e-mail." : "Assinatura do incidente cancelada.");
+  });
+  $("#f-copiar").addEventListener("click", function () {
+    var link = "status.mandacaru.cloud/incidentes/2610-19a";
+    // retorno imediato; a área de transferência pode recusar ou demorar dentro da moldura do portal
+    avisar("Link do incidente: " + link);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(function () { avisar("Link copiado: " + link); }, function () {});
+    } catch (err) {}
+  });
+  $("#f-lembrar").addEventListener("click", function () {
+    var on = this.getAttribute("aria-pressed") !== "true";
+    this.setAttribute("aria-pressed", String(on));
+    this.textContent = on ? "Aviso marcado para 02:00 ✓" : "Avisar-me no início";
+    avisar(on ? "Combinado: avisamos por e-mail quando a manutenção começar." : "Aviso da manutenção desmarcado.");
+  });
+
+  // ── histórico ────────────────────────────────────────────────────────────
+  var INCIDENTES = [
+    {id: "i1010", data: [2026, 9, 10], n: "deg", titulo: "Lentidão no envio de webhooks", comps: ["webhooks"], janela: "10:42 às 11:16", min: 34, resumo: "Resolvido. Para 3% dos clientes, eventos chegaram com até 6 minutos de atraso. Nenhum evento perdido."},
+    {id: "m1014", data: [2026, 9, 14], n: "man", titulo: "Atualização do banco de dados do Painel", comps: ["painel"], janela: "02:00 às 03:10", min: 70, resumo: "Manutenção concluída dentro da janela anunciada em 07/10. O Painel ficou em modo somente leitura."},
+    {id: "i1003", data: [2026, 9, 3], n: "par", titulo: "Erros 502 na CDN Fortaleza", comps: ["for"], janela: "19:05 às 19:28", min: 23, resumo: "Resolvido. Parte das requisições do Nordeste recebeu erro 502; o tráfego foi desviado para São Paulo em 9 minutos.",
+      pm: {o: "Um nó de borda em Fortaleza passou a recusar conexões depois de atualizar o kernel, e o balanceador demorou a tirá-lo da rota.", c: "A checagem de saúde testava só a porta, não uma resposta HTTP completa. O nó parecia vivo.", t: [["19:05", "primeiros 502 em Fortaleza"], ["19:14", "tráfego desviado para São Paulo"], ["19:28", "nó substituído, erros zerados"]], m: ["Checagem de saúde agora faz uma requisição HTTP real a cada 5 s.", "Atualizações de kernel na borda passam por um nó canário por 24 h."]}},
+    {id: "i0922", data: [2026, 8, 22], n: "deg", titulo: "Lentidão no login do Painel", comps: ["painel", "auth"], janela: "09:12 às 09:53", min: 41, resumo: "Resolvido. O login levou até 12 segundos na terça-feira de manhã, no pico de acessos."},
+    {id: "i0911", data: [2026, 8, 11], n: "par", titulo: "Webhooks duplicados para alguns clientes", comps: ["webhooks"], janela: "16:20 às 18:25", min: 125, resumo: "Resolvido. 412 clientes receberam o mesmo evento duas ou três vezes; quem valida o id do evento não foi afetado.",
+      pm: {o: "Depois de uma troca de servidores da fila, mensagens já confirmadas voltaram a ser entregues.", c: "A confirmação de entrega era gravada depois do envio, e não junto. A troca interrompeu essa gravação no meio.", t: [["16:20", "primeiros relatos de eventos repetidos"], ["16:48", "envios pausados para os clientes afetados"], ["17:35", "correção publicada"], ["18:25", "fila revisada e envios retomados"]], m: ["Confirmação e envio agora acontecem na mesma transação.", "Todo evento leva o cabeçalho Mandacaru-Evento-Id para deduplicação.", "Guia novo: como tornar o seu endpoint idempotente."]}},
+    {id: "m0902", data: [2026, 8, 2], n: "man", titulo: "Troca de certificados TLS da CDN", comps: ["gru", "for"], janela: "03:00 às 03:30", min: 30, resumo: "Manutenção concluída. Nenhuma requisição falhou; conexões antigas foram renovadas aos poucos."},
+    {id: "i0828", data: [2026, 7, 28], n: "gra", titulo: "Indisponibilidade da API em São Paulo", comps: ["api"], janela: "14:41 às 14:58", min: 17, resumo: "Resolvido. A API ficou fora do ar por 17 minutos para todos os clientes de São Paulo.",
+      pm: {o: "Uma regra nova de firewall bloqueou o tráfego entre o balanceador e os servidores da API em São Paulo.", c: "A regra foi aplicada em produção sem passar pela região de homologação, por um atalho no processo de mudança.", t: [["14:41", "API sem resposta em São Paulo"], ["14:44", "alerta e incidente aberto"], ["14:52", "regra identificada"], ["14:58", "regra revertida, API de volta"]], m: ["Mudanças de rede só entram por pipeline, sem atalho manual.", "Reversão automática se a taxa de erro passar de 5% por 2 minutos.", "Crédito de SLA aplicado na fatura de setembro."]}},
+    {id: "i0815", data: [2026, 7, 15], n: "deg", titulo: "Atraso nas devoluções PIX", comps: ["med"], janela: "11:30 às 12:35", min: 65, resumo: "Resolvido. Devoluções levaram até 40 minutos para aparecer no extrato do pagador."},
+    {id: "i0724", data: [2026, 6, 24], n: "deg", titulo: "Lentidão nas consultas da API de extrato", comps: ["api"], janela: "15:10 às 15:40", min: 30, resumo: "Resolvido. Consultas de extrato com mais de 90 dias levaram até 8 segundos."},
+    {id: "i0709", data: [2026, 6, 9], n: "par", titulo: "QR dinâmico indisponível para alguns bancos", comps: ["qr"], janela: "08:02 às 08:50", min: 48, resumo: "Resolvido. Clientes de 3 bancos não conseguiram ler QR dinâmicos durante a manhã."}
+  ];
+  var janela = 0; // 0 = ago–out, 1 = jul–set
+  var filtroComp = "todos", aberto = {};
+  $("#f-filtro").innerHTML = '<option value="todos">Todos os componentes</option>' + COMP.filter(function (c) { return !c.filhos; }).map(function (c) { return '<option value="' + c.id + '">' + (c.pai ? porId[c.pai].nome + " · " : "") + c.nome + '</option>'; }).join("");
+  function mesesDaJanela() { return janela === 0 ? [9, 8, 7] : [8, 7, 6]; }
+  function desenharHistorico() {
+    var meses = mesesDaJanela();
+    $("#f-periodo-rot").textContent = MESES[meses[2]] + " – " + MESES[meses[0]] + " de 2026";
+    $("#f-ant").disabled = janela === 1; $("#f-prox").disabled = janela === 0;
+    var html = meses.map(function (m) {
+      var itens = INCIDENTES.filter(function (x) { return x.data[1] === m && (filtroComp === "todos" || x.comps.indexOf(filtroComp) >= 0); });
+      itens.sort(function (p, q) { return q.data[2] - p.data[2]; });
+      var inc = itens.filter(function (x) { return x.n !== "man"; }).length, man = itens.length - inc;
+      var cab = '<h2>' + MESES_LONGOS[m].charAt(0).toUpperCase() + MESES_LONGOS[m].slice(1) + ' de 2026<small>' + (itens.length ? (inc ? inc + (inc === 1 ? " incidente" : " incidentes") : "") + (inc && man ? " · " : "") + (man ? man + (man === 1 ? " manutenção" : " manutenções") : "") : "") + '</small></h2>';
+      if (!itens.length) return '<section class="f-mes">' + cab + '<p class="f-mes-vazio">Nenhum incidente' + (filtroComp !== "todos" ? " neste componente" : "") + ' em ' + MESES_LONGOS[m] + '.</p></section>';
+      return '<section class="f-mes">' + cab + itens.map(itemHist).join("") + '</section>';
+    }).join("");
+    $("#f-aba-inc").innerHTML = html;
+    desenharCalendarios();
+  }
+  function itemHist(x) {
+    var selo = {deg: "f-selo-deg", par: "f-selo-par", gra: "f-selo-gra", man: "f-selo-man"}[x.n];
+    var rot = {deg: "Degradação", par: "Interrupção parcial", gra: "Interrupção grave", man: "Manutenção"}[x.n];
+    var comps = x.comps.map(function (c) { return porId[c].nome; }).join(", ");
+    var pm = x.pm ? '<button type="button" class="f-pm-btn" data-pm="' + x.id + '" aria-expanded="' + !!aberto[x.id] + '" aria-controls="f-pm-' + x.id + '">' + SETA + 'Post-mortem</button><div class="f-pm" id="f-pm-' + x.id + '"' + (aberto[x.id] ? "" : " hidden") + '>' +
+      '<h4>O que aconteceu</h4><p>' + esc(x.pm.o) + '</p><h4>Causa</h4><p>' + esc(x.pm.c) + '</p><h4>Linha do tempo (BRT)</h4><ol>' + x.pm.t.map(function (t) { return '<li><b>' + t[0] + '</b>' + esc(t[1]) + '</li>'; }).join("") + '</ol><h4>O que mudamos</h4><ul>' + x.pm.m.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join("") + '</ul></div>' : "";
+    return '<article class="f-item" id="f-item-' + x.id + '"><div class="f-item-data"><b>' + x.data[2] + '</b><span>' + MESES[x.data[1]].replace(".", "") + '</span></div><div><h3>' + (x.pm ? '<button type="button" data-pm="' + x.id + '">' + esc(x.titulo) + '</button>' : esc(x.titulo)) + '</h3>' +
+      '<p class="f-item-meta"><span class="f-selo ' + selo + '"><i aria-hidden="true"></i>' + rot + '</span><span>' + comps + '</span><span class="f-sep">·</span><span>' + x.janela + '</span><span class="f-sep">·</span><span>' + duracao(x.min) + '</span>' + (x.pm ? '<span class="f-selo f-selo-neutro">com post-mortem</span>' : "") + '</p>' +
+      '<p class="f-item-resumo">' + esc(x.resumo) + '</p>' + pm + '</div></article>';
+  }
+  $("#f-aba-inc").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-pm]");
+    if (!b) return;
+    var id = b.getAttribute("data-pm");
+    aberto[id] = !aberto[id];
+    var p = $("#f-pm-" + id); if (p) p.hidden = !aberto[id];
+    $$('[data-pm="' + id + '"].f-pm-btn').forEach(function (x) { x.setAttribute("aria-expanded", String(aberto[id])); });
+  });
+  function desenharCalendarios() {
+    var meses = mesesDaJanela().slice().reverse();
+    var comp = filtroComp === "todos" ? null : filtroComp;
+    var html = '<div class="f-cal-grade">' + meses.map(function (m) {
+      var primeiro = new Date(2026, m, 1), total = new Date(2026, m + 1, 0).getDate();
+      var cel = "", perda = 0, contados = 0;
+      for (var v = 0; v < primeiro.getDay(); v++) cel += '<i class="f-vazio"></i>';
+      for (var d = 1; d <= total; d++) {
+        var data = new Date(2026, m, d);
+        if (data > HOJE) { cel += '<i class="f-futuro" title="' + d + ' de ' + MESES_LONGOS[m] + '"></i>'; continue; }
+        contados++;
+        var pior = "ok", titulos = [];
+        INCIDENTES.forEach(function (x) {
+          if (x.data[1] !== m || x.data[2] !== d) return;
+          if (comp && x.comps.indexOf(comp) < 0) return;
+          if (NIVEL[x.n].ord > NIVEL[pior].ord) pior = x.n;
+          titulos.push(x.titulo);
+          perda += x.min * NIVEL[x.n].peso / (comp ? 1 : 12);
+        });
+        cel += '<i class="' + (pior !== "ok" ? "f-" + pior : "") + '" title="' + d + ' de ' + MESES_LONGOS[m] + ': ' + (titulos.length ? esc(titulos.join("; ")) : "operacional") + '"></i>';
+      }
+      var up = 100 * (1 - perda / (contados * 1440));
+      return '<div class="f-cartao f-cal"><div class="f-cal-cab"><strong>' + MESES_LONGOS[m].charAt(0).toUpperCase() + MESES_LONGOS[m].slice(1) + '</strong><span>' + pct(up) + '</span></div><div class="f-cal-sem" aria-hidden="true"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div><div class="f-cal-dias" role="img" aria-label="Disponibilidade de ' + MESES_LONGOS[m] + ': ' + pct(up) + '">' + cel + '</div></div>';
+    }).join("") + '</div><p class="f-sub" style="font-size:13.5px">Passe o cursor sobre um dia para ver o que aconteceu. ' + (comp ? "Mostrando " + porId[comp].nome + "." : "Mostrando todos os componentes juntos.") + '</p>';
+    $("#f-aba-cal").innerHTML = html;
+  }
+  $("#f-filtro").addEventListener("change", function () { filtroComp = this.value; desenharHistorico(); });
+  $("#f-ant").addEventListener("click", function () { janela = 1; desenharHistorico(); });
+  $("#f-prox").addEventListener("click", function () { janela = 0; desenharHistorico(); });
+  $("#f-abas").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-aba]");
+    if (!b) return;
+    var cal = b.getAttribute("data-aba") === "cal";
+    $$("#f-abas button").forEach(function (x) { x.setAttribute("aria-selected", String(x === b)); });
+    $("#f-aba-inc").hidden = cal; $("#f-aba-cal").hidden = !cal;
+  });
+  function abrirNoHistorico(id) {
+    var x = INCIDENTES.filter(function (i) { return i.id === id; })[0];
+    if (!x) return;
+    filtroComp = "todos"; $("#f-filtro").value = "todos";
+    janela = x.data[1] >= 7 ? 0 : 1;
+    if (x.pm) aberto[id] = true;
+    desenharHistorico();
+    ir(3);
+    requestAnimationFrame(function () { var el = $("#f-item-" + id); if (el && el.scrollIntoView) el.scrollIntoView({behavior: "smooth", block: "center"}); });
+  }
+
+  // ── navegação e relógio ──────────────────────────────────────────────────
+  app.addEventListener("click", function (e) {
+    if (e.target.closest("[data-ir-status]")) { ir(ultimoStatus); return; }
+    if (e.target.closest("[data-assinar]")) { irAssinar(); return; }
+    var b = e.target.closest("[data-ir]");
+    if (b) ir(+b.getAttribute("data-ir"));
+  });
+  var atualizado = 12;
+  function batida() {
+    atualizado = atualizado >= 59 ? 4 : atualizado + 1;
+    $$("[data-atualizado]").forEach(function (s) { s.textContent = atualizado + " s"; });
+    var min = Math.floor((agora().getTime() - new Date(2026, 9, 19, 14, 14).getTime()) / 60000);
+    $$("[data-andamento]").forEach(function (s) { s.textContent = min >= 60 ? "1 h " + dois(min - 60) : min + " min"; });
+  }
+  if (window.ResizeObserver) {
+    new ResizeObserver(function (ents) {
+      var w = Math.round(ents[0].contentRect.width);
+      if (!w || w === largurasG) return;
+      requestAnimationFrame(desenharGrafico);
+    }).observe($("#f-grafico"));
+  }
+  window.addEventListener("resize", function () { if (!dica.hidden) esconderDica(); });
+
+  desenharComponentes();
+  desenharGrafico();
+  desenharDias();
+  desenharHistorico();
+  aoMudar();
+  batida();
+  setInterval(batida, 1000);
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>

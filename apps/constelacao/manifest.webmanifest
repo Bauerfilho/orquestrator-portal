@@ -1,0 +1,32 @@
+{
+  "name": "Constelação",
+  "short_name": "Constelação",
+  "description": "Centro de missões: contratos, workers, progresso e revisão de artefatos.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#efece2",
+  "theme_color": "#efece2",
+  "icons": [
+    {
+      "src": "icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "gerado_por": "laboratorio/publicar.py"
+}
