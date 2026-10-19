@@ -97,12 +97,14 @@ function arred(n, d) { // meio para longe do zero, como o roundedRatio do domain
 }
 const numero = big => { if (big > BigInt(Number.MAX_SAFE_INTEGER) || big < -BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('valor fora do limite'); return Number(big); };
 
-// dinheiro digitado à moda brasileira → centavos. "1.500" = mil e quinhentos; "1.50" é recusado (use vírgula).
+// dinheiro digitado à moda brasileira → centavos. "1.500" = mil e quinhentos; "1.50" em reais é recusado (use vírgula).
+// Vírgula decimal vale em qualquer moeda ("100,00" dólares); o formato americano só quando não há dúvida ("1,000.50").
 export function centavosBR(texto, moeda = 'BRL') {
   let s = String(texto ?? '').trim().replace(/\s|R\$|US\$|€|\$/g, '');
   if (!s) return null;
-  if (moeda === 'BRL' || moeda === 'EUR') {
-    if (/\.\d{1,2}$/.test(s) && !s.includes(',')) return null;
+  const virgulaDecimal = /,\d{1,2}$/.test(s);
+  if (virgulaDecimal || moeda !== 'USD') {
+    if (!virgulaDecimal && /\.\d{1,2}$/.test(s)) return null;
     s = s.replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
   } else s = s.replace(/,(?=\d{3}(\D|$))/g, '');
   const m = /^(\d{1,12})(?:\.(\d{1,2}))?$/.exec(s);
@@ -245,7 +247,7 @@ export function reaisDoGasto(g, lista) {
   const iof = vigente(lista, cartao ? 'iof.cartao_internacional_pct' : 'iof.cambio_servicos_pct', g.data);
   const r = converter(g.valorMinor, cambio.valor, spread ? spread.valor : '0', iof ? iof.valor : '0');
   if (!r) return {brl: null, tipo: 'sem_cambio', conta: null};
-  return {brl: r.total, tipo: 'estimado', conta: {...r, cambio, spread, iof, cartao, cambioPosterior: cambio.desde > g.data}};
+  return {brl: r.total, tipo: 'estimado', conta: {principal: r.principal, spreadMinor: r.spread, iofMinor: r.iof, total: r.total, cambio, spreadParam: spread, iofParam: iof, cartao, cambioPosterior: cambio.desde > g.data}};
 }
 function maisAntigo(lista, chave) {
   let m = null;
