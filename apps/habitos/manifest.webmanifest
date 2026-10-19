@@ -1,0 +1,32 @@
+{
+  "name": "Hábitos",
+  "short_name": "Hábitos",
+  "description": "Rastreador de hábitos de um toque: cada hábito com sua cor, anel do dia, sequências em números grandes e um mapa de calor de seis meses para enxergar a constância.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f3ee",
+  "theme_color": "#f5f3ee",
+  "icons": [
+    {
+      "src": "icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "gerado_por": "laboratorio/publicar.py"
+}
