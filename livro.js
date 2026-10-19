@@ -315,9 +315,23 @@ function tabelaLivro(l, c) {
 }
 
 // ── resumo no Meu painel ─────────────────────────────────────────────────────────────────────────────────────────
+// A manchete do mês com os quatro números (saiu, comprometido, caixa, fôlego), o minigráfico de 12 meses e as mudanças
+// recentes saem das contas da rotina (contas.js), que este arquivo não importa (sem ciclo): o caixa.js entrega o desenho
+// por registrarResumo(fn), com fn(D, alvo) desenhando em #livro-resumo. Ele roda aqui, então o resumo continua a
+// atualizar atrás do "+ Lançar" aberto. Sem ele (ou se ele falhar), fica o resumo de antes, só com o livro do mês.
+let resumoDaRotina = null;
+export function registrarResumo(fn) {
+  if (typeof fn !== 'function') throw new TypeError('registrarResumo espera uma função (D, alvo) => void.');
+  resumoDaRotina = fn; marcarRedesenho();
+  return () => { if (resumoDaRotina === fn) { resumoDaRotina = null; marcarRedesenho(); } };
+}
 function renderResumo(D) {
   const alvo = $('livro-resumo');
   if (!alvo) return;
+  if (resumoDaRotina) {
+    try { resumoDaRotina(D, alvo); return; }
+    catch (erro) { console.error('O resumo do Meu painel falhou ao desenhar; fica o resumo do livro do mês:', erro); }
+  }
   const {c, aplicado} = D;
   const mes = hojeDe(c).slice(0, 7);
   const l = R.livroDoMes(c.estado, aplicado, mes, hojeDe(c));
