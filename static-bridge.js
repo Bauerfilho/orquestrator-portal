@@ -67,6 +67,8 @@ window.financeHost = {
     // junta com os perfis já abertos: colar só a própria sócia não apaga as outras (null no texto remove alguém)
     async cifrar(membros, remover = []) {
       if (!chave) fail('Entre com a senha do portal.', 'unauthenticated');
+      // sem ler os perfis de hoje (rede fora), juntar seria juntar com nada: o envelope apagaria quem não foi colado
+      if (perfis.estado === 'indisponivel') fail('Os perfis de hoje não carregaram. Recarregue a página antes de atualizar, para não apagar ninguém.', 'indisponivel');
       const base = perfis.estado === 'ok' ? perfis.membros : {};
       return JSON.stringify(await cifrarPerfis(chave.masterRaw, {membros: juntarPerfis(base, membros, remover)}), null, 1) + '\n';
     },

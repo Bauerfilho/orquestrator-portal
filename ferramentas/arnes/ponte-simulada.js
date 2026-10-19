@@ -82,6 +82,7 @@ window.financeHost = {
     // chave fictícia do arnês: o envelope sai marcado (arnes) e abrirPerfis o recusa, para nunca virar perfis de verdade
     async cifrar(membros, remover = []) {
       if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated');
+      if (PERFIS.estado === 'indisponivel') fail('Os perfis de hoje não carregaram. Recarregue a página antes de atualizar, para não apagar ninguém.', 'indisponivel');
       const envelope = await cifrarPerfis(new Uint8Array(32).fill(3), {membros: juntarPerfis(PERFIS.estado === 'ok' ? PERFIS.membros : {}, membros, remover)});
       return JSON.stringify({...envelope, arnes: true}, null, 1) + '\n';
     },
