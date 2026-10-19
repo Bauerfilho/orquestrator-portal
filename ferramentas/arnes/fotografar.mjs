@@ -1,14 +1,19 @@
 // Fotografa o portal no arnês: cada página do menu, tema claro e escuro, 1280×860 e 390×844, página inteira,
 // mais as telas de apoio (entrada, menu aberto, "Como ler esta página", Minha equipe, ficha do ativo).
-// Uso: node fotografar.mjs [--saida DIR] [--porta 8765] [--so desktop-claro,celular-escuro] [--paginas overview,cash]
+// As páginas saem do registro do próprio portal (window.financePaginas, paginas.js), nunca de uma lista fixa: uma página
+// nova (no paginas.js ou registrada em tempo de execução) entra nas fotos sozinha, com o nome <número>-<título>.
+// Uso: node fotografar.mjs [--saida DIR] [--porta 8765] [--so desktop-claro,celular-escuro] [--paginas overview,caixa]
 //                          [--sem-extras] [--query "escrita=1&membro=m-ana"] [--site DIR] [--vitrine]
+//                          [--modulo arquivo.js[,outro.js]]
+// --paginas aceita a chave (overview, cash) ou a rota (painel, caixa). --modulo injeta módulos de teste depois da entrada
+// (servidos na mesma origem, como um módulo da fase 3 que chama window.financeRegistrarPagina).
 // Sai com código 1 se a página registrar erro de script ou violação de CSP (o log fica em <saida>/registro.json).
 // --vitrine fotografa só a vitrine dos gráficos (ferramentas/arnes/vitrine-graficos.html) nos 4 cortes e confere: as
 // recusas do contrato, nenhuma rolagem horizontal, nenhum rótulo sobreposto, um tab stop por gráfico com a dica andando
 // pelas setas, e a hachura mantida em forced-colors.
 import {pathToFileURL, fileURLToPath} from 'node:url';
 import {execSync} from 'node:child_process';
-import {mkdir, writeFile} from 'node:fs/promises';
+import {mkdir, writeFile, readFile} from 'node:fs/promises';
 import {join, dirname, resolve} from 'node:path';
 import {servir} from './servir.mjs';
 
@@ -22,11 +27,13 @@ const SO_PAGINAS = arg('paginas', '') ? arg('paginas', '').split(',') : null;
 const EXTRAS = !process.argv.includes('--sem-extras');
 const QUERY = arg('query', '');
 const VITRINE = process.argv.includes('--vitrine');
+const MODULOS = arg('modulo', '') ? arg('modulo', '').split(',').map(m => resolve(m)) : [];
 
 const raizGlobal = execSync('npm root -g').toString().trim();
 const {chromium} = await import(pathToFileURL(join(raizGlobal, 'playwright', 'index.mjs')).href);
 
-const PAGINAS = [['overview', '01-meu-painel'], ['livro', '02-livro-do-mes'], ['lancamentos', '03-lancamentos'], ['subscriptions', '04-assinaturas'], ['cash', '05-caixa'], ['parametros', '06-parametros'], ['medpainel', '07-med-painel'], ['projection', '08-projecao'], ['sell', '09-vender-primeiro'], ['society', '10-sociedade'], ['portfolio', '11-portfolio'], ['historico', '13-historico'], ['lab', '12-laboratorio']];
+// o nome da foto: "07-med-painel" (número da gaveta e o título sem acento)
+const nomeDaFoto = p => `${p.numero || 'xx'}-${p.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
 const TELAS = [['desktop', {width: 1280, height: 860}], ['celular', {width: 390, height: 844}]];
 const TEMAS = ['claro', 'escuro'];
 
@@ -39,6 +46,7 @@ const url = (extra = '') => `http://127.0.0.1:${PORTA}/?${[QUERY, extra].filter(
 async function abrir(tela, tema, extra = '', opcoes = {}) {
   const contexto = await navegador.newContext({viewport: TELAS.find(([n]) => n === tela)[1], deviceScaleFactor: 1, locale: 'pt-BR', timezoneId: 'America/Sao_Paulo', colorScheme: tema === 'escuro' ? 'dark' : 'light', isMobile: tela === 'celular', hasTouch: tela === 'celular', ...opcoes});
   await contexto.addInitScript(t => { try { localStorage.setItem('orquestrator-financas.tema', t); } catch {} }, tema);
+  for (const [k, arquivo] of MODULOS.entries()) await contexto.route(`**/__modulo-extra/${k}.js`, async rota => rota.fulfill({status: 200, contentType: 'text/javascript; charset=utf-8', body: await readFile(arquivo, 'utf8')}));
   const pagina = await contexto.newPage();
   const rotulo = `${tela}-${tema}${extra ? '-' + extra : ''}`;
   pagina.on('pageerror', e => registro.erros.push({rotulo, tipo: 'pageerror', texto: String(e)}));
@@ -68,8 +76,14 @@ else for (const [tela] of TELAS) for (const tema of TEMAS) {
   await pagina.goto(url(), {waitUntil: 'load'});
   await pagina.waitForSelector('#dashboard:not([hidden])', {timeout: 15000});
   await pagina.waitForFunction(() => document.querySelector('#user-content') && document.querySelector('#user-content').childElementCount > 0, null, {timeout: 15000});
-  for (const [chave, nome] of PAGINAS) {
-    if (SO_PAGINAS && !SO_PAGINAS.includes(chave)) continue;
+  for (const k of MODULOS.keys()) await pagina.addScriptTag({type: 'module', url: `/__modulo-extra/${k}.js`});
+  if (MODULOS.length) await pagina.waitForTimeout(300);
+  // as páginas do registro, na ordem da gaveta (o app.js já refez a numeração das visíveis)
+  const paginas = await pagina.evaluate(() => (window.financePaginas || []).map(p => ({chave: p.chave, rota: p.rota, numero: p.numero, titulo: p.titulo})));
+  if (!paginas.length) registro.erros.push({rotulo: combo, tipo: 'registro', texto: 'window.financePaginas vazio: o paginas.js não carregou?'});
+  for (const p of paginas) {
+    const chave = p.chave, nome = nomeDaFoto(p);
+    if (SO_PAGINAS && !SO_PAGINAS.includes(chave) && !SO_PAGINAS.includes(p.rota)) continue;
     const foi = await pagina.evaluate(k => window.financeNavigate(k, false), chave);
     if (!foi) continue;   // ex.: Laboratório escondido quando galeria=false
     await pagina.evaluate(() => window.scrollTo(0, 0));
