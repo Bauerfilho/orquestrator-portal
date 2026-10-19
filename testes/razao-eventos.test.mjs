@@ -746,3 +746,35 @@ test('ajuste 4 · gasto com dia e mês de calendário; teto de 10^12 centavos em
   const l = livroDoMes(base, a, '2026-10', '2026-10-19');
   assert.ok(Number.isSafeInteger(l.total) && l.total > 2 * TETO, String(l.total));
 });
+
+test('"Lançar pagamento" (add_expense com planoId) segue as regras do record_payment: ciclo pago, encerrada, inexistente', () => {
+  n = 0;
+  const pag = (alvo, d = {}) => ev('bia', 'add_expense', alvo, gasto({descricao: 'Google Workspace', valorMinor: 14000, data: '2026-10-02', planoId: 'p-google', pagoPor: 'bia', ...d}));
+  const primeiro = pag('g-pg1');
+  aceito([primeiro]);
+  recusado([primeiro, pag('g-pg2')], 'repetido', /já foi marcada como paga em outubro/);
+  // o mesmo ciclo pelo outro caminho também conta
+  recusado([ev('bia', 'record_payment', 'g-rp', gasto({valorMinor: 14000, data: '2026-10-02', planoId: 'p-google', ciclo: '2026-10', pagoPor: 'bia'})), pag('g-pg3')], 'repetido');
+  // outro mês é outro ciclo
+  aceito([primeiro, pag('g-pg4', {data: '2026-11-02', competencia: '2026-11'})]);
+  recusado([pag('g-pg5', {planoId: 'p-apple', descricao: 'Apple Developer', moeda: 'USD', valorMinor: 9900})], 'invalido', /encerrada/);
+  recusado([pag('g-pg6', {planoId: 'p-nao-existe'})], 'invalido', /Escolha a assinatura/);
+  // anular o primeiro libera o ciclo
+  aceito([primeiro, ev('bia', 'void_expense', 'g-pg1', {}, {versao: 1, motivo: 'lançado em dobro'}), pag('g-pg7')]);
+});
+
+test('reembolso de gasto de mês fechado vale pelo câmbio congelado no fechamento, não pelo dólar novo', () => {
+  n = 0;
+  const g = ev('ana', 'add_expense', 'g-usd', gasto({descricao: 'Anthropic API', valorMinor: 10000, moeda: 'USD', forma: 'cartao_pessoal', pagoPor: 'ana', destino: 'empresa_reembolsa'}));
+  const fecha = fechar(g.seq);
+  const dolarNovo = ev('bauer', 'set_parameter', 'fx.USD_BRL', {chave: 'fx.USD_BRL', valor: '6.0000', desde: '2026-10-01', fonte: 'PTAX corrigida', estado: 'vigente'}, {quando: NOV});
+  const antes = aceito([g, fecha, dolarNovo]);
+  assert.ok(antes.fechamentos['2026-10'].fechado);
+  const congelada = R.parametros(antes).filter(p => p.semente || p.ordem < antes.fechamentos['2026-10'].ordemParametros);
+  const gasto0 = antes.gastos.find(x => x.id === 'g-usd');
+  const devido = R.reaisDoGasto(gasto0, congelada).brl, peloNovo = R.reaisDoGasto(gasto0, R.parametros(antes)).brl;
+  assert.notEqual(devido, peloNovo, 'o dólar novo mudaria o valor');
+  const reembolso = v => ev('bauer', 'record_settlement', 'ac-r1', acerto({tipo: 'reembolso_empresa', de: 'empresa', para: 'ana', valorMinor: v, gastoIds: ['g-usd']}), {quando: NOV});
+  aceito([g, fecha, dolarNovo, reembolso(devido)]);
+  recusado([g, fecha, dolarNovo, reembolso(peloNovo)], 'invalido', /não bate/);
+});

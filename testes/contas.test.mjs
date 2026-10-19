@@ -581,3 +581,20 @@ test('relógio do servidor do arnês: o diário grava a hora que o teste definiu
     assert.equal(servidor.definirAgora(null).slice(0, 4), new Date().toISOString().slice(0, 4), 'null volta à hora real');
   } finally { servidor.close(); }
 });
+
+test('caixa com conta sem câmbio (euro sem PTAX): não vira saldo zero; o fôlego avisa que é parcial', () => {
+  const {eventos} = setembroFechado();
+  const eur = () => ev('ana', 'set_balance', 'sd-eur', {conta: 'Conta em euro', data: '2026-10-18', valorMinor: 50000, moeda: 'EUR', fonte: 'extrato'}, {quando: '2026-10-18T21:30:00Z'});
+  const soEuro = aceitos(semPlanos, [...eventos.filter(e => e.conteudo.acao !== 'set_balance'), eur()]);
+  const cx = C.caixaInformado(soEuro, R.parametros(soEuro), '2026-10-19');
+  assert.equal(cx.temSaldo, false, 'nenhuma conta virou reais');
+  assert.equal(cx.completo, false);
+  assert.equal(C.folego(semPlanos, soEuro, '2026-10-19').estado, 'sem_saldo', 'nada de "≈ 0 meses"');
+  const misto = aceitos(semPlanos, [...eventos, eur()]);
+  const f = C.folego(semPlanos, misto, '2026-10-19');
+  assert.equal(f.estado, 'ok');
+  assert.equal(f.decimos, 92, 'conta só o que tem câmbio');
+  assert.equal(f.parcial, true);
+  assert.match(f.frase, /Sem contar Conta em euro: falta o câmbio\.$/);
+  assert.equal(C.folego(semPlanos, aceitos(semPlanos, eventos), '2026-10-19').parcial, false);
+});

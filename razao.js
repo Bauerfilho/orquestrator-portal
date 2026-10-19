@@ -368,6 +368,14 @@ function novoGasto(S, x) { // add_expense e record_payment ("marcar como paga" =
     if (encerradaEm(plano, g.data)) return x.recusa('Esta assinatura está encerrada: reative antes de marcar como paga.');
     // um add_expense comum com planoId também paga o ciclo da competência dele: são dois caminhos para o mesmo fato
     if ([...S.gastos.values()].some(o => o.estado !== 'anulado' && o.planoId === plano.id && (o.ciclo || o.competencia) === ciclo)) return x.recusa(`Esta assinatura já foi marcada como paga em ${nomeDoMes(ciclo)}.`, 'repetido');
+  } else if (g.planoId) {
+    // "Lançar pagamento" grava add_expense com planoId: é o mesmo fato do record_payment, com o ciclo na competência,
+    // então valem as mesmas checagens (assinatura existe, não está encerrada, o ciclo ainda não foi pago)
+    plano = S.planos.get(g.planoId);
+    if (!plano) return x.recusa('Escolha a assinatura que foi paga.');
+    if (encerradaEm(plano, g.data)) return x.recusa('Esta assinatura está encerrada: reative antes de marcar como paga.');
+    if ([...S.gastos.values()].some(o => o.estado !== 'anulado' && o.planoId === plano.id && (o.ciclo || o.competencia) === g.competencia)) return x.recusa(`Esta assinatura já foi marcada como paga em ${nomeDoMes(g.competencia)}.`, 'repetido');
+    plano = null;   // o resumo do histórico continua o do gasto comum
   }
   S.gastos.set(c.alvo, {id: c.alvo, versao: 1, ...g, ciclo, estado: 'lancado', criadoPor: autora, criadoEm: quando, alteradoPor: null, alteradoEm: null,
     reembolsadoEm: null, conferidoPor: null, conferidoEm: null, convertidoPor: null, convertidoEm: null, reembolsoId: null, versoes: []});
@@ -580,13 +588,15 @@ function registrarAcerto(S, x) {
   const gastos = [];
   if (gastoIds.length) { // cada gasto é um reembolso pendente de quem recebe, e o valor é a soma deles em reais
     const lista = parametros({parametros: S.params});
+    // gasto de mês fechado vale pelos parâmetros congelados no fechamento (como o livroDoMes e o acertoAcumulado)
+    const listaDe = g => fechado(S, g.competencia) ? lista.filter(p => p.semente || p.ordem < S.fechamentos[g.competencia].ordemParametros) : lista;
     let soma = 0;
     for (const id of gastoIds) {
       const g = S.gastos.get(id);
       if (!g) return x.recusa('Um dos gastos escolhidos não existe.');
       if (gastos.includes(g)) return x.recusa(`"${g.descricao}" foi escolhido duas vezes.`, 'repetido');
       if (g.estado === 'anulado' || g.destino !== 'empresa_reembolsa' || g.pagoPor !== d.para || reembolso(g) !== 'pendente') return x.recusa(`"${g.descricao}" não é um reembolso pendente de ${S.nome(d.para)}.`);
-      const r = reaisDoGasto(g, lista);
+      const r = reaisDoGasto(g, listaDe(g));
       if (r.brl === null) return x.recusa(`Falta o câmbio de "${g.descricao}": concilie a fatura antes.`);
       soma += r.brl; gastos.push(g);
     }
