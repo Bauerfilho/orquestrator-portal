@@ -25,9 +25,9 @@
 import {buildSnapshot, validateState, applyMutation, civilDate} from './domain.js';
 import {estadoFicticio} from './estado-ficticio.js';
 import {abrirDiario, chaveDaSenhaDoDiario} from './diario.js';
-import {lembrarAparelho, esquecerAparelho, lembrado, mostrarCaixaLembrar} from './lembrar.js';
+import {lembrarAparelho, esquecerAparelho, lembrado, mostrarCaixaLembrar, lembrarPermitido} from './lembrar.js';
 import {criarGaleria} from './galeria.js';
-import {lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from './perfis.js';
+import {lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, travaDoPerfil, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from './perfis.js';
 import {aplicar, limparPerfil} from './razao.js';
 import {fotoDoMes, seloDoMes} from './contas.js';
 import {demonstracao} from './demonstracao.js';
@@ -105,7 +105,7 @@ window.financeHost = {
       atualizarPerfis();
       return {estado: estadoDosPerfis(mescla, PERFIS), arquivo: PERFIS.estado, eu: sessao.id, responsavel: sessao.role === 'owner',
         diario: {modo: diario ? diario.modo : 'abrindo', motivo: diario ? diario.motivo || '' : ''},
-        membros: state.members.map(m => perfilParaTela(m, ROTULOS[m.id] || m.displayName, mescla[m.id], podeEditarPerfil(sessao, m.id)))};
+        membros: state.members.map(m => perfilParaTela(m, ROTULOS[m.id] || m.displayName, mescla[m.id], podeEditarPerfil(sessao, m.id), PERFIS))};
     },
     podeEditar(id) { return podeEditarPerfil(sessao, id); },
     conferir(texto) {
@@ -114,13 +114,18 @@ window.financeHost = {
       return lerColado(texto, state.members.map(m => ({id: m.id, rotulo: ROTULOS[m.id] || m.displayName, nome: (mescla[m.id] && mescla[m.id].perfil && mescla[m.id].perfil.nome) || ''})));
     },
     // como na ponte publicada: confere pelo razão, grava set_profile pelo diário do arnês e avisa (financeiro:diario)
-    async salvar(id, perfil) {
+    async salvar(id, perfil, versao) {
       if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated');
       if (!state.members.some(m => m.id === id)) fail('Esta sócia não está no pacote.', 'invalido');
       if (!podeEditarPerfil(sessao, id)) fail('Você só edita o seu perfil. A responsável edita o de todas.', 'permissao');
       const d = diario;
       if (!d || typeof d.acrescentar !== 'function') fail('O diário ainda está abrindo. Tente de novo em instantes.', 'indisponivel');
-      const conteudo = {acao: 'set_profile', alvo: id, dados: perfil === null ? null : limparPerfil(perfil)};
+      atualizarPerfis();
+      const trava = travaDoPerfil(mescla[id], PERFIS);
+      if (trava) fail(trava, 'indisponivel');
+      // a versão do perfil que a tela mostrava (sem ela, a que este aparelho tem agora): outra pessoa salvou no meio → 'versao'
+      const vista = Number.isSafeInteger(versao) ? versao : (mescla[id] && Number.isSafeInteger(mescla[id].versao) ? mescla[id].versao : 0);
+      const conteudo = {acao: 'set_profile', alvo: id, dados: perfil === null ? null : limparPerfil(perfil), versao: vista};
       const previa = aplicar(state, [...d.eventos, {seq: Infinity, id: 'previa', membro: sessao.id, conteudo: {...conteudo, quando: new Date().toISOString()}}]);
       const recusa = previa.recusados.find(r => r.id === 'previa');
       if (recusa) fail(recusa.motivo, recusa.codigo || 'invalido');
@@ -128,6 +133,10 @@ window.financeHost = {
       if (!r || !r.ok) fail((r && r.erro) || 'Não deu para gravar agora. Tente de novo.', 'indisponivel');
       atualizarPerfis();
       document.dispatchEvent(new CustomEvent('financeiro:diario'));
+      // num conflito (409) o diario.js sincroniza e reenvia o MESMO conteúdo, sem conferir de novo: se outra pessoa salvou
+      // este perfil no meio, o evento entrou e o razão o recusou pela versão (nada do que ela salvou se perdeu); a tela junta
+      const depois = r.evento && acompanhar.sobre(state, d).recusados.find(x => x.id === r.evento.id);
+      if (depois) fail(depois.motivo, depois.codigo || 'invalido');
       return {ok: true, treino: !!r.treino, modo: d.modo, nome: perfil === null ? '' : nomeVisivel(id)};
     },
   },
@@ -158,6 +167,8 @@ const usuario = m => ({user: {nome: nomeVisivel(m.id), participacao_pct: m.parti
 // "Lembrar deste aparelho", como na ponte publicada: o registro abre, a sócia existe e a mestra é a deste "pacote"; senão,
 // apaga o registro e devolve null (tela de entrada, sem erro)
 async function entrarPeloAparelho() {
+  // numa origem compartilhada (github.io) o aparelho não lembra: um registro que tenha ficado é apagado, sem esperar
+  if (!lembrarPermitido()) { esquecerAparelho().catch(() => {}); return null; }
   let aberto;
   try { aberto = await lembrado(); } catch { return null; }
   if (!aberto) return null;
@@ -181,7 +192,7 @@ window.financeWebRequest = async (action, payload = {}) => {
     const kek = chaveDaSenhaDoDiario(senhaDoArnes(sessao.id), sessao.id);
     abrirDiarioDoArnes(kek);
     const entrada = usuario(sessao);
-    if (payload.remember) {
+    if (payload.remember && lembrarPermitido()) {
       try { await lembrarAparelho({memberId: sessao.id, membroDiario: sessao.id, masterRaw: MESTRA, diarioKek: await kek}); }
       catch { entrada.remember_error = true; esquecerAparelho().catch(() => {}); }
     } else esquecerAparelho().catch(() => {});

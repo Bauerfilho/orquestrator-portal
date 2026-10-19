@@ -1659,13 +1659,15 @@
   // o evento set_profile e os cartões, o quadro, Minha equipe e o Livro trocam os nomes sem recarregar. "Colar vários de
   // uma vez" confere o JSON (lerColado, perfis.js) e só PREENCHE os blocos. O que foi digitado sobrevive aos redesenhos
   // (perfisTela); o bloco sem rascunho acompanha o que outra sócia salvar, e o Salvar de um bloco desatualizado não grava
-  // por cima: junta e pede para conferir. Em treino o Salvar diz que some ao recarregar (o diário não guarda o treino).
+  // por cima: junta e pede para conferir (também quando o aparelho ainda não tinha visto o que a outra salvou: o razão
+  // recusa pela versão do perfil). Em treino o Salvar diz que some ao recarregar (o diário não guarda o treino). Sem o
+  // perfis.json (rede), o bloco de quem ainda não salvou pelo diário não salva (a ponte diz por quê) e o aviso fica.
   // Nome, telefone e e-mail vão por textContent/value: text() mascara sequências de 11 dígitos como CPF.
   const perfisAvisos = {
     ausente: "Nome, função e contato de cada sócia ainda não foram preenchidos. Use Atualizar perfis, logo abaixo.",
     "outra-chave": "Os perfis antigos não abrem mais (o portal trocou de chave). Preencha de novo em Atualizar perfis.",
     ilegivel: "O arquivo antigo de perfis está ilegível. Preencha de novo em Atualizar perfis.",
-    indisponivel: "Não deu para buscar os perfis antigos agora. Os que forem salvos em Atualizar perfis aparecem normalmente."
+    indisponivel: "Não deu para buscar os perfis antigos agora. Recarregue a página: até lá, quem ainda não salvou o perfil em Atualizar perfis aparece sem os dados e não dá para salvar o dela."
   };
   const perfisCampos = [
     {k: "nome", rotulo: "Nome", max: 120, autocomplete: "name", capitalizar: "words"},
@@ -1726,6 +1728,9 @@
     } else {
       secao.append(element("p", "perfis-aviso", perfisAvisos[dados.estado] || perfisAvisos.ausente));
     }
+    // o perfis.json não carregou, mas alguém já tem perfil pelo diário: os cartões aparecem e o aviso também (sem ele, quem
+    // está só no arquivo pareceria "ainda não preenchido")
+    if (dados.estado === "ok" && dados.arquivo === "indisponivel") secao.prepend(element("p", "perfis-aviso", perfisAvisos.indisponivel));
     if (typeof api.salvar !== "function" || !array(dados.membros).some((m) => m.podeEditar)) return [secao];
     if (emUso) { atualizarFerramentaPerfis(emUso, dados); return [secao, emUso]; }
     return [secao, ferramentaPerfis(api, dados)];
@@ -1762,8 +1767,9 @@
   function ferramentaPerfis(api, dados) {
     const tela = perfisTelaDe(dados);
     const caixa = element("details", "perfis-ferramenta");
-    // aberta de início quando ninguém tem perfil ainda; depois, como a pessoa deixou (não fecha sozinha depois do 1º Salvar)
-    if (tela.aberto === null) tela.aberto = dados.estado !== "ok";
+    // aberta de início quando ninguém tem perfil ainda (não quando o perfis.json só não carregou); depois, como a pessoa
+    // deixou (não fecha sozinha depois do 1º Salvar)
+    if (tela.aberto === null) tela.aberto = dados.estado !== "ok" && dados.arquivo !== "indisponivel";
     caixa.open = tela.aberto;
     caixa.addEventListener("toggle", () => { tela.aberto = caixa.open; });
     caixa.append(element("summary", "", "Atualizar perfis"));
@@ -1823,11 +1829,19 @@
     const status = element("p", "perfil-bloco-status");
     status.setAttribute("role", "status");
     const mostrar = (texto, tom) => {
+      delete status.dataset.trava;
       status.textContent = texto || "";
       status.className = "perfil-bloco-status" + (tom ? " is-" + tom : "");
       if (texto && tom !== "neutro") tela.mensagens[m.id] = {texto, tom}; else delete tela.mensagens[m.id];
     };
     if (tela.mensagens[m.id]) { status.textContent = tela.mensagens[m.id].texto; status.className = "perfil-bloco-status is-" + tela.mensagens[m.id].tom; }
+    // sem o perfis.json, o porquê de este bloco não salvar (vem da ponte): fica enquanto valer, mesmo digitando, e sai
+    // sozinho quando deixa de valer (a sócia passou a ter perfil no diário)
+    const mostrarTrava = (x, tom = "") => {
+      if (x.trava && (tom || !status.textContent)) { status.textContent = x.trava; status.className = "perfil-bloco-status is-" + (tom || "aviso"); status.dataset.trava = "1"; }
+      else if (!x.trava && status.dataset.trava) mostrar("", "");
+    };
+    mostrarTrava(m);
     acoes.append(salvar, status);
     form.append(acoes);
     const ler = () => Object.fromEntries(perfisCampos.map((c) => [c.k, entradas[c.k].value.replace(/\s+/g, " ").trim()]));
@@ -1839,6 +1853,7 @@
       atual = novo;
       cabecaDoBloco(cabeca, novo, dadosNovos);
       salvar.setAttribute("aria-label", "Salvar o perfil de " + (novo.nome || novo.rotulo));
+      mostrarTrava(novo);
       // sem rascunho e sem ninguém num campo deste bloco: os campos e a base acompanham o que está salvo. Com rascunho (ou
       // o cursor num campo daqui), fica como a pessoa deixou; o Salvar nota a diferença e pede para conferir.
       const noCampo = form.contains(document.activeElement) && document.activeElement.tagName === "INPUT";
@@ -1848,26 +1863,28 @@
     form.addEventListener("input", () => {
       if (!tela.rascunhos[m.id]) tela.bases[m.id] = base;
       tela.rascunhos[m.id] = digitado();
-      if (status.textContent) mostrar("", "");
+      if (status.textContent && !status.dataset.trava) mostrar("", "");
     });
+    // outra pessoa salvou este perfil enquanto este bloco estava aberto: em vez de gravar por cima (vale o último), junta
+    // (o campo que a pessoa não mexeu vem com o novo; o que ela mexeu fica) e pede para conferir
+    const juntar = (agora) => {
+      const salvo = perfisValores(agora);
+      const meu = digitado();
+      const juntos = Object.fromEntries(perfisCampos.map((c) => [c.k, meu[c.k] === (base[c.k] || "") ? salvo[c.k] : meu[c.k]]));
+      base = salvo;
+      preencherCampos(juntos);
+      if (perfisIguais(juntos, salvo)) { delete tela.rascunhos[m.id]; delete tela.bases[m.id]; }
+      else { tela.rascunhos[m.id] = juntos; tela.bases[m.id] = salvo; }
+      acompanhar(agora, dados);
+      mostrar("Este perfil mudou enquanto você editava. O que você não mexeu já veio atualizado: confira e toque em Salvar de novo.", "aviso");
+    };
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (salvar.disabled) return;
       const agora = salvoAgora();
       const salvo = perfisValores(agora);
-      // outra pessoa salvou este perfil enquanto este bloco estava aberto: em vez de gravar por cima (vale o último), junta
-      // (o campo que a pessoa não mexeu vem com o novo; o que ela mexeu fica) e pede para conferir
-      if (!perfisIguais(salvo, base)) {
-        const meu = digitado();
-        const juntos = Object.fromEntries(perfisCampos.map((c) => [c.k, meu[c.k] === (base[c.k] || "") ? salvo[c.k] : meu[c.k]]));
-        base = salvo;
-        preencherCampos(juntos);
-        if (perfisIguais(juntos, salvo)) { delete tela.rascunhos[m.id]; delete tela.bases[m.id]; }
-        else { tela.rascunhos[m.id] = juntos; tela.bases[m.id] = salvo; }
-        acompanhar(agora, dados);
-        mostrar("Este perfil mudou enquanto você editava. O que você não mexeu já veio atualizado: confira e toque em Salvar de novo.", "aviso");
-        return;
-      }
+      if (!perfisIguais(salvo, base)) { juntar(agora); return; }
+      if (agora.trava) { mostrarTrava(agora, "erro"); return; }
       const novos = ler();
       let perfil = novos;
       if (perfisCampos.every((c) => !novos[c.k])) {
@@ -1879,7 +1896,8 @@
       salvar.disabled = true;
       mostrar("Salvando…", "neutro");
       try {
-        const r = await api.salvar(m.id, perfil);
+        // a versão do perfil que está na tela: se outra pessoa salvou no meio, o razão recusa em vez de apagar o que ela salvou
+        const r = await api.salvar(m.id, perfil, agora.versao);
         delete tela.rascunhos[m.id]; delete tela.bases[m.id];
         // os campos ficam como o portal guardou (telefone já escrito por extenso) e viram a nova base
         const depois = salvoAgora();
@@ -1888,7 +1906,10 @@
         else mostrar(perfil === null ? "Perfil apagado. As três já veem." : "Salvo. As três já veem.", "ok");
         loadSnapshot(true);   // cartões, quadro e o resto com os nomes novos, sem recarregar a página
       } catch (error) {
-        mostrar(error && error.message ? error.message : "Não deu para salvar. Tente de novo.", "erro");
+        // este aparelho ainda não tinha visto o que a outra pessoa salvou (a sincronia é a cada 60 s): o razão recusou pela
+        // versão e o diário já sincronizou. Junta como acima e redesenha (os cartões mostram o que ela salvou)
+        if (error && error.code === "versao") { juntar(salvoAgora()); loadSnapshot(true); }
+        else mostrar(error && error.message ? error.message : "Não deu para salvar. Tente de novo.", "erro");
       } finally { salvar.disabled = false; }
     });
     return form;

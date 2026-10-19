@@ -3,12 +3,13 @@
 // o que as sócias gravam (lançamentos, parâmetros, perfis…) vai pelo diário cifrado (diario.js). A chave mestra vive em
 // memória; recarregar = entrar de novo, a não ser que a sócia tenha marcado "Lembrar deste aparelho" (lembrar.js): aí a
 // mestra fica no IndexedDB, cifrada com uma chave do aparelho que não se copia, e a entrada é direta. A senha nunca fica.
+// Só numa origem própria: no github.io, que outras páginas dividem, a caixa não aparece e nada vai para o aparelho.
 import {unlock, fetchManifest, loadBundle, b64} from './portal-crypto.js';
 import {buildSnapshot, civilDate, validateState} from './domain.js';
 import {abrirDiario, chaveDaSenhaDoDiario} from './diario.js';
-import {lembrarAparelho, esquecerAparelho, lembrado, mostrarCaixaLembrar} from './lembrar.js';
+import {lembrarAparelho, esquecerAparelho, lembrado, mostrarCaixaLembrar, lembrarPermitido} from './lembrar.js';
 import {criarGaleria} from './galeria.js';
-import {carregarPerfis, lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from './perfis.js';
+import {carregarPerfis, lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, travaDoPerfil, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from './perfis.js';
 import {aplicar, limparPerfil} from './razao.js';
 // O servidor do diário cifrado (servidor/LEIA.md). Sem ele publicado, o diário roda em modo treino e a tela diz isso.
 const DIARIO_URL = 'https://orquestrator-diario.netlify.app';
@@ -77,7 +78,7 @@ window.financeHost = {
       const d = diarioAtual;
       return {estado: estadoDosPerfis(mescla, perfisArquivo), arquivo: perfisArquivo.estado, eu: member.id, responsavel: member.role === 'owner',
         diario: {modo: d ? d.modo : 'abrindo', motivo: d ? d.motivo || '' : ''},
-        membros: bundle.finance.roster.map(m => perfilParaTela(m, m.displayName, mescla[m.id], podeEditarPerfil(member, m.id)))};
+        membros: bundle.finance.roster.map(m => perfilParaTela(m, m.displayName, mescla[m.id], podeEditarPerfil(member, m.id), perfisArquivo))};
     },
     podeEditar(id) { return podeEditarPerfil(member, id); },
     conferir(texto) {
@@ -88,13 +89,18 @@ window.financeHost = {
     // grava pelo diário, conferindo antes pelo mesmo razão (a recusa volta com o motivo e o código, sem enviar nada).
     // Com o diário em treino (servidor fora, chave aguardando), fica só na memória desta página e some ao recarregar
     // (diario.js não guarda nem reenvia o treino): o resultado diz {treino: true} e a tela avisa.
-    async salvar(id, perfil) {
+    async salvar(id, perfil, versao) {
       if (!bundle || !member || !state) fail('Entre com a senha do portal.', 'unauthenticated');
       if (!bundle.finance.roster.some(m => m.id === id)) fail('Esta sócia não está no pacote.', 'invalido');
       if (!podeEditarPerfil(member, id)) fail('Você só edita o seu perfil. A responsável edita o de todas.', 'permissao');
       const d = diarioAtual;
       if (!d || typeof d.acrescentar !== 'function') fail('O diário ainda está abrindo. Tente de novo em instantes.', 'indisponivel');
-      const conteudo = {acao: 'set_profile', alvo: id, dados: perfil === null ? null : limparPerfil(perfil)};
+      atualizarPerfis();
+      const trava = travaDoPerfil(mescla[id], perfisArquivo);
+      if (trava) fail(trava, 'indisponivel');
+      // a versão do perfil que a tela mostrava (sem ela, a que este aparelho tem agora): outra pessoa salvou no meio → 'versao'
+      const vista = Number.isSafeInteger(versao) ? versao : (mescla[id] && Number.isSafeInteger(mescla[id].versao) ? mescla[id].versao : 0);
+      const conteudo = {acao: 'set_profile', alvo: id, dados: perfil === null ? null : limparPerfil(perfil), versao: vista};
       const previa = aplicar(state, [...d.eventos, {seq: Infinity, id: 'previa', membro: member.id, conteudo: {...conteudo, quando: new Date().toISOString()}}]);
       const recusa = previa.recusados.find(r => r.id === 'previa');
       if (recusa) fail(recusa.motivo, recusa.codigo || 'invalido');
@@ -102,6 +108,10 @@ window.financeHost = {
       if (!r || !r.ok) fail((r && r.erro) || 'Não deu para gravar agora. Tente de novo.', 'indisponivel');
       atualizarPerfis();
       document.dispatchEvent(new CustomEvent('financeiro:diario'));
+      // num conflito (409) o diario.js sincroniza e reenvia o MESMO conteúdo, sem conferir de novo: se outra pessoa salvou
+      // este perfil no meio, o evento entrou e o razão o recusou pela versão (nada do que ela salvou se perdeu); a tela junta
+      const depois = r.evento && acompanhar.sobre(state, d).recusados.find(x => x.id === r.evento.id);
+      if (depois) fail(depois.motivo, depois.codigo || 'invalido');
       return {ok: true, treino: !!r.treino, modo: d.modo, nome: perfil === null ? '' : nomeVisivel(bundle.finance.roster.find(m => m.id === id))};
     },
   },
@@ -150,6 +160,8 @@ function abrirDiarioDaSessao(memberId, kek, masterRaw) {
 // tela de entrada aparece, sem erro. Sem rede, o registro fica para a próxima vez.
 const semRede = erro => erro instanceof TypeError || /baixar o pacote|manifesto/.test(String(erro && erro.message));
 async function entrarPeloAparelho() {
+  // numa origem compartilhada (github.io) o aparelho não lembra: um registro que tenha ficado é apagado, sem esperar
+  if (!lembrarPermitido()) { esquecerAparelho().catch(() => {}); return null; }
   let aberto;
   try { aberto = await lembrado(); } catch { return null; }
   if (!aberto) return null;
@@ -193,7 +205,7 @@ window.financeWebRequest = async (action, payload = {}) => {
     // "Lembrar deste aparelho", vai para o IndexedDB no lugar da senha (que não fica em lugar nenhum)
     const kek = chaveDaSenhaDoDiario(senha, memberId);
     abrirDiarioDaSessao(memberId, kek, masterRaw);
-    if (payload.remember) {
+    if (payload.remember && lembrarPermitido()) {
       try { await lembrarAparelho({memberId: got.memberId, membroDiario: memberId, masterRaw, diarioKek: await kek}); }
       catch { entrada.remember_error = true; esquecerAparelho().catch(() => {}); }
     } else esquecerAparelho().catch(() => {});   // entrar sem marcar esquece um registro antigo deste aparelho (sem esperar: um IndexedDB travado não segura a entrada)

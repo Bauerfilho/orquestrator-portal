@@ -9,7 +9,9 @@
 //      Playwright no lugar do manifest.json (o pacote de verdade não é tocado), e o servidor do diário em memória no lugar
 //      do Netlify: senha errada, entrar com "Lembrar", recarregar entra direto com o diário gravando, pacote lacrado de
 //      novo → pede a senha e esquece, sem rede → pede a senha e GUARDA (volta a entrar direto com a rede), sócia tirada
-//      do manifesto → esquece, Sair → pede a senha, sem marcar → pede.
+//      do manifesto → esquece, Sair → pede a senha, sem marcar → pede. E em https://bauerfilho.github.io (o site servido
+//      daqui pelas rotas, no endereço do GitHub Pages): a caixa não aparece, entrar com ela marcada à força não guarda nada,
+//      um registro que tenha ficado é apagado sem entrar direto e uma página irmã da mesma origem não acha nada.
 // Sai com código 1 em qualquer falha, erro de script ou violação de CSP (o registro fica em <saida>/registro.json).
 // Uso: node ferramentas/arnes/fluxos/lembrar.mjs [--saida DIR] [--porta 8931] [--site DIR] [--sem-ponte-real]
 import {pathToFileURL, fileURLToPath} from 'node:url';
@@ -295,15 +297,38 @@ if (PONTE_REAL) {
   const servidor = await servir(porta, SITE, {ponteReal: true});
   const base = `http://127.0.0.1:${porta}/`;
   const DIARIO = 'https://orquestrator-diario.netlify.app';
-  const appDiario = criarDiario(armazemEmMemoria(), {origens: [new URL(base).origin]});
+  // a origem do GitHub Pages: todo repositório Pages do dono e as telas cheias públicas das maquetes dividem esta origem
+  const PAGES = 'https://bauerfilho.github.io', PAGES_BASE = PAGES + '/orquestrator-portal/';
+  const appDiario = criarDiario(armazemEmMemoria(), {origens: [new URL(base).origin, PAGES]});
   let pacote = await lacrarPacoteFicticio({rotulo: 'a'});
   let foraDoAr = false;   // o manifesto não chega (sem rede)
   const mestrasVistas = [b64.enc(pacote.masterRaw)];
-  async function contextoReal(rotulo) {
-    const contexto = await novoContexto(rotulo, base, {lento: true});
+  // uma página de outro repositório Pages do mesmo dono (mesma origem): o próprio script dela procura o "Lembrar"
+  const PAGINA_IRMA = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><link rel="icon" href="data:,"><title>Outro repositório</title></head><body><script>
+    window.__achado = (async () => {
+      if (!(await indexedDB.databases()).some(b => b.name === 'orquestrator-lembrar')) return {banco: false, chave: false, registro: false};
+      const banco = await new Promise((ok, falhar) => { const p = indexedDB.open('orquestrator-lembrar'); p.onsuccess = () => ok(p.result); p.onerror = () => falhar(p.error); });
+      try {
+        if (!banco.objectStoreNames.contains('aparelho')) return {banco: true, chave: false, registro: false};
+        const ler = k => new Promise(ok => { const r = banco.transaction('aparelho').objectStore('aparelho').get(k); r.onsuccess = () => ok(r.result); r.onerror = () => ok(null); });
+        return {banco: true, chave: !!(await ler('chave')), registro: !!(await ler('registro'))};
+      } finally { banco.close(); }
+    })();
+  </script></body></html>`;
+  // o site servido daqui como se fosse o GitHub Pages; registrada antes das outras rotas, que vencem (pacote, diário)
+  async function comoPages(rota) {
+    const u = new URL(rota.request().url());
+    if (u.pathname === '/outro-repo/') return rota.fulfill({status: 200, contentType: 'text/html; charset=utf-8', body: PAGINA_IRMA});
+    if (!u.pathname.startsWith('/orquestrator-portal/')) return rota.fulfill({status: 204, body: ''});
+    const r = await fetch(base + u.pathname.slice('/orquestrator-portal/'.length) + u.search);
+    return rota.fulfill({status: r.status, contentType: r.headers.get('content-type') || 'application/octet-stream', body: Buffer.from(await r.arrayBuffer())});
+  }
+  async function contextoReal(rotulo, {pages = false} = {}) {
+    const contexto = await novoContexto(rotulo, pages ? PAGES_BASE : base, {lento: !pages});
+    if (pages) await contexto.route(PAGES + '/**', comoPages);
     // o pacote fictício no lugar do de verdade (nada no disco muda) e o diário em memória no lugar do Netlify
     await contexto.route('**/manifest.json', rota => (foraDoAr ? rota.abort('internetdisconnected') : rota.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify(pacote.manifest)})));
-    await contexto.route('**/bundle-*.bin', rota => (new URL(rota.request().url()).pathname === '/' + pacote.arquivo ? rota.fulfill({status: 200, contentType: 'application/octet-stream', body: Buffer.from(pacote.bytes)}) : rota.fulfill({status: 404, body: ''})));
+    await contexto.route('**/bundle-*.bin', rota => (new URL(rota.request().url()).pathname.endsWith('/' + pacote.arquivo) ? rota.fulfill({status: 200, contentType: 'application/octet-stream', body: Buffer.from(pacote.bytes)}) : rota.fulfill({status: 404, body: ''})));
     await contexto.route('**/perfis.json', rota => rota.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify(pacote.perfis)}));
     await contexto.route(DIARIO + '/**', async rota => {
       const pedido = rota.request();
@@ -391,6 +416,45 @@ if (PONTE_REAL) {
     certo(p3, e.ok, `sem marcar (ponte real), recarregar devia pedir a senha: ${JSON.stringify(e)}`);
     const vazou2 = await semSenhaGuardada(pagina, [...Object.values(SENHAS_FICTICIAS), ...mestrasVistas]);
     certo(p3, !vazou2.length, 'sobrou senha ou mestra no aparelho');
+    await contexto.close();
+  }
+
+  // B4 · no endereço do GitHub Pages a origem é dividida (outros repositórios do dono, as telas cheias públicas): o
+  // IndexedDB é por origem e a chave do aparelho, mesmo não extraível, decifraria a mestra para qualquer script dali
+  {
+    const p4 = passo('ponte real em bauerfilho.github.io: sem a caixa, nada no aparelho, registro antigo apagado, página irmã não acha nada');
+    const contexto = await contextoReal(p4, {pages: true});
+    const pagina = await abrir(contexto, PAGES_BASE);
+    certo(p4, (await naEntrada(pagina)).ok, 'no github.io, a tela de entrada não apareceu');
+    const caixa = await pagina.evaluate(() => { const c = document.getElementById('login-remember'), l = c.closest('label'); return {escondida: l.hidden || !l.getClientRects().length, marcada: c.checked, ajuda: !!document.getElementById('login-remember-help')}; });
+    certo(p4, caixa.escondida && !caixa.marcada && !caixa.ajuda, `no github.io a caixa “Lembrar” apareceu: ${JSON.stringify(caixa)}`);
+    // entrar com a caixa marcada à força (um app.js antigo no cache, por exemplo): entra, e nada vai para o aparelho
+    await pagina.fill('#login-password', SENHAS_FICTICIAS['m-ana']);
+    await pagina.evaluate(() => { document.getElementById('login-remember').checked = true; });
+    await pagina.click('#login-submit');
+    certo(p4, await noPainel(pagina), 'no github.io, não entrou');
+    certo(p4, await gravando(pagina), 'no github.io, o diário não ligou a gravação');
+    await pagina.waitForTimeout(300);
+    certo(p4, vazioNoAparelho(await guardado(pagina)), 'no github.io, entrar com a caixa marcada guardou algo no aparelho');
+    // a página irmã (outro repositório Pages, mesma origem) não acha nada
+    const irma = await abrir(contexto, PAGES + '/outro-repo/');
+    const achado = await irma.evaluate(() => window.__achado);
+    certo(p4, !achado.chave && !achado.registro, `a página irmã achou o “Lembrar”: ${JSON.stringify(achado)}`);
+    await irma.close();
+    // um registro que tenha ficado (de antes desta correção): não entra direto e é apagado
+    await pagina.evaluate(async ({mestra, senha}) => {
+      const L = await import(new URL('lembrar.js', location.href).href), D = await import(new URL('diario.js', location.href).href);
+      const masterRaw = Uint8Array.from(atob(mestra), c => c.charCodeAt(0));
+      await L.lembrarAparelho({memberId: 'p-ana', membroDiario: 'm-ana', masterRaw, diarioKek: await D.chaveDaSenhaDoDiario(senha, 'm-ana')});
+    }, {mestra: b64.enc(pacote.masterRaw), senha: SENHAS_FICTICIAS['m-ana']});
+    certo(p4, !!(await guardado(pagina)).registro, 'o registro antigo não foi plantado (o teste abaixo não provaria nada)');
+    await recarregar(pagina);
+    const e = await naEntrada(pagina);
+    certo(p4, e.ok, `no github.io, um registro antigo entrou direto: ${JSON.stringify(e)}`);
+    // a ponte apaga sem esperar (um IndexedDB travado não segura a tela de entrada): confere por até 8 s
+    let apagado = false;
+    for (let i = 0; i < 40 && !apagado; i++) { apagado = vazioNoAparelho(await guardado(pagina)); if (!apagado) await pagina.waitForTimeout(200); }
+    certo(p4, apagado, 'no github.io, o registro antigo não foi apagado');
     await contexto.close();
   }
   servidor.close();

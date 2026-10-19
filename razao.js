@@ -278,7 +278,8 @@ export function aplicar(estadoBase, eventos) {
   return {membros, gastos: [...S.gastos.values()], parametros: S.params, recusados: S.recusados, historico: S.historico,
     planos: [...S.planos.values()], passos: [...S.passos.values()], acertos: [...S.acertos.values()], saldos, receitas: [...S.receitas.values()], fechamentos: S.fechamentos,
     perfis: Object.fromEntries(vivos.map(([id, r]) => [id, {...r.perfil, alteradoPor: r.alteradoPor, alteradoEm: r.alteradoEm, versao: r.versao}])),
-    perfisApagados: [...S.perfis].filter(([, r]) => !r.perfil).map(([id]) => id)};
+    perfisApagados: [...S.perfis].filter(([, r]) => !r.perfil).map(([id]) => id),
+    versoesPerfis: Object.fromEntries([...S.perfis].map(([id, r]) => [id, r.versao]))};   // também a de quem foi apagado (o set_profile confere)
 }
 
 // ── ajudantes comuns às ações ────────────────────────────────────────────────────────────────────────────────────
@@ -711,6 +712,10 @@ function aplicarMes(S, x) {
 // esta: só texto, espaços juntados, aparado e com limite; sem nome não entra; dados null apaga o perfil. Vale o último, na
 // ordem do diário. Não mexe em número nenhum: fica fora do selo, da trava do mês e da concorrência do fechamento. No
 // Histórico vão só os NOMES dos campos que mudaram: telefone e e-mail nunca aparecem num antes → depois.
+// "versao" (opcional) é a do perfil que a tela mostrava (0 = ainda sem registro no diário). Veio e não bate: outra pessoa
+// salvou este perfil no meio (o 409 do diario.js reenvia o mesmo conteúdo, sem conferir de novo), e o evento é recusado
+// com 'versao' em vez de apagar o que ela salvou; a tela junta e pede para conferir. Sem "versao" (os eventos de antes),
+// vale o último, como era.
 export const CAMPOS_PERFIL = [['nome', 'Nome', 120], ['funcao', 'Função', 120], ['fone', 'Telefone', 40], ['email', 'E-mail', 160], ['estadoCivil', 'Estado civil', 40]];
 export function limparPerfil(perfil) {
   const limpo = {};
@@ -731,6 +736,10 @@ function aplicarPerfil(S, x) {
   const novo = apagar ? null : limparPerfil(c.dados);
   if (novo && !novo.nome) return x.recusa('O perfil precisa de um nome.');
   const anterior = S.perfis.get(alvo) || {perfil: null, versao: 0};
+  if (c.versao !== undefined) {
+    if (!inteiro(c.versao)) return x.recusa('Versão do perfil inválida: recarregue o portal e tente de novo.');
+    if (c.versao !== anterior.versao) return x.recusa(`Outra pessoa mudou este perfil antes (versão ${anterior.versao}).`, 'versao', {versao: anterior.versao, alteradoPor: anterior.alteradoPor || null, alteradoEm: anterior.alteradoEm || null});
+  }
   const antes = anterior.perfil || {};
   const mudaram = CAMPOS_PERFIL.filter(([k]) => (antes[k] || '') !== ((novo || {})[k] || ''));
   S.perfis.set(alvo, {perfil: novo, versao: anterior.versao + 1, alteradoPor: autora, alteradoEm: quando});

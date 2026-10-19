@@ -9,6 +9,11 @@
 // Ao abrir o portal, a ponte decifra a mestra, lê o pacote e o perfis.json de novo (frescos) e abre o diário com a chave
 // guardada. Se algo não fecha (pacote lacrado de novo, registro de outra versão, membro trocado, aparelho limpo, navegação
 // privada), o registro é apagado e a tela de entrada aparece, sem erro. Sair apaga tudo; entrar sem marcar também.
+// SÓ NUMA ORIGEM QUE SEJA DO PORTAL (lembrarPermitido). "Não extraível" quer dizer que nenhum script copia os bytes da
+// chave do aparelho, não que nenhum script a USE: o IndexedDB é por origem, e qualquer página da mesma origem decifraria a
+// mestra com ela, sem senha e a qualquer hora. No GitHub Pages (<dono>.github.io) a origem é a mesma de todo repositório
+// Pages do dono e das telas cheias públicas das maquetes (apps/<id>/): lá a caixa não aparece, nada vai para o aparelho e
+// um registro que tenha ficado é apagado. Liga sozinho na origem própria do portal (F3-8 do plano).
 // As duas pontes (static-bridge.js e ferramentas/arnes/ponte-simulada.js) usam este módulo. A parte pura (montarRegistro,
 // abrirRegistro) roda no Node: testes/lembrar.test.mjs; a do IndexedDB, no navegador: ferramentas/arnes/fluxos/lembrar.mjs.
 import {b64, random} from './portal-crypto.js';
@@ -21,6 +26,10 @@ const enc = new TextEncoder();
 const subtle = () => globalThis.crypto.subtle;
 const chaveAes = k => !!k && typeof k === 'object' && k.type === 'secret' && !!k.algorithm && k.algorithm.name === 'AES-GCM';
 const naoExtraivel = k => chaveAes(k) && k.extractable === false;
+
+/** Este endereço pode lembrar o aparelho? Não numa origem compartilhada (*.github.io): veja o começo do arquivo. */
+export const ORIGEM_COMPARTILHADA = /(^|\.)github\.io$/i;
+export const lembrarPermitido = (loc = globalThis.location) => !!loc && typeof loc.hostname === 'string' && !!loc.hostname && !ORIGEM_COMPARTILHADA.test(loc.hostname);
 
 /** A chave do aparelho: AES-GCM 256, não extraível, só cifra e decifra. */
 export const novaChaveDoAparelho = () => subtle().generateKey({name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
@@ -120,11 +129,19 @@ export async function lembrado(idb) {
   return aberto;
 }
 
-/** A caixa "Lembrar deste aparelho" na tela de entrada, com a linha de ajuda (as duas pontes chamam no prepareForm). */
-export function mostrarCaixaLembrar(doc = globalThis.document) {
+/**
+ * A caixa "Lembrar deste aparelho" na tela de entrada, com a linha de ajuda (as duas pontes chamam no prepareForm). Numa
+ * origem compartilhada (lembrarPermitido), a caixa fica escondida e desmarcada.
+ */
+export function mostrarCaixaLembrar(doc = globalThis.document, loc = globalThis.location) {
   const caixa = doc && doc.getElementById('login-remember');
   const linha = caixa && caixa.closest('label');
   if (!linha) return;
+  if (!lembrarPermitido(loc)) {
+    linha.hidden = true; caixa.checked = false;
+    const ajuda = doc.getElementById('login-remember-help'); if (ajuda) ajuda.remove();
+    return;
+  }
   linha.hidden = false;
   const texto = linha.querySelector('span');
   if (texto) texto.textContent = 'Lembrar deste aparelho';
