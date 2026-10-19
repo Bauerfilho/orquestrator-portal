@@ -1636,23 +1636,56 @@
   function renderSociety(block) {
     renderSource(byId("society-source"), block.source);
     const target = byId("society-content");
-    clear(target);
-    renderPerfis(target);
-    if (array(block.rows).length) target.append(table(block.columns, block.rows, "Sócios e participação"));
-    else if (block.text) target.append(element("p", "document-text", prose(block.text)));
-    else empty(target);
+    // o formulário dos perfis com o foco dentro (alguém digitando) fica onde está, para o teclado do iPhone não fechar
+    // no meio de uma palavra: só o resto da página é refeito em volta dele
+    const emUso = Array.from(target.children).find((n) => n.classList.contains("perfis-ferramenta") && n.contains(document.activeElement)) || null;
+    if (emUso) Array.from(target.childNodes).forEach((n) => { if (n !== emUso) n.remove(); });
+    else clear(target);
+    const nos = renderPerfis(emUso);
+    if (array(block.rows).length) nos.push(table(block.columns, block.rows, "Sócios e participação"));
+    else if (block.text) nos.push(element("p", "document-text", prose(block.text)));
+    else nos.push(element("p", "empty-state", "sem entrega ainda"));
+    let depois = false;
+    nos.forEach((n) => {
+      if (n === emUso) { depois = true; return; }
+      if (emUso && !depois) target.insertBefore(n, emUso); else target.append(n);
+    });
   }
 
-  // Perfis da sociedade (19/10/2026): cartões com nome, função, telefone, e-mail e estado civil, abertos de perfis.json
-  // (cifrado com a chave mestra; ver perfis.js). "Atualizar perfis" confere um texto colado contra o roster e devolve o
-  // envelope cifrado para publicar; o portal não grava no repositório. Telefone e e-mail vão por textContent: text()
-  // mascara sequências de 11 dígitos como CPF.
+  // Perfis da sociedade (19/10/2026; desde a noite de 19/10 gravados direto no diário cifrado): cartões com nome, função,
+  // telefone, e-mail e estado civil, da mescla da ponte (financeHost.perfis.ler(): o perfil do diário vence o perfis.json
+  // antigo, que vence o rótulo do pacote). "Atualizar perfis" é um formulário com um bloco por sócia que quem vê pode
+  // editar (a responsável vê as três; as outras, só o próprio), cada um com o seu Salvar: financeHost.perfis.salvar grava
+  // o evento set_profile e os cartões, o quadro, Minha equipe e o Livro trocam os nomes sem recarregar. "Colar vários de
+  // uma vez" confere o JSON (lerColado, perfis.js) e só PREENCHE os blocos. O que foi digitado sobrevive aos redesenhos
+  // (perfisTela); o bloco sem rascunho acompanha o que outra sócia salvar, e o Salvar de um bloco desatualizado não grava
+  // por cima: junta e pede para conferir. Em treino o Salvar diz que some ao recarregar (o diário não guarda o treino).
+  // Nome, telefone e e-mail vão por textContent/value: text() mascara sequências de 11 dígitos como CPF.
   const perfisAvisos = {
-    ausente: "Nome, função e contato de cada sócia ainda não foram cadastrados. Use Atualizar perfis, logo abaixo.",
-    "outra-chave": "Os perfis foram cifrados com a chave anterior do portal e não abrem mais. Cifre de novo em Atualizar perfis.",
-    ilegivel: "O arquivo de perfis está ilegível. Cifre de novo em Atualizar perfis.",
-    indisponivel: "Não deu para buscar os perfis agora. Recarregue a página para tentar de novo."
+    ausente: "Nome, função e contato de cada sócia ainda não foram preenchidos. Use Atualizar perfis, logo abaixo.",
+    "outra-chave": "Os perfis antigos não abrem mais (o portal trocou de chave). Preencha de novo em Atualizar perfis.",
+    ilegivel: "O arquivo antigo de perfis está ilegível. Preencha de novo em Atualizar perfis.",
+    indisponivel: "Não deu para buscar os perfis antigos agora. Os que forem salvos em Atualizar perfis aparecem normalmente."
   };
+  const perfisCampos = [
+    {k: "nome", rotulo: "Nome", max: 120, autocomplete: "name", capitalizar: "words"},
+    {k: "funcao", rotulo: "Função", max: 120, autocomplete: "organization-title", capitalizar: "sentences"},
+    {k: "fone", rotulo: "Telefone", max: 40, tipo: "tel", teclado: "tel", autocomplete: "tel"},
+    {k: "email", rotulo: "E-mail", max: 160, tipo: "email", teclado: "email", autocomplete: "email", capitalizar: "none"},
+    {k: "estadoCivil", rotulo: "Estado civil", max: 40, capitalizar: "sentences"}
+  ];
+  const perfisEstadosCivis = ["Solteira", "Solteiro", "Casada", "Casado", "União estável", "Divorciada", "Divorciado", "Viúva", "Viúvo"];
+  // o que a pessoa digitou (rascunhos), o que estava salvo quando ela começou a mexer (bases: é como se nota que outra
+  // pessoa salvou no meio), o que cada bloco disse por último (mensagens) e o que está aberto: por sessão
+  const perfisTela = {dono: null, aberto: null, colarAberto: false, colado: "", rascunhos: {}, bases: {}, mensagens: {}, avisosColar: []};
+  function perfisTelaDe(dados) {
+    if (perfisTela.dono !== dados.eu) Object.assign(perfisTela, {dono: dados.eu, aberto: null, colarAberto: false, colado: "", rascunhos: {}, bases: {}, mensagens: {}, avisosColar: []});
+    return perfisTela;
+  }
+  // cada bloco na tela → a função que o acompanha quando o perfil muda por fora (outra sócia salvou, o diário sincronizou)
+  const perfisBlocos = new WeakMap();
+  const perfisValores = (m) => Object.fromEntries(perfisCampos.map((c) => [c.k, m[c.k] || ""]));
+  const perfisIguais = (a, b) => perfisCampos.every((c) => (a[c.k] || "") === (b[c.k] || ""));
   function campoPerfil(rotulo, valor, href) {
     const linha = element("p", "perfil-campo");
     linha.append(element("span", "perfil-rotulo", rotulo));
@@ -1665,6 +1698,7 @@
   }
   function cartaoPerfil(m) {
     const cartao = element("article", "perfil-cartao");
+    cartao.dataset.socia = m.id;
     const cabeca = element("div", "perfil-cabeca");
     const nome = element("h3", "perfil-nome"); nome.textContent = m.nome || m.rotulo;
     cabeca.append(nome);
@@ -1674,12 +1708,15 @@
     if (m.fone) cartao.append(campoPerfil("Telefone", m.fone, m.foneLink ? "tel:" + m.foneLink : ""));
     if (m.email) cartao.append(campoPerfil("E-mail", m.email, "mailto:" + m.email));
     if (m.estadoCivil) cartao.append(campoPerfil("Estado civil", m.estadoCivil));
+    if (!m.nome) cartao.append(element("p", "perfil-vazio", "Perfil ainda não preenchido."));
     return cartao;
   }
-  function renderPerfis(target) {
+  // devolve os nós da parte de perfis, na ordem: os cartões (ou o aviso) e a ferramenta. A ferramenta em uso (foco
+  // dentro) volta ela mesma, só com o aviso do diário e os títulos dos blocos atualizados.
+  function renderPerfis(emUso) {
     const api = host().perfis;
     const dados = api && typeof api.ler === "function" ? api.ler() : null;
-    if (!dados) return;
+    if (!dados) return emUso ? [emUso] : [];
     const secao = element("section", "perfis");
     secao.setAttribute("aria-label", "Quem é quem na sociedade");
     if (dados.estado === "ok") {
@@ -1689,79 +1726,217 @@
     } else {
       secao.append(element("p", "perfis-aviso", perfisAvisos[dados.estado] || perfisAvisos.ausente));
     }
-    // rede fora: sem os perfis de hoje, atualizar apagaria quem não fosse colado; a ferramenta só volta depois de recarregar
-    if (dados.estado !== "indisponivel" && typeof api.conferir === "function" && typeof api.cifrar === "function") secao.append(ferramentaPerfis(api, dados));
-    target.append(secao);
+    if (typeof api.salvar !== "function" || !array(dados.membros).some((m) => m.podeEditar)) return [secao];
+    if (emUso) { atualizarFerramentaPerfis(emUso, dados); return [secao, emUso]; }
+    return [secao, ferramentaPerfis(api, dados)];
+  }
+  function avisoDoDiario(dados) {
+    const modo = dados.diario && dados.diario.modo;
+    if (modo === "gravacao") return null;
+    const aviso = element("p", "perfis-modo",
+      modo === "abrindo" ? "O diário está abrindo: espere um instante antes de salvar."
+        : modo === "aguardando" || modo === "leitura" ? "Sua chave do diário ainda não foi liberada. Por enquanto, o que você salvar aqui some ao recarregar e as outras não veem. Para valer, salve quando aparecer Gravação ligada."
+        : "Modo treino: o que você salvar aqui some ao recarregar e as outras não veem. Para valer, salve quando aparecer Gravação ligada.");
+    aviso.setAttribute("role", "note");
+    return aviso;
+  }
+  // o título do bloco: o nome que o portal mostra (e "você" no próprio) e, quando já há nome, o rótulo do pacote ao lado
+  function cabecaDoBloco(cabeca, m, dados) {
+    const titulo = cabeca.querySelector(".perfil-bloco-titulo") || document.createElement("h4");
+    titulo.className = "perfil-bloco-titulo"; titulo.tabIndex = -1;
+    titulo.textContent = (m.nome || m.rotulo) + (m.id === dados.eu ? " · você" : "");
+    const partes = [titulo];
+    if (m.rotulo && m.nome && m.nome !== m.rotulo) { const rotulo = element("span", "perfil-bloco-rotulo"); rotulo.textContent = "no pacote: " + m.rotulo; partes.push(rotulo); }
+    cabeca.replaceChildren(...partes);
+  }
+  function atualizarFerramentaPerfis(caixa, dados) {
+    const antigo = caixa.querySelector(".perfis-modo");
+    const novo = avisoDoDiario(dados);
+    if (antigo && novo) antigo.replaceWith(novo); else if (antigo) antigo.remove(); else if (novo) caixa.querySelector(".perfis-intro").after(novo);
+    array(dados.membros).forEach((m) => {
+      const bloco = Array.from(caixa.querySelectorAll(".perfil-bloco")).find((b) => b.dataset.socia === m.id);
+      const acompanhar = bloco && perfisBlocos.get(bloco);
+      if (acompanhar) acompanhar(m, dados);
+    });
   }
   function ferramentaPerfis(api, dados) {
+    const tela = perfisTelaDe(dados);
     const caixa = element("details", "perfis-ferramenta");
-    if (dados.estado !== "ok") caixa.open = true;
+    // aberta de início quando ninguém tem perfil ainda; depois, como a pessoa deixou (não fecha sozinha depois do 1º Salvar)
+    if (tela.aberto === null) tela.aberto = dados.estado !== "ok";
+    caixa.open = tela.aberto;
+    caixa.addEventListener("toggle", () => { tela.aberto = caixa.open; });
     caixa.append(element("summary", "", "Atualizar perfis"));
-    caixa.append(element("p", "form-help", dados.estado === "ok"
-      ? "A caixa já vem com os perfis de hoje: mude o que precisar e toque em Conferir. Quem você tirar do texto fica como está; para apagar alguém, troque os dados dela por null. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."
-      : (dados.estado === "ausente" ? "" : "Atenção: o arquivo de perfis atual não abre, então o texto novo substitui todos. Cole as três sócias. ")
-        + "Cole os dados das sócias no formato abaixo e toque em Conferir. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."));
+    const editaveis = array(dados.membros).filter((m) => m.podeEditar);
+    caixa.append(element("p", "form-help perfis-intro", dados.responsavel
+      ? "Você é a responsável: edita o perfil das três. Cada bloco tem o seu Salvar, e o que você salvar as três já veem."
+      : "Aqui você edita o seu perfil. Ao salvar, as três já veem. O perfil das outras, cada uma edita o seu (ou a responsável)."));
+    const aviso = avisoDoDiario(dados);
+    if (aviso) caixa.append(aviso);
+    const lista = document.createElement("datalist");
+    lista.id = "perfis-estados-civis";
+    perfisEstadosCivis.forEach((valor) => { const opcao = document.createElement("option"); opcao.value = valor; lista.append(opcao); });
+    caixa.append(lista);
+    const blocos = element("div", "perfis-blocos");
+    editaveis.forEach((m) => blocos.append(blocoPerfil(api, dados, m, tela)));
+    caixa.append(blocos);
+    if (typeof api.conferir === "function") caixa.append(colarPerfis(api, dados, tela, caixa));
+    return caixa;
+  }
+  function blocoPerfil(api, dados, m, tela) {
+    const proprio = m.id === dados.eu;
+    // atual = a sócia como a ponte mostrou por último; base = o que estava salvo quando a pessoa começou a mexer
+    let atual = m;
+    if (!tela.rascunhos[m.id]) delete tela.bases[m.id];
+    let base = tela.bases[m.id] || perfisValores(m);
+    const valores = tela.rascunhos[m.id] || perfisValores(m);
+    const idBase = "perfil-" + String(m.id).replace(/[^A-Za-z0-9_-]/g, "_");
+    const form = document.createElement("form");
+    form.className = "perfil-bloco"; form.id = idBase; form.noValidate = true; form.dataset.socia = m.id;
+    const cabeca = element("div", "perfil-bloco-cabeca");
+    cabecaDoBloco(cabeca, m, dados);
+    form.append(cabeca);
+    const campos = element("div", "perfil-bloco-campos");
+    const entradas = {};
+    perfisCampos.forEach((c) => {
+      const id = idBase + "-" + c.k;
+      const rotulo = document.createElement("label"); rotulo.className = "perfil-bloco-campo"; rotulo.htmlFor = id;
+      const nome = element("span", "perfil-bloco-nome"); nome.textContent = c.rotulo;
+      const entrada = document.createElement("input");
+      entrada.id = id; entrada.name = c.k; entrada.type = c.tipo || "text"; entrada.maxLength = c.max; entrada.value = valores[c.k] || "";
+      if (c.teclado) entrada.inputMode = c.teclado;
+      // no próprio bloco o iPhone oferece os dados da pessoa; no bloco de outra sócia, não (seriam os dados de quem digita)
+      entrada.autocomplete = proprio && c.autocomplete ? c.autocomplete : "off";
+      if (c.capitalizar) entrada.setAttribute("autocapitalize", c.capitalizar);
+      if (c.k === "email" || c.k === "fone") entrada.spellcheck = false;
+      if (c.k === "estadoCivil") entrada.setAttribute("list", "perfis-estados-civis");
+      if (c.k === "nome") entrada.required = true;
+      rotulo.append(nome, entrada);
+      campos.append(rotulo);
+      entradas[c.k] = entrada;
+    });
+    form.append(campos);
+    const acoes = element("div", "perfil-bloco-acoes");
+    const salvar = document.createElement("button");
+    salvar.type = "submit"; salvar.className = "button button-primary"; salvar.textContent = "Salvar";
+    salvar.setAttribute("aria-label", "Salvar o perfil de " + (m.nome || m.rotulo));
+    const status = element("p", "perfil-bloco-status");
+    status.setAttribute("role", "status");
+    const mostrar = (texto, tom) => {
+      status.textContent = texto || "";
+      status.className = "perfil-bloco-status" + (tom ? " is-" + tom : "");
+      if (texto && tom !== "neutro") tela.mensagens[m.id] = {texto, tom}; else delete tela.mensagens[m.id];
+    };
+    if (tela.mensagens[m.id]) { status.textContent = tela.mensagens[m.id].texto; status.className = "perfil-bloco-status is-" + tela.mensagens[m.id].tom; }
+    acoes.append(salvar, status);
+    form.append(acoes);
+    const ler = () => Object.fromEntries(perfisCampos.map((c) => [c.k, entradas[c.k].value.replace(/\s+/g, " ").trim()]));
+    const digitado = () => Object.fromEntries(perfisCampos.map((c) => [c.k, entradas[c.k].value]));
+    const preencherCampos = (v) => perfisCampos.forEach((c) => { entradas[c.k].value = v[c.k] || ""; });
+    // o que está salvo AGORA (a ponte relê o diário), não o que estava quando o bloco foi desenhado
+    const salvoAgora = () => { const d = api.ler(); return (d && array(d.membros).find((x) => x.id === m.id)) || atual; };
+    const acompanhar = (novo, dadosNovos) => {
+      atual = novo;
+      cabecaDoBloco(cabeca, novo, dadosNovos);
+      salvar.setAttribute("aria-label", "Salvar o perfil de " + (novo.nome || novo.rotulo));
+      // sem rascunho e sem ninguém num campo deste bloco: os campos e a base acompanham o que está salvo. Com rascunho (ou
+      // o cursor num campo daqui), fica como a pessoa deixou; o Salvar nota a diferença e pede para conferir.
+      const noCampo = form.contains(document.activeElement) && document.activeElement.tagName === "INPUT";
+      if (!tela.rascunhos[m.id] && !noCampo) { base = perfisValores(novo); preencherCampos(base); }
+    };
+    perfisBlocos.set(form, acompanhar);
+    form.addEventListener("input", () => {
+      if (!tela.rascunhos[m.id]) tela.bases[m.id] = base;
+      tela.rascunhos[m.id] = digitado();
+      if (status.textContent) mostrar("", "");
+    });
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (salvar.disabled) return;
+      const agora = salvoAgora();
+      const salvo = perfisValores(agora);
+      // outra pessoa salvou este perfil enquanto este bloco estava aberto: em vez de gravar por cima (vale o último), junta
+      // (o campo que a pessoa não mexeu vem com o novo; o que ela mexeu fica) e pede para conferir
+      if (!perfisIguais(salvo, base)) {
+        const meu = digitado();
+        const juntos = Object.fromEntries(perfisCampos.map((c) => [c.k, meu[c.k] === (base[c.k] || "") ? salvo[c.k] : meu[c.k]]));
+        base = salvo;
+        preencherCampos(juntos);
+        if (perfisIguais(juntos, salvo)) { delete tela.rascunhos[m.id]; delete tela.bases[m.id]; }
+        else { tela.rascunhos[m.id] = juntos; tela.bases[m.id] = salvo; }
+        acompanhar(agora, dados);
+        mostrar("Este perfil mudou enquanto você editava. O que você não mexeu já veio atualizado: confira e toque em Salvar de novo.", "aviso");
+        return;
+      }
+      const novos = ler();
+      let perfil = novos;
+      if (perfisCampos.every((c) => !novos[c.k])) {
+        if (!agora.nome) { mostrar("Nada para salvar: preencha ao menos o nome.", "erro"); entradas.nome.focus(); return; }
+        if (!window.confirm("Apagar o perfil de " + agora.nome + "? O nome volta a ser " + agora.rotulo + ".")) return;
+        perfil = null;
+      } else if (!novos.nome) { mostrar("Preencha o nome.", "erro"); entradas.nome.focus(); return; }
+      else if (agora.fonte === "diario" && perfisIguais(novos, salvo)) { mostrar("Nada mudou: o perfil já está assim.", "neutro"); return; }
+      salvar.disabled = true;
+      mostrar("Salvando…", "neutro");
+      try {
+        const r = await api.salvar(m.id, perfil);
+        delete tela.rascunhos[m.id]; delete tela.bases[m.id];
+        // os campos ficam como o portal guardou (telefone já escrito por extenso) e viram a nova base
+        const depois = salvoAgora();
+        base = perfisValores(depois); preencherCampos(base); atual = depois;
+        if (r && r.treino) mostrar("Salvo só nesta página (treino): some ao recarregar.", "aviso");
+        else mostrar(perfil === null ? "Perfil apagado. As três já veem." : "Salvo. As três já veem.", "ok");
+        loadSnapshot(true);   // cartões, quadro e o resto com os nomes novos, sem recarregar a página
+      } catch (error) {
+        mostrar(error && error.message ? error.message : "Não deu para salvar. Tente de novo.", "erro");
+      } finally { salvar.disabled = false; }
+    });
+    return form;
+  }
+  function colarPerfis(api, dados, tela, caixa) {
+    const colar = document.createElement("details");
+    colar.className = "perfis-colar"; colar.open = tela.colarAberto;
+    colar.addEventListener("toggle", () => { tela.colarAberto = colar.open; });
+    colar.append(element("summary", "", "Colar vários de uma vez"));
+    colar.append(element("p", "form-help", "Cole o texto no formato abaixo, um bloco por sócia (pelo nome ou por “Sócio 1”, “Sócio 2”…), e toque em Preencher. Nada é salvo ainda: confira cada bloco e toque em Salvar."));
     const area = element("textarea", "perfis-entrada");
-    area.rows = 7; area.spellcheck = false; area.setAttribute("aria-label", "Dados das sócias");
-    area.placeholder = '{"' + array(dados.membros).map((m) => m.rotulo).filter(Boolean).slice(0, 1).concat(["Sócio 1"])[0] + '": {"nome": "…", "funcao": "…", "fone": "…", "email": "…", "estadoCivil": "…"}}';
-    if (dados.estado === "ok") {
-      const atuais = {};
-      array(dados.membros).filter((m) => m.nome).forEach((m) => {
-        const p = {nome: m.nome};
-        ["funcao", "fone", "email", "estadoCivil"].forEach((campo) => { if (m[campo]) p[campo] = m[campo]; });
-        atuais[m.rotulo] = p;
-      });
-      area.value = JSON.stringify(atuais, null, 1);
-    }
+    area.rows = 6; area.spellcheck = false; area.setAttribute("aria-label", "Dados das sócias para colar");
+    const exemplo = array(dados.membros).find((m) => m.podeEditar) || {};
+    area.placeholder = '{"' + (exemplo.rotulo || "Sócio 1") + '": {"nome": "…", "funcao": "…", "fone": "…", "email": "…", "estadoCivil": "…"}}';
+    area.value = tela.colado;
+    area.addEventListener("input", () => { tela.colado = area.value; });
     const previa = element("div", "perfis-previa");
     previa.setAttribute("aria-live", "polite");
-    const saida = element("div", "perfis-saida"); saida.hidden = true;
-    let conferidos = null;
-    const cifrar = button("Cifrar para publicar", "button-primary", async () => {
-      if (!conferidos) return;
-      cifrar.disabled = true;
-      try {
-        const envelope = await api.cifrar(conferidos.membros, conferidos.remover);
-        clear(saida); saida.hidden = false;
-        const texto = element("textarea", "perfis-envelope"); texto.readOnly = true; texto.rows = 6; texto.value = envelope; texto.setAttribute("aria-label", "Texto cifrado dos perfis");
-        const copiar = button("Copiar", "button-outline", async () => {
-          try { await navigator.clipboard.writeText(envelope); copiar.textContent = "Copiado"; }
-          catch { texto.select(); copiar.textContent = "Selecionado: copie com o menu"; }
-        });
-        saida.append(element("p", "form-help", "Pronto. Este texto está cifrado: sem a senha do portal ninguém lê. Mande ao Claude, que publica como perfis.json; depois de entrar de novo, as três veem os perfis."), texto, copiar);
-      } catch (error) {
-        clear(saida); saida.hidden = false; saida.append(element("p", "form-error", error && error.message ? error.message : "Não deu para cifrar."));
-      } finally { cifrar.disabled = false; }
-    });
-    cifrar.disabled = true;
-    const conferir = button("Conferir", "button-outline", () => {
-      clear(previa); saida.hidden = true; conferidos = null; cifrar.disabled = true;
+    array(tela.avisosColar).forEach((aviso) => previa.append(element("p", "form-error", aviso)));
+    const preencher = button("Preencher os blocos", "button-outline", () => {
       let resultado;
       try { resultado = api.conferir(area.value); }
-      catch (error) { previa.append(element("p", "form-error", error && error.message ? error.message : "Não deu para conferir.")); return; }
-      const rotulos = Object.fromEntries(array(dados.membros).map((m) => [m.id, m.rotulo]));
-      const ids = Object.keys(resultado.membros || {});
-      const remover = array(resultado.remover);
-      ids.forEach((id) => {
-        const p = resultado.membros[id];
-        const linha = element("p", "perfis-linha");
-        linha.textContent = (rotulos[id] || id) + " → " + [p.nome, p.funcao, p.fone, p.email, p.estadoCivil].filter(Boolean).join(" · ");
-        previa.append(linha);
-      });
-      remover.forEach((id) => { const linha = element("p", "perfis-linha"); linha.textContent = (rotulos[id] || id) + " → perfil apagado"; previa.append(linha); });
-      if (dados.estado === "ok") {
-        const ficam = array(dados.membros).filter((m) => m.nome && !ids.includes(m.id) && !remover.includes(m.id)).map((m) => m.nome);
-        if (ficam.length) { const linha = element("p", "perfis-linha"); linha.textContent = "Ficam como estão: " + ficam.join(", "); previa.append(linha); }
-      }
-      array(resultado.avisos).forEach((aviso) => previa.append(element("p", "form-error", aviso)));
-      if (!ids.length && !remover.length) { previa.append(element("p", "form-error", "Nenhum perfil com nome no texto colado.")); return; }
-      conferidos = {membros: resultado.membros, remover}; cifrar.disabled = false;
+      catch (error) { tela.avisosColar = [error && error.message ? error.message : "Não deu para ler o texto."]; clear(previa); tela.avisosColar.forEach((a) => previa.append(element("p", "form-error", a))); return; }
+      const atual = host().perfis.ler() || dados;
+      const porId = Object.fromEntries(array(atual.membros).map((m) => [m.id, m]));
+      const avisos = array(resultado.avisos).slice();
+      const preenchidos = [];
+      const marcar = (id, valores, texto) => {
+        const m = porId[id];
+        if (!m || !m.podeEditar) { avisos.push((m ? m.nome || m.rotulo : id) + ": você não edita este perfil."); return; }
+        tela.rascunhos[id] = valores;
+        tela.bases[id] = perfisValores(m);
+        tela.mensagens[id] = {texto, tom: "aviso"};
+        preenchidos.push(id);
+      };
+      Object.entries(resultado.membros || {}).forEach(([id, p]) => marcar(id, Object.fromEntries(perfisCampos.map((c) => [c.k, p[c.k] || ""])), "Preenchido pelo texto colado: confira e toque em Salvar."));
+      array(resultado.remover).forEach((id) => marcar(id, Object.fromEntries(perfisCampos.map((c) => [c.k, ""])), "Ficou em branco: Salvar apaga este perfil."));
+      if (!preenchidos.length) avisos.push("Nada para preencher: confira o texto.");
+      tela.avisosColar = avisos;
+      const nova = ferramentaPerfis(api, atual);
+      caixa.replaceWith(nova);
+      const primeiro = preenchidos.length && Array.from(nova.querySelectorAll(".perfil-bloco")).find((b) => b.dataset.socia === preenchidos[0]);
+      const alvo = primeiro ? primeiro.querySelector(".perfil-bloco-titulo") : nova.querySelector(".perfis-colar summary");
+      if (alvo) { alvo.scrollIntoView({block: "start"}); alvo.focus({preventScroll: true}); }
     });
-    // mexer no texto depois de conferir obriga a conferir de novo: Cifrar nunca cifra o que a tela não mostrou
-    area.addEventListener("input", () => { conferidos = null; cifrar.disabled = true; saida.hidden = true; clear(previa); });
-    const botoes = element("div", "perfis-botoes"); botoes.append(conferir, cifrar);
-    caixa.append(area, botoes, previa, saida);
-    return caixa;
+    const botoes = element("div", "perfis-botoes"); botoes.append(preencher);
+    colar.append(area, botoes, previa);
+    return colar;
   }
 
   // Med Painel (17/10/2026, pedido do Criador): estratégias de venda e o caminho até a meta de assinantes.
@@ -2784,6 +2959,7 @@
       clear(byId(name + "-content")); clear(byId(name + "-source"));
     });
     clearLab();
+    perfisTela.dono = null;   // rascunhos e mensagens dos perfis não passam para a próxima sessão
     message("dashboard-error", ""); message("password-error", "");
   }
 
@@ -2936,6 +3112,8 @@
   // o registro de verdade troca o provisório do paginas.js e processa o que chegou antes do app.js
   const registrosNaFila = window.financeRegistrarPagina && Array.isArray(window.financeRegistrarPagina.fila) ? window.financeRegistrarPagina.fila : [];
   window.financeRegistrarPagina = registrarPaginaNova;
+  // o diário abriu ou mudou (a ponte avisa, e um perfil salvo também): o snapshot traz os nomes novos sem esperar o ciclo
+  document.addEventListener("financeiro:diario", () => { if (authenticated && !mustChangePassword && !mutationBusy) loadSnapshot(true); });
   window.financeSetVisible = (visible) => {
     nativeVisible = visible === true;
     if (nativeVisible && authenticated && !mustChangePassword && !mutationBusy) loadSnapshot();
