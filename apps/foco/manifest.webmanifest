@@ -3,7 +3,6 @@
   "short_name": "Foco",
   "description": "Timer pomodoro para trabalho profundo: um relógio enorme que anda de verdade, tarefas estimadas em pomodoros, pausas com respiração guiada e um relatório honesto da semana.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

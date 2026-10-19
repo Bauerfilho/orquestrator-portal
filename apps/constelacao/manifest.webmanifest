@@ -3,7 +3,6 @@
   "short_name": "Constelação",
   "description": "Centro de missões: contratos, workers, progresso e revisão de artefatos.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

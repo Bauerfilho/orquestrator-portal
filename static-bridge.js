@@ -5,7 +5,7 @@ import {unlock, fetchManifest, loadBundle, b64} from './portal-crypto.js';
 import {buildSnapshot, civilDate, validateState} from './domain.js';
 import {abrirDiario} from './diario.js';
 import {criarGaleria} from './galeria.js';
-import {carregarPerfis, cifrarPerfis, lerColado, foneLegivel, foneDiscavel} from './perfis.js';
+import {carregarPerfis, cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
 // O servidor do diário cifrado (servidor/LEIA.md). Sem ele publicado, o diário roda em modo treino e a tela diz isso.
 const DIARIO_URL = 'https://orquestrator-diario.netlify.app';
 const $ = id => document.getElementById(id);
@@ -64,9 +64,11 @@ window.financeHost = {
       if (!bundle) fail('Entre com a senha do portal.', 'unauthenticated');
       return lerColado(texto, bundle.finance.roster.map(m => ({id: m.id, rotulo: m.displayName})));
     },
-    async cifrar(membros) {
+    // junta com os perfis já abertos: colar só a própria sócia não apaga as outras (null no texto remove alguém)
+    async cifrar(membros, remover = []) {
       if (!chave) fail('Entre com a senha do portal.', 'unauthenticated');
-      return JSON.stringify(await cifrarPerfis(chave.masterRaw, {membros}), null, 1) + '\n';
+      const base = perfis.estado === 'ok' ? perfis.membros : {};
+      return JSON.stringify(await cifrarPerfis(chave.masterRaw, {membros: juntarPerfis(base, membros, remover)}), null, 1) + '\n';
     },
   },
   painelLink() { return bundle && bundle.painel && /^[a-f0-9]{16}$/.test(bundle.painel.slug || '') ? new URL('painel/' + bundle.painel.slug + '/', base).href : ''; },

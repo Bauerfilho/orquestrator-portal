@@ -1698,10 +1698,21 @@
     const caixa = element("details", "perfis-ferramenta");
     if (dados.estado !== "ok") caixa.open = true;
     caixa.append(element("summary", "", "Atualizar perfis"));
-    caixa.append(element("p", "form-help", "Cole os dados das sócias no formato abaixo e toque em Conferir. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."));
+    caixa.append(element("p", "form-help", dados.estado === "ok"
+      ? "A caixa já vem com os perfis de hoje: mude o que precisar e toque em Conferir. Quem você tirar do texto fica como está; para apagar alguém, troque os dados dela por null. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."
+      : "Cole os dados das sócias no formato abaixo e toque em Conferir. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."));
     const area = element("textarea", "perfis-entrada");
     area.rows = 7; area.spellcheck = false; area.setAttribute("aria-label", "Dados das sócias");
     area.placeholder = '{"' + array(dados.membros).map((m) => m.rotulo).filter(Boolean).slice(0, 1).concat(["Sócio 1"])[0] + '": {"nome": "…", "funcao": "…", "fone": "…", "email": "…", "estadoCivil": "…"}}';
+    if (dados.estado === "ok") {
+      const atuais = {};
+      array(dados.membros).filter((m) => m.nome).forEach((m) => {
+        const p = {nome: m.nome};
+        ["funcao", "fone", "email", "estadoCivil"].forEach((campo) => { if (m[campo]) p[campo] = m[campo]; });
+        atuais[m.rotulo] = p;
+      });
+      area.value = JSON.stringify(atuais, null, 1);
+    }
     const previa = element("div", "perfis-previa");
     previa.setAttribute("aria-live", "polite");
     const saida = element("div", "perfis-saida"); saida.hidden = true;
@@ -1710,7 +1721,7 @@
       if (!conferidos) return;
       cifrar.disabled = true;
       try {
-        const envelope = await api.cifrar(conferidos);
+        const envelope = await api.cifrar(conferidos.membros, conferidos.remover);
         clear(saida); saida.hidden = false;
         const texto = element("textarea", "perfis-envelope"); texto.readOnly = true; texto.rows = 6; texto.value = envelope; texto.setAttribute("aria-label", "Texto cifrado dos perfis");
         const copiar = button("Copiar", "button-outline", async () => {
@@ -1730,16 +1741,24 @@
       catch (error) { previa.append(element("p", "form-error", error && error.message ? error.message : "Não deu para conferir.")); return; }
       const rotulos = Object.fromEntries(array(dados.membros).map((m) => [m.id, m.rotulo]));
       const ids = Object.keys(resultado.membros || {});
+      const remover = array(resultado.remover);
       ids.forEach((id) => {
         const p = resultado.membros[id];
         const linha = element("p", "perfis-linha");
         linha.textContent = (rotulos[id] || id) + " → " + [p.nome, p.funcao, p.fone, p.email, p.estadoCivil].filter(Boolean).join(" · ");
         previa.append(linha);
       });
+      remover.forEach((id) => { const linha = element("p", "perfis-linha"); linha.textContent = (rotulos[id] || id) + " → perfil apagado"; previa.append(linha); });
+      if (dados.estado === "ok") {
+        const ficam = array(dados.membros).filter((m) => m.nome && !ids.includes(m.id) && !remover.includes(m.id)).map((m) => m.nome);
+        if (ficam.length) { const linha = element("p", "perfis-linha"); linha.textContent = "Ficam como estão: " + ficam.join(", "); previa.append(linha); }
+      }
       array(resultado.avisos).forEach((aviso) => previa.append(element("p", "form-error", aviso)));
-      if (!ids.length) { previa.append(element("p", "form-error", "Nenhum perfil com nome no texto colado.")); return; }
-      conferidos = resultado.membros; cifrar.disabled = false;
+      if (!ids.length && !remover.length) { previa.append(element("p", "form-error", "Nenhum perfil com nome no texto colado.")); return; }
+      conferidos = {membros: resultado.membros, remover}; cifrar.disabled = false;
     });
+    // mexer no texto depois de conferir obriga a conferir de novo: Cifrar nunca cifra o que a tela não mostrou
+    area.addEventListener("input", () => { conferidos = null; cifrar.disabled = true; saida.hidden = true; clear(previa); });
     const botoes = element("div", "perfis-botoes"); botoes.append(conferir, cifrar);
     caixa.append(area, botoes, previa, saida);
     return caixa;

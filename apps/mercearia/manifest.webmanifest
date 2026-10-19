@@ -3,7 +3,6 @@
   "short_name": "Mercearia",
   "description": "Loja on-line de produtos artesanais de Minas e Goiás, a fictícia Empório Cerrado: vitrine editorial com filtros, página de produto com variações, frete por CEP e avaliações, e carrinho com cupom, PIX ou cartão e confirmação do pedido.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

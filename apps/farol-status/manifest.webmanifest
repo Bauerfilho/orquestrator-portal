@@ -3,7 +3,6 @@
   "short_name": "Farol",
   "description": "Página de status pública para uma nuvem brasileira: disponibilidade de 90 dias por componente, incidentes ao vivo, histórico com post-mortem e avisos por e-mail.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

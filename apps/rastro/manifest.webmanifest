@@ -3,7 +3,6 @@
   "short_name": "Rastro",
   "description": "Navegação automatizada em ambiente de demonstração com plano, ações permitidas e evidências.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

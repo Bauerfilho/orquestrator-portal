@@ -3,7 +3,6 @@
   "short_name": "Hábitos",
   "description": "Rastreador de hábitos de um toque: cada hábito com sua cor, anel do dia, sequências em números grandes e um mapa de calor de seis meses para enxergar a constância.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

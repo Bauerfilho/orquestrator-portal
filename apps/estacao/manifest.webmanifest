@@ -3,7 +3,6 @@
   "short_name": "Estação",
   "description": "Player de podcasts em que a cor da capa tinge o aparelho inteiro: biblioteca de programas, player com forma de onda arrastável, velocidade, temporizador de sono e uma fila que se reordena com o dedo.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

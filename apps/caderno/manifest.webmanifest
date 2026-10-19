@@ -3,7 +3,6 @@
   "short_name": "Caderno",
   "description": "Caderno de notas em markdown em três painéis: cadernos e etiquetas, lista com prévia e um editor de papel pautado que também lê, marca tarefas e busca em tudo por paleta de comando.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

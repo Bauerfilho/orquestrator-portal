@@ -3,7 +3,6 @@
   "short_name": "Céu",
   "description": "App de clima em que o céu inteiro é a interface: o fundo muda com a condição e a hora, a temperatura ocupa a tela, os cartões são de vidro e os ícones se mexem. Quatro cidades, previsão por hora, dez dias e um alerta de tempestade severa.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
