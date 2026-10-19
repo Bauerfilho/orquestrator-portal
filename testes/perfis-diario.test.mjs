@@ -4,11 +4,12 @@
 // Dados fictícios óbvios (as três sócias do arnês, telefones 6490000000x).
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import * as R from '../razao.js';
 import {fotoDoMes, seloDoMes} from '../contas.js';
 import {abrirDiario} from '../diario.js';
 import {criarDiario, armazemEmMemoria} from '../servidor/nucleo.mjs';
-import {normalizarPerfis, lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from '../perfis.js';
+import {normalizarPerfis, lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, travaDoPerfil, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from '../perfis.js';
 
 const {aplicar, ACOES, VERBOS, CAMPOS_PERFIL, limparPerfil} = R;
 const base = {
@@ -175,6 +176,74 @@ test('colagem: casa também pelo nome que a sócia já tem no portal, sem tomar 
   assert.deepEqual(lerColado(JSON.stringify({'sócio 3': null}), roster).remover, ['bia']);
 });
 
+test('versão do perfil: a que a tela viu entra; a de antes de outra pessoa salvar é recusada (versao), sem dados; sem versão vale o último', () => {
+  // 0 = ainda sem registro no diário (perfil só no arquivo, ou ninguém)
+  let a = aceito([perfil('bauer', 'ana', {...ANA, funcao: 'Diretora'}, {versao: 0})]);
+  assert.equal(a.perfis.ana.versao, 1);
+  // a Ana salvou com a versão que o aparelho dela mostrava (0), mas a responsável já tinha salvo (1): recusado, nada perdido
+  const corrida = [perfil('bauer', 'ana', {...ANA, funcao: 'Diretora'}, {versao: 0}), perfil('ana', 'ana', {...ANA, fone: '64911112222'}, {versao: 0})];
+  a = recusado(corrida, 'versao', /Outra pessoa mudou este perfil antes \(versão 1\)/);
+  assert.equal(a.perfis.ana.funcao, 'Diretora', 'a função que a responsável salvou sumiu');
+  assert.equal(a.perfis.ana.fone, '64900000002');
+  const r = a.recusados.at(-1);
+  assert.deepEqual(r.atual, {versao: 1, alteradoPor: 'bauer', alteradoEm: OUT});
+  assert.ok(!JSON.stringify(a.recusados).includes('6491111'), 'a recusa carregou o telefone');
+  // com a versão certa (depois de juntar), entra
+  a = aceito([...corrida, perfil('ana', 'ana', {...ANA, funcao: 'Diretora', fone: '64911112222'}, {versao: 1})]);
+  assert.deepEqual([a.perfis.ana.funcao, a.perfis.ana.fone, a.perfis.ana.versao], ['Diretora', '64911112222', 2]);
+  // apagado também tem versão: quem viu o perfil apagado (versão 2) grava; quem ainda via o de antes (1), não
+  const apagado = [perfil('ana', 'ana', ANA, {versao: 0}), perfil('bauer', 'ana', null, {versao: 1})];
+  a = aceito([...apagado, perfil('ana', 'ana', {nome: 'Ana de Volta'}, {versao: 2})]);
+  assert.equal(a.perfis.ana.nome, 'Ana de Volta');
+  recusado([...apagado, perfil('ana', 'ana', {nome: 'Ana de Volta'}, {versao: 1})], 'versao');
+  recusado([...apagado, perfil('ana', 'ana', {nome: 'Ana de Volta'}, {versao: 0})], 'versao');
+  // os eventos de antes (sem versão) continuam valendo o último
+  a = aceito([perfil('bauer', 'ana', {...ANA, funcao: 'Diretora'}), perfil('ana', 'ana', ANA)]);
+  assert.equal(a.perfis.ana.funcao, 'Administradora');
+  // versão que não é inteiro >= 0: inválido (não é conflito com ninguém)
+  for (const versao of [-1, 1.5, '0', null, true]) recusado([perfil('ana', 'ana', ANA, {versao})], 'invalido', /Versão do perfil inválida/);
+});
+
+test('mescla e tela levam a versão (0 sem registro, a do diário também para quem foi apagado)', () => {
+  const arquivo = {estado: 'ok', membros: {bauer: {nome: 'Bauer do Arquivo'}, ana: {nome: 'Ana do Arquivo'}}};
+  const aplicado = aplicar(base, [perfil('ana', 'ana', ANA), perfil('ana', 'ana', ANA), perfil('bauer', 'bia', {nome: 'Bia'}), perfil('bauer', 'bia', null), perfil('bauer', 'bia', null)]);
+  const m = mesclarPerfis(['bauer', 'ana', 'bia'], arquivo, aplicado);
+  assert.deepEqual([m.bauer.fonte, m.bauer.versao], ['arquivo', 0]);
+  assert.deepEqual([m.ana.fonte, m.ana.versao], ['diario', 2]);
+  assert.deepEqual([m.bia.fonte, m.bia.perfil, m.bia.versao], [null, null, 3]);
+  assert.equal(mesclarPerfis(['ana'], null, null).ana.versao, 0);
+  assert.equal(perfilParaTela(base.members[1], 'Sócio 2', m.ana, true).versao, 2);
+  assert.equal(perfilParaTela(base.members[0], 'Sócio 1', m.bauer, true).versao, 0);
+});
+
+test('perfis.json fora (rede): quem ainda não tem registro no diário não salva; quem já tem, salva', () => {
+  const fora = {estado: 'indisponivel', membros: {}};
+  const aplicado = aplicar(base, [perfil('bauer', 'bauer', BAU), perfil('bia', 'bia', {nome: 'Bia'}), perfil('bauer', 'bia', null)]);
+  const m = mesclarPerfis(['bauer', 'ana', 'bia'], fora, aplicado);
+  // a Ana não tem registro no diário: o perfil dela pode estar no arquivo que não veio (e a tela mostraria "não preenchido")
+  assert.equal(estadoDosPerfis(m, fora), 'ok', 'o caso perigoso: há perfil pelo diário, então a tela mostra os cartões');
+  assert.match(travaDoPerfil(m.ana, fora), /Recarregue a página/);
+  assert.equal(travaDoPerfil(m.bauer, fora), '', 'quem já tem perfil no diário salva (o diário já vence o arquivo)');
+  assert.equal(travaDoPerfil(m.bia, fora), '', 'quem o diário apagou também (o arquivo já não vale para ela)');
+  for (const estado of ['ok', 'ausente', 'outra-chave', 'ilegivel']) assert.equal(travaDoPerfil(m.ana, {estado, membros: {}}), '', estado);
+  assert.equal(travaDoPerfil(m.ana, null), '');
+  // a tela recebe a trava só no bloco que quem vê edita
+  assert.match(perfilParaTela(base.members[1], 'Sócio 2', m.ana, true, fora).trava, /Recarregue/);
+  assert.equal(perfilParaTela(base.members[1], 'Sócio 2', m.ana, false, fora).trava, '');
+  assert.equal(perfilParaTela(base.members[0], 'Sócio 1', m.bauer, true, fora).trava, '');
+});
+
+test('a caixa "Colar vários de uma vez" e os campos dos blocos a 16px ou mais (no iPhone, menos que isso dá zoom ao tocar)', () => {
+  const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+  const tamanhos = seletor => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(([, sel]) => sel.split(',').some(x => x.trim() === seletor))
+    .flatMap(([, , corpo]) => [...corpo.matchAll(/(?:^|;)\s*font(?:-size)?\s*:\s*(?:[a-z-]+\s+)*?(\d+(?:\.\d+)?)px/g)].map(x => Number(x[1])));
+  for (const seletor of ['.perfis-entrada', '.perfil-bloco-campo input']) {
+    const lista = tamanhos(seletor);
+    assert.ok(lista.length, `sem fonte para ${seletor}`);
+    for (const px of lista) assert.ok(px >= 16, `${seletor} com ${px}px`);
+  }
+});
+
 test('ida e volta cifrada: Bauer grava os perfis pelo diário, Ana abre noutro navegador e vê; o servidor não vê nada', async () => {
   const store = armazemEmMemoria();
   const app = criarDiario(store, {origens: []});
@@ -191,4 +260,26 @@ test('ida e volta cifrada: Bauer grava os perfis pelo diário, Ana abre noutro n
   assert.equal(a.recusados.length, 0);
   const bruto = JSON.stringify([...store._mapa.values()]);
   for (const segredo of ['Ana Ribeiro', 'Beatriz', '64900000003', 'exemplo.com']) assert.ok(!bruto.includes(segredo), segredo + ' em claro no servidor');
+});
+
+test('corrida pelo diário de verdade: o aparelho da Ana não viu o que a responsável salvou; o 409 reenvia e o razão recusa', async () => {
+  const app = criarDiario(armazemEmMemoria(), {origens: []});
+  const fetch = (url, init) => app(new Request(url, init));
+  const masterRaw = new Uint8Array(32).fill(6), url = 'https://diario.test';
+  const bauer = await abrirDiario({url, membroId: 'bauer', senha: 'senha do bauer', masterRaw, fetch});
+  const ana = await abrirDiario({url, membroId: 'ana', senha: 'senha da ana', masterRaw, fetch});   // aberto antes: não sincroniza sozinho
+  assert.equal(ana.modo, 'gravacao', ana.motivo);
+  assert.ok((await bauer.acrescentar({acao: 'set_profile', alvo: 'ana', dados: {...ANA, funcao: 'Diretora financeira'}, versao: 0})).ok);
+  // a Ana ainda vê a versão 0 (o diário dela não tem o evento da responsável) e salva o telefone
+  assert.equal(aplicar(base, ana.eventos).perfis.ana, undefined);
+  const r = await ana.acrescentar({acao: 'set_profile', alvo: 'ana', dados: {...ANA, fone: '64911112222'}, versao: 0});
+  assert.ok(r.ok, 'o diário aceita (o servidor não lê o conteúdo)');
+  assert.deepEqual(ana.eventos.map(e => e.membro), ['bauer', 'ana'], 'o 409 sincronizou e reenviou');
+  const a = aplicar(base, ana.eventos);
+  const recusa = a.recusados.find(x => x.id === r.evento.id);
+  assert.equal(recusa && recusa.codigo, 'versao', 'o evento reenviado tinha de ser recusado pela versão (é o que as pontes conferem depois de gravar)');
+  assert.equal(a.perfis.ana.funcao, 'Diretora financeira', 'a função que a responsável salvou foi apagada');
+  // e quem abre depois vê o mesmo
+  const outro = await abrirDiario({url, membroId: 'bauer', senha: 'senha do bauer', masterRaw, fetch});
+  assert.equal(aplicar(base, outro.eventos).perfis.ana.funcao, 'Diretora financeira');
 });

@@ -5,7 +5,7 @@
 // fluxos/lembrar.mjs); aqui o structuredClone faz o papel dele (é assim que ele guarda um CryptoKey). Dados fictícios.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {VERSAO, AAD, novaChaveDoAparelho, montarRegistro, abrirRegistro} from '../lembrar.js';
+import {VERSAO, AAD, novaChaveDoAparelho, montarRegistro, abrirRegistro, lembrarPermitido, mostrarCaixaLembrar} from '../lembrar.js';
 import {abrirDiario, chaveDaSenhaDoDiario} from '../diario.js';
 import {b64} from '../portal-crypto.js';
 import {criarDiario, armazemEmMemoria} from '../servidor/nucleo.mjs';
@@ -115,4 +115,35 @@ test('abrirDiario com {kek} abre o mesmo diário que com {senha}, sem a senha (e
   const conferencia = await abrirDiario({url: URL_, membroId: 'm-ana', senha: SENHA, masterRaw: mestra, fetch});
   assert.ok(conferencia.verificacao.integro, JSON.stringify(conferencia.verificacao.problemas));
   assert.deepEqual(conferencia.eventos.map(e => [e.membro, e.conteudo.alvo]), [['m-ana', 'g1'], ['m-ana', 'g2']]);
+});
+
+// uma tela de entrada de mentira: a caixa, a linha dela e o que o mostrarCaixaLembrar mexe
+function entradaDeMentira() {
+  let ajuda = null;
+  const texto = {textContent: 'Lembrar neste Mac'};
+  const linha = {hidden: false, querySelector: () => texto, after(n) { ajuda = n; }};
+  const caixa = {checked: true, atributos: {}, closest: () => linha, setAttribute(k, v) { this.atributos[k] = v; }};
+  const doc = {getElementById: id => (id === 'login-remember' ? caixa : id === 'login-remember-help' ? ajuda : null),
+    createElement: () => ({remove() { ajuda = null; }})};
+  return {doc, caixa, linha, texto, ajuda: () => ajuda};
+}
+
+test('só numa origem do portal: no github.io (a origem de todo repositório Pages do dono) o aparelho não lembra', () => {
+  for (const hostname of ['bauerfilho.github.io', 'BauerFilho.GitHub.io', 'github.io']) assert.equal(lembrarPermitido({hostname}), false, hostname);
+  for (const hostname of ['orquestrator-diario.netlify.app', '127.0.0.1', 'localhost', 'financas.exemplo.com.br', 'github.io.exemplo.com']) assert.equal(lembrarPermitido({hostname}), true, hostname);
+  for (const loc of [null, undefined, {}, {hostname: ''}]) assert.equal(lembrarPermitido(loc), false, JSON.stringify(loc));
+  // a caixa: escondida e desmarcada no github.io (e uma ajuda antiga sai); visível com a ajuda numa origem própria
+  const pages = entradaDeMentira();
+  pages.linha.after(pages.doc.createElement('p'));   // a ajuda de uma pintura anterior
+  mostrarCaixaLembrar(pages.doc, {hostname: 'bauerfilho.github.io'});
+  assert.equal(pages.linha.hidden, true, 'a caixa apareceu no github.io');
+  assert.equal(pages.caixa.checked, false, 'a caixa ficou marcada no github.io');
+  assert.equal(pages.ajuda(), null, 'a ajuda da caixa ficou no github.io');
+  const propria = entradaDeMentira();
+  propria.linha.hidden = true;
+  mostrarCaixaLembrar(propria.doc, {hostname: 'orquestrator-diario.netlify.app'});
+  assert.equal(propria.linha.hidden, false);
+  assert.equal(propria.texto.textContent, 'Lembrar deste aparelho');
+  assert.equal(propria.ajuda().textContent, 'Só nos seus aparelhos. Sair esquece.');
+  assert.equal(propria.caixa.atributos['aria-describedby'], 'login-remember-help');
 });

@@ -11,9 +11,12 @@ Os dados da empresa são cifrados no navegador: sem a senha, não há nada legí
 maquetes do Laboratório (`galeria/` e `apps/`), que são públicas e só têm dados fictícios.
 
 **Lembrar deste aparelho.** Marcada na entrada, a caixa guarda neste navegador (no IndexedDB do site) a chave do pacote,
-cifrada com uma chave do aparelho que nem o próprio site consegue copiar, e a chave do diário; a senha nunca é guardada.
-Sair esquece o aparelho (entrar sem marcar também). No iPhone, pelo Safari, o próprio sistema pode apagar isso depois de
-uns 7 dias sem abrir o portal (é só entrar de novo); no app da Tela de Início, não.
+cifrada com uma chave do aparelho, e a chave do diário; a senha nunca é guardada. Nenhum script copia os bytes da chave do
+aparelho, mas qualquer página da mesma origem consegue USÁ-LA e abrir o pacote. Por isso a caixa só aparece numa origem
+que seja só do portal: no GitHub Pages (`bauerfilho.github.io`, a mesma origem de todo repositório Pages do dono e das
+telas cheias públicas das maquetes) ela não aparece e nada vai para o aparelho, até o portal ter endereço próprio (F3-8
+do plano). Sair esquece o aparelho (entrar sem marcar também). No iPhone, pelo Safari, o próprio sistema pode apagar isso
+depois de uns 7 dias sem abrir o portal (é só entrar de novo); no app da Tela de Início, não.
 
 ## O que há em cada arquivo
 
@@ -60,6 +63,7 @@ node --test testes/*.test.mjs                                 # livro-razão, se
 node ferramentas/arnes/servir.mjs 8765                        # o portal local, sem senha: http://127.0.0.1:8765/?demo=1
 node ferramentas/arnes/fotografar.mjs --query "demo=1"        # fotos de todas as páginas, claro/escuro, desktop/celular
 node ferramentas/arnes/fluxos/lembrar.mjs --porta 8931        # "Lembrar deste aparelho" no Chromium (arnês e ponte real)
+node ferramentas/arnes/fluxos/perfis.mjs --porta 8951         # perfis: corrida entre aparelhos, iPhone, ajuda, perfis.json fora
 ```
 
 No arnês, `?diario=local` grava de verdade, cifrado, num servidor do diário em memória. `?membro=m-ana` mostra o portal

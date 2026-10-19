@@ -130,32 +130,48 @@ export function foneDiscavel(fone) {
 // ── a mescla que o portal mostra (as duas pontes usam estas, para dizerem o mesmo) ───────────────────────────────────
 /**
  * ids na ordem do roster; arquivo = o perfis.json aberto ({estado, membros}); aplicado = o razão sobre o diário
- * ({perfis, perfisApagados}). O perfil do diário vence o do arquivo; quem o diário apagou fica sem perfil mesmo que o
- * arquivo ainda o tenha. Devolve {id: {perfil | null, fonte: 'diario' | 'arquivo' | null, alteradoPor, alteradoEm, versao}}.
+ * ({perfis, perfisApagados, versoesPerfis}). O perfil do diário vence o do arquivo; quem o diário apagou fica sem perfil
+ * mesmo que o arquivo ainda o tenha. Devolve {id: {perfil | null, fonte: 'diario' | 'arquivo' | null, alteradoPor,
+ * alteradoEm, versao}}; versao é a do registro no diário (0 = sem registro), a que o set_profile confere.
  */
 export function mesclarPerfis(ids, arquivo, aplicado) {
   const doArquivo = arquivo && arquivo.estado === 'ok' && arquivo.membros && typeof arquivo.membros === 'object' ? arquivo.membros : {};
   const doDiario = aplicado && aplicado.perfis && typeof aplicado.perfis === 'object' ? aplicado.perfis : {};
   const apagados = new Set(aplicado && Array.isArray(aplicado.perfisApagados) ? aplicado.perfisApagados : []);
+  const versoes = aplicado && aplicado.versoesPerfis && typeof aplicado.versoesPerfis === 'object' ? aplicado.versoesPerfis : {};
   const saida = {};
   for (const id of ids) {
+    const versao = Number.isSafeInteger(versoes[id]) ? versoes[id] : 0;   // o apagado também tem versão no diário
     if (Object.hasOwn(doDiario, id)) {
-      const {alteradoPor = null, alteradoEm = null, versao = null, ...resto} = doDiario[id];
-      saida[id] = {perfil: limparPerfil(resto), fonte: 'diario', alteradoPor, alteradoEm, versao};
-    } else if (!apagados.has(id) && Object.hasOwn(doArquivo, id)) saida[id] = {perfil: limparPerfil(doArquivo[id]), fonte: 'arquivo', alteradoPor: null, alteradoEm: null, versao: null};
-    else saida[id] = {perfil: null, fonte: null, alteradoPor: null, alteradoEm: null, versao: null};
+      const {alteradoPor = null, alteradoEm = null, versao: v = null, ...resto} = doDiario[id];
+      saida[id] = {perfil: limparPerfil(resto), fonte: 'diario', alteradoPor, alteradoEm, versao: Number.isSafeInteger(v) ? v : versao};
+    } else if (!apagados.has(id) && Object.hasOwn(doArquivo, id)) saida[id] = {perfil: limparPerfil(doArquivo[id]), fonte: 'arquivo', alteradoPor: null, alteradoEm: null, versao};
+    else saida[id] = {perfil: null, fonte: null, alteradoPor: null, alteradoEm: null, versao};
   }
   return saida;
 }
 /** A própria sócia edita o seu perfil; a responsável (role owner), o de todas: a mesma regra do set_profile no razão. */
 export const podeEditarPerfil = (membro, id) => !!membro && typeof id === 'string' && (membro.id === id || membro.role === 'owner');
 
-/** Uma sócia em financeHost.perfis.ler(): o perfil para a tela (telefone legível e discável), a fonte e se quem vê edita. */
-export function perfilParaTela(m, rotulo, entrada, podeEditar) {
+/**
+ * Por que este perfil não pode ser salvo agora ('' quando pode): o perfis.json não carregou (rede) e a sócia ainda não
+ * tem registro no diário (versão 0). O perfil dela pode estar no arquivo, que a tela não está mostrando; salvar por cima
+ * esconderia de vez os campos que não fossem digitados de novo (o diário vence o arquivo). As duas pontes recusam.
+ */
+export function travaDoPerfil(entrada, arquivo) {
+  if (!arquivo || arquivo.estado !== 'indisponivel' || (entrada && entrada.versao > 0)) return '';
+  return 'Os perfis antigos não carregaram agora. Recarregue a página antes de salvar este, para não apagar o que já estava nele.';
+}
+/**
+ * Uma sócia em financeHost.perfis.ler(): o perfil para a tela (telefone legível e discável), a fonte, a versão (o Salvar
+ * a manda no set_profile), se quem vê edita e, quando não dá para salvar agora, o porquê (trava).
+ */
+export function perfilParaTela(m, rotulo, entrada, podeEditar, arquivo = null) {
   const p = (entrada && entrada.perfil) || {};
   return {id: m.id, rotulo, nome: p.nome || '', funcao: p.funcao || '', fone: p.fone ? foneLegivel(p.fone) : '', foneLink: p.fone ? foneDiscavel(p.fone) : '',
     email: p.email || '', estadoCivil: p.estadoCivil || '', participacao: m.participationPct ?? null, papel: m.role === 'owner' ? 'owner' : 'member',
-    fonte: entrada ? entrada.fonte : null, alteradoPor: entrada ? entrada.alteradoPor : null, alteradoEm: entrada ? entrada.alteradoEm : null, podeEditar: !!podeEditar};
+    fonte: entrada ? entrada.fonte : null, alteradoPor: entrada ? entrada.alteradoPor : null, alteradoEm: entrada ? entrada.alteradoEm : null,
+    versao: entrada && Number.isSafeInteger(entrada.versao) ? entrada.versao : null, podeEditar: !!podeEditar, trava: podeEditar ? travaDoPerfil(entrada, arquivo) : ''};
 }
 /** 'ok' quando alguma sócia tem perfil (de qualquer fonte); senão, o estado do perfis.json ('ausente', 'outra-chave'…). */
 export function estadoDosPerfis(mescla, arquivo) {
