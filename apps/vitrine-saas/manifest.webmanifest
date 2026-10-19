@@ -1,0 +1,33 @@
+{
+  "name": "Vitrine SaaS",
+  "short_name": "Vitrine SaaS",
+  "description": "Landing page de um SaaS fictício, a Escala (a escala de plantões que se monta sozinha): hero com a interface desenhada em SVG, recursos que respondem ao toque, página de preços com alternância mensal/anual e checkout com Pix e cartão.",
+  "lang": "pt-BR",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f6f3",
+  "theme_color": "#f6f6f3",
+  "icons": [
+    {
+      "src": "icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "gerado_por": "laboratorio/publicar.py"
+}

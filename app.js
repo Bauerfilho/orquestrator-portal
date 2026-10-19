@@ -61,12 +61,12 @@
     portfolio: {title: "Portfólio", description: "O que já existe, o que foi conferido e o que ainda falta.", help: {what: "O catálogo do que já existe: cada ativo com estado documental, nota de prontidão e destino.", from: "Do inventário e do atlas de ativos, montados a partir dos arquivos e repositórios conferidos. A prontidão é uma nota documental de 0 a 100, somada de cinco critérios de até 20 pontos.", not: "Prontidão não mede funcionamento, mercado nem preço. Só o Criador decide o destino de cada ativo."}},
     cash: {title: "Caixa", description: "Recursos, despesas e limites da empresa. Moedas sempre separadas.", help: {what: "O dinheiro da empresa: custo fixo mensal, gastos do mês, saldos registrados e teto de consumo.", from: "Dos registros financeiros e do documento de caixa, com a data de cada fonte indicada.", not: "Não é conta bancária ao vivo. Mostra o último registro entregue, moeda por moeda, sem somar moedas diferentes."}},
     projection: {title: "Projeção", description: "Possibilidades acompanhadas de suas fontes e premissas.", help: {what: "Cenários de receita possíveis, cada um com a fórmula que o sustenta.", from: "Do documento de projeção escrito pela equipe. A fórmula fica visível em cada cenário.", not: "Não é promessa nem meta. São possibilidades acompanhadas das suas premissas."}},
-    society: {title: "Sociedade", description: "Participações registradas e responsabilidades compartilhadas.", help: {what: "Quem são os sócios e a participação registrada de cada um.", from: "Do registro societário da empresa. Dados pessoais ficam fora do painel.", not: "Não substitui o contrato social nem registra alterações. É consulta."}},
+    society: {title: "Sociedade", description: "Participações registradas e responsabilidades compartilhadas.", help: {what: "Quem são os sócios e a participação registrada de cada um.", from: "Do registro societário da empresa. Nome, função e contato de cada sócia vêm de um arquivo cifrado: só quem entra com senha vê.", not: "Não substitui o contrato social nem registra alterações. É consulta."}},
     livro: {title: "Livro do mês", description: "O dinheiro do mês: o que já saiu, o que está previsto e a parte de cada sócia.", help: {what: "O custo do mês da empresa em reais: lançamentos das sócias (já pagos) + assinaturas ativas ainda sem lançamento (previstas). Gráficos por categoria e por item, a parte de cada sócia e o acerto dos gastos divididos.", from: "Das assinaturas do pacote da empresa e do diário cifrado onde as sócias lançam. Moeda estrangeira vira reais pelos Parâmetros vigentes na data de cada gasto; toque em “Ver a conta” para ver a fórmula com os números.", not: "Não é extrato bancário: um gasto só aparece aqui depois de lançado. Estimativas em dólar ficam marcadas como estimadas até alguém informar o valor da fatura."}},
     lancamentos: {title: "Lançamentos", description: "Cada gasto da empresa, com quem pagou, como e para onde vai.", help: {what: "A lista de tudo que as sócias lançaram: data, valor na moeda original, reais, categoria, quem pagou, se a empresa reembolsa, divide ou vira aporte.", from: "Do diário cifrado: cada lançamento é cifrado no seu navegador e assinado por quem lançou. O servidor só guarda texto cifrado.", not: "Nada se apaga: corrigir cria uma versão nova e anular deixa a linha riscada, com o motivo."}},
     parametros: {title: "Parâmetros", description: "Câmbio, spread, IOF, impostos e taxas, com vigência e fonte.", help: {what: "Os números que entram nas contas: dólar e euro (PTAX), spread do cartão, IOF, alíquota do Simples, ISS e taxas das plataformas de venda.", from: "Padrões pesquisados em 19/10/2026 (marcados “a confirmar”) e as vigências que as sócias registram. O botão “Atualizar pela PTAX” consulta o Banco Central.", not: "Não é aconselhamento fiscal: confirme impostos e alíquotas com o contador. Mudar um valor hoje não altera os gastos passados."}},
     historico: {title: "Histórico", description: "Quem mudou o quê, quando e por quê.", help: {what: "A linha do tempo de todas as gravações: lançamentos, correções, anulações e parâmetros, com o antes e o depois.", from: "Do diário cifrado, conferido registro a registro: cadeia, assinatura e cifra.", not: "Registros recusados (que não passaram nas regras) aparecem à parte e não entram em nenhuma conta."}},
-    lab: {title: "Laboratório", description: "Protótipos visuais com dados fictícios. Nenhuma operação real.", help: {what: "Maquetes com dados fictícios: ideias de telas e produtos para olhar e discutir.", from: "Da galeria de maquetes guardada junto do app. Cada uma abre numa moldura isolada.", not: "Nenhuma operação real: nada aqui lê, grava ou envia dados da empresa."}}
+    lab: {title: "Laboratório", description: "Protótipos visuais com dados fictícios. Nenhuma operação real.", help: {what: "Maquetes com dados fictícios: ideias de telas e produtos para olhar e discutir. Cada uma também abre em tela cheia, como um app no iPhone.", from: "Da galeria de maquetes publicada com o portal. Aqui cada maquete abre numa moldura isolada; a tela cheia é uma página à parte, aberta numa aba nova.", not: "Nenhuma operação real: nada aqui lê, grava ou envia dados da empresa. O link de tela cheia abre sem senha para quem o tiver, e por isso só mostra dados fictícios."}}
   };
   // O host (AI Cask, PWA ou portal) se apresenta em window.financeHost antes deste script; sem ele, vale o modo local.
   const host = () => (window.financeHost && typeof window.financeHost === "object") ? window.financeHost : {};
@@ -1639,9 +1639,110 @@
     renderSource(byId("society-source"), block.source);
     const target = byId("society-content");
     clear(target);
+    renderPerfis(target);
     if (array(block.rows).length) target.append(table(block.columns, block.rows, "Sócios e participação"));
     else if (block.text) target.append(element("p", "document-text", prose(block.text)));
     else empty(target);
+  }
+
+  // Perfis da sociedade (19/10/2026): cartões com nome, função, telefone, e-mail e estado civil, abertos de perfis.json
+  // (cifrado com a chave mestra; ver perfis.js). "Atualizar perfis" confere um texto colado contra o roster e devolve o
+  // envelope cifrado para publicar; o portal não grava no repositório. Telefone e e-mail vão por textContent: text()
+  // mascara sequências de 11 dígitos como CPF.
+  const perfisAvisos = {
+    ausente: "Nome, função e contato de cada sócia ainda não foram cadastrados. Use Atualizar perfis, logo abaixo.",
+    "outra-chave": "Os perfis foram cifrados com a chave anterior do portal e não abrem mais. Cifre de novo em Atualizar perfis.",
+    ilegivel: "O arquivo de perfis está ilegível. Cifre de novo em Atualizar perfis.",
+    indisponivel: "Não deu para buscar os perfis agora. Recarregue a página para tentar de novo."
+  };
+  function campoPerfil(rotulo, valor, href) {
+    const linha = element("p", "perfil-campo");
+    linha.append(element("span", "perfil-rotulo", rotulo));
+    const conteudo = document.createElement(href ? "a" : "span");
+    conteudo.className = "perfil-valor";
+    conteudo.textContent = valor;
+    if (href) conteudo.href = href;
+    linha.append(conteudo);
+    return linha;
+  }
+  function cartaoPerfil(m) {
+    const cartao = element("article", "perfil-cartao");
+    const cabeca = element("div", "perfil-cabeca");
+    const nome = element("h3", "perfil-nome"); nome.textContent = m.nome || m.rotulo;
+    cabeca.append(nome);
+    if (m.funcao) { const funcao = element("p", "perfil-funcao"); funcao.textContent = m.funcao; cabeca.append(funcao); }
+    cartao.append(cabeca);
+    if (m.participacao !== null && m.participacao !== undefined) cartao.append(campoPerfil("Participação", m.participacao + "%"));
+    if (m.fone) cartao.append(campoPerfil("Telefone", m.fone, m.foneLink ? "tel:" + m.foneLink : ""));
+    if (m.email) cartao.append(campoPerfil("E-mail", m.email, "mailto:" + m.email));
+    if (m.estadoCivil) cartao.append(campoPerfil("Estado civil", m.estadoCivil));
+    return cartao;
+  }
+  function renderPerfis(target) {
+    const api = host().perfis;
+    const dados = api && typeof api.ler === "function" ? api.ler() : null;
+    if (!dados) return;
+    const secao = element("section", "perfis");
+    secao.setAttribute("aria-label", "Quem é quem na sociedade");
+    if (dados.estado === "ok") {
+      const grade = element("div", "perfis-grade");
+      array(dados.membros).forEach((m) => grade.append(cartaoPerfil(m)));
+      secao.append(grade);
+    } else {
+      secao.append(element("p", "perfis-aviso", perfisAvisos[dados.estado] || perfisAvisos.ausente));
+    }
+    if (typeof api.conferir === "function" && typeof api.cifrar === "function") secao.append(ferramentaPerfis(api, dados));
+    target.append(secao);
+  }
+  function ferramentaPerfis(api, dados) {
+    const caixa = element("details", "perfis-ferramenta");
+    if (dados.estado !== "ok") caixa.open = true;
+    caixa.append(element("summary", "", "Atualizar perfis"));
+    caixa.append(element("p", "form-help", "Cole os dados das sócias no formato abaixo e toque em Conferir. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."));
+    const area = element("textarea", "perfis-entrada");
+    area.rows = 7; area.spellcheck = false; area.setAttribute("aria-label", "Dados das sócias");
+    area.placeholder = '{"' + array(dados.membros).map((m) => m.rotulo).filter(Boolean).slice(0, 1).concat(["Sócio 1"])[0] + '": {"nome": "…", "funcao": "…", "fone": "…", "email": "…", "estadoCivil": "…"}}';
+    const previa = element("div", "perfis-previa");
+    previa.setAttribute("aria-live", "polite");
+    const saida = element("div", "perfis-saida"); saida.hidden = true;
+    let conferidos = null;
+    const cifrar = button("Cifrar para publicar", "button-primary", async () => {
+      if (!conferidos) return;
+      cifrar.disabled = true;
+      try {
+        const envelope = await api.cifrar(conferidos);
+        clear(saida); saida.hidden = false;
+        const texto = element("textarea", "perfis-envelope"); texto.readOnly = true; texto.rows = 6; texto.value = envelope; texto.setAttribute("aria-label", "Texto cifrado dos perfis");
+        const copiar = button("Copiar", "button-outline", async () => {
+          try { await navigator.clipboard.writeText(envelope); copiar.textContent = "Copiado"; }
+          catch { texto.select(); copiar.textContent = "Selecionado: copie com o menu"; }
+        });
+        saida.append(element("p", "form-help", "Pronto. Este texto está cifrado: sem a senha do portal ninguém lê. Mande ao Claude, que publica como perfis.json; depois de entrar de novo, as três veem os perfis."), texto, copiar);
+      } catch (error) {
+        clear(saida); saida.hidden = false; saida.append(element("p", "form-error", error && error.message ? error.message : "Não deu para cifrar."));
+      } finally { cifrar.disabled = false; }
+    });
+    cifrar.disabled = true;
+    const conferir = button("Conferir", "button-outline", () => {
+      clear(previa); saida.hidden = true; conferidos = null; cifrar.disabled = true;
+      let resultado;
+      try { resultado = api.conferir(area.value); }
+      catch (error) { previa.append(element("p", "form-error", error && error.message ? error.message : "Não deu para conferir.")); return; }
+      const rotulos = Object.fromEntries(array(dados.membros).map((m) => [m.id, m.rotulo]));
+      const ids = Object.keys(resultado.membros || {});
+      ids.forEach((id) => {
+        const p = resultado.membros[id];
+        const linha = element("p", "perfis-linha");
+        linha.textContent = (rotulos[id] || id) + " → " + [p.nome, p.funcao, p.fone, p.email, p.estadoCivil].filter(Boolean).join(" · ");
+        previa.append(linha);
+      });
+      array(resultado.avisos).forEach((aviso) => previa.append(element("p", "form-error", aviso)));
+      if (!ids.length) { previa.append(element("p", "form-error", "Nenhum perfil com nome no texto colado.")); return; }
+      conferidos = resultado.membros; cifrar.disabled = false;
+    });
+    const botoes = element("div", "perfis-botoes"); botoes.append(conferir, cifrar);
+    caixa.append(area, botoes, previa, saida);
+    return caixa;
   }
 
   // Med Painel (17/10/2026, pedido do Criador): estratégias de venda e o caminho até a meta de assinantes.
@@ -2056,35 +2157,144 @@
 
   // Laboratório: a galeria de maquetes vive num iframe isolado (sandbox só com scripts), carregado na primeira visita.
   // O tema viaja no fragmento (#tema=claro|escuro): trocar só o fragmento dispara hashchange dentro do iframe, sem recarregar.
+  // A URL de cada página pode chegar na hora ou numa Promise (no portal ela vem do repositório): a última abertura pedida
+  // vence, e a URL resolvida fica guardada por arquivo, para a troca de tema só mexer no fragmento.
+  // Cada maquete do catálogo tem também a página de tela cheia (apps/<id>/, pública): o link fica na barra, e a mensagem
+  // {portal: "tela-cheia"} da moldura (que não pode abrir abas) pede ao portal para abri-la numa aba nova.
   let labFile = "index.html";
+  let labPedido = 0;
+  const labBases = new Map();
   const labFilePattern = /^(index\.html|apps\/[a-z0-9-]+\.html)$/;
+  const labDicas = {
+    indice: "Cada maquete abre em tela cheia a partir do stand: é o jeito de vê-la como app no iPhone.",
+    iphone: "No iPhone: abra o link, toque em Compartilhar e em Adicionar à Tela de Início para usar como app.",
+    semTelaCheia: "Esta página ainda não tem versão em tela cheia."
+  };
   function currentTheme() { return document.documentElement.getAttribute("data-tema") === "escuro" ? "escuro" : "claro"; }
-  function labUrl(file) {
-    const base = typeof host().galeriaUrl === "function" ? String(host().galeriaUrl(file)) : new URL("galeria/" + file, location.href).href;
-    return base + "#tema=" + currentTheme();
+  async function labBase(file) {
+    if (labBases.has(file)) return labBases.get(file);
+    const base = typeof host().galeriaUrl === "function" ? String(await host().galeriaUrl(file)) : new URL("galeria/" + file, location.href).href;
+    labBases.set(file, base);
+    return base;
   }
-  function labTitle(file) {
-    if (typeof host().galeriaTitle === "function") return text(host().galeriaTitle(file));
-    return file === "index.html" ? "Galeria de maquetes" : "Maquete: " + file.replace(/^apps\//, "").replace(/\.html$/, "");
+  function labUrl(base) { return base + "#tema=" + currentTheme(); }
+  async function labTitle(file) {
+    const fallback = file === "index.html" ? "Galeria de maquetes" : "Maquete: " + file.replace(/^apps\//, "").replace(/\.html$/, "");
+    if (typeof host().galeriaTitle !== "function") return fallback;
+    try { const title = await host().galeriaTitle(file); return title ? text(title) : fallback; } catch (_) { return fallback; }
   }
-  function openLab(file) {
-    const frame = byId("lab-frame");
-    if (!frame || !labFilePattern.test(file)) return;
-    labFile = file;
-    frame.src = labUrl(file);
+  async function labTelaCheia(file) {
+    if (file === "index.html" || typeof host().galeriaTelaCheia !== "function") return "";
+    try {
+      const valor = await host().galeriaTelaCheia(file);
+      if (!valor) return "";
+      const url = new URL(String(valor), location.href);
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+    } catch (_) { return ""; }
+  }
+  // a linha de aviso da barra: erro (padrão) ou informação (informativo = true); vazio esconde
+  function labAviso(value, informativo = false) {
+    const aviso = byId("lab-aviso");
+    if (!aviso) return;
+    aviso.textContent = value ? text(value) : "";
+    aviso.hidden = !value;
+    aviso.classList.toggle("lab-aviso-erro", Boolean(value) && !informativo);
+  }
+  // a barra conforme a página aberta: índice (dica da tela cheia), maquete com tela cheia (link, copiar, iPhone) ou sem
+  function labBarra(file, title, telaCheia) {
     byId("lab-back").hidden = file === "index.html";
-    byId("lab-current").textContent = labTitle(file);
+    byId("lab-current").textContent = title;
+    const link = byId("lab-tela-cheia");
+    link.classList.remove("lab-destaque");
+    if (telaCheia) link.href = telaCheia; else link.removeAttribute("href");
+    link.title = telaCheia ? "Abre numa aba nova, sem senha (dados fictícios): " + telaCheia : "";
+    byId("lab-acoes").hidden = !telaCheia;
+    const copiar = byId("lab-copiar");
+    copiar.textContent = "Copiar link";
+    const dica = byId("lab-dica");
+    dica.textContent = file === "index.html" ? labDicas.indice : telaCheia ? labDicas.iphone : labDicas.semTelaCheia;
+  }
+  async function openLab(file) {
+    const frame = byId("lab-frame");
+    if (!frame || !labFilePattern.test(file)) return false;
+    const pedido = ++labPedido;
+    let base, title, telaCheia;
+    try {
+      base = await labBase(file);
+      [title, telaCheia] = await Promise.all([labTitle(file), labTelaCheia(file)]);
+    } catch (error) {
+      if (pedido === labPedido && frame === byId("lab-frame")) labAviso(error && error.message ? error.message : "Não foi possível abrir esta página do Laboratório.");
+      return false;
+    }
+    // outra abertura passou na frente, ou o Laboratório foi fechado (saída) enquanto esta esperava
+    if (pedido !== labPedido || frame !== byId("lab-frame")) return false;
+    labFile = file;
+    frame.src = labUrl(base);
+    labBarra(file, title, telaCheia);
+    labAviso("");
+    return true;
+  }
+  async function copyLabLink() {
+    const link = byId("lab-tela-cheia"), copiar = byId("lab-copiar");
+    if (!link || !link.href) return;
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error();
+      const copiado = link.href;
+      await navigator.clipboard.writeText(copiado);
+      copiar.textContent = "Link copiado";
+      labAviso("");
+      announce("Link copiado. Ele abre sem senha; os dados são fictícios.");
+      setTimeout(() => { if (byId("lab-copiar") === copiar && link.href === copiado) copiar.textContent = "Copiar link"; }, 2500);
+    } catch (_) { labAviso("Não deu para copiar aqui. Toque e segure em Abrir em tela cheia para copiar o link.", true); }
+  }
+  // a moldura pediu a tela cheia: abre uma aba agora (ainda dentro do toque) e só depois aponta para a página;
+  // se o navegador bloquear a aba, mostra a maquete no stand com o link da barra em destaque
+  async function openLabFullScreen(file) {
+    let aba = null;
+    // host sem tela cheia (o AI Cask): nem abre a aba, vai direto ao stand
+    if (typeof host().galeriaTelaCheia === "function") { try { aba = window.open("", "_blank"); } catch (_) { aba = null; } }
+    if (aba) { try { aba.opener = null; } catch (_) {} }
+    const url = await labTelaCheia(file);
+    if (url && aba) { aba.location.replace(url); return; }
+    if (aba) { try { aba.close(); } catch (_) {} }
+    if (labFile !== file) await openLab(file);
+    if (labFile !== file) return;
+    const link = byId("lab-tela-cheia");
+    if (!url || !link || !link.href) { labAviso(labDicas.semTelaCheia, true); return; }
+    link.classList.add("lab-destaque");
+    link.closest(".lab-bar").scrollIntoView({block: "nearest"});
+    link.focus({preventScroll: true});
+    labAviso("O navegador não abriu a aba nova. Toque em Abrir em tela cheia, aqui em cima.", true);
   }
   function renderLab() {
     if (byId("lab-frame") || host().galeria !== true) return;
     const target = byId("lab-content");
     clear(target);
     const bar = element("div", "lab-bar");
+    const linha = element("div", "lab-linha");
     const back = button("← Índice", "button-outline", () => openLab("index.html"));
     back.id = "lab-back";
     const current = element("span", "lab-title");
     current.id = "lab-current";
-    bar.append(back, current);
+    const acoes = element("div", "lab-acoes");
+    acoes.id = "lab-acoes";
+    acoes.hidden = true;
+    const link = element("a", "button button-primary lab-tela-cheia", "Abrir em tela cheia ↗");
+    link.id = "lab-tela-cheia";
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.addEventListener("click", () => { link.classList.remove("lab-destaque"); labAviso(""); });
+    const copiar = button("Copiar link", "button-outline", copyLabLink);
+    copiar.id = "lab-copiar";
+    acoes.append(link, copiar);
+    linha.append(back, current, acoes);
+    const dica = element("p", "lab-dica");
+    dica.id = "lab-dica";
+    const aviso = element("p", "lab-aviso");
+    aviso.id = "lab-aviso";
+    aviso.setAttribute("role", "status");
+    aviso.hidden = true;
+    bar.append(linha, dica, aviso);
     const frame = element("iframe", "lab-frame");
     frame.id = "lab-frame";
     frame.setAttribute("sandbox", "allow-scripts");
@@ -2098,15 +2308,20 @@
     if (frame) frame.remove();
     if (byId("lab-content")) clear(byId("lab-content"));
     labFile = "index.html";
+    labPedido += 1;
+    labBases.clear();
   }
   window.addEventListener("message", (event) => {
     const frame = byId("lab-frame");
-    if (!frame || event.source !== frame.contentWindow || !event.data || typeof event.data !== "object" || event.data.portal !== "abrir") return;
-    openLab(String(event.data.file || ""));
+    if (!frame || event.source !== frame.contentWindow || !event.data || typeof event.data !== "object") return;
+    const file = String(event.data.file || "");
+    if (event.data.portal === "abrir") openLab(file);
+    else if (event.data.portal === "tela-cheia" && labFilePattern.test(file)) openLabFullScreen(file);
   });
   new MutationObserver(() => {
     const frame = byId("lab-frame");
-    if (frame && frame.src !== labUrl(labFile)) frame.src = labUrl(labFile);
+    const base = labBases.get(labFile);
+    if (frame && base && frame.src !== labUrl(base)) frame.src = labUrl(base);
   }).observe(document.documentElement, {attributes: true, attributeFilter: ["data-tema"]});
 
   function capturePagePosition(key) {
