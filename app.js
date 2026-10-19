@@ -1691,7 +1691,8 @@
     } else {
       secao.append(element("p", "perfis-aviso", perfisAvisos[dados.estado] || perfisAvisos.ausente));
     }
-    if (typeof api.conferir === "function" && typeof api.cifrar === "function") secao.append(ferramentaPerfis(api, dados));
+    // rede fora: sem os perfis de hoje, atualizar apagaria quem não fosse colado; a ferramenta só volta depois de recarregar
+    if (dados.estado !== "indisponivel" && typeof api.conferir === "function" && typeof api.cifrar === "function") secao.append(ferramentaPerfis(api, dados));
     target.append(secao);
   }
   function ferramentaPerfis(api, dados) {
@@ -1700,7 +1701,8 @@
     caixa.append(element("summary", "", "Atualizar perfis"));
     caixa.append(element("p", "form-help", dados.estado === "ok"
       ? "A caixa já vem com os perfis de hoje: mude o que precisar e toque em Conferir. Quem você tirar do texto fica como está; para apagar alguém, troque os dados dela por null. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."
-      : "Cole os dados das sócias no formato abaixo e toque em Conferir. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."));
+      : (dados.estado === "ausente" ? "" : "Atenção: o arquivo de perfis atual não abre, então o texto novo substitui todos. Cole as três sócias. ")
+        + "Cole os dados das sócias no formato abaixo e toque em Conferir. Depois, Cifrar gera um texto que só abre com a senha do portal: mande esse texto ao Claude para publicar."));
     const area = element("textarea", "perfis-entrada");
     area.rows = 7; area.spellcheck = false; area.setAttribute("aria-label", "Dados das sócias");
     area.placeholder = '{"' + array(dados.membros).map((m) => m.rotulo).filter(Boolean).slice(0, 1).concat(["Sócio 1"])[0] + '": {"nome": "…", "funcao": "…", "fone": "…", "email": "…", "estadoCivil": "…"}}';
