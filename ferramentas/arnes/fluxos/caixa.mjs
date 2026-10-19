@@ -10,7 +10,8 @@
 //     receita em mês fechado é recusada com o motivo; saldo em dólar de 42 dias atrás pede o de hoje; o Histórico mostra
 //     tudo com autora; o Meu painel da Ana mostra as mudanças do Bauer.
 //  3. O roteiro do teste de 10 segundos (§8.8) sobre a foto do Meu painel, com as respostas lidas da tela, em
-//     <saida>/teste-10-segundos.txt, para aplicar com as sócias.
+//     <saida>/teste-10-segundos.txt, para aplicar com as sócias. A sua parte vem logo abaixo da manchete (no celular,
+//     fora do "+ Lançar"); o herói antigo diz "Só as assinaturas" e o roteiro avisa que ele não responde P1 nem P2.
 // Sai com código 1 em qualquer falha, erro de script ou violação de CSP (o registro fica em <saida>/registro.json).
 // Uso: node ferramentas/arnes/fluxos/caixa.mjs [--saida DIR] [--porta 8797] [--site DIR] [--sem-fotos]
 import {pathToFileURL, fileURLToPath} from 'node:url';
@@ -132,7 +133,11 @@ async function conferirPainel(pagina, rotulo) {
     const q = s => document.querySelector(s);
     const num = k => { const n = q(`#livro-resumo [data-numero="${k}"]`); return n ? {minor: n.dataset.minor === undefined ? null : Number(n.dataset.minor), texto: n.querySelector('.lv-kpi-valor').textContent.replace(/\s+/g, ' ').trim(), decimos: n.dataset.decimos === undefined ? null : Number(n.dataset.decimos)} : null; };
     const parte = q('#livro-resumo .cx-sua-parte');
+    const heroi = q('#user-content .overview-hero'), t = n => n.textContent.replace(/\s+/g, ' ').trim();
     return {eu: D.c.membro.id, frase: m.frase, numeros: m.numeros.map(x => x.valor), minhaParte: m.minhaParte, mudancas: mud.map(x => x.seq), autoras: mud.map(x => x.autora),
+      parteDepoisDaManchete: !!parte && !!parte.previousElementSibling && parte.previousElementSibling.matches('.cx-painel-manchete') && !!parte.nextElementSibling && parte.nextElementSibling.matches('.lv-kpis'),
+      heroi: heroi ? {eyebrows: [...heroi.querySelectorAll('.eyebrow')].map(t), titulos: [...heroi.querySelectorAll('h3')].map(t), suaParte: [...heroi.querySelectorAll('[data-fonte="sua-parte"] .amount-leading')].map(t), empresa: [...heroi.querySelectorAll('[data-fonte="total-empresa"] .amount-leading')].map(t)} : null,
+      tituloMini: (q('#livro-resumo .cx-painel-mini h3') || {}).textContent,
       tela: (q('#livro-resumo .cx-painel-manchete') || {}).textContent, links: [...document.querySelectorAll('#livro-resumo .cx-painel-manchete a.cx-trecho')].length,
       nums: ['painel-saiu', 'painel-comprometido', 'painel-caixa', 'painel-folego'].map(num), parteTela: parte && parte.dataset.minor !== undefined ? Number(parte.dataset.minor) : null,
       mudancasTela: [...document.querySelectorAll('#livro-resumo .cx-mudancas-lista li')].map(li => Number(li.dataset.seq)), mini: !!q('#livro-resumo .gf-mini'), recusa: [...document.querySelectorAll('#livro-resumo .gf-recusa')].map(n => n.dataset.recusa)};
@@ -143,6 +148,11 @@ async function conferirPainel(pagina, rotulo) {
   certo(rotulo, saiu && saiu.minor === r.numeros[0] && comp && comp.minor === r.numeros[1] && caixa && caixa.minor === r.numeros[2] && fol && fol.decimos === r.numeros[3],
     `os 4 números do Meu painel ${JSON.stringify(r.nums)} ≠ conta ${JSON.stringify(r.numeros)}`);
   certo(rotulo, r.parteTela === r.minhaParte, `sua parte: tela ${r.parteTela}, conta ${r.minhaParte}`);
+  certo(rotulo, r.parteDepoisDaManchete, 'a linha “Sua parte” devia vir logo abaixo da manchete, antes dos quatro números');
+  // o herói antigo (app.js) responde outra pergunta: só as assinaturas, cada moeda à parte, sem disputar com o topo
+  certo(rotulo, r.heroi && JSON.stringify(r.heroi.titulos) === JSON.stringify(['Sua parte nas assinaturas', 'Assinaturas da empresa']) && r.heroi.eyebrows.every(e => e === 'SÓ AS ASSINATURAS'),
+    `o herói antigo devia dizer que é só das assinaturas: ${JSON.stringify(r.heroi && {titulos: r.heroi.titulos, eyebrows: r.heroi.eyebrows})}`);
+  certo(rotulo, r.tituloMini === 'Saiu por mês (só o lançado)', `título do minigráfico: “${r.tituloMini}”`);
   certo(rotulo, JSON.stringify(r.mudancasTela) === JSON.stringify(r.mudancas) && !r.autoras.includes(r.eu), `mudanças recentes: tela ${JSON.stringify(r.mudancasTela)}, conta ${JSON.stringify(r.mudancas)} (${r.autoras.join(', ')})`);
   certo(rotulo, r.mini && !r.recusa.length, `minigráfico ausente ou recusado: ${r.recusa.join(' | ')}`);
   registro.conferencias.push({rotulo, pagina: 'painel', ...r});
@@ -186,14 +196,26 @@ for (const tela of ['desktop', 'celular']) for (const tema of ['claro', 'escuro'
   const [, , caixaPainel, folegoPainel] = pn.nums;
   certo(p, caixaPainel.minor === cx.banco.minor && caixaPainel.texto === cx.banco.texto && folegoPainel.texto === cx.folego.texto, `Caixa (${cx.banco.texto} / ${cx.folego.texto}) ≠ Meu painel (${caixaPainel.texto} / ${folegoPainel.texto})`);
   await semRolagem(pagina, p, 'Meu painel');
+  if (tela === 'celular') {
+    // na rolagem 0, a sua parte e o fôlego ficam na primeira tela e fora do "+ Lançar" flutuante
+    const r = await pagina.evaluate(() => {
+      const caixa = n => { if (!n) return null; const b = n.getBoundingClientRect(); return {x0: b.left, x1: b.right, y0: b.top, y1: b.bottom}; };
+      const cruza = (a, b) => !!(a && b && a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1);
+      const fab = caixa(document.getElementById('lancar-fab'));
+      const parte = caixa(document.querySelector('#livro-resumo .cx-sua-parte')), folego = caixa(document.querySelector('#livro-resumo [data-numero="painel-folego"] .lv-kpi-valor'));
+      return {fab: !!fab, parte, folego, alto: innerHeight, parteCruza: cruza(parte, fab), folegoCruza: cruza(folego, fab)};
+    });
+    certo(p, r.fab && r.parte && r.parte.y1 <= r.alto && !r.parteCruza && r.folego && r.folego.y1 <= r.alto && !r.folegoCruza, `primeira tela do celular: ${JSON.stringify(r)}`);
+  }
   const arquivo = await foto(pagina, `${combo}-meu-painel`);
-  if (tema === 'claro') telaDoPainel[tela] = {arquivo, frase: limpo(pn.tela), nums: pn.nums, parte: limpo(await pagina.locator('#livro-resumo .cx-sua-parte').textContent())};
+  if (tema === 'claro') telaDoPainel[tela] = {arquivo, frase: limpo(pn.tela), nums: pn.nums, parte: limpo(await pagina.locator('#livro-resumo .cx-sua-parte').textContent()), heroi: pn.heroi};
   if (combo === 'desktop-claro') {
     // "Ver a conta" no Meu painel: o caixa e o fôlego dão os mesmos números do Caixa
     const contaCaixa = await lerConta(pagina, pagina.locator('#livro-resumo [data-numero="painel-caixa"] button'));
     certo(p, contaCaixa.total === limpo(caixaPainel.texto), `Ver a conta do Caixa no Meu painel: ${contaCaixa.total} ≠ ${caixaPainel.texto}`);
     const contaFol = await lerConta(pagina, pagina.locator('#livro-resumo [data-numero="painel-folego"] button'), {seletor: 'dialog.cx-conta-folego[open]'});
     certo(p, contaFol.total === '9,2 meses' && contaFol.valores[0] === real(DEMO.caixa) && contaFol.valores[1] === real(DEMO.queima) + ' por mês' && /média de 1 mês fechado/.test(contaFol.formula), `Ver a conta do fôlego: ${JSON.stringify(contaFol)}`);
+    certo(p, /por mês ≈ 9,2 meses/.test(contaFol.formula) && !/= 9,2/.test(contaFol.formula), `a conta do fôlego é aproximada (≈), como o total: “${contaFol.formula}”`);
     // cada trecho é link: "o caixa dá ≈ 9,2 meses" leva ao Caixa, com o foco no título da parte calculada
     await pagina.locator('#livro-resumo a.cx-trecho', {hasText: 'o caixa dá'}).click();
     await pagina.waitForTimeout(500);
@@ -259,9 +281,25 @@ for (const tela of ['desktop', 'celular']) for (const tema of ['claro', 'escuro'
     certo(p, set.hash === '#caixa/2026-09' && set.mes === '2026-09' && /^Setembro fechado por Bauer em 03\/10\/2026 · selo [0-9a-f]{8}/.test(set.situacao) && !set.nova && set.foco === 'mes-anterior', `setembro pelo ‹: ${JSON.stringify(set)}`);
     await conferirCaixa(pagina, p + ' · setembro', {registroAberto: true});
     await foto(pagina, 'desktop-claro-caixa-setembro');
+    // ‹ de novo: agosto é o primeiro mês do fluxo do demo, então o ‹ desliga e o foco vai ao nome do mês
+    const lerMes = () => pagina.evaluate(() => ({hash: location.hash, mes: document.querySelector('#caixa-calculado .cx-mes').dataset.mes, desligado: document.querySelector('#caixa-calculado [data-chave="mes-anterior"]').disabled, foco: document.activeElement && (document.activeElement.dataset.chave || document.activeElement.id)}));
+    await pagina.locator('#caixa-calculado button[data-chave="mes-anterior"]').click();
+    await pagina.waitForTimeout(300);
+    const ago = await lerMes();
+    certo(p, ago.hash === '#caixa/2026-08' && ago.mes === '2026-08' && ago.desligado && ago.foco === 'titulo:mes', `agosto, o primeiro mês do fluxo: ${JSON.stringify(ago)}`);
     await pagina.locator('#caixa-calculado button', {hasText: 'Voltar ao mês atual'}).click();
     await pagina.waitForTimeout(300);
-    certo(p, await pagina.evaluate(() => location.hash) === '#caixa', 'voltar ao mês atual não voltou o endereço para #caixa');
+    const volta = await lerMes();
+    certo(p, volta.hash === '#caixa' && volta.mes === '2026-10' && volta.foco === 'titulo:mes', `voltar ao mês atual: ${JSON.stringify(volta)}`);
+    // endereço fora do alcance (antes dos 12 meses da folha, ou depois de hoje): o mês de hoje, e o endereço corrigido
+    for (const h of ['#caixa/2024-01', '#caixa/2027-05']) {
+      await pagina.evaluate(x => { location.hash = x; }, h);
+      await pagina.waitForTimeout(400);
+      const fora = await lerMes();
+      certo(p, fora.hash === '#caixa' && fora.mes === '2026-10', `${h} devia mostrar outubro de 2026 em #caixa: ${JSON.stringify(fora)}`);
+    }
+    // "saiu" no fluxo do Caixa não é o "Saiu este mês" do Meu painel: o cartão diz a diferença
+    certo(p, /“saiu” é tudo o que pesa no caixa: gastos lançados, assinaturas previstas, taxas e imposto \(no Meu painel, “Saiu este mês” é só o lançado\)/.test(limpo(await pagina.locator('#caixa-calculado .cx-fluxo').textContent())), 'o cartão do fluxo não explica o “saiu” dele');
   }
   await contexto.close();
 }
@@ -484,6 +522,10 @@ let alvoReceita = null;
   certo(p, /saldo de 42 dias atrás/.test(texto) && /informe o de hoje/.test(texto) && /pela PTAX de 16\/10 \(posterior ao saldo\), sem spread/.test(texto), `aviso do saldo antigo: “${texto}”`);
   certo(p, await li.locator('button', {hasText: 'Informar o de hoje'}).count() === 1, 'falta “Informar o de hoje”');
   certo(p, /há 42 dias/.test(await pagina.locator('#caixa-calculado [data-numero="banco"]').textContent()), 'o número “No banco” não avisa a idade do saldo');
+  // com um saldo antigo e um de hoje, a nota e a manchete datam pelo mais antigo (nunca "em 19/10 · há 42 dias")
+  const notaBanco = limpo(await pagina.locator('#caixa-calculado [data-numero="banco"] .lv-kpi-nota').textContent());
+  certo(p, notaBanco === '2 contas · o saldo mais antigo é de 07/09 (há 42 dias)', `nota do “No banco”: “${notaBanco}”`);
+  certo(p, /^Caixa de R\$ 15\.082,60 com saldos de 07\/09 a \d\d\/\d\d: dá ≈ \d+,\d meses na queima média de 1 mês fechado\.$/.test(limpo(cx.manchete)), `manchete com dois saldos: “${limpo(cx.manchete)}”`);
   certo(p, (await focoAtual(pagina)).chave === 'saldo:novo', `depois do saldo em dólar o foco devia voltar ao “+ Saldo” (foi ${JSON.stringify(await focoAtual(pagina))})`);
   await foto(pagina, 'local-caixa-final');
   await irPara(pagina, 'historico');
@@ -535,31 +577,38 @@ let alvoReceita = null;
   certo(p, d && c, 'faltam as fotos do Meu painel para o roteiro');
   if (d && c) {
     const [saiu, comprometido, caixa, folego] = d.nums;
+    const h = d.heroi || {suaParte: [], empresa: []};
     const roteiro = [
       'TESTE DE 10 SEGUNDOS · MEU PAINEL (plano §8.8)',
       'Para aplicar com as três sócias, uma de cada vez, de preferência no celular dela e depois de publicar o servidor.',
       '',
       `Fotos (dados fictícios do arnês, ?demo=1): ${c.arquivo || 'celular-claro-meu-painel.png'} e ${d.arquivo || 'desktop-claro-meu-painel.png'}`,
-      `Manchete na tela: "${d.frase}"`,
-      `Números na tela: ${saiu.texto} saiu · ${comprometido.texto} comprometido por mês · ${caixa.texto} no caixa · ${folego.texto} de fôlego`,
-      `Linha da sua parte: "${d.parte}"`,
+      'O que aparece no topo, nesta ordem:',
+      `  manchete: "${d.frase}"`,
+      `  logo abaixo, a sua parte: "${d.parte}"`,
+      `  os quatro números: ${saiu.texto} saiu · ${comprometido.texto} comprometido por mês · ${caixa.texto} no caixa · ${folego.texto} de fôlego`,
+      `Mais abaixo, o quadro "Só as assinaturas" (sua parte ${h.suaParte.join(' + ') || '—'}; empresa ${h.empresa.join(' + ') || '—'}) responde outra`,
+      'pergunta: quanto custam só as assinaturas, cada moeda à parte, sem converter. Não é a resposta de P1 nem de P2.',
       '',
       'Como aplicar (sem explicar nada antes):',
-      '1. Abra o Meu painel (ou mostre a foto) e diga só: "vou fazer quatro perguntas; responda olhando a tela".',
-      '2. Faça uma pergunta por vez e conte o tempo até a resposta. Não aponte nem dê dica.',
+      '1. Abra o Meu painel no topo, sem rolar (ou mostre só a primeira tela da foto do celular), e diga só:',
+      '   "vou fazer quatro perguntas; responda olhando a tela".',
+      '2. Faça uma pergunta por vez e conte o tempo até a resposta. Não aponte nem dê dica. Se ela rolar a tela, deixe.',
       '3. Anote a resposta exata e o tempo. Passa quando as quatro respostas vêm certas, cada uma em até 10 segundos.',
       '',
       'As quatro perguntas e a resposta certa (lida da tela do arnês):',
       `P1. Quanto a empresa gasta por mês?            → ${comprometido.texto} ("Comprometido por mês"; na manchete: "${comprometido.texto} comprometidos por mês")`,
-      `P2. Qual é a sua parte?                         → ${d.parte.replace(/^.*?: /, '').replace(/\.$/, '')} (linha em ouro abaixo dos números)`,
+      `P2. Qual é a sua parte?                         → ${d.parte.replace(/^.*?: /, '').replace(/\.$/, '')} (o número em ouro logo abaixo da manchete)`,
       `P3. Quanto tempo o caixa dura?                  → ${folego.texto} ("Fôlego"; na manchete: "o caixa dá ${folego.texto}"). Vale "uns 9 meses".`,
       `P4. Tem algo atrasado?                          → ${/nada atrasado/.test(d.frase) ? 'Não ("nada atrasado", no fim da manchete)' : 'Sim (o trecho em vermelho da manchete)'}`,
+      `Errado em P1 ou P2: um número do quadro "Só as assinaturas" (${[...h.empresa, ...h.suaParte].join(', ') || '—'}). Anote "olhou as assinaturas":`,
+      'é sinal de que o quadro de baixo ainda chama mais atenção do que o topo.',
       '',
       'Folha de registro (uma linha por sócia e pergunta):',
       'sócia | aparelho | pergunta | tempo (s) | resposta dada | certa? | onde olhou primeiro',
       '',
       'Se alguém passar de 10 s ou errar: anote onde olhou primeiro e o que entendeu. Com os dados reais os números',
-      'mudam, mas as respostas saem dos mesmos lugares: a manchete e os quatro números do topo do Meu painel.',
+      'mudam, mas as respostas saem dos mesmos lugares: a manchete, a linha da sua parte e os quatro números do topo do Meu painel.',
     ].join('\n');
     await writeFile(join(SAIDA, 'teste-10-segundos.txt'), roteiro + '\n');
     registro.roteiro = join(SAIDA, 'teste-10-segundos.txt');

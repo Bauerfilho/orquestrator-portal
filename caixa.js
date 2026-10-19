@@ -6,7 +6,7 @@
 // antigo). Quando esta parte aparece, o <details> do registro importado de 18/10 fecha (continua ali, a um toque).
 // No Meu painel (#livro-resumo, pelo registrarResumo do livro.js, que não importa o contas.js): a manchete do mês
 // ("Outubro: saiu R$ 1.166,41; R$ 1.388,47 comprometidos por mês; o caixa dá ≈ 9,2 meses; nada atrasado."), cada trecho
-// um link, os quatro números (Saiu este mês · Comprometido por mês · Caixa · Fôlego), a sua parte, o minigráfico de 12
+// um link, a sua parte, os quatro números (Saiu este mês · Comprometido por mês · Caixa · Fôlego), o minigráfico de 12
 // meses e as mudanças recentes das outras sócias.
 //
 // Todo número sai do contas.js (receitasDoMes, resultadoDoMes, cascataDoMes, caixaInformado, folego, serie12m,
@@ -123,7 +123,9 @@ function verFolego(D, f) {
   const h2 = el('h2', null, 'Fôlego do caixa'); h2.tabIndex = -1;
   tt.append(el('p', 'eyebrow', 'De onde vem este número'), h2);
   topo.append(tt, botao('Fechar', 'button-outline', () => d.close()));
-  d.append(topo, el('p', 'lv-formula', f.explica.formula + (f.explica.texto ? '. ' + f.explica.texto : '')));
+  // o fôlego é aproximado: "… por mês = 9,2 meses" vira "… por mês ≈ 9,2 meses", como no total logo abaixo
+  const contaEmTexto = f.estado === 'ok' && f.explica.texto ? f.explica.texto.replace(/ = (?=[^=]*$)/, ' ≈ ') : f.explica.texto;
+  d.append(topo, el('p', 'lv-formula', f.explica.formula + (contaEmTexto ? '. ' + contaEmTexto : '')));
   const ol = el('ol', 'lv-termos');
   const termo = (op, rotulo, valor, abrir) => {
     const li = el('li'), cab = el('div', 'lv-termo-cab');
@@ -148,7 +150,7 @@ const chaveEmFoco = alvo => { const a = document.activeElement; return a && alvo
 function devolverFoco(alvo, chave) {
   if (!chave) return false;
   const n = alvo.querySelector(`[data-chave="${CSS.escape(chave)}"]`);
-  if (!n || n.closest('[hidden]')) return false;
+  if (!n || n.disabled || n.closest('[hidden]')) return false;
   n.focus({preventScroll: true});
   return true;
 }
@@ -191,10 +193,20 @@ function numeroDoFolego(D, f, chave = 'folego') {
   if (f.decimos !== null) k.dataset.decimos = String(f.decimos);
   return k;
 }
+// a nota do caixa: a data e as contas; com saldo antigo, a data é a do saldo mais antigo ("em 19/10 · há 42 dias"
+// faria parecer que o saldo de 19/10 tem 42 dias)
+function notaDoCaixa(f) {
+  const cx = f.caixaInformado;
+  if (!cx.temSaldo) return 'falta informar o saldo do banco';
+  const contas = plural(cx.contas.filter(c => c.brl !== null).length, 'conta', 'contas');
+  if (!(cx.idadeMaxDias > IDADE_MAXIMA)) return `em ${dataBR(f.dataDoCaixa)} · ${contas}`;
+  const antigo = cx.contas.find(c => c.idadeDias === cx.idadeMaxDias);
+  return antigo.data === f.dataDoCaixa ? `em ${dataBR(antigo.data)} · ${contas} · há ${cx.idadeMaxDias} dias`
+    : `${contas} · o saldo mais antigo é de ${dataBR(antigo.data).slice(0, 5)} (há ${cx.idadeMaxDias} dias)`;
+}
 function numeroDoCaixa(D, f, chave, rotulo) {
   const cx = f.caixaInformado;
-  const nota = !cx.temSaldo ? 'falta informar o saldo do banco'
-    : `em ${dataBR(f.dataDoCaixa)} · ${plural(cx.contas.filter(c => c.brl !== null).length, 'conta', 'contas')}${cx.idadeMaxDias > IDADE_MAXIMA ? ` · há ${cx.idadeMaxDias} dias` : ''}`;
+  const nota = notaDoCaixa(f);
   return numero({chave, rotulo, texto: cx.temSaldo ? dinheiro(f.caixa) : '—', nota, minor: cx.temSaldo ? f.caixa : null, falta: !cx.temSaldo,
     abrir: () => verConta('Caixa: o último saldo de cada conta', cx.explica, D.c)});
 }
@@ -203,7 +215,10 @@ function numeroDoCaixa(D, f, chave, rotulo) {
 let mesCaixa = null;           // o mês do bloco "o mês" (cascata e receitas); null = o mês corrente
 let registroFechado = false;   // o <details> do registro importado fecha uma vez; se a sócia abrir, fica aberto
 let anterioresAbertos = new Set();
-const mesDoBloco = D => mesCaixa && mesCaixa <= mesHojeD(D) ? mesCaixa : mesHojeD(D);
+// o bloco vai de 12 meses atrás (o mesmo limite da competência na folha de receita) ao mês de hoje; um endereço fora
+// disso (#caixa/2024-01, #caixa/2027-05) mostra o mês de hoje e o endereço é corrigido
+const mesNoAlcance = (D, mes) => mes >= somarMeses(mesHojeD(D), -12) && mes <= mesHojeD(D);
+const mesDoBloco = D => mesCaixa && mesNoAlcance(D, mesCaixa) ? mesCaixa : mesHojeD(D);
 function irAoMes(D, mes) {
   mesCaixa = mes === mesHojeD(D) ? null : mes;
   if (typeof window.financeAtualizarRota === 'function') window.financeAtualizarRota({pagina: 'cash', args: mesCaixa ? [mesCaixa] : [], filtros: {}});
@@ -222,6 +237,10 @@ document.addEventListener('financeiro:rota', e => {
 function desenharCaixa(D) {
   const alvo = $('caixa-calculado');
   if (!alvo) return;
+  if (mesCaixa && !mesNoAlcance(D, mesCaixa)) {
+    mesCaixa = null;
+    if (typeof window.financeAtualizarRota === 'function') window.financeAtualizarRota({pagina: 'cash', args: [], filtros: {}});
+  }
   const chave = chaveEmFoco(alvo);
   const f = folegoDe(D), mesHoje = mesHojeD(D), r = resultadoDe(D, mesHoje);
   const raiz = el('section', 'cx-raiz');
@@ -268,7 +287,8 @@ function desenharCaixa(D) {
     const det = document.querySelector('#block-cash details.registro-importado');
     if (det) { det.open = false; registroFechado = true; }
   }
-  devolverFoco(alvo, chave);
+  // a seta que levou ao primeiro (ou ao último) mês desliga e o "Voltar ao mês atual" some: o foco vai ao nome do mês
+  if (!devolverFoco(alvo, chave) && chave && chave.startsWith('mes-')) devolverFoco(alvo, 'titulo:mes');
 }
 
 // ── fluxo de 12 meses ────────────────────────────────────────────────────────────────────────────────────────────
@@ -286,7 +306,7 @@ function conclusaoDoFluxo(serie) {
 }
 function cartaoFluxo(D) {
   const serie = serieDe(D);
-  const box = cartao('Fluxo de 12 meses', 'O que entrou (receita bruta) e o que saiu (custos, taxas e imposto) em cada mês, e o saldo do banco no fim do mês, quando foi informado. A série começa no primeiro mês com dado; os 3 meses depois de hoje mostram só as assinaturas previstas.');
+  const box = cartao('Fluxo de 12 meses', 'O que entrou (receita bruta) e o que saiu em cada mês, e o saldo do banco no fim do mês, quando foi informado. Aqui, “saiu” é tudo o que pesa no caixa: gastos lançados, assinaturas previstas, taxas e imposto (no Meu painel, “Saiu este mês” é só o lançado). A série começa no primeiro mês com dado; os 3 meses depois de hoje mostram só as assinaturas previstas.');
   box.classList.add('cx-fluxo');
   const reais = serie.filter(p => !p.futuro);
   if (!reais.length) { box.append(el('p', 'lv-vazio', 'O fluxo começa no primeiro mês com um gasto, uma receita ou um saldo.')); return box; }
@@ -309,7 +329,9 @@ function blocoDoMes(D, mes) {
   const ant = marcar(botao('‹', 'button-outline lv-mes-seta', () => irAoMes(D, somarMeses(mes, -1))), 'mes-anterior'); ant.setAttribute('aria-label', 'Mês anterior');
   const prox = marcar(botao('›', 'button-outline lv-mes-seta', () => irAoMes(D, somarMeses(mes, 1))), 'mes-seguinte'); prox.setAttribute('aria-label', 'Próximo mês');
   if (mes >= mesHoje) { prox.disabled = true; prox.title = 'Os meses depois deste ainda não começaram.'; }
-  const titulo = el('h3', 'lv-mes-titulo cx-mes-titulo', capital(mesLongo(mes))); titulo.id = 'cx-mes-titulo'; titulo.setAttribute('aria-live', 'polite');
+  // para trás, até o primeiro mês do fluxo de 12 meses (o primeiro com dado, no máximo 11 meses antes de hoje)
+  if (mes <= serieDe(D)[0].mes) { ant.disabled = true; ant.title = 'O fluxo de 12 meses começa neste mês.'; }
+  const titulo = marcar(el('h3', 'lv-mes-titulo cx-mes-titulo', capital(mesLongo(mes))), 'titulo:mes'); titulo.id = 'cx-mes-titulo'; titulo.tabIndex = -1; titulo.setAttribute('aria-live', 'polite');
   nav.append(ant, titulo, prox);
   if (mes !== mesHoje) nav.append(marcar(botao('Voltar ao mês atual', 'button-quiet', () => irAoMes(D, mesHoje)), 'mes-atual'));
   sec.append(nav);
@@ -718,6 +740,15 @@ function desenharPainel(D, alvo) {
   frase.append('.');
   box.append(frase);
   const l = livroDe(D, mes);
+  // a sua parte (a segunda pergunta do teste de 10 segundos), logo abaixo da manchete: no celular fica no alto da
+  // primeira tela, longe do "+ Lançar" flutuante
+  const eu = l.porSocia.find(s => s.id === D.c.membro.id);
+  if (eu && eu.parte !== null && m.minhaParte !== null) {
+    const p = el('p', 'cx-sua-parte');
+    p.dataset.minor = String(m.minhaParte);
+    p.append('Sua parte no comprometido de ' + mesMinusculo(mes) + ': ', el('strong', null, dinheiro(m.minhaParte)), ` (${eu.pct}% de participação).`);
+    box.append(p);
+  } else box.append(el('p', 'cx-sua-parte', 'Sua parte fica suspensa: a participação cadastrada não fecha 100%.'));
   const [saiu, comprometido] = m.numeros;
   const nums = el('div', 'lv-kpis is-compacto cx-kpis');
   nums.append(
@@ -727,22 +758,15 @@ function desenharPainel(D, alvo) {
     numeroDoFolego(D, f, 'painel-folego'),
   );
   box.append(nums);
-  // a sua parte (a segunda pergunta do teste de 10 segundos)
-  const eu = l.porSocia.find(s => s.id === D.c.membro.id);
-  if (eu && eu.parte !== null && m.minhaParte !== null) {
-    const p = el('p', 'cx-sua-parte');
-    p.dataset.minor = String(m.minhaParte);
-    p.append('Sua parte no comprometido de ' + mesMinusculo(mes) + ': ', el('strong', null, dinheiro(m.minhaParte)), ` (${eu.pct}% de participação).`);
-    box.append(p);
-  } else box.append(el('p', 'cx-sua-parte', 'Sua parte fica suspensa: a participação cadastrada não fecha 100%.'));
   // nível 2: o minigráfico de 12 meses e as mudanças recentes
   const baixo = el('div', 'cx-painel-baixo');
   const mini = el('div', 'cx-painel-mini');
   const serie = serieDe(D).filter(p => !p.futuro).map(p => ({mes: p.mes, valor: p.realizado, aberto: p.aberto, moeda: 'BRL'}));
-  mini.append(el('h3', 'lv-sub cx-painel-sub', 'Saiu por mês'));
+  // "saiu" aqui é só o lançado (no fluxo do Caixa, "saiu" soma também o previsto, as taxas e o imposto)
+  mini.append(el('h3', 'lv-sub cx-painel-sub', 'Saiu por mês (só o lançado)'));
   if (serie.length) {
     const u = serie[serie.length - 1];
-    const fig = minigrafico(serie, {cor: 'saida', nome: 'saiu', rotulo: `O que saiu (lançado) por mês, de ${mesLongo(serie[0].mes)} a ${mesLongo(u.mes)}; em ${mesLongo(u.mes)}${u.aberto ? ', mês aberto,' : ''} ${dinheiro(u.valor)} até agora.`});
+    const fig = minigrafico(serie, {cor: 'saida', nome: 'saiu (lançado)', rotulo: `O que saiu (lançado) por mês, de ${mesLongo(serie[0].mes)} a ${mesLongo(u.mes)}; em ${mesLongo(u.mes)}${u.aberto ? ', mês aberto,' : ''} ${dinheiro(u.valor)} até agora.`});
     const area = fig.querySelector('.gf-area'); if (area) marcar(area, 'grafico:mini');
     mini.append(fig);
   }

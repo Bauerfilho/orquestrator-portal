@@ -1,6 +1,6 @@
 // Conciliar a fatura (fatia F2-8). Quando a fatura do cartão chega, a sócia digita o que o banco cobrou de cada gasto em
-// moeda estrangeira (o total da linha, já com o IOF) ou só o total, e o "≈ estimado" vira o valor efetivo da fatura,
-// com a diferença explicada. O botão "Conciliar fatura" fica na barra de Lançamentos (extra 'lancamentos-barra'); o
+// moeda estrangeira (somando o IOF quando ele vem numa linha separada) ou só o total, e o "≈ estimado" vira o valor
+// efetivo da fatura, com a diferença explicada. O botão "Conciliar fatura" fica na barra de Lançamentos (extra 'lancamentos-barra'); o
 // Fechamento abre a mesma folha por window.financeConciliacao.abrir(mes, forma).
 //
 // As contas: a estimativa de cada gasto é a do razão (R.reaisDoGasto sem a fatura, com os parâmetros da data dele, os
@@ -30,6 +30,12 @@ const textoCambio = v => String(v).replace('.', ',');
 const mesOk = s => typeof s === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(s);
 const somarDias = (dia, k) => new Date(Date.parse(dia + 'T12:00:00Z') + k * 864e5).toISOString().slice(0, 10);
 const mesSeguinte = mes => { const [a, m] = mes.split('-').map(Number); return m === 12 ? `${a + 1}-01` : `${a}-${String(m + 1).padStart(2, '0')}`; };
+const mesAnterior = mes => { const [a, m] = mes.split('-').map(Number); return m === 1 ? `${a - 1}-12` : `${a}-${String(m - 1).padStart(2, '0')}`; };
+// o spread que a fatura revelou, em texto decimal: além do limite dos Parâmetros (10%), para mais ou para menos, é engano
+// de digitação e não câmbio; abaixo de 2% quase sempre é o IOF que ficou de fora (sem ele, um spread de 4% vira uns 0,5%)
+const LIMITE_SPREAD = R.decimal(String((R.itemCatalogo('cartao.spread_pct') || {dura: [0, 10]}).dura[1])) || {n: 10n, d: 1n};
+const SPREAD_BAIXO = {n: 2n, d: 1n};
+const maiorQue = (a, b) => a.n * b.d > b.n * a.d;
 const NOME_MOEDA = {USD: 'dólar', EUR: 'euro'};
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
@@ -54,13 +60,16 @@ function pagadoresDe(D, mes, forma) {
   ids.add(eu);
   return (D.c.estado.members || []).map(m => m.id).filter(id => ids.has(id));
 }
-// o que abrir quando ninguém disse: o mês mais recente com gasto estrangeiro sem fatura, a forma com mais pendências
-// nele (empate: a ordem das formas, cartão da empresa primeiro) e, na forma pessoal, quem está vendo
+// o que abrir quando ninguém disse: o mês anterior ao de hoje, se ele está aberto e tem gasto estrangeiro sem fatura (a
+// fatura chega no começo do mês seguinte); senão o mês mais recente com gasto estrangeiro sem fatura; a forma com mais
+// pendências nele (empate: a ordem das formas, cartão da empresa primeiro) e, na forma pessoal, quem está vendo
 function escolher(D, pedido = {}) {
   const eu = D.c.membro.id;
   const todos = D.aplicado.gastos.filter(estrangeiro);
   const recente = lista => lista.reduce((m, g) => (!m || g.competencia > m ? g.competencia : m), null);
-  const mes = mesOk(pedido.mes) ? pedido.mes : recente(todos.filter(g => !temFatura(g))) || recente(todos) || hojeDe(D.c).slice(0, 7);
+  const anterior = mesAnterior(hojeDe(D.c).slice(0, 7));
+  const chegou = !fechado(D, anterior) && todos.some(g => g.competencia === anterior && !temFatura(g)) ? anterior : null;
+  const mes = mesOk(pedido.mes) ? pedido.mes : chegou || recente(todos.filter(g => !temFatura(g))) || recente(todos) || hojeDe(D.c).slice(0, 7);
   let forma = R.FORMAS.some(f => f.id === pedido.forma) ? pedido.forma : null;
   if (!forma) {
     const doMes = todos.filter(g => g.competencia === mes);
@@ -156,7 +165,7 @@ export function abrir(mes = null, forma = null, opcoes = {}) {
       botoes('nenhum');
       return;
     }
-    raiz.append(el('p', 'cc-intro', 'Digite o que o banco cobrou de cada gasto, já com o IOF: é o total da linha na fatura. O valor da fatura substitui a estimativa, que continua guardada no Histórico.'));
+    raiz.append(el('p', 'cc-intro', 'Digite quanto o banco cobrou por cada gasto, somando o IOF quando ele vem numa linha separada. Se o IOF vem numa linha só para todos, use “Só tenho o total”. O valor da fatura substitui a estimativa, que continua guardada no Histórico.'));
     raiz.append(escolhaDoModo());
     // só o total: um campo, e cada gasto mostra a parte dele pelo rateio
     const campoTotal = campoDinheiro('BRL', {rotulo: 'Total da fatura destes gastos'});
@@ -164,7 +173,7 @@ export function abrir(mes = null, forma = null, opcoes = {}) {
     campoTotal.input.addEventListener('input', () => { st.total = campoTotal.input.value; atualizar(); });
     st.campoTotal = campoTotal;
     const caixaTotal = rotulado('Total cobrado por estes gastos, com o IOF', campoTotal, 'cc-total');
-    caixaTotal.append(el('span', 'cc-dica', 'O portal divide o total entre os gastos marcados, na proporção da estimativa de cada um (maior resto: a soma fecha ao centavo).'));
+    caixaTotal.append(el('span', 'cc-dica', 'O portal divide o total entre os gastos marcados, na proporção da estimativa de cada um; a soma fecha ao centavo.'));
     st.nos.caixaTotal = caixaTotal;
     raiz.append(caixaTotal);
     const ptax = el('p', 'cc-ptax-estado');
@@ -190,18 +199,19 @@ export function abrir(mes = null, forma = null, opcoes = {}) {
     const meses = [...new Set([...D.aplicado.gastos.filter(estrangeiro).map(g => g.competencia), st.mes])].filter(mesOk).sort().reverse();
     const selMes = el('select', 'lv-select cc-select');
     for (const m of meses) { const o = el('option', null, capital(mesLongo(m)) + (fechado(D, m) ? ' (fechado)' : '')); o.value = m; o.selected = m === st.mes; selMes.append(o); }
-    selMes.addEventListener('change', () => { st.mes = selMes.value; st.pagador = escolherPagador(D, st.mes, st.forma, st.pagador || D.c.membro.id); desenhar(); focarSeletor(0); });
+    // trocar o mês, o cartão ou a dona do cartão é outra fatura: o total digitado era da anterior e sai do campo
+    selMes.addEventListener('change', () => { st.mes = selMes.value; st.total = ''; st.pagador = escolherPagador(D, st.mes, st.forma, st.pagador || D.c.membro.id); desenhar(); focarSeletor(0); });
     const formas = R.FORMAS.filter(f => f.cartao || f.id === st.forma || D.aplicado.gastos.some(g => estrangeiro(g) && g.competencia === st.mes && g.forma === f.id));
     const selForma = el('select', 'lv-select cc-select');
     for (const f of formas) { const o = el('option', null, f.rotulo); o.value = f.id; o.selected = f.id === st.forma; selForma.append(o); }
-    selForma.addEventListener('change', () => { st.forma = selForma.value; st.pagador = escolherPagador(D, st.mes, st.forma, st.pagador || D.c.membro.id); desenhar(); focarSeletor(1); });
+    selForma.addEventListener('change', () => { st.forma = selForma.value; st.total = ''; st.pagador = escolherPagador(D, st.mes, st.forma, st.pagador || D.c.membro.id); desenhar(); focarSeletor(1); });
     caixa.append(rotulado('Mês da fatura', selMes), rotulado(formas.every(f => f.cartao) ? 'Cartão' : 'Cartão ou conta', selForma));
     if (!daEmpresa(st.forma)) {
       const ids = pagadoresDe(D, st.mes, st.forma);
       if (ids.length > 1) {
         const selPag = el('select', 'lv-select cc-select');
         for (const pid of ids) { const o = el('option', null, nome(D, pid) + (pid === D.c.membro.id ? ' (você)' : '')); o.value = pid; o.selected = pid === st.pagador; selPag.append(o); }
-        selPag.addEventListener('change', () => { st.pagador = selPag.value; desenhar(); focarSeletor(2); });
+        selPag.addEventListener('change', () => { st.pagador = selPag.value; st.total = ''; desenhar(); focarSeletor(2); });
         caixa.append(rotulado('De quem é o cartão', selPag));
       }
     }
@@ -339,7 +349,7 @@ export function abrir(mes = null, forma = null, opcoes = {}) {
     if (completo) {
       const x = explicacao(st.D, marcados.map(it => ({...it, ptax: st.ptaxDe.get(it.g.id), fatura: faturas.get(it.g.id)})));
       if (x) porque.append(...blocoDaExplicacao(x));
-      if (x && x.spread !== null && st.forma === 'cartao_pj') porque.append(el('p', 'cc-dica', 'Depois de conciliar, você pode usar este spread nas próximas estimativas.'));
+      if (x && x.spreadNormal && st.forma === 'cartao_pj') porque.append(el('p', 'cc-dica', 'Depois de conciliar, você pode usar este spread nas próximas estimativas.'));
     }
   }
   const ratear = (marcados, total) => dividirTotal(total, marcados.map(it => ({id: it.g.id, moeda: it.g.moeda, valorMinor: it.g.valorMinor, est: it.est})));
@@ -529,13 +539,20 @@ function explicacao(D, itens) {
     const bases = itens.map((it, k) => R.converter(it.g.valorMinor, it.ptax.valor, '0', iofs[k] ? iofs[k].valor : '0'));
     spread = bases.some(b => !b) ? null : spreadImplicito(fat, somar(bases.map(b => b.total)), '1', '0');
   }
-  let fraseSpread = '';
+  let fraseSpread = '', spreadNormal = false;
   if (spread !== null) {
     const negativo = spread.startsWith('-');
-    fraseSpread = cartao ? ` Nesta fatura o spread saiu ${textoPct(spread)}.` : ` Aqui o câmbio do banco saiu ${textoPct(negativo ? spread.slice(1) : spread)} ${negativo ? 'abaixo' : 'acima'} da PTAX.`;
-    if (negativo && cartao) fraseSpread += ' O banco cobrou menos que a PTAX + o IOF: confira se o valor de cada gasto inclui o IOF.';
+    const tamanho = R.decimal(negativo ? spread.slice(1) : spread, 2);
+    if (!tamanho || maiorQue(tamanho, LIMITE_SPREAD)) fraseSpread = ' O valor parece fora do normal: confira o que foi digitado.';
+    else {
+      fraseSpread = cartao ? ` Nesta fatura o spread saiu ${textoPct(spread)}.` : ` Aqui o câmbio do banco saiu ${textoPct(negativo ? spread.slice(1) : spread)} ${negativo ? 'abaixo' : 'acima'} da PTAX.`;
+      if (negativo && cartao) fraseSpread += ' O banco cobrou menos que a PTAX + o IOF: confira se o valor de cada gasto inclui o IOF.';
+      else if (cartao && maiorQue(SPREAD_BAIXO, tamanho)) fraseSpread += ' Confira se você somou o IOF de cada gasto.';
+      spreadNormal = !negativo;
+    }
   }
-  return {titulo, texto: `${frasePtax}; ${mecanismo}.${fraseSpread}`, estimativa, spread, comPtax: true};
+  // spreadNormal: entre 0% e o limite dos Parâmetros, o que a oferta "Usar X% como spread" aceita
+  return {titulo, texto: `${frasePtax}; ${mecanismo}.${fraseSpread}`, estimativa, spread, spreadNormal, comPtax: true};
 }
 // "A estimativa usava o dólar de 5,0826 dos Parâmetros (de 01/10) e um spread de 4%."
 function fraseDaEstimativa(itens, cartao) {

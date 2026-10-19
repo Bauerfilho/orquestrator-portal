@@ -416,7 +416,7 @@ function cartaoGasto(g, D) {
   if (g.destino === 'empresa_reembolsa' && g.estado !== 'anulado') corpo.append(g.convertidoEm ? pilula('virou aporte', 'neutro') : (g.reembolsadoEm || g.reembolsoId) ? pilula('reembolsado', 'ok') : pilula('reembolso pendente', 'pendente'));
   const valor = el('div', 'lv-gasto-valor');
   valor.append(el('strong', null, dinheiro(g.valorMinor, g.moeda)));
-  if (g.moeda !== 'BRL') valor.append(el('span', null, r.brl === null ? 'sem câmbio' : `≈ ${dinheiro(r.brl)} · ${r.tipo === 'efetivo' ? 'fatura' : 'estimado'}`));
+  if (g.moeda !== 'BRL') valor.append(el('span', null, r.brl === null ? 'sem câmbio' : r.tipo === 'efetivo' ? `${dinheiro(r.brl)} · fatura` : `≈ ${dinheiro(r.brl)} · estimado`));   // o "≈" é só do estimado
   const acoes = el('div', 'lv-gasto-acoes');
   const pode = g.estado !== 'anulado' && (g.criadoPor === c.membro.id || c.membro.papel === 'owner');
   if (pode) {

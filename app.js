@@ -446,13 +446,13 @@
     target.append(identity);
     const hero = element("div", "overview-hero");
     const own = element("div");
-    own.append(element("p", "eyebrow", "SEU EQUIVALENTE MENSAL"), headingWithSource("A sua parte por mês", block.source, "Rateio dos planos confirmados pela sua participação cadastrada. Nada aqui é cobrança nova.", "sua-parte"));
+    own.append(element("p", "eyebrow", "SÓ AS ASSINATURAS"), headingWithSource("Sua parte nas assinaturas", block.source, "O equivalente mensal das assinaturas confirmadas, dividido pela sua participação cadastrada, cada moeda à parte. Nada aqui é cobrança nova.", "sua-parte"));
     renderMoneyStack(own, summary.personal_fixed_monthly, "sua-parte");
-    own.append(element("p", "hero-footnote", "Rateio dos compromissos confirmados pela participação cadastrada. O equivalente mensal não é uma nova cobrança."));
+    own.append(element("p", "hero-footnote", "Cada moeda à parte, sem converter. A sua parte no gasto do mês, em reais, está no topo da página."));
     const company = element("div", "hero-comparison");
-    company.append(element("p", "eyebrow", "TOTAL DA EMPRESA"), headingWithSource("Compromissos mensais", block.source, "Soma das assinaturas ativas com dados completos, moeda por moeda.", "total-empresa"));
+    company.append(element("p", "eyebrow", "SÓ AS ASSINATURAS"), headingWithSource("Assinaturas da empresa", block.source, "Soma do equivalente mensal das assinaturas ativas com dados completos, moeda por moeda.", "total-empresa"));
     renderMoneyStack(company, summary.fixed_monthly, "total-empresa");
-    company.append(element("p", "hero-footnote", "Assinaturas ativas com dados completos. Valores em moedas diferentes não são somados."));
+    company.append(element("p", "hero-footnote", "Cada moeda à parte, sem converter. O gasto do mês inteiro, em reais, está no topo da página."));
     hero.append(own, company);
     target.append(hero);
     const billing = block.billing || {};
