@@ -52,22 +52,21 @@
   let headerTravel = 0;
   let headerDirection = 0;
   let keyboardNavigation = false;
-  // "Como ler esta página" (A1): três linhas por página, em português claro — o que é · de onde vem · o que não é.
-  const pages = {
-    overview: {title: "Meu painel", description: "Seus compromissos, com a empresa em perspectiva.", help: {what: "A sua parte nos compromissos mensais da empresa e o total que ela paga, lado a lado.", from: "Dos planos de assinatura confirmados e da sua participação cadastrada. A fonte e a data de cada número ficam no botão ao lado dele.", not: "Não é uma cobrança nova nem um extrato bancário. É um rateio calculado para você se situar."}},
-    subscriptions: {title: "Assinaturas", description: "Serviços, cobranças e a sua parte em cada compromisso.", help: {what: "Cada serviço que a empresa assina, com valor, vencimento e a sua parte em cada cobrança.", from: "Do arquivo de planos da empresa e dos registros de benefícios e cobranças, lidos a cada abertura.", not: "Mudar o estado aqui não contrata nem cancela nada no serviço real. Só registra o que o painel considera."}},
-    sell: {title: "Vender primeiro", description: "Prioridades e próximos passos registrados pela equipe.", help: {what: "As três prioridades de venda e os próximos passos que a equipe registrou para cada uma.", from: "Do documento de prioridades da equipe. Cada caixinha marcada é salva nele.", not: "Não é previsão de receita nem compromisso de prazo. É a lista do que vem primeiro."}},
-    medpainel: {title: "Med Painel", description: "Como vender e o caminho até a meta de assinantes, com o dinheiro de cada mês.", help: {what: "Os canais de venda do Med Painel, a projeção mês a mês até 10 mil assinantes em três cenários, o resultado, a verba de marketing e a parte de cada sócio.", from: "Das estratégias, premissas e decisões do Bauer em mercado/MED-PAINEL-*, do custo fixo dos planos ativos e da sociedade. A conta é refeita na tela a cada leitura.", not: "Não é previsão: os números de aquisição são chutes até o piloto medir. Imposto e taxa de cobrança ainda passam pelo contador."}},
-    portfolio: {title: "Portfólio", description: "O que já existe, o que foi conferido e o que ainda falta.", help: {what: "O catálogo do que já existe: cada ativo com estado documental, nota de prontidão e destino.", from: "Do inventário e do atlas de ativos, montados a partir dos arquivos e repositórios conferidos. A prontidão é uma nota documental de 0 a 100, somada de cinco critérios de até 20 pontos.", not: "Prontidão não mede funcionamento, mercado nem preço. Só o Criador decide o destino de cada ativo."}},
-    cash: {title: "Caixa", description: "Recursos, despesas e limites da empresa. Moedas sempre separadas.", help: {what: "O dinheiro da empresa: custo fixo mensal, gastos do mês, saldos registrados e teto de consumo.", from: "Dos registros financeiros e do documento de caixa, com a data de cada fonte indicada.", not: "Não é conta bancária ao vivo. Mostra o último registro entregue, moeda por moeda, sem somar moedas diferentes."}},
-    projection: {title: "Projeção", description: "Possibilidades acompanhadas de suas fontes e premissas.", help: {what: "Cenários de receita possíveis, cada um com a fórmula que o sustenta.", from: "Do documento de projeção escrito pela equipe. A fórmula fica visível em cada cenário.", not: "Não é promessa nem meta. São possibilidades acompanhadas das suas premissas."}},
-    society: {title: "Sociedade", description: "Participações registradas e responsabilidades compartilhadas.", help: {what: "Quem são os sócios e a participação registrada de cada um.", from: "Do registro societário da empresa. Nome, função e contato de cada sócia vêm de um arquivo cifrado: só quem entra com senha vê.", not: "Não substitui o contrato social nem registra alterações. É consulta."}},
-    livro: {title: "Livro do mês", description: "O dinheiro do mês: o que já saiu, o que está previsto e a parte de cada sócia.", help: {what: "O custo do mês da empresa em reais: lançamentos das sócias (já pagos) + assinaturas ativas ainda sem lançamento (previstas). Gráficos por categoria e por item, a parte de cada sócia e o acerto dos gastos divididos.", from: "Das assinaturas do pacote da empresa e do diário cifrado onde as sócias lançam. Moeda estrangeira vira reais pelos Parâmetros vigentes na data de cada gasto; toque em “Ver a conta” para ver a fórmula com os números.", not: "Não é extrato bancário: um gasto só aparece aqui depois de lançado. Estimativas em dólar ficam marcadas como estimadas até alguém informar o valor da fatura."}},
-    lancamentos: {title: "Lançamentos", description: "Cada gasto da empresa, com quem pagou, como e para onde vai.", help: {what: "A lista de tudo que as sócias lançaram: data, valor na moeda original, reais, categoria, quem pagou, se a empresa reembolsa, divide ou vira aporte.", from: "Do diário cifrado: cada lançamento é cifrado no seu navegador e assinado por quem lançou. O servidor só guarda texto cifrado.", not: "Nada se apaga: corrigir cria uma versão nova e anular deixa a linha riscada, com o motivo."}},
-    parametros: {title: "Parâmetros", description: "Câmbio, spread, IOF, impostos e taxas, com vigência e fonte.", help: {what: "Os números que entram nas contas: dólar e euro (PTAX), spread do cartão, IOF, alíquota do Simples, ISS e taxas das plataformas de venda.", from: "Padrões pesquisados em 19/10/2026 (marcados “a confirmar”) e as vigências que as sócias registram. O botão “Atualizar pela PTAX” consulta o Banco Central.", not: "Não é aconselhamento fiscal: confirme impostos e alíquotas com o contador. Mudar um valor hoje não altera os gastos passados."}},
-    historico: {title: "Histórico", description: "Quem mudou o quê, quando e por quê.", help: {what: "A linha do tempo de todas as gravações: lançamentos, correções, anulações e parâmetros, com o antes e o depois.", from: "Do diário cifrado, conferido registro a registro: cadeia, assinatura e cifra.", not: "Registros recusados (que não passaram nas regras) aparecem à parte e não entram em nenhuma conta."}},
-    lab: {title: "Laboratório", description: "Protótipos visuais com dados fictícios. Nenhuma operação real.", help: {what: "Maquetes com dados fictícios: ideias de telas e produtos para olhar e discutir. Cada uma também abre em tela cheia, como um app no iPhone.", from: "Da galeria de maquetes publicada com o portal. Aqui cada maquete abre numa moldura isolada; a tela cheia é uma página à parte, aberta numa aba nova.", not: "Nenhuma operação real: nada aqui lê, grava ou envia dados da empresa. O link de tela cheia abre sem senha para quem o tiver, e por isso só mostra dados fictícios."}}
-  };
+  // O mapa do portal vem do registro (paginas.js): título, descrição e "Como ler esta página" (A1, três linhas em
+  // português claro — o que é · de onde vem · o que não é) de cada página, na ordem da gaveta. Sem o registro (um host
+  // antigo que não carrega o paginas.js), as seções do index.html viram páginas sem ajuda, para nada quebrar.
+  const registro = Array.isArray(window.financePaginas) ? window.financePaginas : [...document.querySelectorAll("[data-finance-page]")].map((secao) => {
+    const titulo = secao.querySelector("h2");
+    return {chave: secao.dataset.financePage, rota: secao.dataset.financePage, grupo: "Dinheiro", titulo: titulo ? titulo.textContent : secao.dataset.financePage, descricao: "", ajuda: {}, ...(secao.dataset.financePage === "lab" ? {requer: "galeria"} : {})};
+  });
+  const grupos = Array.isArray(window.financeGrupos) ? window.financeGrupos : ["Dinheiro"];
+  const rotas = window.financeRotas && typeof window.financeRotas.ler === "function" ? window.financeRotas : {ler: () => null, montar: () => "", acoes: []};
+  const pages = {};
+  function paginaDoRegistro(entrada) {
+    const ajuda = entrada.ajuda && typeof entrada.ajuda === "object" ? entrada.ajuda : {};
+    pages[entrada.chave] = {title: String(entrada.titulo), description: String(entrada.descricao || ""), help: {what: ajuda.oque || "", from: ajuda.deonde || "", not: ajuda.naoe || ""}};
+  }
+  registro.forEach(paginaDoRegistro);
   // O host (AI Cask, PWA ou portal) se apresenta em window.financeHost antes deste script; sem ele, vale o modo local.
   const host = () => (window.financeHost && typeof window.financeHost === "object") ? window.financeHost : {};
   const hostLabels = {
@@ -80,8 +79,7 @@
     const team = host().team === true;
     byId("change-password-button").textContent = team ? "Minha equipe" : "Trocar senha";
     byId("drawer-password").textContent = team ? "Minha equipe" : "Trocar minha senha";
-    const navLab = byId("nav-lab");
-    if (navLab) navLab.hidden = host().galeria !== true;
+    montarGaveta();
   }
   function hasSourceLocator(ref) {
     return Boolean(ref) && typeof ref === "object" && ["url", "label", "path"].some((key) => typeof ref[key] === "string");
@@ -2431,17 +2429,75 @@
   }
 
   function updateNavigation() {
-    byId("dashboard-title").textContent = pages[activePage].title;
-    byId("page-description").textContent = pages[activePage].description;
+    const page = pages[activePage] || pages.overview || {title: "", description: ""};
+    byId("dashboard-title").textContent = page.title;
+    byId("page-description").textContent = page.description;
     document.querySelectorAll("[data-navigate]").forEach((button) => {
       if (button.dataset.navigate === activePage) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");
     });
   }
 
-  function navigate(key, focus = true) {
-    if (!authenticated || !Object.prototype.hasOwnProperty.call(pages, key)) return false;
-    if (key === "lab" && host().galeria !== true) return false;
+  // ── o mapa: a gaveta montada pelo registro, as rotas por hash e as páginas registradas em tempo de execução ─────────
+  // Visível: a página está no registro e, se pede uma capacidade do host (requer: "galeria"), o host a liga.
+  function entradaDe(key) { return registro.find((entrada) => entrada.chave === key) || null; }
+  function paginaVisivel(entrada) { return Boolean(entrada) && (!entrada.requer || host()[entrada.requer] === true); }
+  // Um rótulo por grupo (Dinheiro · Planejar · Empresa · Ajuda) e os botões na ordem do registro, numerados pela ordem
+  // visível (01, 02…). Os cliques chegam por delegação (data-navigate), então remontar não exige religar nada.
+  function montarGaveta() {
+    const nav = byId("drawer-nav");
+    if (!nav) return;
+    clear(nav);
+    let numero = 0;
+    const ordem = new Set([...grupos, ...registro.map((entrada) => entrada.grupo)]);
+    for (const grupo of ordem) {
+      const doGrupo = registro.filter((entrada) => entrada.grupo === grupo && paginaVisivel(entrada));
+      if (!doGrupo.length) continue;
+      nav.append(element("p", "nav-grupo", grupo));
+      for (const entrada of doGrupo) {
+        entrada.numero = String(++numero).padStart(2, "0");
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.id = "nav-" + entrada.chave;
+        botao.dataset.navigate = entrada.chave;
+        const indice = element("span", "nav-index", entrada.numero);
+        const seta = element("span", "nav-arrow", "↗");
+        indice.setAttribute("aria-hidden", "true");
+        seta.setAttribute("aria-hidden", "true");
+        botao.append(indice, element("span", "", entrada.titulo), seta);
+        nav.append(botao);
+      }
+    }
+    registro.forEach((entrada) => { if (!paginaVisivel(entrada)) entrada.numero = null; });
+    updateNavigation();
+  }
+
+  // A rota da página ativa; o hash sai sempre do registro (rotas.montar), nunca do que está na tela.
+  let rotaAtiva = {chave: "overview", args: [], filtros: {}, hash: ""};
+  let hashPendente = "";   // rota pedida na entrada que nenhuma página registrou ainda (um módulo que chega depois)
+  function escreverHistorico(hash, historia) {
+    if (!hash || historia === "nenhum") return;
+    try {
+      if (historia === "push") { if (location.hash !== hash) history.pushState({financeRota: hash}, "", hash); }
+      else history.replaceState({financeRota: hash}, "", hash);
+    } catch (_) { /* host sem histórico (arquivo local num WebView): a página troca do mesmo jeito, só sem endereço */ }
+  }
+  function definirRota(key, args, filtros, historia, origem) {
+    const hash = rotas.montar(key, args, filtros);
+    const lida = rotas.ler(hash) || {args: [], filtros: {}};
+    rotaAtiva = {chave: key, args: lida.args, filtros: lida.filtros, hash};
+    escreverHistorico(hash, historia);
+    const entrada = entradaDe(key);
+    document.dispatchEvent(new CustomEvent("financeiro:rota", {detail: {pagina: key, rota: entrada ? entrada.rota : key, args: [...lida.args], filtros: {...lida.filtros}, origem}}));
+  }
+
+  // navigate(chave, foco, {args, filtros, historia, origem}) mostra a página e escreve o endereço: "push" empilha (o
+  // Voltar do navegador volta para cá), "replace" troca (entrada e filtros), "nenhum" não mexe. Avisa as páginas por
+  // "financeiro:rota". Devolve false se a página não existe ou não está visível (ex.: Laboratório sem galeria).
+  function navigate(key, focus = true, opcoes = {}) {
+    if (!authenticated || !Object.prototype.hasOwnProperty.call(pages, key) || !paginaVisivel(entradaDe(key))) return false;
+    const {args = [], filtros = {}, historia = "push", origem = "navegacao"} = opcoes && typeof opcoes === "object" ? opcoes : {};
+    hashPendente = "";
     holdHeaderScroll(true);
     capturePagePosition(activePage);
     activePage = key;
@@ -2453,7 +2509,99 @@
       restorePagePosition(key, pagePositions.get(key));
       if (focus) byId("dashboard-title").focus({preventScroll: true});
     });
+    definirRota(key, args, filtros, historia, origem);
     return true;
+  }
+
+  // #lancar (atalho "Lançar gasto" do PWA, ou um link): a folha "+ Lançar" abre por cima da página atual e o endereço
+  // volta a ser o da página, para recarregar não reabrir a folha. Se o livro.js ainda não carregou, ele abre ao carregar.
+  function abrirLancarSobre() {
+    escreverHistorico(rotaAtiva.hash || rotas.montar(activePage), "replace");
+    if (window.financeLivro && typeof window.financeLivro.abrirLancar === "function") window.financeLivro.abrirLancar();
+    else window.financeLancarPendente = true;
+  }
+
+  // Depois da senha: a página do endereço com que se chegou (link direto ou atalho do PWA), trocando a entrada.
+  function aplicarRotaDeEntrada() {
+    if (!authenticated || mustChangePassword) return;
+    const hash = location.hash;
+    const lida = rotas.ancora && rotas.ancora(hash) ? null : rotas.ler(hash);
+    if (lida && lida.chave && navigate(lida.chave, false, {args: lida.args, filtros: lida.filtros, historia: "replace", origem: "entrada"})) return;
+    navigate("overview", false, {historia: "replace", origem: "entrada"});
+    if (lida && lida.acao === "lancar") abrirLancarSobre();
+    else if (lida && !lida.chave) hashPendente = hash;
+  }
+
+  // O endereço mudou fora do app (Voltar, Avançar, um link #… ou o endereço editado à mão): mostra a página dele sem
+  // empilhar. O popstate e o hashchange do mesmo passo chegam os dois: o segundo encontra a rota já aplicada.
+  function aplicarEndereco() {
+    if (!authenticated || mustChangePassword || (rotas.ancora && rotas.ancora(location.hash))) return;
+    const lida = rotas.ler(location.hash);
+    if (lida && lida.acao === "lancar") { abrirLancarSobre(); return; }
+    if (lida && lida.chave && paginaVisivel(entradaDe(lida.chave))) {
+      if (lida.chave === activePage && rotas.montar(lida.chave, lida.args, lida.filtros) === rotaAtiva.hash) return;
+      navigate(lida.chave, true, {args: lida.args, filtros: lida.filtros, historia: "replace", origem: "endereco"});
+      return;
+    }
+    navigate("overview", true, {historia: "replace", origem: "endereco"});
+  }
+
+  // Uma página troca os próprios filtros (mês, sócia, parâmetro aberto): o endereço acompanha, sem empilhar.
+  function atualizarRota({pagina = activePage, args = [], filtros = {}} = {}) {
+    if (!authenticated || pagina !== activePage) return false;
+    definirRota(activePage, args, filtros, "replace", "pagina");
+    return true;
+  }
+
+  // Página nova em tempo de execução (a fase 3 não edita app.js nem index.html): cria a <section> (ou usa a do
+  // index.html com o mesmo data-finance-page), o botão na gaveta (numeração refeita), a rota e o "Como ler esta página".
+  // Devolve {chave, rota, secao, conteudo}; o desenho fica com o módulo (por exemplo, registrarPagina do livro.js).
+  function registrarPaginaNova(definicao) {
+    const d = definicao && typeof definicao === "object" ? definicao : {};
+    const chave = String(d.chave || ""), rota = String(d.rota || d.chave || "");
+    const formato = /^[a-z][a-z0-9-]{1,39}$/;
+    if (!formato.test(chave)) throw new Error("financeRegistrarPagina: chave inválida (“" + chave + "”): use letras minúsculas, números e hífen.");
+    if (!formato.test(rota) || array(rotas.acoes).includes(rota)) throw new Error("financeRegistrarPagina: rota inválida (“" + rota + "”).");
+    if (entradaDe(chave) || Object.prototype.hasOwnProperty.call(pages, chave)) throw new Error("financeRegistrarPagina: já existe uma página com a chave “" + chave + "”.");
+    if (registro.some((entrada) => entrada.rota === rota)) throw new Error("financeRegistrarPagina: a rota “#" + rota + "” já é de outra página.");
+    const grupo = grupos.find((nome) => nome.toLowerCase() === String(d.grupo || "").toLowerCase());
+    if (!grupo) throw new Error("financeRegistrarPagina: grupo desconhecido (“" + d.grupo + "”). Os grupos são " + grupos.join(", ") + ".");
+    const titulo = typeof d.titulo === "string" ? d.titulo.trim() : "";
+    if (!titulo || titulo.length > 60) throw new Error("financeRegistrarPagina: o título é obrigatório e tem até 60 letras.");
+    const ajuda = d.ajuda && typeof d.ajuda === "object" ? d.ajuda : {};
+    const entrada = {chave, rota, grupo, numero: null, titulo, descricao: typeof d.descricao === "string" ? d.descricao : "",
+      ajuda: {oque: String(ajuda.oque || ""), deonde: String(ajuda.deonde || ""), naoe: String(ajuda.naoe || "")},
+      args: array(d.args).map(String), filtros: array(d.filtros).map(String), ...(typeof d.requer === "string" && d.requer ? {requer: d.requer} : {})};
+    const depoisDe = typeof d.depoisDe === "string" && formato.test(d.depoisDe) ? d.depoisDe : "";
+    let posicao = depoisDe ? registro.findIndex((item) => item.chave === depoisDe) + 1 : 0;
+    if (posicao <= 0) {
+      const doGrupo = registro.map((item, k) => (item.grupo === grupo ? k : -1)).filter((k) => k >= 0);
+      posicao = doGrupo.length ? doGrupo[doGrupo.length - 1] + 1 : registro.length;
+    }
+    registro.splice(posicao, 0, entrada);
+    paginaDoRegistro(entrada);
+    let secao = document.querySelector('[data-finance-page="' + chave + '"]');
+    if (!secao) {
+      secao = element("section", "finance-page");
+      secao.id = "block-" + chave;
+      secao.dataset.financePage = chave;
+      secao.setAttribute("aria-labelledby", chave + "-title");
+      const cabecalho = element("div", "section-heading"), bloco = element("div");
+      const h2 = element("h2", "", titulo);
+      h2.id = chave + "-title";
+      bloco.append(element("p", "section-number", String(d.eyebrow || grupo).toLocaleUpperCase("pt-BR")), h2);
+      cabecalho.append(bloco);
+      const conteudo = element("div");
+      conteudo.id = chave + "-content";
+      secao.append(cabecalho, conteudo);
+      const vizinha = depoisDe && document.querySelector('[data-finance-page="' + depoisDe + '"]');
+      if (vizinha) vizinha.after(secao); else byId("dashboard").querySelector(".page-footer").before(secao);
+    }
+    secao.hidden = activePage !== chave;
+    montarGaveta();
+    const pendente = hashPendente && rotas.ler(hashPendente);
+    if (pendente && pendente.chave === chave && activePage === "overview") navigate(chave, true, {args: pendente.args, filtros: pendente.filtros, historia: "replace", origem: "entrada"});
+    return {chave, rota, secao, conteudo: byId(chave + "-content") || secao};
   }
 
   function openNavigation() {
@@ -2586,6 +2734,7 @@
     byId("entry-masthead").hidden = true;
     byId("dashboard").hidden = false;
     await loadSnapshot(true);
+    aplicarRotaDeEntrada();
     byId("dashboard-title").focus();
   }
 
@@ -2625,6 +2774,8 @@
     byId("login-view").hidden = false;
     byId("entry-masthead").hidden = false;
     activePage = "overview";
+    rotaAtiva = {chave: "overview", args: [], filtros: {}, hash: ""};
+    hashPendente = "";
     pagePositions.clear();
     updateNavigation();
     document.querySelectorAll("[data-finance-page]").forEach((page) => { page.hidden = page.dataset.financePage !== "overview"; });
@@ -2638,6 +2789,7 @@
 
   async function logout() {
     resetSession();
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (_) {}
     try { await window.financeRequest("logout"); announce("Você saiu. A sessão lembrada foi removida deste Mac."); }
     catch (failure) { message("login-error", failure.message); }
     byId("login-cpf").focus();
@@ -2694,6 +2846,7 @@
       byId("entry-masthead").hidden = true;
       byId("dashboard").hidden = false;
       await loadSnapshot(true);
+      if (generation === sessionGeneration && authenticated && activePage === "overview" && !rotaAtiva.hash) aplicarRotaDeEntrada();
       announce("Senha atualizada.");
       byId("dashboard-title").focus();
     } catch (failure) {
@@ -2736,7 +2889,26 @@
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
-  document.querySelectorAll("[data-navigate]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.navigate)));
+  document.addEventListener("click", (event) => {
+    const alvo = event.target.closest && event.target.closest("[data-navigate]");
+    if (alvo && !alvo.disabled) navigate(alvo.dataset.navigate);
+  });
+  // "+ Lançar" no topo da gaveta: fecha a gaveta e abre a folha
+  if (byId("drawer-lancar")) byId("drawer-lancar").addEventListener("click", () => {
+    closeNavigation(false);
+    if (window.financeLivro && typeof window.financeLivro.abrirLancar === "function") window.financeLivro.abrirLancar();
+  });
+  // "Ir para o conteúdo": com o painel aberto, o foco vai ao título da página, sem trocar o endereço nem a página
+  const pularParaConteudo = document.querySelector(".skip-link");
+  if (pularParaConteudo) pularParaConteudo.addEventListener("click", (event) => {
+    if (byId("dashboard").hidden) return;
+    event.preventDefault();
+    revealHeader();
+    byId("dashboard-title").focus();
+  });
+  window.addEventListener("popstate", aplicarEndereco);
+  window.addEventListener("hashchange", aplicarEndereco);
+  try { history.scrollRestoration = "manual"; } catch (_) {}
   byId("drawer-password").addEventListener("click", () => { closeNavigation(false); openAccount(); });
   byId("header-toggle").addEventListener("click", () => {
     holdHeaderScroll(true);
@@ -2759,6 +2931,11 @@
     if (byId("app-header").contains(event.target)) revealHeader();
   });
   window.financeNavigate = navigate;
+  window.financeAtualizarRota = atualizarRota;
+  window.financePaginaAtiva = () => activePage;
+  // o registro de verdade troca o provisório do paginas.js e processa o que chegou antes do app.js
+  const registrosNaFila = window.financeRegistrarPagina && Array.isArray(window.financeRegistrarPagina.fila) ? window.financeRegistrarPagina.fila : [];
+  window.financeRegistrarPagina = registrarPaginaNova;
   window.financeSetVisible = (visible) => {
     nativeVisible = visible === true;
     if (nativeVisible && authenticated && !mustChangePassword && !mutationBusy) loadSnapshot();
@@ -2768,6 +2945,9 @@
   }, 2000);
 
   applyHostLabels();
+  registrosNaFila.splice(0).forEach((definicao) => {
+    try { registrarPaginaNova(definicao); } catch (erro) { console.error(erro); }
+  });
   window.financeReady = true;
   window.financeRequest("restore_session").then(enterSession).catch((failure) => {
     if (failure.code === "bridge_unavailable") message("login-error", failure.message);

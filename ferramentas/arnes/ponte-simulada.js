@@ -19,7 +19,12 @@ import {estadoFicticio} from './estado-ficticio.js';
 import {abrirDiario} from './diario.js';
 import {criarGaleria} from './galeria.js';
 import {cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
-//   ?demo=1           o diário em treino já vem com lançamentos e parâmetros de exemplo (o outubro do plano)
+import {aplicar} from './razao.js';
+import {fotoDoMes, seloDoMes} from './contas.js';
+import {demonstracao} from './demonstracao.js';
+//   ?demo=1           o diário em treino já vem com agosto a outubro de exemplo (demonstracao.js): o outubro do plano,
+//                     receitas, saldos, acertos, setembro fechado com selo e um evento recusado, cada um com a autora
+//                     certa (os eventos entram direto no diário em treino: d.acrescentar assinaria tudo como a sessão)
 //   ?diario=local     grava de verdade, cifrado, no servidor do diário que o arnês roda em /api (memória)
 
 const $ = id => document.getElementById(id);
@@ -96,26 +101,13 @@ let diario = null;
 async function abrirDiarioDoArnes() {
   if (!sessao) return;
   const d = await abrirDiario({url: params.get('diario') === 'local' ? location.origin : null, membroId: sessao.id, senha: 'arnes-' + sessao.id, masterRaw: new Uint8Array(32).fill(3)});
-  if (params.get('demo') === '1' && d.modo === 'treino') for (const ev of demonstracao(sessao.id)) await d.acrescentar(ev);
+  if (params.get('demo') === '1' && d.modo === 'treino') {
+    const ultimo = d.eventos.length ? d.eventos[d.eventos.length - 1].seq : 0;
+    for (const ev of demonstracao(state, {fotoDoMes, seloDoMes, aplicar}, {primeiroSeq: ultimo + 1})) d.eventos.push({...ev, treino: true});
+  }
   diario = d;
   document.dispatchEvent(new CustomEvent('financeiro:diario'));
 }
-// o exemplo de outubro do plano (docs/PLANO-PORTAL.md §4.6), lançado pelas três sócias do estado fictício
-function demonstracao() {
-  const g = (alvo, d, por) => ({acao: 'add_expense', alvo, dados: {competencia: d.data.slice(0, 7), moeda: 'BRL', forma: 'cartao_pj', pagoPor: por, ...d}});
-  return [
-    g('d1', {data: '2026-10-14', descricao: 'Anthropic API · créditos', categoria: 'software_ia', valorMinor: 10000, moeda: 'USD'}, 'm-ana'),
-    g('d2', {data: '2026-10-05', descricao: 'Vercel · Pro', categoria: 'infraestrutura', valorMinor: 2000, moeda: 'USD', planoId: state.plans.find(p => /vercel/i.test(p.servico))?.id || null}, 'm-bauer'),
-    g('d3', {data: '2026-10-10', descricao: 'Contador · outubro', categoria: 'contabilidade_juridico', valorMinor: 45000, forma: 'pix_pessoal', destino: 'dividir'}, 'm-bauer'),
-    g('d4', {data: '2026-10-12', descricao: 'Domínio orquestrator.com.br', categoria: 'infraestrutura', valorMinor: 5990, forma: 'pix_pessoal', destino: 'empresa_reembolsa'}, 'm-ana'),
-    g('d5', {data: '2026-10-17', descricao: 'Anúncios Instagram · Med Painel', categoria: 'marketing', valorMinor: 30000, forma: 'cartao_pessoal', destino: 'aporte'}, 'm-bia'),
-    g('d6', {data: '2026-09-18', descricao: 'Anthropic API · créditos', categoria: 'software_ia', valorMinor: 8000, moeda: 'USD'}, 'm-ana'),
-    g('d7', {data: '2026-09-10', descricao: 'Contador · setembro', categoria: 'contabilidade_juridico', valorMinor: 45000, forma: 'conta_pj'}, 'm-bauer'),
-    g('d8', {data: '2026-08-10', descricao: 'Contador · agosto', categoria: 'contabilidade_juridico', valorMinor: 45000, forma: 'conta_pj'}, 'm-bauer'),
-    {acao: 'set_parameter', alvo: 'cartao.spread_pct', dados: {chave: 'cartao.spread_pct', valor: '4.20', desde: '2026-10-01', fonte: 'fatura de setembro do cartão PJ', estado: 'vigente'}},
-  ];
-}
-
 const usuario = m => ({user: {nome: m.displayName, participacao_pct: m.participationPct ?? null, decide: false}, must_change_password: false, decide: false});
 window.financeWebRequest = async (action, payload = {}) => {
   if (action === 'restore_session') { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); if (!diario) abrirDiarioDoArnes(); return usuario(sessao); }
