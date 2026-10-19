@@ -67,7 +67,7 @@ Plano aprovado: `docs/PLANO-PORTAL.md`. Este arquivo é riscado a cada checkpoin
 - [x] Controles honestos: na versão online, "Editar cobrança" vira "Lançar pagamento" (já preenchido), e o
   estado da assinatura e os passos de venda ficam desabilitados, com o motivo.
 - [x] Menu em grupos (Dinheiro · Planejar · Empresa · Registro). Botão flutuante de lançar no celular.
-- [ ] PR em rascunho e relatório da manhã.
+- [x] PR em rascunho (#1) e relatório da manhã.
 
 ## O que só o Bauer pode fazer (quando acordar)
 
