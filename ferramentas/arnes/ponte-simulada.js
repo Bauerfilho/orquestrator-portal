@@ -3,23 +3,32 @@
 // senha nem pacote cifrado. O domínio é o domain.js publicado, sem mudança: buildSnapshot faz toda a conta.
 //
 // Parâmetros de URL (todos opcionais):
-//   ?login=1          mostra a tela de entrada (restore_session falha; qualquer senha entra)
+//   ?login=1          mostra a tela de entrada (qualquer senha entra). Com "Lembrar deste aparelho" marcado, o arnês faz
+//                     o mesmo que a ponte publicada (lembrar.js): guarda no IndexedDB a chave mestra fictícia cifrada com a
+//                     chave do aparelho e a chave do diário, e recarregar entra direto, com o diário abrindo pela chave
+//                     guardada. Sair esquece; entrar sem marcar também
+//   ?pacote=novo      simula o pacote lacrado de novo (outra chave mestra fictícia): o aparelho lembrado não abre mais,
+//                     o registro é apagado e a tela de entrada aparece
 //   ?data=AAAA-MM-DD  data civil do cálculo (padrão 2026-10-19, para as fotos serem reproduzíveis)
 //   ?membro=m-ana     quem está vendo (m-bauer, m-ana, m-bia)
 //   ?escrita=1        readOnly false: toggle_step / edit_plan / set_subscription aplicam applyMutation em memória
 //                     (guardado em sessionStorage; ?zerar=1 volta ao estado fictício)
 //   ?perfis=demo      perfis fictícios abertos (nome, função, contato), como se perfis.json tivesse decifrado;
-//                     ?perfis=outra-chave simula o envelope de uma chave mestra antiga; sem o parâmetro, "ausente"
+//                     ?perfis=outra-chave simula o envelope de uma chave mestra antiga; sem o parâmetro, "ausente".
+//                     Os perfis GRAVAM pelo diário do arnês (set_profile, como na ponte publicada): em treino somem
+//                     ao recarregar; com ?diario=local vão cifrados ao servidor em memória e voltam ao recarregar. O perfil do
+//                     diário vence o do ?perfis=demo, que vence o rótulo do estado fictício (Bauer, Ana Ribeiro…)
 //   ?galeria=1        mostra o item Laboratório no menu, com a galeria de verdade: a pasta galeria/ do repositório
 //                     (o publicador do ia-chat a preenche) lida pelo mesmo galeria.js da ponte publicada
 //   ?legado=1         junta um pacote antigo fictício, como o do pacote cifrado: apps/antigo-exemplo.html entra no
 //                     catálogo como "Sem stand" e um apps/sinal.html antigo, que tem de PERDER para o do repositório
 import {buildSnapshot, validateState, applyMutation, civilDate} from './domain.js';
 import {estadoFicticio} from './estado-ficticio.js';
-import {abrirDiario} from './diario.js';
+import {abrirDiario, chaveDaSenhaDoDiario} from './diario.js';
+import {lembrarAparelho, esquecerAparelho, lembrado, mostrarCaixaLembrar, lembrarPermitido} from './lembrar.js';
 import {criarGaleria} from './galeria.js';
-import {cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
-import {aplicar} from './razao.js';
+import {lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, travaDoPerfil, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from './perfis.js';
+import {aplicar, limparPerfil} from './razao.js';
 import {fotoDoMes, seloDoMes} from './contas.js';
 import {demonstracao} from './demonstracao.js';
 //   ?demo=1           o diário em treino já vem com agosto a outubro de exemplo (demonstracao.js): o outubro do plano,
@@ -34,6 +43,9 @@ const ESCRITA = params.get('escrita') === '1';
 const GUARDA = 'arnes-financas.estado';
 const fail = (message, code) => { const error = new Error(message); error.code = code; throw error; };
 const temaAtual = () => document.documentElement.dataset.tema === 'escuro' ? 'escuro' : 'claro';
+// a chave mestra fictícia do arnês (a do diário e a do "Lembrar"); ?pacote=novo é a de um pacote lacrado de novo
+const MESTRA = new Uint8Array(32).fill(params.get('pacote') === 'novo' ? 4 : 3);
+const senhaDoArnes = id => 'arnes-' + id;   // a "senha" do diário no arnês (a tela aceita qualquer uma)
 
 function estadoInicial() {
   if (ESCRITA && params.get('zerar') !== '1') {
@@ -44,14 +56,27 @@ function estadoInicial() {
 }
 let state = estadoInicial();
 validateState(state);
-// Perfis (perfis.js): os rótulos do pacote ficam guardados; com perfis abertos, o nome deles substitui o rótulo.
-const ROTULOS = Object.fromEntries(state.members.map(m => [m.id, m.displayName]));
+// Perfis (perfis.js): os rótulos do pacote ficam guardados; o nome que aparece é o do perfil (diário > ?perfis=demo).
+// (do estado fictício original: o salvo do ?escrita=1 já vem com os nomes trocados)
+const ROTULOS = Object.fromEntries(state.members.map(m => [m.id, (estadoFicticio.members.find(f => f.id === m.id) || m).displayName]));
 const PERFIS = params.get('perfis') === 'demo' ? {estado: 'ok', membros: {
   'm-bauer': {nome: 'Bauer Exemplo', funcao: 'Administrador e Programador (orquestrador)', fone: '64900000001', email: 'bauer@exemplo.com', estadoCivil: 'Solteiro'},
   'm-ana': {nome: 'Ana Ribeiro Exemplo', funcao: 'Administradora', fone: '64900000002', email: 'ana@exemplo.com', estadoCivil: 'Solteira'},
   'm-bia': {nome: 'Beatriz Lima Exemplo', funcao: 'Administradora', fone: '62900000003', estadoCivil: 'Solteira'},
 }} : {estado: ['outra-chave', 'ilegivel', 'indisponivel'].includes(params.get('perfis')) ? params.get('perfis') : 'ausente', membros: {}};
-if (PERFIS.estado === 'ok') state.members = state.members.map(m => PERFIS.membros[m.id] ? {...m, displayName: PERFIS.membros[m.id].nome} : m);
+let diario = null;
+// a mesma mescla da ponte publicada: refeita quando o diário muda (ou o estado, no ?escrita=1), antes de cada leitura
+const acompanhar = acompanharDiario();
+let mescla = {}, mesclaBase = null;
+const nomeVisivel = id => (mescla[id] && mescla[id].perfil && mescla[id].perfil.nome) || ROTULOS[id] || id;
+function atualizarPerfis() {
+  const aplicado = acompanhar.sobre(state, diario);
+  if (mesclaBase && mesclaBase.aplicado === aplicado && mesclaBase.estado === state) return;
+  mescla = mesclarPerfis(state.members.map(m => m.id), PERFIS, aplicado);
+  state.members = state.members.map(m => ({...m, displayName: nomeVisivel(m.id)}));
+  mesclaBase = {aplicado, estado: state};
+}
+atualizarPerfis();
 const membroId = params.get('membro') || 'm-bauer';
 const membroDe = id => { const m = state.members.find(row => row.id === id); return m ? {id: m.id, displayName: m.displayName, participationPct: m.participationPct ?? null, role: m.role} : null; };
 let sessao = params.get('login') === '1' ? null : membroDe(membroId);
@@ -77,53 +102,117 @@ window.financeHost = {
   perfis: {
     ler() {
       if (!sessao) return null;
-      return {estado: PERFIS.estado, membros: state.members.map(m => {
-        const p = (PERFIS.estado === 'ok' && PERFIS.membros[m.id]) || {};
-        return {id: m.id, rotulo: ROTULOS[m.id] || m.displayName, nome: p.nome || '', funcao: p.funcao || '', fone: p.fone ? foneLegivel(p.fone) : '', foneLink: p.fone ? foneDiscavel(p.fone) : '',
-          email: p.email || '', estadoCivil: p.estadoCivil || '', participacao: m.participationPct ?? null, papel: m.role === 'owner' ? 'owner' : 'member'};
-      })};
+      atualizarPerfis();
+      return {estado: estadoDosPerfis(mescla, PERFIS), arquivo: PERFIS.estado, eu: sessao.id, responsavel: sessao.role === 'owner',
+        diario: {modo: diario ? diario.modo : 'abrindo', motivo: diario ? diario.motivo || '' : ''},
+        membros: state.members.map(m => perfilParaTela(m, ROTULOS[m.id] || m.displayName, mescla[m.id], podeEditarPerfil(sessao, m.id), PERFIS))};
     },
-    conferir(texto) { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); return lerColado(texto, state.members.map(m => ({id: m.id, rotulo: ROTULOS[m.id] || m.displayName}))); },
-    // chave fictícia do arnês: o envelope sai marcado (arnes) e abrirPerfis o recusa, para nunca virar perfis de verdade
-    async cifrar(membros, remover = []) {
+    podeEditar(id) { return podeEditarPerfil(sessao, id); },
+    conferir(texto) {
       if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated');
-      if (PERFIS.estado === 'indisponivel') fail('Os perfis de hoje não carregaram. Recarregue a página antes de atualizar, para não apagar ninguém.', 'indisponivel');
-      const envelope = await cifrarPerfis(new Uint8Array(32).fill(3), {membros: juntarPerfis(PERFIS.estado === 'ok' ? PERFIS.membros : {}, membros, remover)});
-      return JSON.stringify({...envelope, arnes: true}, null, 1) + '\n';
+      atualizarPerfis();
+      return lerColado(texto, state.members.map(m => ({id: m.id, rotulo: ROTULOS[m.id] || m.displayName, nome: (mescla[m.id] && mescla[m.id].perfil && mescla[m.id].perfil.nome) || ''})));
+    },
+    // como na ponte publicada: confere pelo razão, grava set_profile pelo diário do arnês e avisa (financeiro:diario)
+    async salvar(id, perfil, versao) {
+      if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated');
+      if (!state.members.some(m => m.id === id)) fail('Esta sócia não está no pacote.', 'invalido');
+      if (!podeEditarPerfil(sessao, id)) fail('Você só edita o seu perfil. A responsável edita o de todas.', 'permissao');
+      const d = diario;
+      if (!d || typeof d.acrescentar !== 'function') fail('O diário ainda está abrindo. Tente de novo em instantes.', 'indisponivel');
+      atualizarPerfis();
+      const trava = travaDoPerfil(mescla[id], PERFIS);
+      if (trava) fail(trava, 'indisponivel');
+      // a versão do perfil que a tela mostrava (sem ela, a que este aparelho tem agora): outra pessoa salvou no meio → 'versao'
+      const vista = Number.isSafeInteger(versao) ? versao : (mescla[id] && Number.isSafeInteger(mescla[id].versao) ? mescla[id].versao : 0);
+      const conteudo = {acao: 'set_profile', alvo: id, dados: perfil === null ? null : limparPerfil(perfil), versao: vista};
+      const previa = aplicar(state, [...d.eventos, {seq: Infinity, id: 'previa', membro: sessao.id, conteudo: {...conteudo, quando: new Date().toISOString()}}]);
+      const recusa = previa.recusados.find(r => r.id === 'previa');
+      if (recusa) fail(recusa.motivo, recusa.codigo || 'invalido');
+      const r = await d.acrescentar(conteudo);
+      if (!r || !r.ok) fail((r && r.erro) || 'Não deu para gravar agora. Tente de novo.', 'indisponivel');
+      atualizarPerfis();
+      document.dispatchEvent(new CustomEvent('financeiro:diario'));
+      // num conflito (409) o diario.js sincroniza e reenvia o MESMO conteúdo, sem conferir de novo: se outra pessoa salvou
+      // este perfil no meio, o evento entrou e o razão o recusou pela versão (nada do que ela salvou se perdeu); a tela junta
+      const depois = r.evento && acompanhar.sobre(state, d).recusados.find(x => x.id === r.evento.id);
+      if (depois) fail(depois.motivo, depois.codigo || 'invalido');
+      return {ok: true, treino: !!r.treino, modo: d.modo, nome: perfil === null ? '' : nomeVisivel(id)};
     },
   },
   livro: {
-    contexto() { return sessao ? {estado: state, membro: {id: sessao.id, nome: sessao.displayName, papel: sessao.role, pct: sessao.participationPct}, hoje: HOJE} : null; },
+    contexto() {
+      if (!sessao) return null;
+      atualizarPerfis();
+      return {estado: state, membro: {id: sessao.id, nome: nomeVisivel(sessao.id), papel: sessao.role, pct: sessao.participationPct}, hoje: HOJE};
+    },
     diario() { return diario; },
   },
 };
-let diario = null;
-async function abrirDiarioDoArnes() {
+// kek: a chave da senha do diário já derivada (no login) ou guardada pelo "Lembrar" (na entrada direta); sem ela, a senha
+async function abrirDiarioDoArnes(kek) {
   if (!sessao) return;
-  const d = await abrirDiario({url: params.get('diario') === 'local' ? location.origin : null, membroId: sessao.id, senha: 'arnes-' + sessao.id, masterRaw: new Uint8Array(32).fill(3)});
+  const membro = sessao.id;
+  const d = await abrirDiario({url: params.get('diario') === 'local' ? location.origin : null, membroId: membro, ...(kek ? {kek: await kek} : {senha: senhaDoArnes(membro)}), masterRaw: MESTRA});
+  if (!sessao || sessao.id !== membro) return;
   if (params.get('demo') === '1' && d.modo === 'treino') {
     const ultimo = d.eventos.length ? d.eventos[d.eventos.length - 1].seq : 0;
     for (const ev of demonstracao(state, {fotoDoMes, seloDoMes, aplicar}, {primeiroSeq: ultimo + 1})) d.eventos.push({...ev, treino: true});
   }
   diario = d;
+  atualizarPerfis();
   document.dispatchEvent(new CustomEvent('financeiro:diario'));
 }
-const usuario = m => ({user: {nome: m.displayName, participacao_pct: m.participationPct ?? null, decide: false}, must_change_password: false, decide: false});
+const usuario = m => ({user: {nome: nomeVisivel(m.id), participacao_pct: m.participationPct ?? null, decide: false}, must_change_password: false, decide: false});
+// "Lembrar deste aparelho", como na ponte publicada: o registro abre, a sócia existe e a mestra é a deste "pacote"; senão,
+// apaga o registro e devolve null (tela de entrada, sem erro)
+async function entrarPeloAparelho() {
+  // numa origem compartilhada (github.io) o aparelho não lembra: um registro que tenha ficado é apagado, sem esperar
+  if (!lembrarPermitido()) { esquecerAparelho().catch(() => {}); return null; }
+  let aberto;
+  try { aberto = await lembrado(); } catch { return null; }
+  if (!aberto) return null;
+  const m = membroDe(aberto.memberId);
+  const mesmaMestra = aberto.masterRaw.length === MESTRA.length && aberto.masterRaw.every((b, i) => b === MESTRA[i]);
+  if (!m || !mesmaMestra || aberto.membroDiario !== m.id) { await esquecerAparelho().catch(() => {}); return null; }
+  sessao = m;
+  abrirDiarioDoArnes(aberto.diarioKek);
+  return usuario(sessao);
+}
 window.financeWebRequest = async (action, payload = {}) => {
-  if (action === 'restore_session') { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); if (!diario) abrirDiarioDoArnes(); return usuario(sessao); }
-  if (action === 'login') { sessao = membroDe(membroId); if (!sessao) fail('Seu perfil não está neste pacote.', 'no_account'); abrirDiarioDoArnes(); return usuario(sessao); }
-  if (action === 'logout') { sessao = null; galeria.esquecer(); return {logged_out: true}; }
+  if (action === 'restore_session') {
+    if (sessao) { if (!diario) abrirDiarioDoArnes(); return usuario(sessao); }
+    const entrada = await entrarPeloAparelho();
+    if (entrada) return entrada;
+    fail('Entre com a senha do portal.', 'unauthenticated');
+  }
+  if (action === 'login') {
+    sessao = membroDe(membroId);
+    if (!sessao) fail('Seu perfil não está neste pacote.', 'no_account');
+    const kek = chaveDaSenhaDoDiario(senhaDoArnes(sessao.id), sessao.id);
+    abrirDiarioDoArnes(kek);
+    const entrada = usuario(sessao);
+    if (payload.remember && lembrarPermitido()) {
+      try { await lembrarAparelho({memberId: sessao.id, membroDiario: sessao.id, masterRaw: MESTRA, diarioKek: await kek}); }
+      catch { entrada.remember_error = true; esquecerAparelho().catch(() => {}); }
+    } else esquecerAparelho().catch(() => {});
+    return entrada;
+  }
+  if (action === 'logout') { sessao = null; diario = null; galeria.esquecer(); await esquecerAparelho().catch(() => {}); return {logged_out: true}; }
   if (action === 'preferences') { window.financeHost.tema = payload.tema === 'escuro' ? 'escuro' : 'claro'; return {tema: window.financeHost.tema}; }
   if (action === 'change_password') fail('A senha do portal é definida pelo Criador, fora do painel.', 'identity_managed');
   if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated');
   if (action === 'snapshot') {
+    atualizarPerfis();
     const result = buildSnapshot(state, sessao, HOJE);
+    result.content_revision += ':p' + marcaDosPerfis(mescla);
     return payload.if_revision === result.content_revision ? {unchanged: true, content_revision: result.content_revision} : result;
   }
   if (action === 'set_decision') fail('As decisões se registram na aba Finanças do AI Cask.', 'read_only');
   if (ESCRITA && ['toggle_step', 'edit_plan', 'set_subscription'].includes(action)) {
     const {state: next, result} = applyMutation(state, action, payload, sessao, HOJE);
     state = next;
+    atualizarPerfis();
     try { sessionStorage.setItem(GUARDA, JSON.stringify(state)); } catch {}
     return result;
   }
@@ -139,20 +228,22 @@ window.financeOpenTeam = async () => {
   const heading = node('div', undefined, 'asset-dialog-heading');
   const fechar = node('button', 'Fechar', 'button button-outline'); fechar.type = 'button'; fechar.addEventListener('click', () => dialog.close());
   heading.append(node('h2', 'Equipe e participação'), fechar); dialog.append(heading);
-  dialog.append(node('p', 'Os perfis abaixo definem o rateio. Nesta versão publicada a lista é só de leitura; quem edita é o AI Cask.', 'section-intro'));
+  dialog.append(node('p', 'A participação de cada sócia define o rateio. Nome, função e contato ficam na página Sociedade.', 'section-intro'));
+  atualizarPerfis();
   for (const m of state.members) {
     const group = node('section', undefined, 'cloud-member');
-    group.append(node('h3', m.displayName), node('p', (m.participationPct === null || m.participationPct === undefined ? 'Participação não informada' : `Participação: ${m.participationPct}%`) + (m.role === 'owner' ? ' · responsável' : ''), 'form-help'));
+    const p = (mescla[m.id] && mescla[m.id].perfil) || {};
+    group.append(node('h3', nomeVisivel(m.id)), node('p', [p.funcao, m.participationPct === null || m.participationPct === undefined ? 'Participação não informada' : `Participação: ${m.participationPct}%`, m.role === 'owner' ? 'responsável' : ''].filter(Boolean).join(' · '), 'form-help'));
     dialog.append(group);
   }
   dialog.showModal();
 };
 
-// Mesma preparação da tela de entrada da ponte publicada (sem CPF, sem "lembrar", com o olho da senha).
+// Mesma preparação da tela de entrada da ponte publicada (sem CPF, com "Lembrar deste aparelho" e o olho da senha).
 function prepareForm() {
   const cpf = $('login-cpf');
   if (cpf) { cpf.required = false; ['pattern', 'minlength', 'maxlength'].forEach(a => cpf.removeAttribute(a)); const row = cpf.closest('.field') || cpf.parentElement; row.hidden = true; }
-  const remember = $('login-remember'); if (remember) { const row = remember.closest('label'); if (row) row.hidden = true; }
+  mostrarCaixaLembrar(document);
   const help = $('login-help'); if (help) help.textContent = 'A senha é a do portal. Sem senha? Fale com o Criador.';
   const form = $('login-form'); if (form) { form.hidden = false; form.inert = false; form.removeAttribute('aria-hidden'); }
 }

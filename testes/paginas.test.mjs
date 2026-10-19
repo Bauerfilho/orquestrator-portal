@@ -54,6 +54,15 @@ test('cada página tem chave e rota únicas, título, descrição, as três linh
   assert.equal(W.financePaginas.find(p => p.chave === 'lab').requer, 'galeria');
 });
 
+test('a ajuda da Sociedade diz o que a página faz hoje: os perfis gravam pelo diário (não é mais só consulta)', () => {
+  const {ajuda} = W.financePaginas.find(p => p.chave === 'society');
+  assert.match(ajuda.deonde, /diário cifrado/);
+  assert.match(ajuda.deonde, /Atualizar perfis/);
+  assert.doesNotMatch(ajuda.naoe, /É consulta|nem registra alterações/);
+  assert.match(ajuda.naoe, /contrato social/);
+  assert.match(ajuda.naoe, /próprio perfil/);
+});
+
 test('o index.html: gaveta vazia montada pelo registro, "+ Lançar" no topo, faixa global e paginas.js antes do app.js', () => {
   const html = ler('index.html');
   assert.ok(!/data-navigate=/.test(html), 'nenhum botão de página fixo no index.html: a gaveta vem do registro');

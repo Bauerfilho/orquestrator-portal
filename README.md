@@ -10,12 +10,20 @@ interface: `app.js`, `domain.js`, `razao.js`, `diario.js`, `livro.js`, `graficos
 Os dados da empresa são cifrados no navegador: sem a senha, não há nada legível deles aqui. A exceção são as
 maquetes do Laboratório (`galeria/` e `apps/`), que são públicas e só têm dados fictícios.
 
+**Lembrar deste aparelho.** Marcada na entrada, a caixa guarda neste navegador (no IndexedDB do site) a chave do pacote,
+cifrada com uma chave do aparelho, e a chave do diário; a senha nunca é guardada. Nenhum script copia os bytes da chave do
+aparelho, mas qualquer página da mesma origem consegue USÁ-LA e abrir o pacote. Por isso a caixa só aparece numa origem
+que seja só do portal: no GitHub Pages (`bauerfilho.github.io`, a mesma origem de todo repositório Pages do dono e das
+telas cheias públicas das maquetes) ela não aparece e nada vai para o aparelho, até o portal ter endereço próprio (F3-8
+do plano). Sair esquece o aparelho (entrar sem marcar também). No iPhone, pelo Safari, o próprio sistema pode apagar isso
+depois de uns 7 dias sem abrir o portal (é só entrar de novo); no app da Tela de Início, não.
+
 ## O que há em cada arquivo
 
 | Arquivo | O que faz |
 |---|---|
 | `index.html` | A página, com a política de segurança (CSP). Só fala com o próprio site, com o servidor do diário e com a PTAX do BCB. |
-| `static-bridge.js` · `portal-crypto.js` | Abrem o pacote cifrado com a senha e abrem o diário. |
+| `static-bridge.js` · `portal-crypto.js` · `lembrar.js` | Abrem o pacote cifrado com a senha e abrem o diário. `lembrar.js` é o "Lembrar deste aparelho". |
 | `domain.js` | O domínio que já existia: assinaturas, cobranças e rateio, em centavos inteiros. |
 | `razao.js` | O livro-razão:<br>· parâmetros com vigência (câmbio, spread, IOF, impostos, taxas);<br>· lançamentos das sócias, conferência e conciliação da fatura;<br>· assinaturas, passos de venda, acertos, saldos e receitas;<br>· fechar e reabrir o mês, com a trava do que forma os números;<br>· o mês calculado, o acerto entre sócias e o CSV para o contador. |
 | `diario.js` | O diário cifrado: cada gravação é cifrada (AES-GCM) e assinada (ECDSA) no navegador, e o servidor só guarda texto cifrado. Fala com o armazenamento por uma **porta** (`portaHttp`, `portaMemoria` ou uma sua): o contrato está em `docs/PORTAS.md`. |
@@ -54,9 +62,12 @@ Depois é commit e push; o GitHub Pages publica sozinho.
 node --test testes/*.test.mjs                                 # livro-razão, servidor, diário, galeria e tela cheia das maquetes
 node ferramentas/arnes/servir.mjs 8765                        # o portal local, sem senha: http://127.0.0.1:8765/?demo=1
 node ferramentas/arnes/fotografar.mjs --query "demo=1"        # fotos de todas as páginas, claro/escuro, desktop/celular
+node ferramentas/arnes/fluxos/lembrar.mjs --porta 8931        # "Lembrar deste aparelho" no Chromium (arnês e ponte real)
+node ferramentas/arnes/fluxos/perfis.mjs --porta 8951         # perfis: corrida entre aparelhos, iPhone, ajuda, perfis.json fora
 ```
 
 No arnês, `?diario=local` grava de verdade, cifrado, num servidor do diário em memória. `?membro=m-ana` mostra o portal
-como a Ana. `?galeria=1` mostra o Laboratório com a `galeria/` do repositório, e `?legado=1` junta um pacote antigo de
-mentira (um documento "Sem stand" e um Sinal antigo, que tem de perder para o do repositório). As fotos falham se a
-página registrar erro de script ou violação de CSP.
+como a Ana. `?login=1` mostra a tela de entrada (com "Lembrar deste aparelho" marcado, recarregar entra direto) e
+`?pacote=novo` faz de conta que o pacote foi lacrado de novo. `?galeria=1` mostra o Laboratório com a `galeria/` do
+repositório, e `?legado=1` junta um pacote antigo de mentira (um documento "Sem stand" e um Sinal antigo, que tem de
+perder para o do repositório). As fotos falham se a página registrar erro de script ou violação de CSP.

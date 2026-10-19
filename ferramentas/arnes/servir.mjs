@@ -2,7 +2,11 @@
 // pacote cifrado: /static-bridge.js vira a ponte simulada (ponte-simulada.js), /estado-ficticio.js é o estado de
 // mentira e /demonstracao.js são os eventos de exemplo do ?demo=1. Em /api/* roda o servidor do diário de verdade
 // (servidor/nucleo.mjs) com armazenamento em memória, para testar a gravação cifrada ponta a ponta (?diario=local).
-// Uso: node servir.mjs [porta=8765] [raiz=../..] [--agora 2026-11-03T13:00:00Z]
+// Uso: node servir.mjs [porta=8765] [raiz=../..] [--agora 2026-11-03T13:00:00Z] [--ponte-real]
+//
+// Ponte real: servir(porta, {ponteReal: true}) (ou --ponte-real) serve o static-bridge.js de verdade, sem a troca. Serve
+// para provar a ponte publicada com um pacote fictício lacrado na hora (pacote-ficticio.mjs), entregue pelas rotas do
+// Playwright no lugar do manifest.json: o pacote de verdade não é tocado (fluxos/lembrar.mjs).
 //
 // Relógio do servidor: o diário grava a hora de cada evento (ts), e o razão usa a MENOR entre ela e a do aparelho para
 // saber se um mês já terminou. Para um teste fechar outubro "em 03/11" (com page.clock no navegador), o servidor
@@ -44,6 +48,7 @@ export function servir(porta = 8765, raiz = join(aqui, '..', '..'), opcoes = {})
   if (raiz && typeof raiz === 'object') { opcoes = raiz; raiz = opcoes.raiz; }
   const base = resolve(raiz || join(aqui, '..', '..'));
   let relogio = criarRelogio(opcoes.agora !== undefined ? opcoes.agora : process.env.ARNES_AGORA);
+  const trocas = opcoes.ponteReal ? Object.fromEntries(Object.entries(TROCAS).filter(([k]) => k !== '/static-bridge.js')) : TROCAS;
   const armazem = comRelogio(armazemEmMemoria(), () => (relogio ? relogio() : null));
   const diario = criarDiario(armazem, {origens: []});
   const servidor = createServer(async (req, res) => {
@@ -64,8 +69,8 @@ export function servir(porta = 8765, raiz = join(aqui, '..', '..'), opcoes = {})
       }
       let caminho = decodeURIComponent(url.pathname);
       if (caminho.endsWith('/')) caminho += 'index.html';
-      const arquivo = TROCAS[caminho] || resolve(base, '.' + normalize(caminho));
-      if (!TROCAS[caminho] && arquivo !== base && !arquivo.startsWith(base + sep)) { res.writeHead(403).end(); return; }
+      const arquivo = trocas[caminho] || resolve(base, '.' + normalize(caminho));
+      if (!trocas[caminho] && arquivo !== base && !arquivo.startsWith(base + sep)) { res.writeHead(403).end(); return; }
       const info = await stat(arquivo).catch(() => null);
       if (!info || !info.isFile()) { res.writeHead(404, {'content-type': 'text/plain'}).end('404'); return; }
       res.writeHead(200, {'content-type': TIPOS[extname(arquivo)] || 'application/octet-stream', 'cache-control': 'no-store'});
@@ -79,13 +84,14 @@ export function servir(porta = 8765, raiz = join(aqui, '..', '..'), opcoes = {})
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2), soltos = [];
-  let agora;
+  let agora, ponteReal = false;
   for (let k = 0; k < args.length; k++) {
-    if (args[k] === '--agora') agora = args[++k];
+    if (args[k] === '--ponte-real') ponteReal = true;
+    else if (args[k] === '--agora') agora = args[++k];
     else if (args[k].startsWith('--agora=')) agora = args[k].slice(8);
     else soltos.push(args[k]);
   }
   const porta = Number(soltos[0] || 8765);
-  const servidor = await servir(porta, soltos[1] ? resolve(soltos[1]) : undefined, agora !== undefined ? {agora} : {});
+  const servidor = await servir(porta, soltos[1] ? resolve(soltos[1]) : undefined, {...(agora !== undefined ? {agora} : {}), ponteReal});
   console.log(`Arnês em http://127.0.0.1:${porta}/  ·  ?demo=1 traz agosto a outubro de exemplo  ·  ?diario=local grava cifrado no servidor em memória  ·  relógio do servidor: ${servidor.agora()}`);
 }

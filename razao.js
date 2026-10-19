@@ -225,7 +225,7 @@ export const ACOES = ['add_expense', 'edit_expense', 'void_expense', 'set_parame
   'check_expense', 'reconcile_statement', 'record_payment', 'convert_to_contribution',
   'add_plan', 'edit_plan', 'confirm_plan', 'archive_plan', 'reactivate_plan', 'toggle_step',
   'record_settlement', 'confirm_settlement', 'set_balance', 'add_income', 'edit_income', 'void_income',
-  'close_month', 'reopen_month'];
+  'close_month', 'reopen_month', 'set_profile'];
 // o verbo de cada ação no Histórico ("Ana conferiu · Domínio")
 export const VERBOS = {
   add_expense: 'lançou', edit_expense: 'corrigiu', void_expense: 'anulou', set_parameter: 'mudou o parâmetro', mark_reimbursed: 'marcou como reembolsado',
@@ -233,14 +233,14 @@ export const VERBOS = {
   add_plan: 'criou a assinatura', edit_plan: 'alterou a assinatura', confirm_plan: 'confirmou a assinatura', archive_plan: 'encerrou a assinatura', reactivate_plan: 'reativou a assinatura', toggle_step: 'marcou o passo',
   record_settlement: 'registrou o acerto', confirm_settlement: 'confirmou o recebimento', set_balance: 'informou o saldo',
   add_income: 'lançou a receita', edit_income: 'corrigiu a receita', void_income: 'anulou a receita',
-  close_month: 'fechou o mês', reopen_month: 'reabriu o mês',
+  close_month: 'fechou o mês', reopen_month: 'reabriu o mês', set_profile: 'atualizou o perfil',
 };
 const GRUPO = {
   add_expense: aplicarGasto, edit_expense: aplicarGasto, void_expense: aplicarGasto, mark_reimbursed: aplicarGasto, check_expense: aplicarGasto,
   reconcile_statement: aplicarGasto, record_payment: aplicarGasto, convert_to_contribution: aplicarGasto, set_parameter: aplicarParametro,
   add_plan: aplicarPlano, edit_plan: aplicarPlano, confirm_plan: aplicarPlano, archive_plan: aplicarPlano, reactivate_plan: aplicarPlano, toggle_step: aplicarPlano,
   record_settlement: aplicarDinheiro, confirm_settlement: aplicarDinheiro, set_balance: aplicarDinheiro, add_income: aplicarDinheiro, edit_income: aplicarDinheiro, void_income: aplicarDinheiro,
-  close_month: aplicarMes, reopen_month: aplicarMes,
+  close_month: aplicarMes, reopen_month: aplicarMes, set_profile: aplicarPerfil,
 };
 
 // O fold: estado do pacote (plans e selling.steps entram como versão 1 sem autora) + eventos, em ordem. Puro e
@@ -250,7 +250,7 @@ export function aplicar(estadoBase, eventos) {
   const S = {membros, dono: id => (membros.find(m => m.id === id) || {}).papel === 'owner', socia: id => membros.some(m => m.id === id),
     nome: id => id === 'empresa' ? 'a empresa' : (membros.find(m => m.id === id) || {}).nome || id,
     gastos: new Map(), params: [], planos: new Map(), passos: new Map(), acertos: new Map(), saldos: new Map(), receitas: new Map(), fechamentos: {},
-    recusados: [], historico: [], mudancas: []};
+    perfis: new Map(), recusados: [], historico: [], mudancas: []};
   for (const p of estadoBase.plans || []) if (p && typeof p.id === 'string' && !S.planos.has(p.id)) S.planos.set(p.id, planoDoPacote(p));
   for (const s of (estadoBase.selling && estadoBase.selling.steps) || []) if (s && typeof s.id === 'string' && !S.passos.has(s.id)) S.passos.set(s.id, passoDoPacote(s));
   for (const ev of eventos) {
@@ -274,8 +274,12 @@ export function aplicar(estadoBase, eventos) {
   const saldos = [...S.saldos.values()], vigentes = new Map();
   for (const s of saldos) { const m = vigentes.get(s.conta); if (!m || s.data >= m.data) vigentes.set(s.conta, s); }   // em ordem do diário: no empate vale o mais novo
   for (const s of saldos) s.vigente = vigentes.get(s.conta) === s;
+  const vivos = [...S.perfis].filter(([, r]) => r.perfil);
   return {membros, gastos: [...S.gastos.values()], parametros: S.params, recusados: S.recusados, historico: S.historico,
-    planos: [...S.planos.values()], passos: [...S.passos.values()], acertos: [...S.acertos.values()], saldos, receitas: [...S.receitas.values()], fechamentos: S.fechamentos};
+    planos: [...S.planos.values()], passos: [...S.passos.values()], acertos: [...S.acertos.values()], saldos, receitas: [...S.receitas.values()], fechamentos: S.fechamentos,
+    perfis: Object.fromEntries(vivos.map(([id, r]) => [id, {...r.perfil, alteradoPor: r.alteradoPor, alteradoEm: r.alteradoEm, versao: r.versao}])),
+    perfisApagados: [...S.perfis].filter(([, r]) => !r.perfil).map(([id]) => id),
+    versoesPerfis: Object.fromEntries([...S.perfis].map(([id, r]) => [id, r.versao]))};   // também a de quem foi apagado (o set_profile confere)
 }
 
 // ── ajudantes comuns às ações ────────────────────────────────────────────────────────────────────────────────────
@@ -700,6 +704,50 @@ function aplicarMes(S, x) {
     planosNaHora: [...S.planos.values()].map(p => { const {versoes, ...resto} = p; return JSON.parse(JSON.stringify(resto)); }), reaberturas: anterior ? anterior.reaberturas : []};
   S.fechamentos[mes] = f;
   x.registrar({resumo: `${Mes(mes)} · custo ${fmt(t.total)} · selo ${d.selo.slice(0, 8)}`, depois: {selo: f.selo, totais: f.totais, cabeca: f.cabeca}});
+}
+
+// ── perfis das sócias (19/10, noite): nome, função e contato gravados direto no diário ─────────────────────────────────
+// set_profile {alvo: id da sócia, dados: {nome, funcao, fone, email, estadoCivil} | null}. A própria sócia edita o seu; a
+// responsável edita o de qualquer uma (o papel vem do estado, nunca do evento). A limpeza é a mesma do perfis.js, que usa
+// esta: só texto, espaços juntados, aparado e com limite; sem nome não entra; dados null apaga o perfil. Vale o último, na
+// ordem do diário. Não mexe em número nenhum: fica fora do selo, da trava do mês e da concorrência do fechamento. No
+// Histórico vão só os NOMES dos campos que mudaram: telefone e e-mail nunca aparecem num antes → depois.
+// "versao" (opcional) é a do perfil que a tela mostrava (0 = ainda sem registro no diário). Veio e não bate: outra pessoa
+// salvou este perfil no meio (o 409 do diario.js reenvia o mesmo conteúdo, sem conferir de novo), e o evento é recusado
+// com 'versao' em vez de apagar o que ela salvou; a tela junta e pede para conferir. Sem "versao" (os eventos de antes),
+// vale o último, como era.
+export const CAMPOS_PERFIL = [['nome', 'Nome', 120], ['funcao', 'Função', 120], ['fone', 'Telefone', 40], ['email', 'E-mail', 160], ['estadoCivil', 'Estado civil', 40]];
+export function limparPerfil(perfil) {
+  const limpo = {};
+  if (!perfil || typeof perfil !== 'object') return limpo;
+  for (const [campo, , limite] of CAMPOS_PERFIL) {
+    const valor = typeof perfil[campo] === 'string' ? perfil[campo].replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limite).trim() : '';
+    if (valor) limpo[campo] = valor;
+  }
+  return limpo;
+}
+const listaComE = nomes => nomes.length < 2 ? nomes.join('') : nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
+function aplicarPerfil(S, x) {
+  const {c, autora, quando} = x, alvo = c.alvo;
+  if (typeof alvo !== 'string' || !S.socia(alvo)) return x.recusa('O perfil tem de ser de uma sócia deste painel.');
+  if (alvo !== autora && !S.dono(autora)) return x.recusa('Cada sócia edita o próprio perfil; a responsável edita o de todas.', 'permissao');
+  const apagar = c.dados === null;
+  if (!apagar && (!c.dados || typeof c.dados !== 'object' || Array.isArray(c.dados))) return x.recusa('Dados do perfil inválidos.');
+  const novo = apagar ? null : limparPerfil(c.dados);
+  if (novo && !novo.nome) return x.recusa('O perfil precisa de um nome.');
+  const anterior = S.perfis.get(alvo) || {perfil: null, versao: 0};
+  if (c.versao !== undefined) {
+    if (!inteiro(c.versao)) return x.recusa('Versão do perfil inválida: recarregue o portal e tente de novo.');
+    if (c.versao !== anterior.versao) return x.recusa(`Outra pessoa mudou este perfil antes (versão ${anterior.versao}).`, 'versao', {versao: anterior.versao, alteradoPor: anterior.alteradoPor || null, alteradoEm: anterior.alteradoEm || null});
+  }
+  const antes = anterior.perfil || {};
+  const mudaram = CAMPOS_PERFIL.filter(([k]) => (antes[k] || '') !== ((novo || {})[k] || ''));
+  S.perfis.set(alvo, {perfil: novo, versao: anterior.versao + 1, alteradoPor: autora, alteradoEm: quando});
+  const proprio = alvo === autora;
+  const verbo = apagar ? (proprio ? 'apagou o próprio perfil' : `apagou o perfil de ${antes.nome || S.nome(alvo)}`)
+    : (proprio ? 'atualizou o próprio perfil' : `atualizou o perfil de ${novo.nome}`);
+  // sem valores: o antes → depois do Histórico fica vazio de propósito; "campos" diz o que mudou pelo nome do campo
+  x.registrar({verbo, resumo: apagar ? '' : (mudaram.length ? listaComE(mudaram.map(([, rotulo]) => rotulo.toLowerCase())) : 'nenhum campo mudou'), campos: mudaram.map(([k]) => k)});
 }
 
 // ── reais de um gasto (F4): fatura > estimativa > "sem câmbio" (nunca zero) ──────────────────────────────────────────
