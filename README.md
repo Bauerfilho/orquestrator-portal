@@ -7,7 +7,8 @@ GitHub Pages a partir da branch `main`.
 gerando o **pacote cifrado de dados** (`bundle-*.bin`, `manifest.json`, `painel/`). Ele não deve sobrescrever a
 interface: `app.js`, `domain.js`, `razao.js`, `diario.js`, `livro.js`, `graficos.js`, os `.css` e o `index.html`.
 
-O conteúdo é cifrado no navegador. Sem a senha, não há nada legível aqui.
+Os dados da empresa são cifrados no navegador: sem a senha, não há nada legível deles aqui. A exceção são as
+maquetes do Laboratório (`galeria/` e `apps/`), que são públicas e só têm dados fictícios.
 
 ## O que há em cada arquivo
 
@@ -20,16 +21,40 @@ O conteúdo é cifrado no navegador. Sem a senha, não há nada legível aqui.
 | `diario.js` | O diário cifrado: cada gravação é cifrada (AES-GCM) e assinada (ECDSA) no navegador, e o servidor só guarda texto cifrado. |
 | `livro.js` · `graficos.js` · `livro.css` | As páginas Livro do mês, Lançamentos, Parâmetros e Histórico, o botão "+ Lançar" e os gráficos. |
 | `app.js` · `style.css` · `tema.css` | A interface que já existia. |
+| `galeria.js` | O Laboratório: lê o catálogo e as maquetes de `galeria/` (mesma origem) e junta os documentos antigos do pacote cifrado como "Sem stand". Quando o mesmo arquivo existe nos dois, vence o do repositório. |
+| `galeria/` | O catálogo (`index.html`) e as maquetes com stand (`apps/<id>.html`) que o item Laboratório mostra numa moldura isolada. **Não se edita aqui**: vem do ia-chat, com `python3 laboratorio/publicar.py <pasta do portal>`. |
+| `apps/<id>/` | A versão **tela cheia** de cada maquete, para abrir numa aba à parte e pôr na Tela de Início do iPhone: o app sozinho (`index.html`), `manifest.webmanifest` e os ícones 180, 192 e 512. Também vem do publicador do ia-chat. Endereço: `https://bauerfilho.github.io/orquestrator-portal/apps/<id>/`. |
 | `servidor/` | O servidor do diário (função Netlify com Blobs). Como publicar: `servidor/LEIA.md`. |
 | `docs/` | `PLANO-PORTAL.md` (o plano aprovado) e `CHECKLIST.md` (o que foi feito e o que falta). |
+
+## Laboratório: maquetes e tela cheia
+
+As sócias entram com a senha e abrem o **Laboratório**. Ali está o catálogo; cada maquete abre no stand, com os três
+estados. Na barra de cima há o link **Abrir em tela cheia ↗**: ele abre o app sozinho numa aba nova, como num iPhone.
+No iPhone, é tocar em Compartilhar e em Adicionar à Tela de Início para usar como app.
+
+**As páginas de tela cheia são públicas.** Elas ficam fora do pacote cifrado: qualquer pessoa com o link abre, sem
+senha. Por isso só têm dados fictícios e pedem aos buscadores para não indexar (`noindex`). O catálogo e as maquetes
+com stand (`galeria/`) também são arquivos comuns do site; só o resto do portal é cifrado.
+
+Para publicar uma versão nova das maquetes:
+
+```zsh
+cd ../ia-chat && python3 laboratorio/publicar.py ../orquestrator-portal   # reescreve galeria/ e apps/
+cd ../orquestrator-portal && node --test testes/*.test.mjs                 # confere cada maquete e a tela cheia dela
+```
+
+Depois é commit e push; o GitHub Pages publica sozinho.
 
 ## Conferir
 
 ```zsh
-node --test testes/*.test.mjs                                 # livro-razão, servidor e diário (cifra, conflito, adulteração)
+node --test testes/*.test.mjs                                 # livro-razão, servidor, diário, galeria e tela cheia das maquetes
 node ferramentas/arnes/servir.mjs 8765                        # o portal local, sem senha: http://127.0.0.1:8765/?demo=1
 node ferramentas/arnes/fotografar.mjs --query "demo=1"        # fotos de todas as páginas, claro/escuro, desktop/celular
 ```
 
 No arnês, `?diario=local` grava de verdade, cifrado, num servidor do diário em memória. `?membro=m-ana` mostra o portal
-como a Ana. As fotos falham se a página registrar erro de script ou violação de CSP.
+como a Ana. `?galeria=1` mostra o Laboratório com a `galeria/` do repositório, e `?legado=1` junta um pacote antigo de
+mentira (um documento "Sem stand" e um Sinal antigo, que tem de perder para o do repositório). As fotos falham se a
+página registrar erro de script ou violação de CSP.

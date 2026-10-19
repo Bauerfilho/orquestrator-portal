@@ -4,42 +4,74 @@
 import {unlock, fetchManifest, loadBundle, b64} from './portal-crypto.js';
 import {buildSnapshot, civilDate, validateState} from './domain.js';
 import {abrirDiario} from './diario.js';
+import {criarGaleria} from './galeria.js';
+import {carregarPerfis, cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
 // O servidor do diário cifrado (servidor/LEIA.md). Sem ele publicado, o diário roda em modo treino e a tela diz isso.
 const DIARIO_URL = 'https://orquestrator-diario.netlify.app';
 const $ = id => document.getElementById(id);
 const base = new URL('./', location.href);
 let manifest = null, bundle = null, member = null, state = null, chave = null;
-const blobs = new Map();
 let painelBlob = null;
 let diarioAtual = null, diarioPromessa = null;
+// Perfis da sociedade (perfis.js): nome, função e contato de cada sócia, cifrados em perfis.json com a chave mestra.
+// Abertos, os nomes deles substituem os rótulos do pacote ("Sócio 1"…) em todo o portal.
+const SEM_PERFIS = {estado: 'ausente', membros: {}};
+let perfis = SEM_PERFIS;
+const nomeVisivel = m => (perfis.estado === 'ok' && perfis.membros[m.id] && perfis.membros[m.id].nome) || m.displayName;
 const fail = (message, code) => { const error = new Error(message); error.code = code; throw error; };
 const temaAtual = () => document.documentElement.dataset.tema === 'escuro' ? 'escuro' : 'claro';
 const domainMember = m => ({id: m.id, displayName: m.displayName, participationPct: m.participationPct ?? null, role: m.role === 'owner' ? 'owner' : 'member'});
+// O Laboratório (galeria.js): o catálogo e as maquetes vêm de galeria/ deste repositório; os documentos antigos do
+// pacote cifrado entram como "Sem stand" (o do repositório vence). Só com o portal aberto pela senha.
+const galeria = criarGaleria({base, legado: () => bundle && bundle.gallery});
 // O host, para a interface saber onde está: portal = só leitura, com Laboratório, com "Minha equipe", sem decisão.
 window.financeHost = {
   kind: 'portal', tema: temaAtual(), galeria: true, team: true, readOnly: true, decide: false,
   // URL (sem fragmento) de uma página da galeria, servida de blob: nesta aba; o app acrescenta o fragmento #tema=.
-  galeriaUrl(file) {
+  // Assíncrona: a página vem do repositório (fetch na mesma origem) e só cai no pacote se o repositório não a tiver.
+  async galeriaUrl(file) {
     if (!bundle) fail('Entre com a senha do portal.', 'unauthenticated');
-    const nome = String(file || 'index.html').replace(/^\.\.\//, '').replace(/#.*$/, '');
-    if (!/^(index\.html|apps\/[a-z0-9-]+\.html)$/.test(nome)) fail('Página não encontrada: ' + nome, 'not_found');
-    if (!blobs.has(nome)) {
-      const html = bundle.gallery.files[nome];
-      if (typeof html !== 'string') fail('Página não encontrada: ' + nome, 'not_found');
-      blobs.set(nome, URL.createObjectURL(new Blob([html], {type: 'text/html'})));
-    }
-    return blobs.get(nome);
+    return galeria.url(file);
   },
-  galeriaTitle(file) { const nome = String(file || '').replace(/^\.\.\//, '').replace(/#.*$/, ''); return (bundle && bundle.gallery.titles[nome]) || null; },
+  galeriaTitle(file) { return bundle ? galeria.titulo(file) : null; },
+  // A página de tela cheia da maquete (apps/<id>/, pública, para a Tela de Início do iPhone), ou null se não houver.
+  async galeriaTelaCheia(file) {
+    if (!bundle) fail('Entre com a senha do portal.', 'unauthenticated');
+    return galeria.telaCheia(file);
+  },
   // A mesa de teste do Med Painel (18/10/2026): selada à parte em painel/<slug>/, com a chave mestra dentro deste pacote.
   // Quem entrou no Finanças abre sem segunda senha; o mesmo endereço, com a senha própria, é o link para quem não é do portal.
   // Livro do mês, Lançamentos, Parâmetros e Histórico (livro.js): o estado canônico do pacote + o diário das sócias
   livro: {
     contexto() {
       if (!state || !member) return null;
-      return {estado: state, membro: {id: member.id, nome: member.displayName, papel: member.role === 'owner' ? 'owner' : 'member', pct: member.participationPct ?? null}, hoje: civilDate(new Date())};
+      return {estado: state, membro: {id: member.id, nome: nomeVisivel(member), papel: member.role === 'owner' ? 'owner' : 'member', pct: member.participationPct ?? null}, hoje: civilDate(new Date())};
     },
     diario() { return diarioAtual; },
+  },
+  // Sociedade: os perfis abertos (ler), a colagem conferida contra o roster (conferir) e o envelope cifrado (cifrar),
+  // que volta para o repositório como perfis.json. Nada disso existe sem a senha.
+  perfis: {
+    ler() {
+      if (!bundle) return null;
+      return {estado: perfis.estado, membros: bundle.finance.roster.map(m => {
+        const p = (perfis.estado === 'ok' && perfis.membros[m.id]) || {};
+        return {id: m.id, rotulo: m.displayName, nome: p.nome || '', funcao: p.funcao || '', fone: p.fone ? foneLegivel(p.fone) : '', foneLink: p.fone ? foneDiscavel(p.fone) : '',
+          email: p.email || '', estadoCivil: p.estadoCivil || '', participacao: m.participationPct ?? null, papel: m.role === 'owner' ? 'owner' : 'member'};
+      })};
+    },
+    conferir(texto) {
+      if (!bundle) fail('Entre com a senha do portal.', 'unauthenticated');
+      return lerColado(texto, bundle.finance.roster.map(m => ({id: m.id, rotulo: m.displayName})));
+    },
+    // junta com os perfis já abertos: colar só a própria sócia não apaga as outras (null no texto remove alguém)
+    async cifrar(membros, remover = []) {
+      if (!chave) fail('Entre com a senha do portal.', 'unauthenticated');
+      // sem ler os perfis de hoje (rede fora), juntar seria juntar com nada: o envelope apagaria quem não foi colado
+      if (perfis.estado === 'indisponivel') fail('Os perfis de hoje não carregaram. Recarregue a página antes de atualizar, para não apagar ninguém.', 'indisponivel');
+      const base = perfis.estado === 'ok' ? perfis.membros : {};
+      return JSON.stringify(await cifrarPerfis(chave.masterRaw, {membros: juntarPerfis(base, membros, remover)}), null, 1) + '\n';
+    },
   },
   painelLink() { return bundle && bundle.painel && /^[a-f0-9]{16}$/.test(bundle.painel.slug || '') ? new URL('painel/' + bundle.painel.slug + '/', base).href : ''; },
   async painelUrl() {
@@ -56,19 +88,20 @@ window.financeHost = {
   },
 };
 async function getManifest() { return manifest ??= await fetchManifest(base); }
-function esquecer() { chave = bundle = state = member = null; diarioAtual = null; diarioPromessa = null; for (const u of blobs.values()) { try { URL.revokeObjectURL(u); } catch {} } blobs.clear(); if (painelBlob) { try { URL.revokeObjectURL(painelBlob); } catch {} painelBlob = null; } }
+function esquecer() { chave = bundle = state = member = null; perfis = SEM_PERFIS; diarioAtual = null; diarioPromessa = null; galeria.esquecer(); if (painelBlob) { try { URL.revokeObjectURL(painelBlob); } catch {} painelBlob = null; } }
 async function activate(sess) {
   bundle = await loadBundle(base, await getManifest(), sess.masterRaw);
   const roster = bundle.finance.roster;
   member = roster.find(r => r.portalId === sess.memberId) || null;
   if (!member) { esquecer(); fail('Seu perfil não está neste pacote.', 'no_account'); }
   state = structuredClone(bundle.finance.state);
-  state.members = roster.map(domainMember);
+  perfis = await carregarPerfis(base, sess.masterRaw);
+  state.members = roster.map(m => domainMember({...m, displayName: nomeVisivel(m)}));
   state.staticBlocks ??= {}; state.staticBlocks.atlas ??= {};
   if (!Array.isArray(state.staticBlocks.atlas.assets) || !state.staticBlocks.atlas.assets.length) state.staticBlocks.atlas.assets = bundle.finance.assets || [];
   validateState(state);
   chave = sess;
-  return {user: {nome: member.displayName, participacao_pct: member.participationPct ?? null, decide: false}, must_change_password: false, decide: false};
+  return {user: {nome: nomeVisivel(member), participacao_pct: member.participationPct ?? null, decide: false}, must_change_password: false, decide: false};
 }
 function prepareForm() {
   // No portal a senha identifica o membro: sem CPF e sem "lembrar" (a sessão dura enquanto a página estiver aberta).
@@ -101,7 +134,7 @@ window.financeWebRequest = async (action, payload = {}) => {
   if (action === 'change_password') fail('A senha do portal é definida pelo Criador, fora do painel.', 'identity_managed');
   if (!state) fail('Entre com a senha do portal.', 'unauthenticated');
   if (action === 'snapshot') {
-    const result = buildSnapshot(state, domainMember(member), civilDate(new Date()));
+    const result = buildSnapshot(state, domainMember({...member, displayName: nomeVisivel(member)}), civilDate(new Date()));
     return payload.if_revision === result.content_revision ? {unchanged: true, content_revision: result.content_revision} : result;
   }
   if (action === 'set_decision') fail('As decisões se registram na aba Finanças do AI Cask.', 'read_only');
@@ -115,12 +148,13 @@ window.financeOpenTeam = async () => {
   const heading = node('div', undefined, 'asset-dialog-heading');
   const fechar = node('button', 'Fechar', 'button button-outline'); fechar.type = 'button'; fechar.addEventListener('click', () => dialog.close());
   heading.append(node('h2', 'Equipe e participação'), fechar); dialog.append(heading);
-  dialog.append(node('p', 'Os perfis abaixo definem o rateio. Nesta versão publicada a lista é só de leitura; quem edita é o AI Cask.', 'section-intro'));
+  dialog.append(node('p', 'A participação de cada sócia define o rateio. Nome, função e contato ficam na página Sociedade.', 'section-intro'));
   const roster = (bundle && bundle.finance.roster) || [];
   if (!roster.length) dialog.append(node('p', 'Nenhum perfil disponível.'));
   for (const m of roster) {
     const group = node('section', undefined, 'cloud-member');
-    group.append(node('h3', m.displayName), node('p', (m.participationPct === null || m.participationPct === undefined ? 'Participação não informada' : `Participação: ${m.participationPct}%`) + (m.role === 'owner' ? ' · responsável' : ''), 'form-help'));
+    const p = (perfis.estado === 'ok' && perfis.membros[m.id]) || {};
+    group.append(node('h3', nomeVisivel(m)), node('p', [p.funcao, m.participationPct === null || m.participationPct === undefined ? 'Participação não informada' : `Participação: ${m.participationPct}%`, m.role === 'owner' ? 'responsável' : ''].filter(Boolean).join(' · '), 'form-help'));
     dialog.append(group);
   }
   dialog.showModal();

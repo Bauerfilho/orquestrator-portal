@@ -90,7 +90,14 @@ html[data-surface="grid"] body{background-image:linear-gradient(rgba(151,182,148
 
 /* F1 — alternador de tema (base válida nos dois temas) e página Laboratório: iframe com cantos redondos, sem barra dupla. */
 .theme-toggle svg{display:block}.masthead .local-indicator{margin-left:auto}.masthead .theme-toggle{margin-left:4px}
-.lab-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px}.lab-bar .button{min-height:40px;font-size:11px}.lab-title{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.lab-bar{display:grid;gap:8px;margin-bottom:16px}.lab-bar .button{min-height:40px;font-size:11px}.lab-title{flex:1 1 180px;min-width:0;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+/* Laboratório · barra da tela cheia (19/10/2026): link real para a página do app sozinho, copiar link e a dica do iPhone. */
+.lab-linha{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}.lab-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}.lab-acoes .button{gap:8px;white-space:nowrap}
+.lab-dica{margin:0;font-size:11px;line-height:1.6;color:var(--muted);max-width:760px}.lab-dica:empty{display:none}
+.lab-aviso{margin:0;padding:9px 13px;font-size:12px;line-height:1.55;color:var(--ink);background:var(--panel-raised);border:1px solid var(--line);border-left:2px solid var(--gold);border-radius:0 7px 7px 0;overflow-wrap:anywhere}.lab-aviso-erro{color:var(--danger);background:var(--danger-bg);border-left-color:var(--danger)}
+.lab-tela-cheia.lab-destaque{outline:2px solid var(--gold-light);outline-offset:3px;animation:lab-pulso 1.1s ease-in-out 3}@keyframes lab-pulso{50%{box-shadow:0 0 0 7px rgba(207,172,105,.32)}}
+@media(prefers-reduced-motion:reduce){.lab-tela-cheia.lab-destaque{animation:none}}
+@media(max-width:620px){.lab-linha{gap:8px 10px}.lab-acoes{margin-left:0;width:100%}.lab-acoes .button{flex:1 1 0;min-height:44px;padding:8px 10px}.lab-dica{font-size:11px}}
 .lab-frame{display:block;width:100%;min-height:calc(100vh - 140px);border:1px solid var(--line);border-radius:14px;background:var(--panel)}
 @media(max-width:620px){.lab-frame{min-height:calc(100vh - 120px);border-radius:12px}}
 
@@ -219,3 +226,7 @@ html[data-surface="grid"] body{background-image:linear-gradient(rgba(151,182,148
 .mp-teto{margin:0;padding:12px 15px;border-left:3px solid var(--mp-acento);background:var(--tinta-suave,rgba(255,255,255,.035));border-radius:0 12px 12px 0;color:var(--ink);font-size:13.5px;max-width:86ch}
 .mp-detalhes summary{cursor:pointer;color:var(--gold);font-size:13.5px;margin:6px 0 10px}
 @media(max-width:620px){.mp-cenario{padding:6px 12px}.mp-numero-valor{font-size:22px}.mp-secao-titulo{font-size:19px}}
+/* Perfis da sociedade (19/10/2026): cartões com nome, função e contato (perfis.json, cifrado) e a ferramenta que cifra */
+.perfis{margin-bottom:28px}.perfis-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}.perfil-cartao{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:18px 20px;display:flex;flex-direction:column;gap:8px;min-width:0}.perfil-cabeca{margin-bottom:4px}.perfil-nome{font-size:21px;line-height:1.25;overflow-wrap:anywhere}.perfil-funcao{font-size:12px;color:var(--gold);margin:6px 0 0;line-height:1.5}.perfil-campo{display:flex;justify-content:space-between;gap:14px;font-size:13px;margin:0;padding-top:8px;border-top:1px solid var(--line)}.perfil-rotulo{color:var(--muted);flex-shrink:0}.perfil-valor{text-align:right;overflow-wrap:anywhere;color:var(--ink)}a.perfil-valor{color:var(--gold-light);text-decoration:underline;text-underline-offset:3px}.perfis-aviso{font-size:13px;color:var(--muted);line-height:1.7;max-width:680px;margin:0 0 12px}
+.perfis-ferramenta{margin-top:16px;border:1px dashed var(--line);border-radius:12px;padding:12px 16px}.perfis-ferramenta summary{cursor:pointer;font-size:13px;font-weight:500;min-height:32px;display:flex;align-items:center}.perfis-ferramenta .form-help{margin:8px 0 12px;max-width:680px}.perfis-entrada,.perfis-envelope{display:block;width:100%;box-sizing:border-box;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}.perfis-entrada:focus,.perfis-envelope:focus{border-color:var(--gold);outline:none}.perfis-botoes{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.perfis-linha{font-size:12px;margin:4px 0;overflow-wrap:anywhere}.perfis-saida{margin-top:10px}.perfis-saida .button{margin-top:8px}
+@media(max-width:620px){.perfis-grade{grid-template-columns:1fr}.perfil-campo{flex-direction:column;gap:2px}.perfil-valor{text-align:left}}
