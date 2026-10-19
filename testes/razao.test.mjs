@@ -42,6 +42,8 @@ test('dinheiro à moda brasileira', () => {
   assert.equal(centavosBR('12,345'), null);
   assert.equal(centavosBR('100.00', 'USD'), 10000);
   assert.equal(centavosBR('1,000.50', 'USD'), 100050);
+  assert.equal(centavosBR('100,00', 'USD'), 10000, 'vírgula decimal vale também para dólar');
+  assert.equal(centavosBR('1,000', 'USD'), 100000);
   assert.equal(decimal('5,0826').n, 50826n);
 });
 

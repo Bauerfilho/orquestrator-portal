@@ -11,6 +11,9 @@
 //   ?galeria=1        mostra o item Laboratório no menu (a galeria real vive no pacote cifrado; aqui é um marcador)
 import {buildSnapshot, validateState, applyMutation, civilDate} from './domain.js';
 import {estadoFicticio} from './estado-ficticio.js';
+import {abrirDiario} from './diario.js';
+//   ?demo=1           o diário em treino já vem com lançamentos e parâmetros de exemplo (o outubro do plano)
+//   ?diario=local     grava de verdade, cifrado, no servidor do diário que o arnês roda em /api (memória)
 
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -37,12 +40,39 @@ window.financeHost = {
   kind: 'portal', tema: temaAtual(), galeria: params.get('galeria') === '1', team: true, readOnly: !ESCRITA, decide: false,
   galeriaUrl() { return URL.createObjectURL(new Blob(['<!doctype html><meta charset="utf-8"><body style="font:15px system-ui;padding:24px">Galeria de maquetes: vive no pacote cifrado do portal; o arnês não a reproduz.</body>'], {type: 'text/html'})); },
   galeriaTitle() { return 'Galeria de maquetes (marcador do arnês)'; },
+  livro: {
+    contexto() { return sessao ? {estado: state, membro: {id: sessao.id, nome: sessao.displayName, papel: sessao.role, pct: sessao.participationPct}, hoje: HOJE} : null; },
+    diario() { return diario; },
+  },
 };
+let diario = null;
+async function abrirDiarioDoArnes() {
+  if (!sessao) return;
+  const d = await abrirDiario({url: params.get('diario') === 'local' ? location.origin : null, membroId: sessao.id, senha: 'arnes-' + sessao.id, masterRaw: new Uint8Array(32).fill(3)});
+  if (params.get('demo') === '1' && d.modo === 'treino') for (const ev of demonstracao(sessao.id)) await d.acrescentar(ev);
+  diario = d;
+  document.dispatchEvent(new CustomEvent('financeiro:diario'));
+}
+// o exemplo de outubro do plano (docs/PLANO-PORTAL.md §4.6), lançado pelas três sócias do estado fictício
+function demonstracao() {
+  const g = (alvo, d, por) => ({acao: 'add_expense', alvo, dados: {competencia: d.data.slice(0, 7), moeda: 'BRL', forma: 'cartao_pj', pagoPor: por, ...d}});
+  return [
+    g('d1', {data: '2026-10-14', descricao: 'Anthropic API · créditos', categoria: 'software_ia', valorMinor: 10000, moeda: 'USD'}, 'm-ana'),
+    g('d2', {data: '2026-10-05', descricao: 'Vercel · Pro', categoria: 'infraestrutura', valorMinor: 2000, moeda: 'USD', planoId: state.plans.find(p => /vercel/i.test(p.servico))?.id || null}, 'm-bauer'),
+    g('d3', {data: '2026-10-10', descricao: 'Contador · outubro', categoria: 'contabilidade_juridico', valorMinor: 45000, forma: 'pix_pessoal', destino: 'dividir'}, 'm-bauer'),
+    g('d4', {data: '2026-10-12', descricao: 'Domínio orquestrator.com.br', categoria: 'infraestrutura', valorMinor: 5990, forma: 'pix_pessoal', destino: 'empresa_reembolsa'}, 'm-ana'),
+    g('d5', {data: '2026-10-17', descricao: 'Anúncios Instagram · Med Painel', categoria: 'marketing', valorMinor: 30000, forma: 'cartao_pessoal', destino: 'aporte'}, 'm-bia'),
+    g('d6', {data: '2026-09-18', descricao: 'Anthropic API · créditos', categoria: 'software_ia', valorMinor: 8000, moeda: 'USD'}, 'm-ana'),
+    g('d7', {data: '2026-09-10', descricao: 'Contador · setembro', categoria: 'contabilidade_juridico', valorMinor: 45000, forma: 'conta_pj'}, 'm-bauer'),
+    g('d8', {data: '2026-08-10', descricao: 'Contador · agosto', categoria: 'contabilidade_juridico', valorMinor: 45000, forma: 'conta_pj'}, 'm-bauer'),
+    {acao: 'set_parameter', alvo: 'cartao.spread_pct', dados: {chave: 'cartao.spread_pct', valor: '4.20', desde: '2026-10-01', fonte: 'fatura de setembro do cartão PJ', estado: 'vigente'}},
+  ];
+}
 
 const usuario = m => ({user: {nome: m.displayName, participacao_pct: m.participationPct ?? null, decide: false}, must_change_password: false, decide: false});
 window.financeWebRequest = async (action, payload = {}) => {
-  if (action === 'restore_session') { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); return usuario(sessao); }
-  if (action === 'login') { sessao = membroDe(membroId); if (!sessao) fail('Seu perfil não está neste pacote.', 'no_account'); return usuario(sessao); }
+  if (action === 'restore_session') { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); if (!diario) abrirDiarioDoArnes(); return usuario(sessao); }
+  if (action === 'login') { sessao = membroDe(membroId); if (!sessao) fail('Seu perfil não está neste pacote.', 'no_account'); abrirDiarioDoArnes(); return usuario(sessao); }
   if (action === 'logout') { sessao = null; return {logged_out: true}; }
   if (action === 'preferences') { window.financeHost.tema = payload.tema === 'escuro' ? 'escuro' : 'claro'; return {tema: window.financeHost.tema}; }
   if (action === 'change_password') fail('A senha do portal é definida pelo Criador, fora do painel.', 'identity_managed');

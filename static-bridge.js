@@ -3,11 +3,15 @@
 // mudanças se fazem na aba Finanças do AI Cask. A chave mestra vive SÓ em memória (nunca em storage): recarregar = entrar de novo.
 import {unlock, fetchManifest, loadBundle, b64} from './portal-crypto.js';
 import {buildSnapshot, civilDate, validateState} from './domain.js';
+import {abrirDiario} from './diario.js';
+// O servidor do diário cifrado (servidor/LEIA.md). Sem ele publicado, o diário roda em modo treino e a tela diz isso.
+const DIARIO_URL = 'https://orquestrator-diario.netlify.app';
 const $ = id => document.getElementById(id);
 const base = new URL('./', location.href);
 let manifest = null, bundle = null, member = null, state = null, chave = null;
 const blobs = new Map();
 let painelBlob = null;
+let diarioAtual = null, diarioPromessa = null;
 const fail = (message, code) => { const error = new Error(message); error.code = code; throw error; };
 const temaAtual = () => document.documentElement.dataset.tema === 'escuro' ? 'escuro' : 'claro';
 const domainMember = m => ({id: m.id, displayName: m.displayName, participationPct: m.participationPct ?? null, role: m.role === 'owner' ? 'owner' : 'member'});
@@ -29,6 +33,14 @@ window.financeHost = {
   galeriaTitle(file) { const nome = String(file || '').replace(/^\.\.\//, '').replace(/#.*$/, ''); return (bundle && bundle.gallery.titles[nome]) || null; },
   // A mesa de teste do Med Painel (18/10/2026): selada à parte em painel/<slug>/, com a chave mestra dentro deste pacote.
   // Quem entrou no Finanças abre sem segunda senha; o mesmo endereço, com a senha própria, é o link para quem não é do portal.
+  // Livro do mês, Lançamentos, Parâmetros e Histórico (livro.js): o estado canônico do pacote + o diário das sócias
+  livro: {
+    contexto() {
+      if (!state || !member) return null;
+      return {estado: state, membro: {id: member.id, nome: member.displayName, papel: member.role === 'owner' ? 'owner' : 'member', pct: member.participationPct ?? null}, hoje: civilDate(new Date())};
+    },
+    diario() { return diarioAtual; },
+  },
   painelLink() { return bundle && bundle.painel && /^[a-f0-9]{16}$/.test(bundle.painel.slug || '') ? new URL('painel/' + bundle.painel.slug + '/', base).href : ''; },
   async painelUrl() {
     if (!bundle) fail('Entre com a senha do portal.', 'unauthenticated');
@@ -44,7 +56,7 @@ window.financeHost = {
   },
 };
 async function getManifest() { return manifest ??= await fetchManifest(base); }
-function esquecer() { chave = bundle = state = member = null; for (const u of blobs.values()) { try { URL.revokeObjectURL(u); } catch {} } blobs.clear(); if (painelBlob) { try { URL.revokeObjectURL(painelBlob); } catch {} painelBlob = null; } }
+function esquecer() { chave = bundle = state = member = null; diarioAtual = null; diarioPromessa = null; for (const u of blobs.values()) { try { URL.revokeObjectURL(u); } catch {} } blobs.clear(); if (painelBlob) { try { URL.revokeObjectURL(painelBlob); } catch {} painelBlob = null; } }
 async function activate(sess) {
   bundle = await loadBundle(base, await getManifest(), sess.masterRaw);
   const roster = bundle.finance.roster;
@@ -76,7 +88,13 @@ window.financeWebRequest = async (action, payload = {}) => {
   if (action === 'login') {
     const got = await unlock(await getManifest(), String(payload.password || ''));
     if (!got) fail('Senha não reconhecida.', 'unauthenticated');
-    return activate(got);
+    const entrada = await activate(got);
+    // a chave do diário vem da senha (PBKDF2, ~meio segundo): abre em segundo plano, sem atrasar a entrada
+    const memberId = member.id, senha = String(payload.password || '');
+    diarioPromessa = abrirDiario({url: DIARIO_URL, membroId: memberId, senha, masterRaw: got.masterRaw instanceof Uint8Array ? got.masterRaw : b64.dec(got.masterRaw)})
+      .then(d => { if (member && member.id === memberId) { diarioAtual = d; document.dispatchEvent(new CustomEvent('financeiro:diario')); } })
+      .catch(() => {});
+    return entrada;
   }
   if (action === 'logout') { esquecer(); return {logged_out: true}; }
   if (action === 'preferences') { window.financeHost.tema = payload.tema === 'escuro' ? 'escuro' : 'claro'; return {tema: window.financeHost.tema}; }

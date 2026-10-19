@@ -11,9 +11,9 @@ import {servir} from './servir.mjs';
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const arg = (nome, padrao) => { const i = process.argv.indexOf('--' + nome); return i > 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : padrao; };
-const SAIDA = resolve(arg('saida', join(aqui, '..', 'fotos-portal')));
+const SAIDA = resolve(arg('saida', join(process.env.TMPDIR || '/tmp', 'fotos-portal')));
 const PORTA = Number(arg('porta', 8765));
-const SITE = resolve(arg('site', join(aqui, 'site')));
+const SITE = resolve(arg('site', join(aqui, '..', '..')));
 const SO = arg('so', '') ? arg('so', '').split(',') : null;
 const SO_PAGINAS = arg('paginas', '') ? arg('paginas', '').split(',') : null;
 const EXTRAS = !process.argv.includes('--sem-extras');
@@ -22,7 +22,7 @@ const QUERY = arg('query', '');
 const raizGlobal = execSync('npm root -g').toString().trim();
 const {chromium} = await import(pathToFileURL(join(raizGlobal, 'playwright', 'index.mjs')).href);
 
-const PAGINAS = [['overview', '01-meu-painel'], ['subscriptions', '02-assinaturas'], ['sell', '03-vender-primeiro'], ['medpainel', '04-med-painel'], ['portfolio', '05-portfolio'], ['cash', '06-caixa'], ['projection', '07-projecao'], ['society', '08-sociedade'], ['lab', '09-laboratorio']];
+const PAGINAS = [['overview', '01-meu-painel'], ['livro', '02-livro-do-mes'], ['lancamentos', '03-lancamentos'], ['subscriptions', '04-assinaturas'], ['cash', '05-caixa'], ['parametros', '06-parametros'], ['medpainel', '07-med-painel'], ['projection', '08-projecao'], ['sell', '09-vender-primeiro'], ['society', '10-sociedade'], ['portfolio', '11-portfolio'], ['historico', '13-historico'], ['lab', '12-laboratorio']];
 const TELAS = [['desktop', {width: 1280, height: 860}], ['celular', {width: 390, height: 844}]];
 const TEMAS = ['claro', 'escuro'];
 
