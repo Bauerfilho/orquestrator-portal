@@ -190,25 +190,35 @@ for (const tela of ['desktop', 'celular']) for (const tema of ['claro', 'escuro'
   f = await lerFolha(pagina);
   certo(p, f.itens[1].rateio === null && f.resumo.endsWith('diferença +R$ 2,71'), 'voltar a "Item a item" devia manter os valores digitados');
   if (corte === 'desktop-claro') {
-    // a soma dos itens é sempre o total digitado: 3.000 casos sorteados no mesmo dividirTotal que a folha usa
+    // a soma dos itens é sempre o total digitado: 3.000 casos sorteados no mesmo dividirTotal que a folha usa, em dólar e
+    // em euro; com moedas diferentes e algum gasto sem estimativa (sem peso em reais), a divisão é recusada com o motivo
     const prop = await pagina.evaluate(async () => {
       const {dividirTotal} = await import('/conciliacao.js');
-      let semente = 20261019;
-      const sorte = n => { semente = (semente * 1103515245 + 12345) % 2147483648; return semente % n; };
-      let casos = 0, ruins = [];
+      // sorteio determinístico: LCG de 64 bits em BigInt (conta exata), usando os 32 bits de cima (os de baixo repetem cedo)
+      let semente = 20261019n;
+      const sorte = n => { semente = (semente * 6364136223846793005n + 1442695040888963407n) & 0xFFFFFFFFFFFFFFFFn; return Number(semente >> 32n) % n; };
+      const RECUSA = 'Há gastos em moedas diferentes sem câmbio para estimar: informe o valor de cada um.';
+      let casos = 0, misturados = 0, recusas = 0, ruins = [];
       for (let k = 0; k < 3000; k++) {
         const n = 1 + sorte(8), itens = [];
-        for (let j = 0; j < n; j++) itens.push({id: 'g' + j, moeda: sorte(4) ? 'USD' : 'USD', valorMinor: 1 + sorte(5000000), est: sorte(10) ? 1 + sorte(30000000) : null});
+        for (let j = 0; j < n; j++) itens.push({id: 'g' + j, moeda: sorte(4) ? 'USD' : 'EUR', valorMinor: 1 + sorte(5000000), est: sorte(10) ? 1 + sorte(30000000) : null});
         const total = n + sorte(40000000);
         const r = dividirTotal(total, itens);
+        const misturado = new Set(itens.map(it => it.moeda)).size > 1, semPeso = itens.some(it => it.est === null);
+        if (misturado && semPeso) {
+          recusas++;
+          if (r.erro !== RECUSA || r.faturas.size) ruins.push({recusa: true, erro: r.erro, n});
+          continue;
+        }
         if (r.erro) continue;
         casos++;
+        if (misturado) misturados++;
         const soma = [...r.faturas.values()].reduce((a, b) => a + b, 0);
         if (soma !== total || r.faturas.size !== n || [...r.faturas.values()].some(v => !Number.isSafeInteger(v) || v < 1)) ruins.push({total, soma, n});
       }
-      return {casos, ruins: ruins.slice(0, 3)};
+      return {casos, misturados, recusas, ruins: ruins.slice(0, 3)};
     });
-    certo(p, prop.casos > 2500 && !prop.ruins.length, `a soma das partes devia ser sempre o total: ${JSON.stringify(prop)}`);
+    certo(p, prop.casos > 2000 && prop.misturados > 500 && prop.recusas > 300 && !prop.ruins.length, `a soma das partes devia ser sempre o total (e moedas diferentes sem peso, recusadas): ${JSON.stringify(prop)}`);
     registro.conferencias.push({passo: p, propriedade: prop});
   }
 
@@ -239,7 +249,7 @@ for (const tela of ['desktop', 'celular']) for (const tema of ['claro', 'escuro'
       cartao: [...document.querySelectorAll('#lancamentos-content .lv-gasto')].filter(a => a.dataset.gasto === 'demo-api-2026-10').map(a => a.querySelector('.lv-gasto-valor').textContent.replace(/\s+/g, ' ').trim())[0]}));
     certo(q, !fechou.aberta, 'o Pronto devia fechar a folha');
     if (tela === 'desktop') certo(q, fechou.foco, 'o foco devia voltar ao botão “Conciliar fatura”');
-    certo(q, fechou.cartao === 'US$ 100,00≈ R$ 549,80 · fatura', `Lançamentos devia mostrar a fatura no cartão da Anthropic (mostra ${fechou.cartao})`);
+    certo(q, fechou.cartao === 'US$ 100,00R$ 549,80 · fatura', `Lançamentos devia mostrar a fatura no cartão da Anthropic, sem o “≈” do estimado (mostra ${fechou.cartao})`);
     // o Livro do mês de outubro troca "estimado" por "fatura" nos dois gastos
     await irPara(pagina, 'livro');
     const livro = await pagina.evaluate(() => {
@@ -274,8 +284,7 @@ for (const tela of ['desktop', 'celular']) for (const tema of ['claro', 'escuro'
   await contexto.close();
 }
 
-// ══ 2 · ?diario=local: gravação de verdade ═════════════════════════════════════════════════════════════════════════
-const local = membro => `?diario=local&membro=${membro}`;
+// lança gastos em dólar (e o dólar dos Parâmetros, com alvo 'fx:…') como a sócia que está vendo
 const lancar = (pagina, lista) => pagina.evaluate(async lista => {
   const L = await import('/livro.js');
   for (const [alvo, d] of lista) {
@@ -284,6 +293,64 @@ const lancar = (pagina, lista) => pagina.evaluate(async lista => {
   }
   return null;
 }, lista);
+
+// ══ 1b · ?demo=1: bordas ═══════════════════════════════════════════════════════════════════════════════════════════
+{
+  const p = passo('?demo=1 · bordas: o total não passa para outra fatura; spread fora do normal; spread baixo pede o IOF');
+  const {contexto, pagina} = await abrir(p, '?demo=1#lancamentos');
+  const erro = await lancar(pagina, [['x-pessoal', {data: '2026-10-07', descricao: 'Pessoal · teste', categoria: 'software_ia', valorMinor: 500, forma: 'cartao_pessoal', destino: 'empresa_reembolsa'}]]);
+  certo(p, !erro, `não consegui lançar o gasto do cartão pessoal: ${erro}`);
+  await pagina.evaluate(() => window.financeConciliacao.abrir('2026-10', 'cartao_pj'));
+  await pagina.waitForSelector('dialog.sheet[open] .cc-raiz', {timeout: 5000});
+  await esperarPtax(pagina);
+  const textos = await pagina.evaluate(() => ({intro: document.querySelector('dialog.sheet[open] .cc-intro').textContent, dica: document.querySelector('dialog.sheet[open] .cc-total .cc-dica').textContent}));
+  certo(p, textos.intro.startsWith('Digite quanto o banco cobrou por cada gasto, somando o IOF quando ele vem numa linha separada. Se o IOF vem numa linha só para todos, use “Só tenho o total”.'), `o texto de entrada: ${textos.intro}`);
+  certo(p, !/maior resto/.test(textos.dica), `a dica do total não devia ter jargão: ${textos.dica}`);
+  // um total dez vezes maior (engano de digitação): a explicação não mostra um spread absurdo nem oferece usá-lo
+  await pagina.check('dialog.sheet .cc-modo input[value="total"]');
+  await pagina.fill('dialog.sheet .cc-total .lv-dinheiro-valor', '6592,20');
+  let f = await lerFolha(pagina);
+  const dica = () => pagina.evaluate(() => [...document.querySelectorAll('dialog.sheet[open] .cc-porque .cc-dica')].map(n => n.textContent));
+  certo(p, f.porque && f.porque.endsWith('o IOF de 3,5%. O valor parece fora do normal: confira o que foi digitado.') && !/spread saiu/.test(f.porque), `spread fora do normal: ${f.porque}`);
+  certo(p, !(await dica()).length, 'com o valor fora do normal, a folha não devia sugerir usar este spread');
+  await pagina.fill('dialog.sheet .cc-total .lv-dinheiro-valor', '659,22');
+  f = await lerFolha(pagina);
+  certo(p, f.porque && f.porque.endsWith('Nesta fatura o spread saiu 5,43%.') && (await dica()).length === 1, `o total certo volta a explicar o spread: ${f.porque}`);
+  // trocar o cartão é outra fatura: o total digitado sai do campo e não vai parar no gasto do cartão pessoal
+  await pagina.selectOption('dialog.sheet .cc-seletores select >> nth=1', 'cartao_pessoal');
+  await esperarPtax(pagina);
+  f = await lerFolha(pagina);
+  const campo = await pagina.inputValue('dialog.sheet .cc-total .lv-dinheiro-valor');
+  certo(p, f.forma === 'cartao_pessoal' && JSON.stringify(f.itens.map(i => i.id)) === '["x-pessoal"]' && campo === '' && /→ digite o total da fatura$/.test(f.resumo), `o total devia sair do campo ao trocar o cartão: campo “${campo}” · ${f.resumo}`);
+  await pagina.click('dialog.sheet .lv-dialogo-acoes button[type=submit]');
+  await pagina.waitForTimeout(300);
+  f = await lerFolha(pagina);
+  const pessoal = await pagina.evaluate(async () => (await import('/livro.js')).dados().aplicado.gastos.find(g => g.id === 'x-pessoal').faturaBrlMinor);
+  certo(p, f.erro === 'Informe o total da fatura (use vírgula para os centavos).' && !f.salvo && pessoal === null, `sem total, não grava: erro ${f.erro} · salvo ${f.salvo} · fatura ${pessoal}`);
+  // as linhas da fatura sem o IOF (veio numa linha separada): o spread sai baixo e a folha pede para somar o IOF
+  await pagina.selectOption('dialog.sheet .cc-seletores select >> nth=1', 'cartao_pj');
+  await pagina.check('dialog.sheet .cc-modo input[value="itens"]');
+  await pagina.fill('dialog.sheet .cc-item[data-gasto="demo-vercel-2026-10"] .lv-dinheiro-valor', '104,10');
+  await pagina.fill('dialog.sheet .cc-item[data-gasto="demo-api-2026-10"] .lv-dinheiro-valor', '526,40');
+  f = await lerFolha(pagina);
+  certo(p, f.porque && f.porque.endsWith('Nesta fatura o spread saiu 0,84%. Confira se você somou o IOF de cada gasto.'), `spread baixo devia pedir o IOF: ${f.porque}`);
+  await foto(pagina, 'bordas-desktop-claro-spread-baixo');
+  await contexto.close();
+}
+{
+  // começo de novembro: a fatura de outubro chegou, e já há gasto em dólar de novembro; o botão abre outubro
+  const p = passo('?demo=1&data=2026-11-03 · no começo do mês, “Conciliar fatura” abre o mês anterior');
+  const {contexto, pagina} = await abrir(p, '?demo=1&data=2026-11-03#lancamentos');
+  const erro = await lancar(pagina, [['x-nov', {data: '2026-11-02', descricao: 'Vercel · novembro', categoria: 'infraestrutura', valorMinor: 2000, forma: 'cartao_pj'}]]);
+  certo(p, !erro, `não consegui lançar o gasto de novembro: ${erro}`);
+  await abrirFolhaPelaBarra(pagina);
+  const f = await lerFolha(pagina);
+  certo(p, f.mes === '2026-10' && f.forma === 'cartao_pj' && JSON.stringify(f.itens.map(i => i.id)) === JSON.stringify(DEMO), `devia abrir outubro no cartão da empresa (abriu ${f.mes} · ${f.forma} · ${f.itens.map(i => i.id).join(', ')})`);
+  await contexto.close();
+}
+
+// ══ 2 · ?diario=local: gravação de verdade ═════════════════════════════════════════════════════════════════════════
+const local = membro => `?diario=local&membro=${membro}`;
 const LOCAL = ['g-cc-vercel', 'g-cc-fonte', 'g-cc-api'];   // na ordem da data: 05/10, 11/10 (domingo), 14/10
 {
   const p = passo('?diario=local · preparo: o dólar de setembro e de outubro, cinco gastos em dólar e setembro fechado');

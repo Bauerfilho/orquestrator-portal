@@ -375,7 +375,11 @@ export function folego(estadoBase, aplicado, hoje) {
   const explicaQueima = {formula: 'Queima = o que saiu − o que entrou, em cada mês fechado; a queima média divide pelo número de meses', resultado: queimaMedia,
     termos: meses.map(m => ({rotulo: `${Mes(m.mes)}: ${fmt(m.saiu)} − ${fmt(m.entrou)}`, brl: m.queima, op: '+', ref: {tipo: 'mes', id: m.mes}}))};
   const ultimaData = caixa.contas.reduce((a, c) => (!a || c.data > a ? c.data : a), null);
-  const abre = caixa.temSaldo ? `Caixa de ${fmt(caixa.total)} em ${dataBR(ultimaData)}` : 'Sem saldo do banco informado';
+  // a data dos saldos que entram no caixa: um dia só, ou de qual a qual quando são de dias diferentes (datar pelo mais
+  // novo esconderia um saldo antigo dentro do total)
+  const datas = caixa.contas.filter(c => c.brl !== null).map(c => c.data).sort();
+  const quando = datas.length && datas[0] !== datas[datas.length - 1] ? `com saldos de ${dataBR(datas[0])} a ${dataBR(datas[datas.length - 1])}` : `em ${dataBR(datas[0])}`;
+  const abre = caixa.temSaldo ? `Caixa de ${fmt(caixa.total)} ${quando}` : 'Sem saldo do banco informado';
   const comum = {caixa: caixa.total, caixaInformado: caixa, dataDoCaixa: ultimaData, queimaMedia, base: N, meses, rotuloBase};
   const explica = (texto, resultado = null) => ({formula: `Fôlego = caixa ÷ queima média de ${N || 'N'} ${N === 1 ? 'mês fechado' : 'meses fechados'}`, texto, resultado, unidade: 'décimos de mês',
     termos: [{rotulo: 'Caixa (último saldo de cada conta)', brl: caixa.total, op: '='}, ...(queimaMedia !== null ? [{rotulo: `Queima média (${rotuloBase})`, brl: queimaMedia, op: '÷'}] : [])],

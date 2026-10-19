@@ -7,8 +7,8 @@
 .cx-raiz{margin:0 0 34px}
 .cx-cabeca{margin-bottom:10px}
 .cx-titulo{font:400 28px/1.15 var(--serif);letter-spacing:-.02em;margin:0}
-.cx-titulo:focus,.cx-raiz .lv-cartao-titulo:focus{outline:none}
-.cx-titulo:focus-visible,.cx-raiz .lv-cartao-titulo:focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:4px}
+.cx-titulo:focus,.cx-raiz .lv-cartao-titulo:focus,.cx-mes-titulo:focus{outline:none}
+.cx-titulo:focus-visible,.cx-raiz .lv-cartao-titulo:focus-visible,.cx-mes-titulo:focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:4px}
 .cx-manchete{max-width:60ch;overflow-wrap:break-word}
 /* um número que diz o que falta ("precisa de 1 mês fechado") fica menor que uma cifra, para caber no celular */
 .cx-kpi.is-falta .lv-kpi-valor{font-size:19px;line-height:1.25;color:var(--muted)}
@@ -78,13 +78,14 @@
 
 /* Meu painel: a manchete do mês, cada trecho um link */
 .cx-painel-botoes{display:flex;flex-wrap:wrap;gap:6px}
-.cx-painel-manchete{margin-bottom:16px}
+.cx-painel-manchete{margin-bottom:10px}
 .cx-trecho{color:inherit;text-decoration:underline;text-decoration-color:var(--line-strong,var(--muted));text-decoration-thickness:1px;text-underline-offset:5px}
 .cx-trecho:hover{text-decoration-color:var(--gold)}
 .cx-trecho:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px}
 .cx-trecho.is-atrasado{color:var(--fin-perigo)}
 .cx-painel .lv-kpis{margin-bottom:14px}
-.cx-sua-parte{margin:0 0 18px;font-size:15px}
+/* a sua parte vem logo abaixo da manchete, antes dos quatro números (no celular, no alto da primeira tela) */
+.cx-sua-parte{margin:0 0 16px;font-size:15px}
 .cx-sua-parte strong{color:var(--gold);font:400 20px/1.2 var(--serif);font-variant-numeric:lining-nums tabular-nums}
 .cx-painel-baixo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 28px;align-items:start}
 .cx-painel-sub{margin:0 0 10px}
