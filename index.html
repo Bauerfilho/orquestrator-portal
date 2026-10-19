@@ -12,7 +12,13 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="tema.css">
   <link rel="stylesheet" href="livro.css">
-  <link rel="manifest" href="manifest.webmanifest"><script type="module" src="static-bridge.js"></script><script src="app.js" defer></script><script type="module" src="livro.js"></script>
+  <link rel="stylesheet" href="assinaturas.css">
+  <link rel="stylesheet" href="acerto.css">
+  <link rel="stylesheet" href="caixa.css">
+  <link rel="stylesheet" href="conciliacao.css">
+  <link rel="stylesheet" href="fechamento.css">
+  <link rel="stylesheet" href="ajuda.css">
+  <link rel="manifest" href="manifest.webmanifest"><script type="module" src="static-bridge.js"></script><script src="app.js" defer></script><script type="module" src="livro.js"></script><script type="module" src="rotina.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Ir para o conteúdo</a>
@@ -63,11 +69,11 @@
       <div class="page-stage">
         <p id="dashboard-error" class="notice notice-error" role="alert" hidden></p>
         <section id="block-user" class="finance-page" data-finance-page="overview" data-finance-block="user" aria-labelledby="user-title">
-          <div id="livro-resumo"></div><div class="section-heading"><div><p class="section-number">SEUS COMPROMISSOS</p><h2 id="user-title">A sua parte, com clareza.</h2></div><div id="user-source" class="source-status"></div></div><div id="user-content"></div>
+          <div id="livro-resumo"></div><div id="acerto-resumo"></div><div class="section-heading"><div><p class="section-number">SEUS COMPROMISSOS</p><h2 id="user-title">A sua parte, com clareza.</h2></div><div id="user-source" class="source-status"></div></div><div id="user-content"></div>
         </section>
         <section id="block-subscriptions" class="finance-page" data-finance-page="subscriptions" data-finance-block="subscriptions" aria-labelledby="subscriptions-title" hidden>
           <div class="section-heading"><div><p class="section-number">SERVIÇOS DA EMPRESA</p><h2 id="subscriptions-title">Assinaturas</h2></div><div id="subscriptions-source" class="source-status"></div></div>
-          <p class="section-intro">Estado da assinatura e situação da cobrança são registros separados. Alterar o estado aqui não contrata nem cancela o serviço real.</p><div id="subscriptions-content"></div>
+          <p class="section-intro">Estado da assinatura e situação da cobrança são registros separados. Alterar o estado aqui não contrata nem cancela o serviço real.</p><div id="assinaturas-topo"></div><div id="subscriptions-content"></div>
         </section>
         <section id="block-sell" class="finance-page" data-finance-page="sell" data-finance-block="sell_first" aria-labelledby="sell-title" hidden>
           <div class="section-heading"><div><p class="section-number">FOCO NO PRÓXIMO PASSO</p><h2 id="sell-title">Vender primeiro</h2></div><div id="sell-source" class="source-status"></div></div><div id="sell-content"></div>
@@ -79,16 +85,17 @@
           <div class="section-heading"><div><p class="section-number">O QUE ESTAMOS CONSTRUINDO</p><h2 id="inventory-title">Portfólio</h2></div><div id="inventory-source" class="source-status"></div></div><div id="inventory-content"></div>
         </section>
         <section id="block-cash" class="finance-page" data-finance-page="cash" data-finance-block="cash" aria-labelledby="cash-title" hidden>
-          <div class="section-heading"><div><p class="section-number">RECURSOS DA EMPRESA</p><h2 id="cash-title">Caixa</h2></div><div id="cash-source" class="source-status"></div></div><div id="cash-content"></div>
+          <div id="caixa-calculado"></div><div class="section-heading"><div><p class="section-number">RECURSOS DA EMPRESA</p><h2 id="cash-title">Caixa</h2></div><div id="cash-source" class="source-status"></div></div>
+          <details class="registro-importado" open><summary>Registro importado do pacote de 18/10</summary><div id="cash-content"></div></details>
         </section>
         <section id="block-projection" class="finance-page" data-finance-page="projection" data-finance-block="projection" aria-labelledby="projection-title" hidden>
           <div class="section-heading"><div><p class="section-number">POSSIBILIDADES, COM SUAS PREMISSAS</p><h2 id="projection-title">Projeção</h2></div><div id="projection-source" class="source-status"></div></div><div id="projection-content"></div>
         </section>
         <section id="block-society" class="finance-page" data-finance-page="society" data-finance-block="society" aria-labelledby="society-title" hidden>
-          <div class="section-heading"><div><p class="section-number">QUEM CONSTRÓI</p><h2 id="society-title">Sociedade</h2></div><div id="society-source" class="source-status"></div></div><div id="society-content"></div>
+          <div class="section-heading"><div><p class="section-number">QUEM CONSTRÓI</p><h2 id="society-title">Sociedade</h2></div><div id="society-source" class="source-status"></div></div><div id="society-content"></div><div id="sociedade-acerto"></div>
         </section>
         <section id="block-livro" class="finance-page" data-finance-page="livro" aria-labelledby="livro-title" hidden>
-          <div class="section-heading"><div><p class="section-number">O DINHEIRO DO MÊS</p><h2 id="livro-title">Livro do mês</h2></div><div class="source-status"><p>Assinaturas do pacote + lançamentos do diário</p></div></div><div id="livro-content"></div>
+          <div class="section-heading"><div><p class="section-number">O DINHEIRO DO MÊS</p><h2 id="livro-title">Livro do mês</h2></div><div class="source-status"><p>Assinaturas do pacote + lançamentos do diário</p></div></div><div id="livro-content"></div><div id="fechamento-content"></div>
         </section>
         <section id="block-lancamentos" class="finance-page" data-finance-page="lancamentos" aria-labelledby="lancamentos-title" hidden>
           <div class="section-heading"><div><p class="section-number">O QUE CADA SÓCIA GASTOU PELA EMPRESA</p><h2 id="lancamentos-title">Lançamentos</h2></div><div class="source-status"><p>Diário cifrado das sócias</p></div></div><div id="lancamentos-content"></div>

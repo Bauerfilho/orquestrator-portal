@@ -3,12 +3,16 @@
 // mudou o quê). Mais o botão "+ Lançar" do cabeçalho e o resumo do mês no Meu painel. Os dados vêm da ponte (estado
 // canônico do pacote) + o diário cifrado (diario.js); toda conta é do razao.js. Três níveis de leitura por página:
 // manchete em 10 segundos, gráficos em 1 minuto, livro até o centavo (plano §6.4).
+//
+// É também a base das telas da rotina (fase 2 e 3): os módulos novos importam daqui ('./livro.js', a mesma instância)
+// os ajudantes de tela, o gravar, a folha comum e os ganchos registrarPagina/registrarExtra. Este arquivo não importa
+// nenhum deles (sem ciclo): só o razao.js e o graficos.js.
 import * as R from './razao.js';
 import {dinheiro, barra100, ranking, colunas, divergentes, mesLongo} from './graficos.js';
 
 const $ = id => document.getElementById(id);
-function el(tag, cls, txt) { const n = document.createElement(tag); if (cls) n.className = cls; if (txt !== undefined && txt !== null) n.textContent = String(txt); return n; }
-function botao(rotulo, cls, fn) { const b = el('button', 'button ' + cls, rotulo); b.type = 'button'; b.addEventListener('click', fn); return b; }
+export function el(tag, cls, txt) { const n = document.createElement(tag); if (cls) n.className = cls; if (txt !== undefined && txt !== null) n.textContent = String(txt); return n; }
+export function botao(rotulo, cls, fn) { const b = el('button', 'button ' + cls, rotulo); b.type = 'button'; b.addEventListener('click', fn); return b; }
 const host = () => (window.financeHost && typeof window.financeHost === 'object') ? window.financeHost : {};
 const livroHost = () => host().livro || null;
 let mesAtual = null;
@@ -17,7 +21,7 @@ let paramAberto = null;
 let ultimoDesenho = '';
 let ultimoLancamento = null;
 
-function dados() {
+export function dados() {
   const h = livroHost();
   const c = h && h.contexto ? h.contexto() : null;
   if (!c || !c.estado) return null;
@@ -25,10 +29,10 @@ function dados() {
   const aplicado = R.aplicar(c.estado, d ? d.eventos : []);
   return {c, d, aplicado, lista: R.parametros(aplicado)};
 }
-const nomeDe = (c, id) => { const m = (c.estado.members || []).find(x => x.id === id); return m ? m.displayName : (id || '—'); };
-const hojeDe = c => c.hoje || new Date().toISOString().slice(0, 10);
-const dataBR = d => d ? new Intl.DateTimeFormat('pt-BR', {dateStyle: 'short'}).format(new Date(d.length === 10 ? d + 'T12:00:00' : d)) : '—';
-const horaBR = d => d ? new Intl.DateTimeFormat('pt-BR', {dateStyle: 'short', timeStyle: 'short'}).format(new Date(d)) : '—';
+export const nomeDe = (c, id) => { const m = (c.estado.members || []).find(x => x.id === id); return m ? m.displayName : (id || '—'); };
+export const hojeDe = c => c.hoje || new Date().toISOString().slice(0, 10);
+export const dataBR = d => d ? new Intl.DateTimeFormat('pt-BR', {dateStyle: 'short'}).format(new Date(d.length === 10 ? d + 'T12:00:00' : d)) : '—';
+export const horaBR = d => d ? new Intl.DateTimeFormat('pt-BR', {dateStyle: 'short', timeStyle: 'short'}).format(new Date(d)) : '—';
 const permilTexto = p => (p / 10).toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 1}) + '%';
 const somaMes = (mes, k) => { let [a, m] = mes.split('-').map(Number); m += k; while (m > 12) { m -= 12; a++; } while (m < 1) { m += 12; a--; } return `${a}-${String(m).padStart(2, '0')}`; };
 const original = o => dinheiro(o.minor, o.moeda);
@@ -39,7 +43,7 @@ const MODOS = {
   indisponivel: ['aviso', 'Modo treino · servidor fora do ar'], aguardando: ['aviso', 'Aguardando chave'], abrindo: ['neutro', 'Abrindo o diário…'],
 };
 function modo(d) { return d ? d.modo : 'abrindo'; }
-function faixaModo(d) {
+export function faixaModo(d) {
   const m = modo(d);
   if (m === 'gravacao') return null;
   const box = el('div', 'lv-faixa' + (m === 'abrindo' ? '' : ' is-treino'));
@@ -64,7 +68,7 @@ function desenharModo() {
 
 // ── "Ver a conta": a fórmula com os valores reais, produzida pela mesma função que calcula o total ───────────────────
 let dialogoConta = null;
-function verConta(titulo, explica, c) {
+export function verConta(titulo, explica, c) {
   if (!dialogoConta) { dialogoConta = el('dialog', 'lv-dialogo lv-conta'); dialogoConta.setAttribute('aria-label', 'A conta'); document.body.append(dialogoConta); dialogoConta.addEventListener('click', e => { if (e.target === dialogoConta) dialogoConta.close(); }); }
   dialogoConta.replaceChildren();
   const topo = el('div', 'lv-dialogo-topo');
@@ -137,6 +141,7 @@ function renderLivro(D) {
   nav.append(ant, titulo, prox);
   if (mesAtual !== hojeDe(c).slice(0, 7)) nav.append(botao('Voltar ao mês atual', 'button-quiet', () => { mesAtual = hojeDe(c).slice(0, 7); renderTudo(true); }));
   alvo.append(nav);
+  anexarExtras(alvo, 'livro-topo', D, {mes: mesAtual}, 'lv-extras');
   // nível 1: manchete e números
   alvo.append(el('p', 'lv-manchete', manchete(l, c)));
   const eu = l.porSocia.find(s => s.id === c.membro.id);
@@ -193,15 +198,15 @@ function renderLivro(D) {
   cartaoLivro.append(tabelaLivro(l, c));
   alvo.append(cartaoLivro);
 }
-function kpi(rotulo, valor, nota, fn, tom = '') {
+export function kpi(rotulo, valor, nota, fn, tom = '') {
   const k = el('div', 'lv-kpi' + (tom ? ' is-' + tom : ''));
   k.append(el('span', 'lv-kpi-rotulo', rotulo), el('strong', 'lv-kpi-valor', valor === null ? '—' : dinheiro(valor)), el('span', 'lv-kpi-nota', nota));
   if (fn) { const b = botao('Ver a conta', 'button-quiet lv-ver-conta', fn); k.append(b); }
   return k;
 }
-function cartao(titulo, sub) { const c = el('section', 'lv-cartao'); c.append(el('h3', 'lv-cartao-titulo', titulo)); if (sub) c.append(el('p', 'lv-cartao-sub', sub)); return c; }
-function dado(rotulo, valor, tom) { const d = el('div', 'lv-dado' + (tom ? ' is-' + tom : '')); d.append(el('span', null, rotulo), el('strong', null, valor)); return d; }
-function pilula(texto, tipo) { return el('span', 'lv-pilula is-' + tipo, texto); }
+export function cartao(titulo, sub) { const c = el('section', 'lv-cartao'); c.append(el('h3', 'lv-cartao-titulo', titulo)); if (sub) c.append(el('p', 'lv-cartao-sub', sub)); return c; }
+export function dado(rotulo, valor, tom) { const d = el('div', 'lv-dado' + (tom ? ' is-' + tom : '')); d.append(el('span', null, rotulo), el('strong', null, valor)); return d; }
+export function pilula(texto, tipo) { return el('span', 'lv-pilula is-' + tipo, texto); }
 function tabelaLivro(l, c) {
   const lista = el('div', 'lv-livro');
   const linhas = [...l.linhas].sort((a, b) => (a.tipo === b.tipo ? (b.data || '').localeCompare(a.data || '') : a.tipo === 'realizado' ? -1 : 1));
@@ -260,7 +265,7 @@ function renderLancamentos(D) {
   const selMes = el('select', 'lv-select'); selMes.setAttribute('aria-label', 'Filtrar por mês');
   [['', 'Todos os meses'], ...meses.map(m => [m, capital(mesLongo(m))])].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; if ((filtro.mes || '') === v) o.selected = true; selMes.append(o); });
   selMes.addEventListener('change', () => { filtro.mes = selMes.value || null; renderTudo(true); });
-  barra.append(selSocia, selMes, el('span', 'lv-espaco'), botao('Baixar CSV', 'button-outline', () => baixarCSV(D)), botao('+ Lançar', 'button-primary', () => abrirLancar()));
+  barra.append(selSocia, selMes, el('span', 'lv-espaco'), ...desenharExtras('lancamentos-barra', D, {filtro: {...filtro}}), botao('Baixar CSV', 'button-outline', () => baixarCSV(D)), botao('+ Lançar', 'button-primary', () => abrirLancar()));
   alvo.append(barra);
   let gastos = [...aplicado.gastos].sort((a, b) => (b.data || '').localeCompare(a.data || '') || (b.criadoEm || '').localeCompare(a.criadoEm || ''));
   if (filtro.socia === 'eu') gastos = gastos.filter(g => g.criadoPor === c.membro.id || g.pagoPor === c.membro.id);
@@ -318,7 +323,7 @@ async function anular(g) {
   const motivo = await pedirTexto('Anular lançamento', `“${g.descricao}” sai das contas e continua visível, riscado, com o motivo. Por que anular?`, 'Ex.: lançado em duplicidade');
   if (motivo) gravar({acao: 'void_expense', alvo: g.id, versao: g.versao, motivo}, 'Lançamento anulado.');
 }
-function pedirTexto(titulo, texto, exemplo) {
+export function pedirTexto(titulo, texto, exemplo) {
   return new Promise(ok => {
     const d = el('dialog', 'lv-dialogo lv-pergunta');
     const f = el('form');
@@ -338,26 +343,35 @@ function pedirTexto(titulo, texto, exemplo) {
 }
 
 // ── gravar: tudo passa pelo diário; o domínio confere antes, para o erro aparecer no formulário ───────────────────────
-async function gravar(conteudo, ok) {
+// Aceita qualquer ação do razão: a prévia roda o mesmo R.aplicar sobre o diário + este evento, e a recusa volta com o
+// motivo antes de enviar. {erroNoFormulario: true} não abre aviso: quem chamou mostra o erro dentro do formulário
+// (a folha comum faz isso sozinha). Depois de gravar, a página se redesenha (a não ser que haja folha aberta).
+export async function gravar(conteudo, ok = 'Salvo.', opcoes = {}) {
+  const falhar = erro => { if (!opcoes.erroNoFormulario) toast(erro, 'erro'); return {ok: false, erro}; };
   const D = dados();
-  if (!D || !D.d) { toast('O diário ainda está abrindo. Tente de novo em instantes.'); return {ok: false}; }
+  if (!D || !D.d) return falhar('O diário ainda está abrindo. Tente de novo em instantes.');
   const simulado = R.aplicar(D.c.estado, [...D.d.eventos, {seq: Infinity, id: 'previa', membro: D.c.membro.id, conteudo: {...conteudo, quando: new Date().toISOString()}}]);
   const recusa = simulado.recusados.find(x => x.id === 'previa');
-  if (recusa) { toast(recusa.motivo, 'erro'); return {ok: false, erro: recusa.motivo}; }
+  if (recusa) return {...falhar(recusa.motivo), codigo: recusa.codigo || null, atual: recusa.atual || null};
   const r = await D.d.acrescentar(conteudo);
-  if (!r.ok) { toast(r.erro, 'erro'); return r; }
+  if (!r.ok) { if (!opcoes.erroNoFormulario) toast(r.erro, 'erro'); return r; }
   if (conteudo.acao === 'add_expense') ultimoLancamento = {id: conteudo.alvo, ate: Date.now() + 8000};
-  toast(ok + (r.treino ? ' (modo treino: some ao recarregar)' : ''), 'ok', conteudo.acao === 'add_expense' ? () => desfazer(conteudo.alvo) : null);
+  toast(ok + (r.treino ? ' (modo treino: some ao recarregar)' : ''), 'ok', DESFAZ[conteudo.acao] ? () => desfazer(conteudo.acao, conteudo.alvo) : null);
   renderTudo(true);
   return r;
 }
-function desfazer(id) {
-  const D = dados();
-  const g = D && D.aplicado.gastos.find(x => x.id === id);
-  if (g && g.estado !== 'anulado') gravar({acao: 'void_expense', alvo: id, versao: g.versao, motivo: 'desfeito logo após lançar'}, 'Lançamento desfeito.');
+// "Desfazer" (8 s) de uma inclusão é a anulação dela, com motivo: nada some do diário
+const DESFAZ = {
+  add_expense: {colecao: 'gastos', acao: 'void_expense', ok: 'Lançamento desfeito.'},
+  add_income: {colecao: 'receitas', acao: 'void_income', ok: 'Receita desfeita.'},
+};
+function desfazer(acao, id) {
+  const regra = DESFAZ[acao], D = dados();
+  const item = D && (D.aplicado[regra.colecao] || []).find(x => x.id === id);
+  if (item && item.estado !== 'anulado' && item.estado !== 'anulada') gravar({acao: regra.acao, alvo: id, versao: item.versao, motivo: 'desfeito logo após lançar'}, regra.ok);
 }
 let toastTimer = null;
-function toast(texto, tom = 'ok', desfazerFn = null) {
+export function toast(texto, tom = 'ok', desfazerFn = null) {
   let t = $('lv-toast');
   if (!t) { t = el('div', 'lv-toast'); t.id = 'lv-toast'; t.setAttribute('role', 'status'); document.body.append(t); }
   t.replaceChildren(el('span', null, texto));
@@ -527,7 +541,7 @@ function abrirLancar(existente = null, sugestao = null) {
   previa();
   valor.focus();
 }
-function campoComRotulo(rotulo, controle) { const box = el('div', 'field lv-campo'); box.append(el('span', 'lv-rotulo', rotulo), controle); return box; }
+export function campoComRotulo(rotulo, controle) { const box = el('div', 'field lv-campo'); box.append(el('span', 'lv-rotulo', rotulo), controle); return box; }
 function novoAlvo() { return 'g-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8); }
 
 // ── Parâmetros ───────────────────────────────────────────────────────────────────────────────────────────────────
@@ -538,6 +552,7 @@ function renderParametros(D) {
   const hoje = hojeDe(c);
   alvo.replaceChildren();
   const faixa = faixaModo(D.d); if (faixa) alvo.append(faixa);
+  anexarExtras(alvo, 'parametros-barra', D, {}, 'lv-filtros lv-extras');
   alvo.append(el('p', 'section-intro lv-intro', 'Parâmetro é um fato com fonte (o dólar de hoje, a alíquota vigente); premissa é uma aposta de cenário e continua no Med Painel. Mudar um parâmetro cria uma vigência nova a partir de uma data: os gastos anteriores continuam com o valor da época deles.'));
   const grupos = [...new Set(R.CATALOGO.map(x => x.grupo))];
   for (const grupo of grupos) {
@@ -655,7 +670,9 @@ function renderHistorico(D) {
     integ.append(el('strong', null, d.verificacao.integro ? `Íntegro até o registro ${d.verificacao.ate}` : `${d.verificacao.problemas.length} registro(s) não conferem`),
       el('span', null, d.verificacao.integro ? 'Cada registro aponta o anterior, foi assinado por quem o escreveu e só abre com a chave do diário: o servidor não consegue alterar, reordenar nem forjar nada.' : d.verificacao.problemas.map(p => `#${p.seq}: ${p.problema}`).join(' · ')));
   } else integ.append(el('strong', null, 'Diário em treino'), el('span', null, 'Os registros desta sessão vivem só neste navegador.'));
-  alvo.append(integ, el('p', 'lv-intro', 'Corrigir nunca apaga: cria um registro novo. Aqui está quem mudou o quê, quando e por quê.'));
+  alvo.append(integ);
+  anexarExtras(alvo, 'historico-barra', D, {}, 'lv-filtros lv-extras');
+  alvo.append(el('p', 'lv-intro', 'Corrigir nunca apaga: cria um registro novo. Aqui está quem mudou o quê, quando e por quê.'));
   const eventos = [...aplicado.historico].reverse();
   if (!eventos.length) { alvo.append(el('p', 'lv-vazio', 'Nenhum registro ainda.')); }
   let diaAtual = '';
@@ -666,14 +683,11 @@ function renderHistorico(D) {
     const li = el('li', 'lv-hist-item');
     const ini = el('span', 'lv-inicial', (nomeDe(c, h.autora) || '?').charAt(0));
     const corpo = el('div');
-    corpo.append(el('p', null, `${nomeDe(c, h.autora)} ${VERBOS[h.acao] || h.acao} · ${h.resumo || ''}`));
-    if (h.antes && h.depois && h.acao === 'edit_expense') {
-      const mud = Object.keys(h.depois).filter(k => JSON.stringify(h.antes[k]) !== JSON.stringify(h.depois[k]));
-      for (const k of mud) {
-        const p = el('p', 'lv-diff');
-        p.append(el('span', 'lv-campo-nome', k + ': '), el('del', null, fmtCampo(k, h.antes[k], h.antes)), ' → ', el('ins', null, fmtCampo(k, h.depois[k], h.depois)));
-        corpo.append(p);
-      }
+    corpo.append(el('p', null, `${nomeDe(c, h.autora)} ${verbo(h)} · ${h.resumo || ''}`));
+    for (const k of camposMudados(h)) {
+      const p = el('p', 'lv-diff');
+      p.append(el('span', 'lv-campo-nome', (NOMES_CAMPO[k] || k) + ': '), el('del', null, fmtCampo(k, h.antes[k], h.antes)), ' → ', el('ins', null, fmtCampo(k, h.depois[k], h.depois)));
+      corpo.append(p);
     }
     if (h.motivo) corpo.append(el('p', 'lv-motivo', 'Motivo: ' + h.motivo));
     corpo.append(el('span', 'lv-autoria', horaBR(h.quando) + (h.seq && Number.isFinite(h.seq) ? ` · registro ${h.seq}` : '')));
@@ -684,21 +698,180 @@ function renderHistorico(D) {
   if (aplicado.recusados.length) {
     const sec = cartao('Recusados', 'Registros que chegaram ao diário mas não passaram nas regras: não entram em nenhuma conta.');
     const ul = el('ul', 'lv-excluidos');
-    for (const r of aplicado.recusados) ul.append(el('li', null, `${nomeDe(c, r.autora)} · ${VERBOS[r.acao] || r.acao || 'registro'} · ${horaBR(r.quando)}: ${r.motivo}`));
+    for (const r of aplicado.recusados) ul.append(el('li', null, `${nomeDe(c, r.autora)} · ${verbo(r) || 'registro'} · ${horaBR(r.quando)}: ${r.motivo}`));
     sec.append(ul); alvo.append(sec);
   }
 }
+// o verbo vem do razão quando ele manda (h.verbo); senão, o desta tabela; senão, o nome da ação
+const verbo = h => h.verbo || VERBOS[h.acao] || h.acao;
+// antes → depois de qualquer ação: os campos simples que existem dos dois lados e mudaram (vazio, null e ausente são o
+// mesmo "—"); os de controle e de autoria ficam de fora, porque a linha já diz quem fez e quando
+const CAMPOS_DE_CONTROLE = new Set(['id', 'versao', 'versoes', 'seq', 'quando', 'por', 'alteradoEm', 'alteradoPor', 'criadoEm', 'criadoPor']);
+const vazio = v => v === null || v === undefined || v === '' || (Array.isArray(v) && !v.length);
+const NOMES_CAMPO = {descricao: 'descrição', valorMinor: 'valor', moeda: 'moeda', data: 'data', competencia: 'competência', categoria: 'categoria', forma: 'forma de pagamento', destino: 'destino', faturaBrlMinor: 'valor da fatura', estado: 'situação', valor: 'valor', desde: 'vale desde', fonte: 'fonte', nota: 'nota', status: 'situação'};
+const simples = v => v === null || v === undefined || typeof v !== 'object' || (Array.isArray(v) && v.every(x => x === null || typeof x !== 'object'));
+function camposMudados(h) {
+  if (!h.antes || !h.depois || typeof h.antes !== 'object' || typeof h.depois !== 'object') return [];
+  const chaves = [...new Set([...Object.keys(h.antes), ...Object.keys(h.depois)])];
+  return chaves.filter(k => !CAMPOS_DE_CONTROLE.has(k) && k in h.antes && k in h.depois && simples(h.antes[k]) && simples(h.depois[k])
+    && !(vazio(h.antes[k]) && vazio(h.depois[k])) && JSON.stringify(h.antes[k]) !== JSON.stringify(h.depois[k]));
+}
+const ESTADOS_GASTO = {lancado: 'lançado', anulado: 'anulado', conferido: 'conferido'};
 function fmtCampo(k, v, g) {
   if (v === null || v === undefined || v === '') return '—';
-  if (k === 'valorMinor') return dinheiro(v, g.moeda);
   if (k === 'faturaBrlMinor') return dinheiro(v);
+  if (/Minor$/.test(k) && Number.isSafeInteger(v)) return dinheiro(v, g && R.MOEDAS.includes(g.moeda) ? g.moeda : 'BRL');
   if (k === 'categoria') return R.rotuloCategoria(v);
   if (k === 'forma') return R.rotuloForma(v);
+  if (k === 'destino') return (R.DESTINOS.find(x => x.id === v) || {}).rotulo || String(v);
+  if (k === 'estado') return ESTADOS_GASTO[v] || String(v);
+  if (typeof v === 'boolean') return v ? 'sim' : 'não';
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return dataBR(v);
+  if (typeof v === 'string' && /^\d+\.\d+$/.test(v)) return v.replace('.', ',');   // decimal de parâmetro: 4.20 → 4,20
+  if (Array.isArray(v)) return v.length ? v.join(', ') : '—';
   return String(v);
 }
 
+// ── ganchos das telas da rotina: páginas e extras registrados pelos módulos novos ─────────────────────────────────────
+// registrarPagina(fn): fn(D) roda a cada redesenho (o mesmo de renderTudo), depois das páginas daqui.
+// registrarExtra(lugar, fn): fn(D, contexto) devolve um nó (ou lista de nós, ou nada) para um lugar fixo de uma página
+// daqui. Nenhum dos dois roda com uma folha aberta. Um módulo que falha não derruba os outros (o erro vai ao console).
+const paginas = [];
+const LUGARES = ['livro-topo', 'lancamentos-barra', 'parametros-barra', 'historico-barra'];
+const extras = Object.fromEntries(LUGARES.map(l => [l, []]));
+let redesenhoMarcado = false;
+function marcarRedesenho() { if (redesenhoMarcado) return; redesenhoMarcado = true; queueMicrotask(() => { redesenhoMarcado = false; renderTudo(true); }); }
+const tirar = (lista, fn) => () => { const k = lista.indexOf(fn); if (k >= 0) { lista.splice(k, 1); marcarRedesenho(); } };
+export function registrarPagina(fn) {
+  if (typeof fn !== 'function') throw new TypeError('registrarPagina espera uma função (D) => void.');
+  paginas.push(fn); marcarRedesenho();
+  return tirar(paginas, fn);
+}
+export function registrarExtra(lugar, fn) {
+  if (!extras[lugar]) throw new Error(`Lugar desconhecido para extra: “${lugar}”. Os lugares são ${LUGARES.join(', ')}.`);
+  if (typeof fn !== 'function') throw new TypeError('registrarExtra espera uma função (D, contexto) => nó.');
+  extras[lugar].push(fn); marcarRedesenho();
+  return tirar(extras[lugar], fn);
+}
+function desenharExtras(lugar, D, contexto) {
+  const nos = [];
+  for (const fn of extras[lugar]) {
+    try { for (const n of [].concat(fn(D, contexto) ?? [])) if (n && typeof n === 'object' && n.nodeType) nos.push(n); }
+    catch (erro) { console.error(`Um extra de ${lugar} falhou ao desenhar:`, erro); }
+  }
+  return nos;
+}
+// sem extra registrado, a página fica exatamente como era (nenhum contêiner vazio)
+function anexarExtras(alvo, lugar, D, contexto, cls) {
+  const nos = desenharExtras(lugar, D, contexto);
+  if (!nos.length) return;
+  const caixa = el('div', cls);
+  caixa.dataset.lugar = lugar;
+  caixa.append(...nos);
+  alvo.append(caixa);
+}
+
+// ── folha comum (.sheet, plano §6.7): diálogo de 520px no desktop, folha de baixo no celular ───────────────────────────
+// abrirFolha({eyebrow, titulo, corpo, acoes}) devolve {dialogo, corpo, form, fechar, erro(texto), gravar(conteudo, ok)}.
+// corpo: nó, lista de nós, texto ou função (folha) => nó(s). acoes: nós prontos ou {rotulo, primaria?, fn(folha)}; a
+// primária é o submit (Enter). fn pode devolver o resultado do folha.gravar: {ok: false, erro} mostra o erro dentro da
+// folha e a mantém aberta, false a mantém aberta sem erro, qualquer outra coisa fecha. "Cancelar" entra sozinho.
+// Enquanto ela está aberta, nem renderTudo nem as páginas registradas redesenham (§3.7); ao fechar, a página atualiza.
+let folhaComum = null;
+export const folhaAberta = () => !!((folha && folha.open) || (folhaComum && folhaComum.open));
+export function abrirFolha({eyebrow = '', titulo = '', corpo = null, acoes = [], rotulo = null, faixa = true, cancelar = true, aoFechar = null} = {}) {
+  if (folhaComum) folhaComum.close();
+  const D = dados();
+  const dialogo = el('dialog', 'lv-dialogo sheet');
+  dialogo.setAttribute('aria-label', rotulo || titulo || 'Folha');
+  const form = el('form', 'lv-form lv-folha-form');
+  form.noValidate = true;
+  const topo = el('div', 'lv-dialogo-topo');
+  const tt = el('div');
+  if (eyebrow) tt.append(el('p', 'eyebrow', eyebrow));
+  tt.append(el('h2', null, titulo));
+  topo.append(tt, botao('Fechar', 'button-outline', () => dialogo.close()));
+  form.append(topo);
+  if (faixa && D) { const fx = faixaModo(D.d); if (fx) form.append(fx); }
+  const conteudo = el('div', 'lv-folha-corpo');
+  const erro = el('p', 'form-error lv-erro');
+  erro.setAttribute('role', 'alert');
+  erro.hidden = true;
+  const caixaAcoes = el('div', 'lv-dialogo-acoes');
+  form.append(conteudo, erro, caixaAcoes);
+  const api = {
+    dialogo, corpo: conteudo, form,
+    fechar: () => dialogo.close(),
+    erro: texto => { erro.textContent = texto || ''; erro.hidden = !texto; },
+    gravar: (c, ok) => gravar(c, ok, {erroNoFormulario: true}),
+  };
+  const nos = typeof corpo === 'function' ? corpo(api) : corpo;
+  for (const n of [].concat(nos ?? [])) conteudo.append(typeof n === 'string' ? el('p', null, n) : n);
+  let primaria = null;
+  async function executar(acao) {
+    api.erro(null);
+    const botoes = [...caixaAcoes.querySelectorAll('button')];
+    botoes.forEach(b => { b.disabled = true; });
+    let r;
+    try { r = await acao.fn(api); }
+    catch (e) { r = {ok: false, erro: (e && e.message) || 'Não foi possível concluir.'}; }
+    finally { botoes.forEach(b => { b.disabled = false; }); }
+    if (r === false || !dialogo.open) return;
+    if (r && r.ok === false) { api.erro(r.erro || 'Não foi possível salvar.'); return; }
+    dialogo.close();
+  }
+  if (cancelar) caixaAcoes.append(botao('Cancelar', 'button-outline', () => dialogo.close()));
+  for (const a of acoes) {
+    if (a && a.nodeType) { caixaAcoes.append(a); continue; }
+    const b = el('button', 'button ' + (a.primaria ? 'button-primary' : 'button-outline'), a.rotulo);
+    b.type = a.primaria && !primaria ? 'submit' : 'button';
+    if (b.type === 'submit') primaria = a;
+    else b.addEventListener('click', () => executar(a));
+    caixaAcoes.append(b);
+  }
+  form.addEventListener('submit', e => { e.preventDefault(); if (primaria) executar(primaria); });
+  dialogo.append(form);
+  document.body.append(dialogo);
+  dialogo.addEventListener('close', () => {
+    setTimeout(() => dialogo.remove(), 0);
+    if (folhaComum === dialogo) folhaComum = null;
+    if (aoFechar) { try { aoFechar(); } catch (e) { console.error(e); } }
+    renderTudo(true);
+  });
+  folhaComum = dialogo;
+  dialogo.showModal();
+  const primeiro = conteudo.querySelector('input:not([type=hidden]),select,textarea');
+  if (primeiro) primeiro.focus();
+  return api;
+}
+
+// ── campo de dinheiro: digitado à moda brasileira, lido em centavos inteiros pelo R.centavosBR ─────────────────────────
+// campoDinheiro('BRL', {valorMinor, rotulo}) devolve a caixa (para o campoComRotulo) com .input, .ler() → centavos ou
+// null, e .definir(centavos). O texto do valor inicial sai dos centavos sem passar por número com vírgula flutuante.
+const SIMBOLOS = {BRL: 'R$', USD: 'US$', EUR: '€'};
+const NOMES_MOEDA = {BRL: 'reais', USD: 'dólares', EUR: 'euros'};
+function textoDeCentavos(minor) {
+  const s = String(Math.abs(minor)).padStart(3, '0');
+  return (minor < 0 ? '-' : '') + s.slice(0, -2).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s.slice(-2);
+}
+export function campoDinheiro(moeda = 'BRL', {valorMinor = null, rotulo = 'Valor', placeholder = '0,00'} = {}) {
+  const caixa = el('div', 'lv-dinheiro');
+  const simbolo = el('span', 'lv-dinheiro-moeda', SIMBOLOS[moeda] || moeda);
+  simbolo.setAttribute('aria-hidden', 'true');
+  const input = el('input', 'lv-dinheiro-valor');
+  input.inputMode = 'decimal'; input.autocomplete = 'off'; input.placeholder = placeholder;
+  input.setAttribute('aria-label', `${rotulo} em ${NOMES_MOEDA[moeda] || moeda}`);
+  caixa.append(simbolo, input);
+  caixa.input = input;
+  caixa.moeda = moeda;
+  caixa.ler = () => R.centavosBR(input.value, moeda);
+  caixa.definir = minor => { input.value = Number.isSafeInteger(minor) ? textoDeCentavos(minor) : ''; };
+  caixa.definir(valorMinor);
+  return caixa;
+}
+
 // ── ciclo ───────────────────────────────────────────────────────────────────────────────────────────────────────
-function renderTudo(forcar = false) {
+export function renderTudo(forcar = false) {
   desenharModo();
   const D = dados();
   const lancar = $('lancar-button');
@@ -713,11 +886,13 @@ function renderTudo(forcar = false) {
   const assinatura = [D.d ? D.d.modo + ':' + D.d.cabeca + ':' + D.d.eventos.length + ':' + D.d.verificacao.problemas.length : 'x', D.c.estado.revision, mesAtual, filtro.socia, filtro.mes].join('|');
   if (!forcar && assinatura === ultimoDesenho) return;
   ultimoDesenho = assinatura;
+  if (folhaComum && folhaComum.open) return; // nunca redesenhar com a folha aberta (§3.7): ao fechar, redesenha
   if (folha && folha.open) { renderResumo(D); return; }
   renderResumo(D); renderLivro(D); renderLancamentos(D); renderParametros(D); renderHistorico(D);
+  for (const fn of paginas) { try { fn(D); } catch (erro) { console.error('Uma página da rotina falhou ao desenhar:', erro); } }
 }
 window.financeLivroRender = () => renderTudo(false);
-window.financeLivro = {abrirLancar: (sugestao) => abrirLancar(null, sugestao || null), renderTudo};
+window.financeLivro = {abrirLancar: (sugestao) => abrirLancar(null, sugestao || null), renderTudo, gravar, abrirFolha, folhaAberta: () => folhaAberta()};
 const painel = $('dashboard');
 if (painel) new MutationObserver(() => renderTudo(true)).observe(painel, {attributes: true, attributeFilter: ['hidden']});
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#lancar-button')) abrirLancar(); });
