@@ -634,3 +634,115 @@ test('determinismo e histórico: aplicar três vezes dá o mesmo JSON; todo item
   const b = aplicar(base, [null, {seq: 1, id: 'z', membro: 'ana'}, ev('ana', 'add_expense', 'g1', 'texto'), ev('ana', 'reconcile_statement', 'f', {mes: '2026-10', forma: 'cartao_pj', itens: 'x'})]);
   assert.equal(b.recusados.length, 3);
 });
+
+// ── ajustes da revisão da F2-1 (um teste por achado do verificador) ───────────────────────────────────────────────────
+
+test('ajuste 1 · record_payment: a competência é o mês do ciclo pago, então o custo não conta duas vezes', () => {
+  const pag = (alvo, d = {}, extra) => ev('bia', 'record_payment', alvo, gasto({descricao: 'Google Workspace', valorMinor: 14000, data: '2026-11-02', planoId: 'p-google', ciclo: '2026-10', competencia: '2026-11', pagoPor: 'bia', ...d}), extra);
+  const REGRA = /^A competência do pagamento é o mês do ciclo pago\.$/;
+  // o ciclo de outubro pago com competência de novembro: outubro seguiria previsto e novembro contaria o mesmo custo
+  const {a} = recusado([pag('g-x')], 'invalido', REGRA);
+  assert.equal(a.gastos.length, 0);
+  assert.ok(livroDoMes(base, a, '2026-10', '2026-10-19').linhas.some(x => x.tipo === 'previsto' && x.id === 'p-google'));
+  assert.ok(!livroDoMes(base, a, '2026-11', '2026-11-03').linhas.some(x => x.tipo === 'realizado'));
+  recusado([pag('g-x', {ciclo: '2026-11', competencia: '2026-10'})], 'invalido', REGRA);
+  // com a competência no ciclo, o pagamento troca a previsão daquele mês (conta uma vez) e o mês seguinte segue previsto
+  const b = aceito([pag('g-ok', {competencia: '2026-10', data: '2026-10-02'})]);
+  const out = livroDoMes(base, b, '2026-10', '2026-10-19');
+  assert.deepEqual(out.linhas.filter(x => x.id === 'g-ok' || x.id === 'p-google').map(x => x.tipo), ['realizado']);
+  assert.equal(livroDoMes(base, b, '2026-11', '2026-11-03').linhas.find(x => x.id === 'p-google').tipo, 'previsto');
+  // outubro fechado: pagar o ciclo de outubro cai na trava; com a competência em novembro, cai na regra nova
+  const g1 = ev('ana', 'add_expense', 'g1', gasto({pagoPor: 'ana'}));
+  const fecha = fechar(g1.seq);
+  recusado([g1, fecha, pag('g-y', {competencia: '2026-10', data: '2026-10-02'}, {quando: NOV})], 'mes_fechado', /Outubro de 2026 está fechado/);
+  recusado([g1, fecha, pag('g-y', {}, {quando: NOV})], 'invalido', REGRA);
+  aceito([g1, fecha, pag('g-y', {ciclo: '2026-11'}, {quando: NOV})]);
+});
+
+test('ajuste 2 · registro sem versão é inválido (recarregar), não conflito com outra sócia', () => {
+  const g1 = ev('ana', 'add_expense', 'g1', gasto({descricao: 'Canva', pagoPor: 'ana'}));
+  const FALTA = /^Falta a versão do registro: recarregue o portal e tente de novo\.$/;
+  for (const versao of [undefined, null, '1', 0, -1, 1.5, true, Infinity]) {
+    const {r} = recusado([g1, ev('bia', 'check_expense', 'g1', null, {versao})], 'invalido', FALTA);
+    assert.equal(r.atual, undefined, `sem registro atual: não abre o diálogo de conflito (${String(versao)})`);
+  }
+  // vale para toda coleção com versão: gasto, assinatura, passo, receita e cada item da fatura
+  recusado([g1, ev('ana', 'edit_expense', 'g1', {valorMinor: 1200})], 'invalido', FALTA);
+  recusado([g1, ev('ana', 'void_expense', 'g1', null, {motivo: 'duplicado'})], 'invalido', FALTA);
+  recusado([g1, ev('bauer', 'mark_reimbursed', 'g1', null)], 'invalido', FALTA);
+  recusado([ev('ana', 'edit_plan', 'p-figma', {status: 'pago'})], 'invalido', FALTA);
+  recusado([ev('bia', 'confirm_plan', 'p-figma', null, {versao: '2'})], 'invalido', FALTA);
+  recusado([ev('bia', 'toggle_step', 's1', {feito: true})], 'invalido', FALTA);
+  recusado([ev('ana', 'add_income', 'rc-1', receita()), ev('ana', 'edit_income', 'rc-1', {transacoes: 41})], 'invalido', FALTA);
+  recusado([ev('ana', 'add_expense', 'u1', gasto({valorMinor: 10000, moeda: 'USD'})),
+    ev('bia', 'reconcile_statement', 'f', {mes: '2026-10', forma: 'cartao_pj', totalFaturaMinor: null, itens: [{alvo: 'u1', faturaBrlMinor: 54980}]})], 'invalido', FALTA);
+  // 'versao' fica para a versão diferente de fato, com o registro atual
+  const {r} = recusado([g1, ev('bia', 'check_expense', 'g1', null, {versao: 2})], 'versao', /Outra pessoa mudou este lançamento antes \(versão 1\)/);
+  assert.equal(r.atual.versao, 1);
+  aceito([g1, ev('bia', 'check_expense', 'g1', null, {versao: 1})]);
+});
+
+test('ajuste 3 · fechar o mês e informar saldo usam o menor entre o relógio do aparelho e o do servidor', () => {
+  const g1 = ev('ana', 'add_expense', 'g1', gasto({pagoPor: 'ana'}));
+  const comTs = (e, ts) => ({...e, ts});
+  const AINDA = /^Só dá para fechar um mês que já terminou\.$/;
+  // aparelho adiantado (diz 03/11) e servidor ainda em 31/10, 17h em São Paulo: outubro não terminou
+  recusado([g1, comTs(fechar(g1.seq), '2026-10-31T20:00:00Z')], 'invalido', AINDA);
+  // servidor em novembro e aparelho ainda em 31/10 (20h30 em São Paulo): vale o menor
+  recusado([g1, comTs(fechar(g1.seq, {quando: '2026-10-31T23:30:00Z'}), NOV)], 'invalido', AINDA);
+  // os dois em novembro (no treino o diário grava ts = quando); só o do servidor; só o do aparelho (a prévia)
+  aceito([g1, comTs(fechar(g1.seq), NOV)]);
+  aceito([g1, comTs(fechar(g1.seq), '2026-11-03T13:00:02Z')]);
+  aceito([g1, comTs(fechar(g1.seq, {quando: undefined}), NOV)]);
+  recusado([g1, comTs(fechar(g1.seq, {quando: undefined}), '2026-10-31T20:00:00Z')], 'invalido', AINDA);
+  const a = aceito([g1, fechar(g1.seq)]);
+  assert.equal(a.fechamentos['2026-10'].em, NOV, 'o horário guardado continua sendo o do registro');
+  // saldo de 31/10: aparelho em 04/11 e servidor em 19/10 (ou o contrário) → a data ainda não chegou
+  const sd = (extra, ts) => comTs(ev('bia', 'set_balance', 'sd-1', {conta: 'PJ', data: '2026-10-31', valorMinor: 2176500, moeda: 'BRL'}, extra), ts);
+  const FUTURO = /^O saldo é de uma data que ainda não chegou\.$/;
+  recusado([sd({quando: '2026-11-04T12:00:00Z'}, OUT)], 'invalido', FUTURO);
+  recusado([sd({quando: OUT}, '2026-11-04T12:00:00Z')], 'invalido', FUTURO);
+  aceito([sd({quando: '2026-11-04T12:00:00Z'}, '2026-11-04T12:00:01Z')]);
+  aceito([sd({quando: undefined}, '2026-11-04T12:00:01Z')]);
+  // um relógio ilegível não conta: vale o outro
+  recusado([sd({quando: 'ontem'}, OUT)], 'invalido', FUTURO);
+  aceito([sd({quando: 'ontem'}, '2026-11-04T12:00:01Z')]);
+  recusado([g1, comTs(fechar(g1.seq, {quando: 'amanhã'}), '2026-10-31T20:00:00Z')], 'invalido', AINDA);
+});
+
+test('ajuste 4 · gasto com dia e mês de calendário; teto de 10^12 centavos em gastos, assinaturas e receitas', () => {
+  const g = d => ev('ana', 'add_expense', 'g9', gasto({pagoPor: 'ana', ...d}));
+  for (const data of ['2026-02-30', '2026-13-01', '2026-10-00', '2026-1-14', '14/10/2026', 20261014, null]) recusado([g({data})], 'invalido', /^Informe a data do gasto\.$/);
+  for (const competencia of ['2026-13', '2026-00', '2026-1', '10/2026', 202610, null]) recusado([g({competencia})], 'invalido', /^Competência inválida\.$/);
+  aceito([g({data: '2028-02-29', competencia: '2028-02'})]);
+  const g1 = g({});
+  recusado([g1, ev('ana', 'edit_expense', 'g9', {data: '2026-02-31'}, {versao: 1})], 'invalido', /data do gasto/);
+  recusado([g1, ev('ana', 'edit_expense', 'g9', {competencia: '2026-13'}, {versao: 1})], 'invalido', /Competência inválida/);
+  const TETO = 10 ** 12, ALTO = /^Valor alto demais: confira os zeros\.$/;
+  // gastos (lançar, corrigir, marcar como paga; o valor e a fatura)
+  aceito([g({valorMinor: TETO})]);
+  recusado([g({valorMinor: TETO + 1})], 'invalido', ALTO);
+  recusado([g({valorMinor: TETO + 1, moeda: 'USD'})], 'invalido', ALTO);
+  recusado([g({moeda: 'USD', faturaBrlMinor: TETO + 1})], 'invalido', ALTO);
+  recusado([g1, ev('ana', 'edit_expense', 'g9', {valorMinor: TETO + 1}, {versao: 1})], 'invalido', ALTO);
+  recusado([ev('bia', 'record_payment', 'g-p', gasto({planoId: 'p-google', ciclo: '2026-10', valorMinor: TETO + 1, pagoPor: 'bia'}))], 'invalido', ALTO);
+  // assinaturas
+  aceito([ev('ana', 'add_plan', 'pl-9', plano({valorMinor: TETO}))]);
+  recusado([ev('ana', 'add_plan', 'pl-9', plano({valorMinor: TETO + 1}))], 'invalido', ALTO);
+  recusado([ev('ana', 'edit_plan', 'p-figma', {valorMinor: TETO + 1}, {versao: 1})], 'invalido', ALTO);
+  // receitas: bruto, cancelados, taxas e as contagens
+  aceito([ev('ana', 'add_income', 'rc-9', receita({brutoMinor: TETO, canceladosMinor: TETO, taxasMinor: TETO, transacoes: TETO}))]);
+  for (const campo of ['brutoMinor', 'canceladosMinor', 'taxasMinor', 'transacoes', 'pagantesAtivos', 'pagantesNovos', 'pagantesPerdidos', 'testes', 'cadastros'])
+    recusado([ev('ana', 'add_income', 'rc-9', receita({[campo]: TETO + 1}))], 'invalido', ALTO);
+  recusado([ev('ana', 'add_income', 'rc-1', receita()), ev('ana', 'edit_income', 'rc-1', {brutoMinor: TETO + 1}, {versao: 1})], 'invalido', ALTO);
+  // o mesmo teto nos outros valores do diário: acerto, saldo e fatura
+  recusado([ev('ana', 'record_settlement', 'ac-9', acerto({valorMinor: TETO + 1}))], 'invalido', ALTO);
+  recusado([ev('ana', 'set_balance', 'sd-9', {conta: 'PJ', data: '2026-10-18', valorMinor: TETO + 1, moeda: 'BRL'})], 'invalido', ALTO);
+  const u1 = ev('ana', 'add_expense', 'u1', gasto({valorMinor: 10000, moeda: 'USD'}));
+  recusado([u1, ev('bia', 'reconcile_statement', 'f', {mes: '2026-10', forma: 'cartao_pj', totalFaturaMinor: null, itens: [{alvo: 'u1', versao: 1, faturaBrlMinor: TETO + 1}]})], 'invalido', ALTO);
+  recusado([u1, ev('bia', 'reconcile_statement', 'f', {mes: '2026-10', forma: 'cartao_pj', totalFaturaMinor: TETO + 1, itens: [{alvo: 'u1', versao: 1, faturaBrlMinor: 54980}]})], 'invalido', ALTO);
+  // no teto, o livro do mês soma e converte sem sair dos inteiros seguros
+  const a = aceito([g({valorMinor: TETO}), ev('ana', 'add_expense', 'g10', gasto({valorMinor: TETO, moeda: 'USD', pagoPor: 'ana'}))]);
+  const l = livroDoMes(base, a, '2026-10', '2026-10-19');
+  assert.ok(Number.isSafeInteger(l.total) && l.total > 2 * TETO, String(l.total));
+});

@@ -3,11 +3,16 @@
 //   · cada evento ocupa a posição seguinte à cabeça (compare-and-swap: duas gravações ao mesmo tempo, uma recebe 409);
 //   · nada é alterado nem apagado (não existe rota de UPDATE nem de DELETE; gravação condicional onlyIfNew);
 //   · só escreve quem prova conhecer a chave do diário (token derivado dela; o servidor guarda só o SHA-256).
-// O armazenamento é injetado (Netlify Blobs em produção, um Map nos testes): testes/servidor.test.mjs.
+// O armazenamento é injetado (Netlify Blobs em produção, um Map nos testes): testes/servidor.test.mjs. Do lado do
+// navegador, quem fala com este servidor é a portaHttp do diario.js (o contrato das portas: docs/PORTAS.md).
+// O diário é paginado: GET /eventos devolve até LIMITE_PAGINA registros por pedido (o cliente pede a próxima página até
+// chegar à cabeça) e lê os blobs em lotes paralelos, para o pedido continuar curto mesmo com o Blobs lento.
 
 const ID = /^[A-Za-z0-9._-]{1,80}$/;
 const B64 = /^[A-Za-z0-9+/=_-]{1,20000}$/;
 const MAX_EVENTO = 16 * 1024;
+export const LIMITE_PAGINA = 500;
+export const LOTE_DE_LEITURA = 25; // leituras simultâneas no Blobs: rápido sem estourar o limite de pedidos por segundo
 const enc = new TextEncoder();
 const chaveEvento = seq => 'ev/' + String(seq).padStart(9, '0');
 
@@ -32,11 +37,19 @@ export function criarDiario(store, {origens = []} = {}) {
   };
   const responder = (req, status, corpo) => new Response(corpo === null ? null : JSON.stringify(corpo), {status, headers: cors(req)});
 
-  async function cabeca() {
+  async function posicoes() { // as posições ocupadas do log, numa listagem só
     const {blobs} = await store.list({prefix: 'ev/'});
-    let max = 0;
-    for (const b of blobs) { const n = parseInt(b.key.slice(3), 10); if (n > max) max = n; }
-    return max;
+    return blobs.map(b => parseInt(b.key.slice(3), 10)).filter(Number.isSafeInteger);
+  }
+  const maior = ns => ns.reduce((a, b) => (b > a ? b : a), 0);
+  async function cabeca() { return maior(await posicoes()); }
+  async function lerEmLotes(chaves) { // LOTE_DE_LEITURA de cada vez, em paralelo; a ordem das chaves se mantém
+    const eventos = [];
+    for (let i = 0; i < chaves.length; i += LOTE_DE_LEITURA) {
+      const lote = await Promise.all(chaves.slice(i, i + LOTE_DE_LEITURA).map(k => store.get(k, {type: 'json'})));
+      for (const e of lote) if (e) eventos.push(e);
+    }
+    return eventos;
   }
   async function autorizado(req) {
     const cfg = await store.get('config/token', {type: 'json'});
@@ -100,11 +113,9 @@ export function criarDiario(store, {origens = []} = {}) {
       }
       if (req.method === 'GET' && rota === '/eventos') {
         const depois = Math.max(0, parseInt(url.searchParams.get('depois') || '0', 10) || 0);
-        const {blobs} = await store.list({prefix: 'ev/'});
-        const chaves = blobs.map(b => b.key).filter(k => parseInt(k.slice(3), 10) > depois).sort().slice(0, 500);
-        const eventos = [];
-        for (const k of chaves) { const e = await store.get(k, {type: 'json'}); if (e) eventos.push(e); }
-        return responder(req, 200, {eventos, cabeca: await cabeca()});
+        const ns = await posicoes(); // a cabeça sai desta mesma listagem: uma por pedido
+        const chaves = ns.filter(n => n > depois).sort((a, b) => a - b).slice(0, LIMITE_PAGINA).map(chaveEvento);
+        return responder(req, 200, {eventos: await lerEmLotes(chaves), cabeca: maior(ns)});
       }
       if (req.method === 'POST' && rota === '/eventos') {
         const bruto = await req.text();

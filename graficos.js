@@ -146,6 +146,10 @@ export function divergentes(itens, {rotulo}) {
 let sequencia = 0;
 const novoId = prefixo => `${prefixo}-${++sequencia}`;
 const MENOS = '−';
+const px2 = v => String(Math.round(v * 100) / 100);   // coordenada do SVG com 2 casas
+// largura mínima da fatia de um mês (px) para desenhar o marcador do saldo em todos os meses (abaixo dela, no celular,
+// os marcadores encostariam e a linha contínua pareceria tracejada)
+const FATIA_COM_MARCADORES = 24;
 const temNumero = v => v !== null && v !== undefined;
 const comSinal = (minor, moeda) => (minor > 0 ? '+' : minor < 0 ? MENOS : '') + dinheiro(Math.abs(minor), moeda);
 const capital = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -228,7 +232,7 @@ function definicoes() {
 function amostra(tipo, ids) {
   const svg = svgEl('svg', {class: 'gf-amostra-svg', viewBox: '0 0 14 10', width: '14', height: '10', 'aria-hidden': 'true', focusable: 'false'});
   const [serie, traco] = tipo.split(':');
-  if (traco === 'linha') svg.append(svgEl('line', {x1: '1', y1: '5', x2: '13', y2: '5', class: 'gf-amostra-linha is-' + serie}));
+  if (traco === 'linha' || traco === 'tracejado') svg.append(svgEl('line', {x1: '1', y1: '5', x2: '13', y2: '5', class: 'gf-amostra-linha is-' + serie + (traco === 'tracejado' ? ' is-previsao' : '')}));
   else if (traco === 'cadeado') desenharCadeado(svg, 7, 1);
   else {
     const r = svgEl('rect', {x: '1', y: '1', width: '12', height: '8', rx: '2', class: 'gf-m is-' + serie + (traco === 'hachura' ? ' is-hachura' : traco === 'estimado' ? ' is-estimado' : '')});
@@ -270,11 +274,13 @@ function moldura(classe, {rotulo, comoLer, tabela, ids}) {
   caixa.id = novoId('gf-tabela');
   caixa.hidden = true;
   caixa.append(tabela);
+  // alternância de rótulo fixo: o estado está só no aria-pressed ("Ver tabela, pressionado"), como os cenários do Med
+  // Painel; trocar também o texto faria o leitor de tela anunciar "Esconder tabela, pressionado", que se contradiz
   const ver = el('button', 'button button-quiet gf-ver-tabela', 'Ver tabela');
   ver.type = 'button';
   ver.setAttribute('aria-pressed', 'false');
   ver.setAttribute('aria-controls', caixa.id);
-  ver.addEventListener('click', () => { const abrir = caixa.hidden; caixa.hidden = !abrir; ver.setAttribute('aria-pressed', String(abrir)); ver.textContent = abrir ? 'Esconder tabela' : 'Ver tabela'; });
+  ver.addEventListener('click', () => { const abrir = caixa.hidden; caixa.hidden = !abrir; ver.setAttribute('aria-pressed', String(abrir)); });
   const rodape = el('div', 'gf-rodape');
   rodape.append(como, ver);
   fig.append(ids.svg, area, anuncio, rodape, caixa);
@@ -344,20 +350,29 @@ export function fluxo(serie, opcoes = {}) {
   const rotulo = opcoes.rotulo || conclusaoFluxo(lista, moeda);
   const comoLer = [[amostra('entrada:solido', ids), 'entrou (para cima)'], [amostra('saida:solido', ids), 'saiu (para baixo)']];
   if (temSaldo) comoLer.push([amostra('destaque:linha', ids), 'saldo no fim do mês (faixa de cima, escala própria)']);
+  if (lista.some((s, k) => k > 0 && s.futuro && temNumero(s.saldo) && temNumero(lista[k - 1].saldo))) comoLer.push([amostra('destaque:tracejado', ids), 'tracejado: saldo previsto']);
   if (lista.some(hachurado)) comoLer.push([amostra('entrada:hachura', ids), 'hachura: mês aberto ou previsão']);
   if (lista.some(s => s.fechado)) comoLer.push([amostra('contexto:cadeado', ids), 'mês fechado']);
   const tabela = tabelaDe(rotulo, ['Mês', 'Entrou', 'Saiu', 'Saldo no fim', 'Situação'], lista.map(s => [mesCurto(s.mes), dinheiro(s.entrou, moeda), dinheiro(s.saiu, moeda), temNumero(s.saldo) ? dinheiro(s.saldo, moeda) : '—', situacao(s)]), [1, 2, 3]);
   const m = moldura('gf-fluxo', {rotulo, comoLer, tabela, ids});
   const n = lista.length;
-  let geo = null, faixaSel = null;
+  let geo = null, faixaSel = null, saldoSel = null;
   const inicial = Math.max(0, lista.map(s => !s.futuro).lastIndexOf(true));
   const nav = navegavel(m, {total: n, inicial, vertical: false,
     indiceEm: e => { if (!geo) return -1; const x = e.clientX - m.area.getBoundingClientRect().left - geo.esq; return x < 0 || x > geo.plotW ? -1 : Math.min(n - 1, Math.floor(x / geo.slot)); },
     mostrar: k => {
       if (!geo) return '';
-      if (k < 0) { m.dica.hidden = true; faixaSel.setAttribute('visibility', 'hidden'); return ''; }
+      if (k < 0) { m.dica.hidden = true; faixaSel.setAttribute('visibility', 'hidden'); if (saldoSel) saldoSel.setAttribute('visibility', 'hidden'); return ''; }
       const s = lista[k];
       faixaSel.setAttribute('x', String(geo.esq + geo.slot * k)); faixaSel.setAttribute('visibility', 'visible');
+      // o marcador do mês da dica (no celular é o único, além do último saldo)
+      if (saldoSel) {
+        if (temNumero(s.saldo)) {
+          saldoSel.setAttribute('transform', `translate(${px2(geo.esq + geo.slot * (k + 0.5))} ${px2(geo.ys(s.saldo))})`);
+          saldoSel.firstChild.setAttribute('class', 'gf-saldo-ponto' + (s.futuro ? ' is-previsao' : ''));
+          saldoSel.setAttribute('visibility', 'visible');
+        } else saldoSel.setAttribute('visibility', 'hidden');
+      }
       const linhas = [`Entrou ${dinheiro(s.entrou, moeda)}`, `Saiu ${dinheiro(s.saiu, moeda)}`];
       if (temSaldo) linhas.push(temNumero(s.saldo) ? `Saldo no fim ${dinheiro(s.saldo, moeda)}` : 'Saldo não informado');
       const titulo = `${capital(mesLongo(s.mes))} · ${situacao(s)}`;
@@ -414,26 +429,42 @@ export function fluxo(serie, opcoes = {}) {
       }
       if (s.fechado) desenharCadeado(svg, cx, yCad);
     });
-    // saldo: faixa própria, linha de 2,5px em ouro, marcadores de 8px com anel da superfície, rótulo direto no fim
+    // saldo: faixa própria, linha de 2,5px em ouro, rótulo direto no fim. A linha realizada é UM caminho contínuo por
+    // trecho (só um mês sem saldo a interrompe); tracejado só no trecho previsto (§6.3). Marcadores de 8px com anel da
+    // superfície em todo mês quando a fatia é larga; numa fatia estreita (celular) eles encostariam uns nos outros e o
+    // anel picotaria a linha, que pareceria tracejada: ficam só o do último saldo e o do mês da dica (saldoSel).
+    let ys = null;
+    saldoSel = null;
     if (temSaldo) {
       const vals = lista.filter(s => temNumero(s.saldo)).map(s => s.saldo);
       const lo = Math.min(...vals), hi = Math.max(...vals), yTopo = 26, yBase = altSaldo - 8;
-      const ys = v => hi === lo ? (yTopo + yBase) / 2 : yBase - (v - lo) / (hi - lo) * (yBase - yTopo);
+      ys = v => hi === lo ? (yTopo + yBase) / 2 : yBase - (v - lo) / (hi - lo) * (yBase - yTopo);
+      const xs = k => esq + slot * (k + 0.5);
       const ultimoSaldo = lista.map(s => temNumero(s.saldo)).lastIndexOf(true);
       const textoFim = `${dinheiro(lista[ultimoSaldo].saldo, moeda)} em ${mesCurto(lista[ultimoSaldo].mes)}`;
       const cabe = larguraTexto('Saldo no fim do mês', 12, 600) + larguraTexto(textoFim, 12, 600) + 16 <= W;   // tela estreita: título curto
       const titulo = svgEl('text', {x: '0', y: '13', class: 'gf-saldo-titulo'}); titulo.textContent = cabe ? 'Saldo no fim do mês' : 'Saldo'; svg.append(titulo);
+      const caminho = {real: '', previsao: ''}, ate = {real: -1, previsao: -1};
       for (let k = 1; k < n; k++) {
         const a = lista[k - 1], b = lista[k];
         if (!temNumero(a.saldo) || !temNumero(b.saldo)) continue;
-        svg.append(svgEl('line', {x1: String(esq + slot * (k - 0.5)), y1: String(ys(a.saldo)), x2: String(esq + slot * (k + 0.5)), y2: String(ys(b.saldo)), class: 'gf-saldo-linha' + (b.futuro ? ' is-previsao' : '')}));
+        const t = b.futuro ? 'previsao' : 'real';
+        if (ate[t] !== k - 1) caminho[t] += `M${px2(xs(k - 1))} ${px2(ys(a.saldo))}`;
+        caminho[t] += `L${px2(xs(k))} ${px2(ys(b.saldo))}`;
+        ate[t] = k;
       }
-      lista.forEach((s, k) => { if (temNumero(s.saldo)) svg.append(svgEl('circle', {cx: String(esq + slot * (k + 0.5)), cy: String(ys(s.saldo)), r: '4', class: 'gf-saldo-ponto' + (s.futuro ? ' is-previsao' : '')})); });
+      for (const t of ['real', 'previsao']) if (caminho[t]) svg.append(svgEl('path', {d: caminho[t], class: 'gf-saldo-linha' + (t === 'previsao' ? ' is-previsao' : '')}));
+      // um saldo sem vizinho com saldo não tem linha: o marcador dele fica sempre, para o mês não sumir do desenho
+      const todos = slot >= FATIA_COM_MARCADORES, temSaldoEm = k => k >= 0 && k < n && temNumero(lista[k].saldo);
+      lista.forEach((s, k) => { if (temNumero(s.saldo) && (todos || k === ultimoSaldo || (!temSaldoEm(k - 1) && !temSaldoEm(k + 1)))) svg.append(svgEl('circle', {cx: px2(xs(k)), cy: px2(ys(s.saldo)), r: '4', class: 'gf-saldo-ponto' + (s.futuro ? ' is-previsao' : '')})); });
+      saldoSel = svgEl('g', {class: 'gf-saldo-sel', visibility: 'hidden'});
+      saldoSel.append(svgEl('circle', {cx: '0', cy: '0', r: '4', class: 'gf-saldo-ponto'}), svgEl('circle', {cx: '0', cy: '0', r: '7', class: 'gf-saldo-marca'}));
+      svg.append(saldoSel);
       const fim = svgEl('text', {x: String(W - dir), y: '13', 'text-anchor': 'end', class: 'gf-saldo-fim'});
       fim.textContent = textoFim;
       svg.append(fim);
     }
-    geo = {esq, plotW, slot, y0f};
+    geo = {esq, plotW, slot, y0f, ys};
     const antigo = m.area.querySelector('svg');
     if (antigo) antigo.replaceWith(svg); else m.area.prepend(svg);
     m.area.style.minHeight = '';

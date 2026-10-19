@@ -161,12 +161,16 @@ export function vigente(lista, chave, data) {
 // Conteúdo do evento: {acao, alvo, versao?, dados, motivo?, quando}. A autora é quem assinou (ev.membro) e o papel vem
 // sempre do estado (members[].role), nunca do evento. Cada recusa leva um código: versao (outra sócia mexeu antes; vem
 // com o registro atual para o diálogo de conflito), mes_fechado, permissao, invalido ou repetido.
-const DIA = /^\d{4}-\d{2}-\d{2}$/, MES = /^\d{4}-\d{2}$/;
+const DIA = /^\d{4}-\d{2}-\d{2}$/;
 const texto = (v, max = 160) => typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, max) : '';
 const diaValido = s => { if (typeof s !== 'string' || !DIA.test(s)) return false; const t = Date.parse(s + 'T12:00:00Z'); return Number.isFinite(t) && new Date(t).toISOString().slice(0, 10) === s; };
 const mesValido = s => typeof s === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(s);
+// teto de qualquer valor (e contagem) num registro: 10^12 centavos = 10 bilhões. Acima disso é zero a mais, e assim a
+// soma de milhares de itens, já convertidos, continua um inteiro seguro.
+const TETO = 10 ** 12, ALTO = 'Valor alto demais: confira os zeros.';
 const inteiro = (v, min = 0) => Number.isSafeInteger(v) && v >= min;
 const opcional = v => v === null || v === undefined || inteiro(v);
+const acimaDoTeto = (...vs) => vs.some(v => Number.isSafeInteger(v) && v > TETO);
 const moedaOk = m => typeof m === 'string' && DIGITOS[m] !== undefined;
 const casa = (re, v) => typeof v === 'string' && re.test(v);
 const ID_GASTO = /^[A-Za-z0-9][\w.:-]{0,99}$/, ID_PLANO = /^pl-[\w-]{1,80}$/, ID_ACERTO = /^ac-[\w-]{1,80}$/, ID_SALDO = /^sd-[\w-]{1,80}$/, ID_RECEITA = /^rc-[\w-]{1,80}$/;
@@ -175,8 +179,13 @@ export function nomeDoMes(mes) { return mesValido(mes) ? `${MESES[+mes.slice(5, 
 const Mes = mes => { const s = nomeDoMes(mes); return s.charAt(0).toUpperCase() + s.slice(1); };
 const ultimoDiaDo = mes => new Date(Date.UTC(+mes.slice(0, 4), +mes.slice(5, 7), 0)).toISOString().slice(0, 10);
 function somarMeses(mes, k) { const t = +mes.slice(0, 4) * 12 + (+mes.slice(5, 7) - 1) + k; return `${Math.floor(t / 12)}-${String(t % 12 + 1).padStart(2, '0')}`; }
-// o dia do evento em São Paulo (UTC−3, sem horário de verão desde 2019): é por ele que se sabe se o mês já terminou
-function diaDoEvento(quando) { const t = Date.parse(typeof quando === 'string' ? quando : ''); return Number.isFinite(t) ? new Date(t - 3 * 3600e3).toISOString().slice(0, 10) : null; }
+// o dia de referência do evento em São Paulo (UTC−3, sem horário de verão desde 2019): é por ele que se sabe se o mês já
+// terminou ou se a data de um saldo já chegou. Vale o MENOR entre o relógio do aparelho (conteudo.quando) e o horário que
+// o servidor gravou (ev.ts), quando há os dois: um aparelho adiantado não fecha o mês antes da hora.
+function refDoEvento(x) {
+  const t = [x.c.quando, x.ev.ts].map(v => Date.parse(typeof v === 'string' ? v : '')).filter(Number.isFinite);
+  return t.length ? new Date(Math.min(...t) - 3 * 3600e3).toISOString().slice(0, 10) : null;
+}
 const SIMBOLO = {BRL: 'R$', USD: 'US$', EUR: '€'};
 function fmt(minor, moeda = 'BRL') { // "R$ 1.388,47" (só para os textos das recusas e do histórico)
   if (!Number.isSafeInteger(minor)) return '—';
@@ -186,10 +195,11 @@ function fmt(minor, moeda = 'BRL') { // "R$ 1.388,47" (só para os textos das re
 const comSinal = minor => Number.isSafeInteger(minor) ? (minor > 0 ? '+' : '') + fmt(minor) : 'sem estimativa';
 
 function validarGasto(g, membros) {
-  if (!DIA.test(g.data || '')) return 'Informe a data do gasto.';
-  if (!MES.test(g.competencia || '')) return 'Competência inválida.';
+  if (!diaValido(g.data)) return 'Informe a data do gasto.';
+  if (!mesValido(g.competencia)) return 'Competência inválida.';
   if (!texto(g.descricao)) return 'Descreva o gasto.';
   if (!Number.isSafeInteger(g.valorMinor) || g.valorMinor <= 0) return 'Informe um valor maior que zero.';
+  if (acimaDoTeto(g.valorMinor, g.faturaBrlMinor)) return ALTO;
   if (!moedaOk(g.moeda)) return 'Moeda não suportada.';
   if (!CATEGORIA[g.categoria]) return 'Escolha uma categoria.';
   if (!FORMA[g.forma]) return 'Escolha como foi pago.';
@@ -277,7 +287,10 @@ function travado(S, x, ...meses) {
   x.recusa(`${Mes(m)} está fechado. A responsável reabre, com motivo, se precisar mudar.`, 'mes_fechado');
   return true;
 }
+// a versão que a sócia viu: sem ela (registro antigo ou malformado) não é conflito com ninguém, é registro inválido;
+// "versao" fica só para quando outra pessoa mudou o registro de fato
 function versaoConfere(x, reg, oQue, resumo, dados, versao = x.c.versao) {
+  if (!inteiro(versao, 1)) return x.recusa('Falta a versão do registro: recarregue o portal e tente de novo.');
   if (versao === reg.versao) return true;
   x.recusa(`Outra pessoa mudou ${oQue} antes (versão ${reg.versao}).`, 'versao', {versao: reg.versao, alteradoPor: reg.alteradoPor || reg.criadoPor || null, alteradoEm: reg.alteradoEm || reg.criadoEm || null, resumo, dados});
   return false;
@@ -349,6 +362,9 @@ function novoGasto(S, x) { // add_expense e record_payment ("marcar como paga" =
     if (!plano) return x.recusa('Escolha a assinatura que foi paga.');
     ciclo = x.d.ciclo;
     if (!mesValido(ciclo)) return x.recusa('Informe o ciclo pago (mês e ano).');
+    // o pagamento conta no mês do ciclo: em outro mês, o ciclo seguiria previsto e o gasto contaria de novo como realizado
+    // (e, com o ciclo num mês fechado, a competência dele já caiu na trava acima)
+    if (g.competencia !== ciclo) return x.recusa('A competência do pagamento é o mês do ciclo pago.');
     if (encerradaEm(plano, g.data)) return x.recusa('Esta assinatura está encerrada: reative antes de marcar como paga.');
     // um add_expense comum com planoId também paga o ciclo da competência dele: são dois caminhos para o mesmo fato
     if ([...S.gastos.values()].some(o => o.estado !== 'anulado' && o.planoId === plano.id && (o.ciclo || o.competencia) === ciclo)) return x.recusa(`Esta assinatura já foi marcada como paga em ${nomeDoMes(ciclo)}.`, 'repetido');
@@ -367,6 +383,7 @@ function conciliarFatura(S, x) {
   if (!itens.length || itens.length > 500) return x.recusa('Escolha ao menos um gasto da fatura.');
   const total = d.totalFaturaMinor ?? null;
   if (total !== null && !inteiro(total, 1)) return x.recusa('Total da fatura inválido.');
+  if (acimaDoTeto(total)) return x.recusa(ALTO);
   const vistos = new Set(), pares = [];
   for (const it of itens) {
     const g = it && typeof it === 'object' ? S.gastos.get(it.alvo) : null;
@@ -379,6 +396,7 @@ function conciliarFatura(S, x) {
     if (g.competencia !== d.mes) return x.recusa(`"${g.descricao}" é de outra competência (${nomeDoMes(g.competencia)}).`);
     if (!versaoConfere(x, g, `"${g.descricao}"`, resumoGasto(g), pick(g), it.versao)) return;
     if (!inteiro(it.faturaBrlMinor, 1)) return x.recusa(`Informe o valor cobrado na fatura para "${g.descricao}".`);
+    if (acimaDoTeto(it.faturaBrlMinor)) return x.recusa(ALTO);
     pares.push([g, it.faturaBrlMinor]);
   }
   const fatura = pares.reduce((s, [, v]) => s + v, 0);
@@ -431,6 +449,7 @@ function validarPlano(p, campos) {
   if (tem('servico') && (typeof p.servico !== 'string' || !p.servico)) return 'Informe o serviço.';
   if (tem('plano') && typeof p.plano !== 'string') return 'Nome do plano inválido.';
   if (tem('valorMinor') && !inteiro(p.valorMinor, 1)) return 'Informe um valor maior que zero.';
+  if (tem('valorMinor') && acimaDoTeto(p.valorMinor)) return ALTO;
   if (tem('moeda') && !moedaOk(p.moeda)) return 'Moeda não suportada.';
   if (tem('periodo') && !(typeof p.periodo === 'string' && EQUIVALENTE[p.periodo])) return 'Escolha o período da cobrança (mensal, trimestral, semestral, anual…).';
   if (tem('diaVencimento') && p.diaVencimento !== null && !(Number.isInteger(p.diaVencimento) && p.diaVencimento >= 1 && p.diaVencimento <= 31)) return 'O dia do vencimento vai de 1 a 31.';
@@ -525,6 +544,7 @@ function validarReceita(r) {
   if (!inteiro(r.transacoes)) return 'Informe o número de vendas (zero ou mais).';
   if (!opcional(r.taxasMinor)) return 'Valor das taxas inválido.';
   for (const [k, rotulo] of Object.entries(CONTAGENS)) if (!opcional(r[k])) return `Contagem inválida: ${rotulo}.`;
+  if (acimaDoTeto(r.brutoMinor, r.canceladosMinor, r.taxasMinor, r.transacoes, ...Object.keys(CONTAGENS).map(k => r[k]))) return ALTO;
   return null;
 }
 const pickReceita = r => Object.fromEntries([...CAMPOS_RECEITA, 'estado'].map(k => [k, r[k]]));
@@ -546,6 +566,7 @@ function registrarAcerto(S, x) {
   if (tipo.id === 'acerto_entre_socias' && (!S.socia(d.de) || !S.socia(d.para) || d.de === d.para)) return x.recusa('O acerto é entre duas sócias diferentes.');
   if (tipo.id === 'aporte' && (!S.socia(d.de) || d.para !== 'empresa')) return x.recusa('No aporte, uma sócia põe dinheiro na empresa.');
   if (!inteiro(d.valorMinor, 1)) return x.recusa('Informe um valor maior que zero.');
+  if (acimaDoTeto(d.valorMinor)) return x.recusa(ALTO);
   if ((d.moeda ?? 'BRL') !== 'BRL') return x.recusa('Acertos são em reais.');
   if (!diaValido(d.data)) return x.recusa('Informe a data do pagamento.');
   if (!FORMAS_ACERTO.some(f => f.id === d.forma)) return x.recusa('Escolha como foi pago: Pix, transferência, dinheiro ou outro.');
@@ -592,9 +613,10 @@ function informarSaldo(S, x) { // qualquer sócia; vale o de maior data por cont
   const conta = texto(d.conta, 60);
   if (!conta) return x.recusa('Informe a conta.');
   if (!diaValido(d.data)) return x.recusa('Informe a data do saldo.');
-  const hoje = diaDoEvento(quando);
+  const hoje = refDoEvento(x);
   if (hoje && d.data > hoje) return x.recusa('O saldo é de uma data que ainda não chegou.');
   if (!inteiro(d.valorMinor)) return x.recusa('Informe um saldo de zero para cima.');
+  if (acimaDoTeto(d.valorMinor)) return x.recusa(ALTO);
   if (!moedaOk(d.moeda)) return x.recusa('Moeda não suportada.');
   if (S.saldos.has(c.alvo)) return x.recusa('Saldo repetido.', 'repetido');
   const s = {id: c.alvo, seq: x.ev.seq, conta, data: d.data, valorMinor: d.valorMinor, moeda: d.moeda, fonte: texto(d.fonte) || 'informado no portal', nota: texto(d.nota, 400), criadoPor: autora, criadoEm: quando, vigente: false};
@@ -648,7 +670,7 @@ function aplicarMes(S, x) {
     return x.registrar({resumo: `${Mes(mes)} · selo ${f.selo.slice(0, 8)}`, antes: {fechado: true, selo: f.selo}, depois: {fechado: false}, motivo: x.motivo});
   }
   if (!S.dono(autora)) return x.recusa('Só a responsável fecha o mês.', 'permissao');
-  const hoje = diaDoEvento(quando);
+  const hoje = refDoEvento(x);
   if (!hoje || mes >= hoje.slice(0, 7)) return x.recusa('Só dá para fechar um mês que já terminou.');
   if (fechado(S, mes)) return x.recusa(`${Mes(mes)} já está fechado.`, 'mes_fechado');
   const d = x.d, t = d.totais && typeof d.totais === 'object' ? d.totais : {};

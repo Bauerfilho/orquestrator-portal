@@ -321,10 +321,13 @@
 .gf-faixa-sel{fill:var(--lv-tinta-media)}
 .gf-saldo-titulo{font:600 12px var(--sans);fill:var(--muted)}
 .gf-saldo-fim{font:600 12px var(--sans);fill:var(--ink)}
-.gf-saldo-linha{stroke:var(--fin-destaque);stroke-width:2.5;stroke-linecap:round;fill:none}
+.gf-saldo-linha{stroke:var(--fin-destaque);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
 .gf-saldo-linha.is-previsao{stroke-dasharray:4 4}
 .gf-saldo-ponto{fill:var(--fin-destaque);stroke:var(--lv-superficie);stroke-width:2}
 .gf-saldo-ponto.is-previsao{fill:var(--lv-superficie);stroke:var(--fin-destaque)}
+/* o mês da dica: o ponto e um anel em volta (no celular é o único marcador além do último saldo) */
+.gf-saldo-sel{pointer-events:none}
+.gf-saldo-marca{fill:none;stroke:var(--ink);stroke-width:1.5}
 .gf-dica{position:absolute;z-index:3;top:0;left:0;min-width:140px;max-width:min(250px,100%);padding:8px 11px;border-radius:10px;background:var(--panel);color:var(--ink);border:1px solid var(--line-strong,var(--line));box-shadow:var(--lv-sombra);font-size:12.5px;line-height:1.45;font-variant-numeric:tabular-nums;pointer-events:none}
 .gf-dica strong{display:block;font-weight:650;margin-bottom:2px}
 .gf-dica span{display:block;color:var(--muted)}
@@ -335,8 +338,11 @@
 .gf-novo .gf-como-ler strong{font-weight:650;color:var(--ink)}
 .gf-amostra-svg{display:inline-block;flex:none;width:14px;height:10px;vertical-align:middle;overflow:visible}
 .gf-amostra-linha{stroke-width:2.5;stroke-linecap:round}
+.gf-amostra-linha.is-previsao{stroke-dasharray:3.5 2.5;stroke-linecap:butt}
 .gf-amostra-linha.is-entrada{stroke:var(--fin-entrada)}.gf-amostra-linha.is-saida{stroke:var(--fin-saida)}.gf-amostra-linha.is-destaque{stroke:var(--fin-destaque)}.gf-amostra-linha.is-contexto{stroke:var(--fin-contexto)}
 .gf-ver-tabela{flex:none;min-height:36px;padding:4px 10px;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+/* alternância de rótulo fixo (§6.7): o estado aparece no botão, não no texto */
+.gf-ver-tabela[aria-pressed=true]{text-decoration:none;font-weight:650;color:var(--ink);background:var(--lv-tinta-media)}
 .gf-tabela-caixa{overflow-x:auto;margin-top:8px}
 .gf-tabela{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
 .gf-tabela caption{caption-side:top;text-align:left;font-size:12px;color:var(--muted);padding:0 0 6px}
@@ -381,6 +387,7 @@
   .gf-novo{--fin-entrada:CanvasText;--fin-saida:CanvasText;--fin-destaque:Highlight;--fin-contexto:GrayText;--ink:CanvasText;--muted:CanvasText;--line:GrayText;--line-strong:CanvasText;--lv-superficie:Canvas;--lv-tinta-media:transparent}
   .gf-novo svg{forced-color-adjust:none}
   .gf-faixa-sel{fill:none;stroke:Highlight;stroke-width:2}
+  .gf-ver-tabela[aria-pressed=true]{outline:2px solid Highlight;outline-offset:1px}
   .gf-cascata-linha.is-sel{outline:2px solid Highlight}
   .gf-seg.is-neutro,.gf-seg.is-destaque{forced-color-adjust:none;background:CanvasText}
 }
