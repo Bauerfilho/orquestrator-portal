@@ -307,7 +307,8 @@ export function caixaInformado(aplicado, lista, data) {
   const validas = contas.filter(c => c.brl !== null);
   const total = soma(validas.map(c => c.brl));
   const idades = contas.map(c => c.idadeDias).filter(ehInteiro);
-  return {data: data || null, contas, total, temSaldo: contas.length > 0, idadeMaxDias: idades.length ? Math.max(...idades) : null, incompletos,
+  // temSaldo: há ao menos uma conta que vira reais; completo: nenhuma conta ficou de fora por falta de câmbio
+  return {data: data || null, contas, total, temSaldo: validas.length > 0, completo: incompletos.length === 0, idadeMaxDias: idades.length ? Math.max(...idades) : null, incompletos,
     explica: {formula: 'Caixa = soma do último saldo informado de cada conta (moeda estrangeira pela PTAX do dia do saldo, sem spread)', resultado: total,
       termos: validas.map(c => ({rotulo: `${c.conta} (${dataBR(c.data)})`, brl: c.brl, op: '+', ref: {tipo: 'saldo', id: c.id}})), excluidos: incompletos.map(i => ({rotulo: i.descricao, motivo: i.motivo}))}};
 }
@@ -384,7 +385,9 @@ export function folego(estadoBase, aplicado, hoje) {
   if (!caixa.temSaldo) return {...comum, estado: 'sem_saldo', decimos: null, texto: 'falta informar o saldo do banco', frase: 'Informe o saldo do banco para ver quanto tempo o caixa dura.', explica: explica('Informe o saldo da conta da empresa para calcular o fôlego.')};
   const decimos = num(arred(BigInt(caixa.total) * 10n * BigInt(N), BigInt(somaQueima)));   // um arredondamento só
   const texto = `≈ ${textoDecimos(decimos)} ${decimos === 10 ? 'mês' : 'meses'}`;
-  return {...comum, estado: 'ok', decimos, texto, frase: `${abre}: dá ${texto} na queima ${rotuloBase}.`, explica: explica(`${fmt(caixa.total)} ÷ ${fmt(queimaMedia)} por mês = ${textoDecimos(decimos)} meses (${rotuloBase})`, decimos)};
+  // conta sem câmbio fica fora da soma: o fôlego sai, mas avisa que é parcial (nunca finge que o caixa é só aquilo)
+  const fora = caixa.completo === false ? ` Sem contar ${caixa.incompletos.map(i => i.descricao).join(', ')}: falta o câmbio.` : '';
+  return {...comum, estado: 'ok', parcial: !!fora, decimos, texto, frase: `${abre}: dá ${texto} na queima ${rotuloBase}.${fora}`, explica: explica(`${fmt(caixa.total)} ÷ ${fmt(queimaMedia)} por mês = ${textoDecimos(decimos)} meses (${rotuloBase})`, decimos)};
 }
 
 // ── o selo do mês (F16) ──────────────────────────────────────────────────────────────────────────────────────────
