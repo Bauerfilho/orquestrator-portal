@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="conciliacao.css">
   <link rel="stylesheet" href="fechamento.css">
   <link rel="stylesheet" href="ajuda.css">
-  <link rel="manifest" href="manifest.webmanifest"><script type="module" src="static-bridge.js"></script><script src="app.js" defer></script><script type="module" src="livro.js"></script><script type="module" src="rotina.js"></script>
+  <link rel="manifest" href="manifest.webmanifest"><script type="module" src="static-bridge.js"></script><script src="paginas.js" defer></script><script src="app.js" defer></script><script type="module" src="livro.js"></script><script type="module" src="rotina.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Ir para o conteúdo</a>
@@ -67,6 +67,7 @@
         <div id="header-details" class="header-details"><p id="page-description">Seus compromissos, com a empresa em perspectiva.</p><p class="read-state"><span aria-hidden="true"></span> <span data-host-text="reading">Arquivos locais</span> <span class="read-state-separator">·</span> <span id="reading-state">Aguardando leitura</span> <span class="read-state-separator">·</span> <span id="lv-modo" class="lv-modo"></span></p></div>
       </header>
       <div class="page-stage">
+        <div id="faixa-global"></div>
         <p id="dashboard-error" class="notice notice-error" role="alert" hidden></p>
         <section id="block-user" class="finance-page" data-finance-page="overview" data-finance-block="user" aria-labelledby="user-title">
           <div id="livro-resumo"></div><div id="acerto-resumo"></div><div class="section-heading"><div><p class="section-number">SEUS COMPROMISSOS</p><h2 id="user-title">A sua parte, com clareza.</h2></div><div id="user-source" class="source-status"></div></div><div id="user-content"></div>
@@ -117,25 +118,8 @@
   <dialog id="navigation-drawer" class="navigation-drawer" aria-labelledby="navigation-title">
     <div class="drawer-heading"><div><p class="eyebrow">ORQUESTRATOR</p><h2 id="navigation-title">Finanças</h2></div><button id="menu-close" class="icon-button" type="button" aria-label="Fechar menu"><span aria-hidden="true">×</span></button></div>
     <p class="drawer-caption">A empresa, em perspectiva.</p>
-    <nav class="drawer-nav" aria-label="Páginas de Finanças">
-      <p class="nav-grupo">Dinheiro</p>
-      <button type="button" data-navigate="overview" aria-current="page"><span class="nav-index" aria-hidden="true">01</span><span>Meu painel</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="livro"><span class="nav-index" aria-hidden="true">02</span><span>Livro do mês</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="lancamentos"><span class="nav-index" aria-hidden="true">03</span><span>Lançamentos</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="subscriptions"><span class="nav-index" aria-hidden="true">04</span><span>Assinaturas</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="cash"><span class="nav-index" aria-hidden="true">05</span><span>Caixa</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="parametros"><span class="nav-index" aria-hidden="true">06</span><span>Parâmetros</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <p class="nav-grupo">Planejar</p>
-      <button type="button" data-navigate="medpainel"><span class="nav-index" aria-hidden="true">07</span><span>Med Painel</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="projection"><span class="nav-index" aria-hidden="true">08</span><span>Projeção</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="sell"><span class="nav-index" aria-hidden="true">09</span><span>Vender primeiro</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <p class="nav-grupo">Empresa</p>
-      <button type="button" data-navigate="society"><span class="nav-index" aria-hidden="true">10</span><span>Sociedade</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="portfolio"><span class="nav-index" aria-hidden="true">11</span><span>Portfólio</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <button type="button" data-navigate="lab" id="nav-lab" hidden><span class="nav-index" aria-hidden="true">12</span><span>Laboratório</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-      <p class="nav-grupo">Registro</p>
-      <button type="button" data-navigate="historico"><span class="nav-index" aria-hidden="true">13</span><span>Histórico</span><span class="nav-arrow" aria-hidden="true">↗</span></button>
-    </nav>
+    <button id="drawer-lancar" class="button button-primary full-width drawer-lancar" type="button" hidden aria-label="Lançar um gasto da empresa" style="margin:0 0 14px">+ Lançar <span aria-hidden="true">↗</span></button>
+    <nav id="drawer-nav" class="drawer-nav" aria-label="Páginas de Finanças"></nav>
     <div class="drawer-footer"><button id="drawer-password" class="button button-quiet" type="button">Trocar minha senha</button><span class="read-state"><span aria-hidden="true"></span> <span data-host-text="drawer">Leitura local</span></span><p>Fontes e entregas identificadas em cada página.</p></div>
   </dialog>
   <dialog id="asset-dialog" class="asset-dialog" aria-labelledby="asset-detail-title">

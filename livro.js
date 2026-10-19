@@ -1,6 +1,7 @@
 // As páginas novas do Finanças: Livro do mês (o dinheiro do mês, com gráficos e a conta de cada número), Lançamentos (o
 // que cada sócia gastou pela empresa), Parâmetros (câmbio, spread, IOF, impostos e taxas, com vigência) e Histórico (quem
-// mudou o quê). Mais o botão "+ Lançar" do cabeçalho e o resumo do mês no Meu painel. Os dados vêm da ponte (estado
+// mudou o quê). Mais o botão "+ Lançar" do cabeçalho, o resumo do mês no Meu painel, a faixa de treino de todas as páginas
+// (#faixa-global) e o que a rota pede a estas páginas (rotaAtual: mês, filtros, destaque). Os dados vêm da ponte (estado
 // canônico do pacote) + o diário cifrado (diario.js); toda conta é do razao.js. Três níveis de leitura por página:
 // manchete em 10 segundos, gráficos em 1 minuto, livro até o centavo (plano §6.4).
 //
@@ -18,6 +19,12 @@ const livroHost = () => host().livro || null;
 let mesAtual = null;
 const filtro = {socia: 'todas', mes: null};
 let paramAberto = null;
+// da rota (#livro/2026-10/fechar, #lancamentos?…&id=…, #parametros/fx.USD_BRL): a aba do Livro, o lançamento e o
+// parâmetro destacados, e de onde se chegou a eles
+let abaLivro = null;
+let destacado = null;
+let paramDestacado = null;
+let rotuloDestaque = 'Aberto pelo link';
 let ultimoDesenho = '';
 let ultimoLancamento = null;
 
@@ -47,9 +54,22 @@ export function faixaModo(d) {
   const m = modo(d);
   if (m === 'gravacao') return null;
   const box = el('div', 'lv-faixa' + (m === 'abrindo' ? '' : ' is-treino'));
-  const titulo = m === 'treino' || m === 'indisponivel' ? 'Modo treino: nada do que você lançar aqui é salvo' : m === 'aguardando' ? 'Sua chave do diário ainda não foi liberada' : m === 'leitura' ? 'Você lê, mas não grava' : 'Abrindo o diário cifrado…';
+  const titulo = m === 'treino' || m === 'indisponivel' ? 'Modo treino: nada do que você fizer aqui é salvo' : m === 'aguardando' ? 'Sua chave do diário ainda não foi liberada' : m === 'leitura' ? 'Você lê, mas não grava' : 'Abrindo o diário cifrado…';
   box.append(el('strong', null, titulo), el('span', null, d && d.motivo ? d.motivo : 'Um instante: a chave é derivada da sua senha no próprio navegador.'));
   return box;
+}
+// a faixa no topo de todas as páginas (#faixa-global); some com a gravação ligada. Enquanto o diário abre (1 a 2 s), o
+// cabeçalho já diz "Abrindo o diário…": a faixa só entra quando o modo é conhecido, para a página não pular à toa.
+// Só troca quando o texto muda.
+let ultimaFaixa = null;
+function desenharFaixaGlobal(D) {
+  const alvo = $('faixa-global');
+  if (!alvo) return;
+  const fx = D && D.d ? faixaModo(D.d) : null;
+  const texto = fx ? fx.textContent : '';
+  if (texto === ultimaFaixa) return;
+  ultimaFaixa = texto;
+  alvo.replaceChildren(...(fx ? [fx] : []));
 }
 function desenharModo() {
   const d = livroHost() && livroHost().diario ? livroHost().diario() : null;
@@ -67,21 +87,29 @@ function desenharModo() {
 }
 
 // ── "Ver a conta": a fórmula com os valores reais, produzida pela mesma função que calcula o total ───────────────────
+// Cada termo leva à origem dele (plano §5 Ver a conta): um gasto abre em Lançamentos, destacado; uma assinatura, em
+// Assinaturas; câmbio, spread e IOF abrem o parâmetro. Um termo com {detalhe: {titulo, explica}} (Realizado, Previsto)
+// abre a conta dele aqui mesmo, com "‹ Voltar". Assim "de onde vem este número" chega ao lançamento em até 3 toques.
 let dialogoConta = null;
-export function verConta(titulo, explica, c) {
+export function verConta(titulo, explica, c, voltar = null) {
   if (!dialogoConta) { dialogoConta = el('dialog', 'lv-dialogo lv-conta'); dialogoConta.setAttribute('aria-label', 'A conta'); document.body.append(dialogoConta); dialogoConta.addEventListener('click', e => { if (e.target === dialogoConta) dialogoConta.close(); }); }
+  const jaAberto = dialogoConta.open;
   dialogoConta.replaceChildren();
   const topo = el('div', 'lv-dialogo-topo');
   topo.append(el('div', null), botao('Fechar', 'button-outline', () => dialogoConta.close()));
-  topo.firstChild.append(el('p', 'eyebrow', 'De onde vem este número'), el('h2', null, titulo));
-  dialogoConta.append(topo, el('p', 'lv-formula', explica.formula));
+  const h2 = el('h2', null, titulo); h2.tabIndex = -1;
+  topo.firstChild.append(el('p', 'eyebrow', 'De onde vem este número'), h2);
+  dialogoConta.append(topo);
+  if (voltar) { const v = botao('‹ Voltar para ' + voltar.titulo, 'button-quiet lv-ver-conta', () => verConta(voltar.titulo, voltar.explica, c, voltar.voltar)); v.style.marginTop = '0'; dialogoConta.append(v); }
+  dialogoConta.append(el('p', 'lv-formula', explica.formula));
+  const aqui = {titulo, explica, voltar};
   const lista = el('ol', 'lv-termos');
   for (const t of explica.termos) {
     const li = el('li');
     const cab = el('div', 'lv-termo-cab');
-    cab.append(el('span', 'lv-termo-op', t.op === '-' ? '−' : '+'), el('span', 'lv-termo-rotulo', t.rotulo), el('span', 'lv-termo-valor', dinheiro(t.brl)));
+    cab.append(el('span', 'lv-termo-op', t.op === '-' ? '−' : '+'), rotuloDoTermo(t, c, aqui), el('span', 'lv-termo-valor', dinheiro(t.brl)));
     li.append(cab);
-    if (t.original && t.original.moeda !== 'BRL') li.append(el('p', 'lv-termo-conta', contaTexto(t.original, t.conta, t.conversao)));
+    if (t.original && t.original.moeda !== 'BRL') li.append(contaComLinks(t.original, t.conta, t.conversao));
     lista.append(li);
   }
   if (!explica.termos.length) lista.append(el('li', 'lv-vazio', 'Nenhum item entra nesta conta ainda.'));
@@ -95,8 +123,47 @@ export function verConta(titulo, explica, c) {
     for (const x of explica.excluidos) ul.append(el('li', null, `${x.rotulo}: ${x.motivo}`));
     dialogoConta.append(ul);
   }
-  dialogoConta.append(el('p', 'lv-nota', 'Moedas diferentes nunca se somam sem conversão: cada valor em moeda estrangeira vira reais com os parâmetros vigentes na data dele (página Parâmetros).'));
-  dialogoConta.showModal();
+  dialogoConta.append(el('p', 'lv-nota', 'Moedas diferentes nunca se somam sem conversão: cada valor em moeda estrangeira vira reais com os parâmetros vigentes na data dele (página Parâmetros). Toque num item sublinhado para ver de onde ele vem.'));
+  if (!jaAberto) dialogoConta.showModal();
+  else h2.focus();
+}
+// o rótulo do termo: botão que abre a conta dele, link para o gasto, a assinatura ou nada (texto)
+function rotuloDoTermo(t, c, aqui) {
+  if (t.detalhe && t.detalhe.explica) {
+    const b = botao(t.rotulo + '  ›', 'button-quiet lv-ver-conta lv-termo-rotulo', () => verConta(t.detalhe.titulo, t.detalhe.explica, c, aqui));
+    b.style.justifySelf = 'start'; b.style.marginTop = '0'; b.style.textAlign = 'left';
+    return b;
+  }
+  const D = t.id ? dados() : null;
+  const gasto = D ? D.aplicado.gastos.find(g => g.id === t.id) : null;
+  if (gasto) return linkDaConta(t.rotulo, 'lancamentos', [], {mes: gasto.competencia, id: gasto.id}, 'lv-termo-rotulo');
+  const plano = D ? (D.aplicado.planos || []).find(p => p.id === t.id) : null;
+  if (plano) return linkDaConta(t.rotulo, 'subscriptions', [], {id: plano.id}, 'lv-termo-rotulo');
+  return el('span', 'lv-termo-rotulo', t.rotulo);
+}
+// link de verdade (abre em outra aba com o meio do mouse ou Ctrl/⌘; ali a página certa abre depois da senha); o clique
+// comum fecha a conta e navega pelo app, empilhando no histórico (o Voltar do navegador volta para cá)
+function linkDaConta(texto, pagina, args, filtros, cls = 'lv-termo-link') {
+  const a = el('a', cls, texto);
+  a.href = window.financeRotas ? window.financeRotas.montar(pagina, args, filtros) : '#';
+  a.addEventListener('click', e => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || typeof window.financeNavigate !== 'function') return;
+    e.preventDefault();
+    if (dialogoConta && dialogoConta.open) dialogoConta.close();
+    window.financeNavigate(pagina, true, {args, filtros, origem: 'ver-a-conta'});
+  });
+  return a;
+}
+// a mesma frase do explicarConversao, com o câmbio, o spread e o IOF como links para o parâmetro de cada um
+function contaComLinks(orig, k, tipo) {
+  const p = el('p', 'lv-termo-conta');
+  if (tipo === 'efetivo' || !k || !k.cambio) { p.textContent = contaTexto(orig, k, tipo); return p; }
+  const param = (q, texto) => q && q.chave ? linkDaConta(texto, 'parametros', [q.chave], {}) : document.createTextNode(texto);
+  p.append(`${original(orig)} × `, param(k.cambio, k.cambio.valor.replace('.', ',')), ` (${k.cambio.fonte}${k.cambioPosterior ? '; câmbio posterior ao gasto' : ''}) = ${dinheiro(k.principal)}`);
+  if (k.spreadParam && k.spreadMinor) p.append(' + ', param(k.spreadParam, `spread ${k.spreadParam.valor.replace('.', ',')}%`), ` ${dinheiro(k.spreadMinor)}`);
+  if (k.iofParam && k.iofMinor) p.append(' + ', param(k.iofParam, `IOF ${k.iofParam.valor.replace('.', ',')}%`), ` ${dinheiro(k.iofMinor)}`);
+  p.append(` = ${dinheiro(k.total)}`);
+  return p;
 }
 function contaTexto(orig, conta, tipo) {
   if (tipo === 'efetivo') return `${original(orig)} → ${dinheiro(conta.fatura)} pela fatura (valor efetivo)`;
@@ -131,15 +198,15 @@ function renderLivro(D) {
   const {c, aplicado} = D;
   const l = R.livroDoMes(c.estado, aplicado, mesAtual, hojeDe(c));
   alvo.replaceChildren();
-  const faixa = faixaModo(D.d); if (faixa) alvo.append(faixa);
-  // seletor de mês
+  // seletor de mês (o endereço acompanha: #livro/2026-09)
+  const irAoMes = mes => { mesAtual = mes; trocarRota('livro', argsDoLivro(c)); renderTudo(true); };
   const nav = el('div', 'lv-mesnav');
-  const ant = botao('‹', 'button-outline lv-mes-seta', () => { mesAtual = somaMes(mesAtual, -1); renderTudo(true); }); ant.setAttribute('aria-label', 'Mês anterior');
-  const prox = botao('›', 'button-outline lv-mes-seta', () => { mesAtual = somaMes(mesAtual, 1); renderTudo(true); }); prox.setAttribute('aria-label', 'Próximo mês');
+  const ant = botao('‹', 'button-outline lv-mes-seta', () => irAoMes(somaMes(mesAtual, -1))); ant.setAttribute('aria-label', 'Mês anterior');
+  const prox = botao('›', 'button-outline lv-mes-seta', () => irAoMes(somaMes(mesAtual, 1))); prox.setAttribute('aria-label', 'Próximo mês');
   const titulo = el('h3', 'lv-mes-titulo', capital(mesLongo(mesAtual)));
   titulo.setAttribute('aria-live', 'polite');
   nav.append(ant, titulo, prox);
-  if (mesAtual !== hojeDe(c).slice(0, 7)) nav.append(botao('Voltar ao mês atual', 'button-quiet', () => { mesAtual = hojeDe(c).slice(0, 7); renderTudo(true); }));
+  if (mesAtual !== hojeDe(c).slice(0, 7)) nav.append(botao('Voltar ao mês atual', 'button-quiet', () => irAoMes(hojeDe(c).slice(0, 7))));
   alvo.append(nav);
   anexarExtras(alvo, 'livro-topo', D, {mes: mesAtual}, 'lv-extras');
   // nível 1: manchete e números
@@ -149,8 +216,8 @@ function renderLivro(D) {
   kpis.append(
     kpi('Já lançado', l.realizado, `${l.linhas.filter(x => x.tipo === 'realizado' && !x.anulado).length} lançamentos no mês`, () => verConta('Já lançado em ' + mesLongo(l.mes), l.explica.realizado, c)),
     kpi('Previsto até o fim do mês', l.previsto, 'assinaturas ativas ainda sem lançamento', () => verConta('Previsto em ' + mesLongo(l.mes), l.explica.previsto, c), 'previsto'),
-    kpi('Custo do mês', l.total, 'lançado + previsto', () => verConta('Custo de ' + mesLongo(l.mes), l.explica.total, c), 'total'),
-    kpi('Sua parte', eu && eu.parte !== null ? eu.parte : null, eu && eu.parte !== null ? `${eu.pct}% de participação` : 'participação não fecha 100%', eu && eu.parte !== null ? () => verConta('Sua parte em ' + mesLongo(l.mes), {formula: `Sua parte = custo do mês × ${eu.pct}% (rateio pelo maior resto: a soma das partes dá o total exato)`, termos: [{rotulo: 'Custo do mês', brl: l.total, op: '+'}], resultado: eu.parte, excluidos: []}, c) : null, 'destaque'),
+    kpi('Custo do mês', l.total, 'lançado + previsto', () => verConta('Custo de ' + mesLongo(l.mes), contaDoTotal(l), c), 'total'),
+    kpi('Sua parte', eu && eu.parte !== null ? eu.parte : null, eu && eu.parte !== null ? `${eu.pct}% de participação` : 'participação não fecha 100%', eu && eu.parte !== null ? () => verConta('Sua parte em ' + mesLongo(l.mes), {formula: `Sua parte = custo do mês × ${eu.pct}% (rateio pelo maior resto: a soma das partes dá o total exato)`, termos: [{rotulo: 'Custo do mês', brl: l.total, op: '+', detalhe: {titulo: 'Custo de ' + mesLongo(l.mes), explica: contaDoTotal(l)}}], resultado: eu.parte, excluidos: []}, c) : null, 'destaque'),
   );
   alvo.append(kpis);
   if (l.incompletos.length) {
@@ -198,6 +265,17 @@ function renderLivro(D) {
   cartaoLivro.append(tabelaLivro(l, c));
   alvo.append(cartaoLivro);
 }
+// a conta do custo do mês com "Realizado" e "Previsto" abrindo a lista de itens de cada um (e cada item, a origem dele)
+function contaDoTotal(l) {
+  const detalhe = t => /^realizado/i.test(t.rotulo) ? {titulo: 'Já lançado em ' + mesLongo(l.mes), explica: l.explica.realizado}
+    : /^previsto/i.test(t.rotulo) ? {titulo: 'Previsto em ' + mesLongo(l.mes), explica: l.explica.previsto} : null;
+  return {...l.explica.total, termos: l.explica.total.termos.map(t => detalhe(t) ? {...t, detalhe: detalhe(t)} : t)};
+}
+// os argumentos do Livro no endereço: o mês (fora o mês corrente) e a aba (#livro/2026-10/fechar)
+function argsDoLivro(c) {
+  const corrente = hojeDe(c).slice(0, 7);
+  return abaLivro ? [mesAtual, abaLivro] : mesAtual && mesAtual !== corrente ? [mesAtual] : [];
+}
 export function kpi(rotulo, valor, nota, fn, tom = '') {
   const k = el('div', 'lv-kpi' + (tom ? ' is-' + tom : ''));
   k.append(el('span', 'lv-kpi-rotulo', rotulo), el('strong', 'lv-kpi-valor', valor === null ? '—' : dinheiro(valor)), el('span', 'lv-kpi-nota', nota));
@@ -223,7 +301,7 @@ function tabelaLivro(l, c) {
     fim.append(x.anulado ? pilula('anulado', 'anulado') : x.conversao === 'estimado' ? pilula('estimado', 'estimado') : x.conversao === 'efetivo' ? pilula('fatura', 'ok') : x.tipo === 'previsto' ? pilula('previsto', 'previsto') : pilula('em reais', 'neutro'));
     item.append(cor, meio, fim);
     item.addEventListener('click', () => verConta(x.descricao, {formula: x.tipo === 'previsto' ? `Equivalente mensal da assinatura (${x.periodo})${x.original.moeda !== 'BRL' ? ', convertido pela estimativa de hoje' : ''}` : 'Valor do lançamento em reais',
-      termos: [{rotulo: x.descricao, brl: x.brl ?? 0, op: '+', original: x.original, conta: x.conta, conversao: x.conversao}], resultado: x.brl ?? 0, excluidos: x.anulado ? [{rotulo: x.descricao, motivo: 'anulado: ' + (x.gasto.motivoAnulacao || '')}] : []}, c));
+      termos: [{rotulo: x.descricao, brl: x.brl ?? 0, op: '+', original: x.original, conta: x.conta, conversao: x.conversao, id: x.id}], resultado: x.brl ?? 0, excluidos: x.anulado ? [{rotulo: x.descricao, motivo: 'anulado: ' + (x.gasto.motivoAnulacao || '')}] : []}, c));
     lista.append(item);
   }
   return lista;
@@ -255,16 +333,21 @@ function renderLancamentos(D) {
   const alvo = $('lancamentos-content');
   if (!alvo) return;
   const {c, aplicado, lista} = D;
+  const comFoco = document.activeElement && document.activeElement.id === 'lv-gasto-destacado';
   alvo.replaceChildren();
-  const faixa = faixaModo(D.d); if (faixa) alvo.append(faixa);
+  // filtro de sócia vindo do endereço que não é de ninguém daqui: volta a "todas"
+  if (!['todas', 'eu'].includes(filtro.socia) && !(c.estado.members || []).some(m => m.id === filtro.socia)) filtro.socia = 'todas';
+  // trocar um filtro tira o destaque e atualiza o endereço (#lancamentos?mes=2026-10&socia=m-ana), sem empilhar
+  const filtrar = () => { destacado = null; trocarRota('lancamentos', [], filtrosDeLancamentos()); renderTudo(true); };
   const barra = el('div', 'lv-filtros');
   const selSocia = el('select', 'lv-select'); selSocia.setAttribute('aria-label', 'Filtrar por sócia');
   [['todas', 'Todas as sócias'], ['eu', 'Só os meus'], ...(c.estado.members || []).map(m => [m.id, m.displayName])].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; if (filtro.socia === v) o.selected = true; selSocia.append(o); });
-  selSocia.addEventListener('change', () => { filtro.socia = selSocia.value; renderTudo(true); });
+  selSocia.addEventListener('change', () => { filtro.socia = selSocia.value; filtrar(); });
   const meses = [...new Set(aplicado.gastos.map(g => g.competencia))].sort().reverse();
+  if (filtro.mes && !meses.includes(filtro.mes)) meses.unshift(filtro.mes);
   const selMes = el('select', 'lv-select'); selMes.setAttribute('aria-label', 'Filtrar por mês');
   [['', 'Todos os meses'], ...meses.map(m => [m, capital(mesLongo(m))])].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; if ((filtro.mes || '') === v) o.selected = true; selMes.append(o); });
-  selMes.addEventListener('change', () => { filtro.mes = selMes.value || null; renderTudo(true); });
+  selMes.addEventListener('change', () => { filtro.mes = selMes.value || null; filtrar(); });
   barra.append(selSocia, selMes, el('span', 'lv-espaco'), ...desenharExtras('lancamentos-barra', D, {filtro: {...filtro}}), botao('Baixar CSV', 'button-outline', () => baixarCSV(D)), botao('+ Lançar', 'button-primary', () => abrirLancar()));
   alvo.append(barra);
   let gastos = [...aplicado.gastos].sort((a, b) => (b.data || '').localeCompare(a.data || '') || (b.criadoEm || '').localeCompare(a.criadoEm || ''));
@@ -276,6 +359,14 @@ function renderLancamentos(D) {
   const resumo = el('p', 'lv-totais');
   resumo.append(el('span', null, `${gastos.filter(g => g.estado !== 'anulado').length} lançamentos · `), el('strong', null, Object.entries(totais).map(([m, v]) => dinheiro(v, m)).join(' + ') || 'nada'), el('span', 'lv-nota-inline', ' (cada moeda separada)'));
   alvo.append(resumo);
+  // o lançamento do link ficou fora dos filtros (ou não existe mais): diz isso, em vez de sumir calado
+  if (destacado && !gastos.some(g => g.id === destacado)) {
+    const alvoDoLink = aplicado.gastos.find(g => g.id === destacado);
+    const av = el('div', 'notice lv-aviso');
+    av.append(el('strong', null, alvoDoLink ? `${rotuloDestaque}: “${alvoDoLink.descricao}” está fora destes filtros. ` : `${rotuloDestaque}: o lançamento não foi encontrado neste diário. `));
+    if (alvoDoLink) av.append(botao('Mostrar o lançamento', 'button-quiet', () => { filtro.socia = 'todas'; filtro.mes = alvoDoLink.competencia; trocarRota('lancamentos', [], filtrosDeLancamentos()); renderTudo(true); requestAnimationFrame(() => focarDestaque('lv-gasto-destacado')); }));
+    alvo.append(av);
+  }
   if (!gastos.length) {
     const vazio = el('div', 'lv-vazio-grande');
     vazio.append(el('strong', null, 'Nenhum lançamento por aqui.'), el('span', null, 'Pagou algo pela empresa, no cartão dela ou do seu bolso? Registre em uns 10 segundos: entra no mês, no rateio e no acerto.'), botao('+ Lançar o primeiro gasto', 'button-primary', () => abrirLancar()));
@@ -285,7 +376,9 @@ function renderLancamentos(D) {
   const ul = el('div', 'lv-lancamentos');
   for (const g of gastos) ul.append(cartaoGasto(g, D));
   alvo.append(ul);
+  if (comFoco && $('lv-gasto-destacado')) $('lv-gasto-destacado').focus({preventScroll: true});
 }
+const filtrosDeLancamentos = () => ({...(filtro.mes ? {mes: filtro.mes} : {}), ...(filtro.socia !== 'todas' ? {socia: filtro.socia} : {}), ...(destacado ? {id: destacado} : {})});
 function cartaoGasto(g, D) {
   const {c, lista} = D;
   const r = R.reaisDoGasto(g, lista);
@@ -296,6 +389,7 @@ function cartaoGasto(g, D) {
   const autoria = el('span', 'lv-autoria', `pago por ${nomeDe(c, g.pagoPor)} · lançado por ${nomeDe(c, g.criadoPor)} em ${horaBR(g.criadoEm)}${g.alteradoEm ? ' · alterado por ' + nomeDe(c, g.alteradoPor) + ' em ' + horaBR(g.alteradoEm) : ''}`);
   corpo.append(autoria);
   if (g.estado === 'anulado') corpo.append(el('span', 'lv-motivo', `Anulado por ${nomeDe(c, g.anuladoPor)}: ${g.motivoAnulacao}`));
+  if (destacado && g.id === destacado) destacar(art, corpo, 'lv-gasto-destacado');
   if (g.destino === 'empresa_reembolsa' && g.estado !== 'anulado') corpo.append(pilula(g.reembolsadoEm ? 'reembolsado' : 'reembolso pendente', g.reembolsadoEm ? 'ok' : 'pendente'));
   const valor = el('div', 'lv-gasto-valor');
   valor.append(el('strong', null, dinheiro(g.valorMinor, g.moeda)));
@@ -550,8 +644,8 @@ function renderParametros(D) {
   if (!alvo || paramAberto) return; // não redesenha com um formulário aberto
   const {c, lista, aplicado} = D;
   const hoje = hojeDe(c);
+  const comFoco = document.activeElement && document.activeElement.id === 'lv-param-destacado';
   alvo.replaceChildren();
-  const faixa = faixaModo(D.d); if (faixa) alvo.append(faixa);
   anexarExtras(alvo, 'parametros-barra', D, {}, 'lv-filtros lv-extras');
   alvo.append(el('p', 'section-intro lv-intro', 'Parâmetro é um fato com fonte (o dólar de hoje, a alíquota vigente); premissa é uma aposta de cenário e continua no Med Painel. Mudar um parâmetro cria uma vigência nova a partir de uma data: os gastos anteriores continuam com o valor da época deles.'));
   const grupos = [...new Set(R.CATALOGO.map(x => x.grupo))];
@@ -560,11 +654,19 @@ function renderParametros(D) {
     for (const item of R.CATALOGO.filter(x => x.grupo === grupo)) sec.append(linhaParametro(item, lista, hoje, D));
     alvo.append(sec);
   }
+  if (paramDestacado && !R.CATALOGO.some(x => x.chave === paramDestacado)) {
+    const av = el('div', 'notice lv-aviso');
+    av.append(el('strong', null, `${rotuloDestaque}: este parâmetro não existe mais no portal.`));
+    alvo.prepend(av);
+  }
+  if (comFoco && $('lv-param-destacado')) $('lv-param-destacado').focus({preventScroll: true});
 }
 function linhaParametro(item, lista, hoje, D) {
   const atual = R.vigente(lista, item.chave, hoje);
   const historico = lista.filter(p => p.chave === item.chave).sort((a, b) => b.desde.localeCompare(a.desde) || b.ordem - a.ordem);
   const linha = el('div', 'lv-param');
+  linha.dataset.param = item.chave;
+  const aberto = paramDestacado === item.chave;
   const info = el('div', 'lv-param-info');
   info.append(el('strong', 'lv-param-rotulo', item.rotulo), el('p', 'lv-param-explica', item.explica));
   const meta = el('p', 'lv-param-meta');
@@ -577,14 +679,17 @@ function linhaParametro(item, lista, hoje, D) {
   const acoes = el('div', 'lv-param-acoes');
   acoes.append(botao('Nova vigência', 'button-outline', () => formParametro(item, atual, linha, D)));
   if (item.chave.startsWith('fx.')) acoes.append(botao('Atualizar pela PTAX', 'button-quiet', () => formParametro(item, atual, linha, D, true)));
-  if (historico.length > 1) {
+  // o parâmetro aberto pelo endereço (#parametros/fx.USD_BRL) mostra o histórico mesmo com uma vigência só
+  if (historico.length > 1 || (aberto && historico.length)) {
     const det = el('details', 'lv-param-hist');
+    det.open = aberto;
     det.append(el('summary', null, `Histórico (${historico.length})`));
     const ul = el('ol', 'lv-degraus');
     for (const p of historico) ul.append(el('li', null, `${dataBR(p.desde)} · ${formatarParam(p.valor, item)} · ${p.fonte}${p.por ? ' · ' + nomeDe(D.c, p.por) + ' em ' + horaBR(p.quando) : ''}${p.nota ? ' · ' + p.nota : ''}`));
     det.append(ul); info.append(det);
   }
   linha.append(info, valor, acoes);
+  if (aberto) destacar(linha, info, 'lv-param-destacado');
   return linha;
 }
 function formatarParam(v, item) {
@@ -663,7 +768,6 @@ function renderHistorico(D) {
   if (!alvo) return;
   const {c, aplicado, d} = D;
   alvo.replaceChildren();
-  const faixa = faixaModo(d); if (faixa) alvo.append(faixa);
   const integ = el('div', 'lv-integridade' + (d && d.verificacao && !d.verificacao.integro ? ' is-problema' : ''));
   if (d && d.modo === 'gravacao') {
     integ.append(el('strong', null, d.verificacao.integro ? `Íntegro até o registro ${d.verificacao.ate.toLocaleString('pt-BR')}` : `${d.verificacao.problemas.length} registro(s) não conferem`),
@@ -793,6 +897,53 @@ function fmtCampo(k, v, lado, h, c) {
   }
   return String(v);
 }
+
+// ── a rota (o endereço depois do #) ──────────────────────────────────────────────────────────────────────────────
+// rotaAtual() → {pagina, rota, args, filtros}, lida pelo registro do paginas.js: #lancamentos?mes=2026-10&socia=m-ana →
+// {pagina: 'lancamentos', rota: 'lancamentos', args: [], filtros: {mes: '2026-10', socia: 'm-ana'}}; #livro/2026-10/fechar
+// → {pagina: 'livro', args: ['2026-10', 'fechar'], …}. O app.js dispara 'financeiro:rota' (detail igual, mais origem) a
+// cada troca de página, de Voltar ou de filtro: as páginas da rotina leem daqui e ouvem esse evento.
+export function rotaAtual() {
+  const rotas = window.financeRotas;
+  const lida = rotas && typeof rotas.ler === 'function' ? rotas.ler(location.hash) : null;
+  if (lida && lida.chave) return {pagina: lida.chave, rota: lida.rota, args: [...lida.args], filtros: {...lida.filtros}};
+  const ativa = typeof window.financePaginaAtiva === 'function' ? window.financePaginaAtiva() : 'overview';
+  return {pagina: ativa, rota: null, args: [], filtros: {}};
+}
+// troca os filtros da página no endereço, sem empilhar (o app.js é o dono do histórico)
+function trocarRota(pagina, args = [], filtros = {}) {
+  if (typeof window.financeAtualizarRota === 'function') window.financeAtualizarRota({pagina, args, filtros});
+}
+// o lançamento ou o parâmetro que o endereço aponta: contorno ouro, a etiqueta de onde se veio e foco (sem rolar)
+function destacar(caixa, onde, id) {
+  caixa.classList.add('is-destacado');
+  caixa.id = id;
+  caixa.tabIndex = -1;
+  caixa.style.outline = '2px solid var(--gold)';
+  caixa.style.outlineOffset = '4px';
+  caixa.style.borderRadius = '12px';
+  onde.prepend(pilula(rotuloDestaque, 'neutro'));
+}
+function focarDestaque(id) {
+  const n = $(id);
+  if (!n || n.closest('[hidden]')) return;
+  try { n.scrollIntoView({block: 'center', behavior: 'instant'}); } catch { n.scrollIntoView({block: 'center'}); }
+  n.focus({preventScroll: true});
+}
+const PAGINAS_COM_ROTA = new Set(['livro', 'lancamentos', 'parametros']);
+function aplicarRota(r, origem) {
+  if (!r || !PAGINAS_COM_ROTA.has(r.pagina)) return;
+  const veio = origem === 'ver-a-conta' ? 'Você veio do Ver a conta' : 'Aberto pelo link';
+  if (r.pagina === 'livro') { mesAtual = r.args[0] || null; abaLivro = r.args[1] || null; }
+  if (r.pagina === 'lancamentos') { filtro.socia = r.filtros.socia || 'todas'; filtro.mes = r.filtros.mes || null; destacado = r.filtros.id || null; if (destacado) rotuloDestaque = veio; }
+  // um link para um parâmetro fecha a "Nova vigência" que estivesse aberta (ela impede o redesenho); sem parâmetro, fica
+  if (r.pagina === 'parametros') { paramDestacado = r.args[0] || null; if (paramDestacado) { paramAberto = null; rotuloDestaque = veio; } }
+  renderTudo(true);
+  const alvo = r.pagina === 'lancamentos' && destacado ? 'lv-gasto-destacado' : r.pagina === 'parametros' && paramDestacado ? 'lv-param-destacado' : null;
+  // depois do app.js restaurar a rolagem e focar o título da página (o rAF dele vem antes deste)
+  if (alvo) requestAnimationFrame(() => requestAnimationFrame(() => focarDestaque(alvo)));
+}
+document.addEventListener('financeiro:rota', e => { const r = e.detail || {}; if (r.origem !== 'pagina') aplicarRota({pagina: r.pagina, args: r.args || [], filtros: r.filtros || {}}, r.origem); });
 
 // ── ganchos das telas da rotina: páginas e extras registrados pelos módulos novos ─────────────────────────────────────
 // registrarPagina(fn): fn(D) roda a cada redesenho (o mesmo de renderTudo), depois das páginas daqui.
@@ -936,8 +1087,11 @@ export function campoDinheiro(moeda = 'BRL', {valorMinor = null, rotulo = 'Valor
 export function renderTudo(forcar = false) {
   desenharModo();
   const D = dados();
+  desenharFaixaGlobal(D);
   const lancar = $('lancar-button');
   if (lancar) lancar.hidden = !D;
+  const lancarGaveta = $('drawer-lancar');
+  if (lancarGaveta) lancarGaveta.hidden = !D;
   // no celular o botão do cabeçalho espremia o título: vira um botão flutuante, fora do cabeçalho (que tem
   // backdrop-filter e por isso prenderia um position:fixed dentro dele)
   let fab = $('lancar-fab');
@@ -945,7 +1099,7 @@ export function renderTudo(forcar = false) {
   if (fab) fab.hidden = !D || !document.getElementById('dashboard') || document.getElementById('dashboard').hidden;
   if (!D) return;
   if (!mesAtual) mesAtual = hojeDe(D.c).slice(0, 7);
-  const assinatura = [D.d ? D.d.modo + ':' + D.d.cabeca + ':' + D.d.eventos.length + ':' + D.d.verificacao.problemas.length : 'x', D.c.estado.revision, mesAtual, filtro.socia, filtro.mes].join('|');
+  const assinatura = [D.d ? D.d.modo + ':' + D.d.cabeca + ':' + D.d.eventos.length + ':' + D.d.verificacao.problemas.length : 'x', D.c.estado.revision, mesAtual, abaLivro, filtro.socia, filtro.mes, destacado, paramDestacado].join('|');
   if (!forcar && assinatura === ultimoDesenho) return;
   ultimoDesenho = assinatura;
   if (folhaComum && folhaComum.open) return; // nunca redesenhar com a folha aberta (§3.7): ao fechar, redesenha
@@ -970,4 +1124,8 @@ setInterval(sincronizarDeTempoEmTempo, 60000);
 window.addEventListener('focus', sincronizarDeTempoEmTempo);
 document.addEventListener('visibilitychange', sincronizarDeTempoEmTempo);
 window.addEventListener('beforeunload', e => { const d = livroHost() && livroHost().diario && livroHost().diario(); if (d && d.fila > 0) { e.preventDefault(); e.returnValue = ''; } });
+// ao carregar: o endereço que já está aí (o app.js pode ter aplicado a rota de entrada antes deste módulo chegar) e a
+// folha "+ Lançar" pedida por #lancar nesse meio-tempo
+aplicarRota(rotaAtual(), 'entrada');
 renderTudo(true);
+if (window.financeLancarPendente) { window.financeLancarPendente = false; abrirLancar(); }
