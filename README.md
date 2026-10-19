@@ -17,15 +17,17 @@ maquetes do Laboratório (`galeria/` e `apps/`), que são públicas e só têm d
 | `index.html` | A página, com a política de segurança (CSP). Só fala com o próprio site, com o servidor do diário e com a PTAX do BCB. |
 | `static-bridge.js` · `portal-crypto.js` | Abrem o pacote cifrado com a senha e abrem o diário. |
 | `domain.js` | O domínio que já existia: assinaturas, cobranças e rateio, em centavos inteiros. |
-| `razao.js` | O livro-razão:<br>· parâmetros com vigência (câmbio, spread, IOF, impostos, taxas);<br>· lançamentos das sócias;<br>· o mês calculado, o acerto entre sócias e o CSV para o contador. |
-| `diario.js` | O diário cifrado: cada gravação é cifrada (AES-GCM) e assinada (ECDSA) no navegador, e o servidor só guarda texto cifrado. |
-| `livro.js` · `graficos.js` · `livro.css` | As páginas Livro do mês, Lançamentos, Parâmetros e Histórico, o botão "+ Lançar" e os gráficos. |
+| `razao.js` | O livro-razão:<br>· parâmetros com vigência (câmbio, spread, IOF, impostos, taxas);<br>· lançamentos das sócias, conferência e conciliação da fatura;<br>· assinaturas, passos de venda, acertos, saldos e receitas;<br>· fechar e reabrir o mês, com a trava do que forma os números;<br>· o mês calculado, o acerto entre sócias e o CSV para o contador. |
+| `diario.js` | O diário cifrado: cada gravação é cifrada (AES-GCM) e assinada (ECDSA) no navegador, e o servidor só guarda texto cifrado. Fala com o armazenamento por uma **porta** (`portaHttp`, `portaMemoria` ou uma sua): o contrato está em `docs/PORTAS.md`. |
+| `livro.js` · `graficos.js` · `livro.css` | As páginas Livro do mês, Lançamentos, Parâmetros e Histórico, o botão "+ Lançar", os gráficos e os ganchos das páginas novas (`registrarPagina`, `abrirFolha`, `campoDinheiro`, `gravar`). |
+| `rotina.js` e `assinaturas.js` · `acerto.js` · `caixa.js` · `conciliacao.js` · `fechamento.js` · `ajuda.js` | As páginas da rotina do mês (fase 2), cada uma com o seu `.css`. |
+| `fiscal.js` | O núcleo fiscal puro: Simples (anexos III e V, com a 6ª faixa da lei), fator R, DAS estimado, Presumido e o calendário fiscal com `.ics`. Tudo informa, nada aconselha: confirmar com o contador. |
 | `app.js` · `style.css` · `tema.css` | A interface que já existia. |
 | `galeria.js` | O Laboratório: lê o catálogo e as maquetes de `galeria/` (mesma origem) e junta os documentos antigos do pacote cifrado como "Sem stand". Quando o mesmo arquivo existe nos dois, vence o do repositório. |
 | `galeria/` | O catálogo (`index.html`) e as maquetes com stand (`apps/<id>.html`) que o item Laboratório mostra numa moldura isolada. **Não se edita aqui**: vem do ia-chat, com `python3 laboratorio/publicar.py <pasta do portal>`. |
 | `apps/<id>/` | A versão **tela cheia** de cada maquete, para abrir numa aba à parte e pôr na Tela de Início do iPhone: o app sozinho (`index.html`), `manifest.webmanifest` e os ícones 180, 192 e 512. Também vem do publicador do ia-chat. Endereço: `https://bauerfilho.github.io/orquestrator-portal/apps/<id>/`. |
 | `servidor/` | O servidor do diário (função Netlify com Blobs). Como publicar: `servidor/LEIA.md`. |
-| `docs/` | `PLANO-PORTAL.md` (o plano aprovado) e `CHECKLIST.md` (o que foi feito e o que falta). |
+| `docs/` | `PLANO-PORTAL.md` (o plano aprovado), `PLANO-FASES-2-3.md` (as fases 2 e 3 fatiadas), `PORTAS.md` (como plugar outro armazenamento no diário) e `CHECKLIST.md` (o que foi feito e o que falta). |
 
 ## Laboratório: maquetes e tela cheia
 

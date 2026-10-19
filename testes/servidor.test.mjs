@@ -70,3 +70,62 @@ test('pedidos malformados, grandes ou de origem estranha', async () => {
   assert.equal((await chamar('GET', '/api/chaves?membro=../../etc')).status, 400);
   assert.equal((await chamar('DELETE', '/api/eventos', undefined, TOKEN)).status, 404);
 });
+
+// ── F2-12: o diário paginado. GET /eventos devolve até 500 por pedido, na ordem, lendo os blobs em lotes paralelos ──────
+async function comEventos(n, store, embaralhar = true) { // grava direto no armazém (o POST já tem os testes dele acima)
+  const seqs = Array.from({length: n}, (_, i) => i + 1);
+  if (embaralhar) for (let i = seqs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [seqs[i], seqs[j]] = [seqs[j], seqs[i]]; }
+  for (const s of seqs) await store.setJSON('ev/' + String(s).padStart(9, '0'), {seq: s, ...envelope('e' + s), ts: '2026-10-19T12:00:00.000Z'});
+}
+function armazemComAtraso(atraso) { // cada get espera atraso() ms; desligado enquanto o teste prepara os dados
+  const base = armazemEmMemoria();
+  let ligado = false, listagens = 0;
+  return {
+    ...base,
+    async get(k, o) { if (ligado) await new Promise(ok => setTimeout(ok, atraso())); return base.get(k, o); },
+    async list(o) { listagens++; return base.list(o); },
+    ligar() { ligado = true; listagens = 0; },
+    get listagens() { return listagens; },
+  };
+}
+function clienteSobre(store) {
+  const app = criarDiario(store, {origens: [ORIGEM]});
+  return async rota => { const r = await app(new Request('https://diario.test' + rota, {headers: {origin: ORIGEM, authorization: 'Bearer ' + TOKEN}})); return {status: r.status, corpo: await r.json()}; };
+}
+
+test('GET /eventos: em ordem, a partir de depois= no meio, em páginas de 500 (mesmo com leituras fora de ordem)', async () => {
+  const store = armazemComAtraso(() => Math.floor(Math.random() * 4)); // as leituras terminam embaralhadas dentro de cada lote
+  await store.setJSON('config/token', {tokenHash: await hex(TOKEN), em: '2026-10-19T00:00:00.000Z', por: 'bauer'});
+  await comEventos(1200, store);
+  store.ligar();
+  const ler = clienteSobre(store);
+  const meio = await ler('/api/eventos?depois=600');
+  assert.equal(meio.status, 200);
+  assert.deepEqual(meio.corpo.eventos.map(e => e.seq), Array.from({length: 500}, (_, i) => 601 + i));
+  assert.deepEqual(meio.corpo.eventos.map(e => e.id).slice(0, 3), ['e601', 'e602', 'e603']);
+  assert.equal(meio.corpo.cabeca, 1200);
+  assert.equal(store.listagens, 1, 'a cabeça sai da mesma listagem: uma por pedido');
+  const fim = await ler('/api/eventos?depois=1100');
+  assert.deepEqual(fim.corpo.eventos.map(e => e.seq), Array.from({length: 100}, (_, i) => 1101 + i));
+  assert.equal((await ler('/api/eventos?depois=1200')).corpo.eventos.length, 0);
+  assert.deepEqual((await ler('/api/eventos?depois=0')).corpo.eventos.map(e => e.seq), Array.from({length: 500}, (_, i) => i + 1));
+  // o cliente que pede página atrás de página recebe os 1.200, cada um uma vez, na ordem
+  const todos = [];
+  for (let depois = 0, r; (r = (await ler('/api/eventos?depois=' + depois)).corpo).eventos.length; depois = r.eventos.at(-1).seq) todos.push(...r.eventos.map(e => e.seq));
+  assert.deepEqual(todos, Array.from({length: 1200}, (_, i) => i + 1));
+});
+
+test('GET /eventos com armazém lento (5 ms por leitura): 500 eventos em menos de 1 s', async () => {
+  const store = armazemComAtraso(() => 5);
+  await store.setJSON('config/token', {tokenHash: await hex(TOKEN), em: '2026-10-19T00:00:00.000Z', por: 'bauer'});
+  await comEventos(500, store, false);
+  store.ligar();
+  const ler = clienteSobre(store);
+  const t0 = performance.now();
+  const r = await ler('/api/eventos?depois=0');
+  const ms = performance.now() - t0;
+  assert.equal(r.corpo.eventos.length, 500);
+  assert.deepEqual(r.corpo.eventos.map(e => e.seq), Array.from({length: 500}, (_, i) => i + 1));
+  assert.equal(r.corpo.cabeca, 500);
+  assert.ok(ms < 1000, `levou ${Math.round(ms)} ms (um por um levaria mais de 2,5 s)`);
+});

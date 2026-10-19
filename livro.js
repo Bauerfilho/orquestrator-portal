@@ -658,7 +658,6 @@ function formParametro(item, atual, linha, D, comPtax = false) {
 }
 
 // ── Histórico ───────────────────────────────────────────────────────────────────────────────────────────────────
-const VERBOS = {add_expense: 'lançou', edit_expense: 'corrigiu', void_expense: 'anulou', set_parameter: 'mudou o parâmetro', mark_reimbursed: 'marcou como reembolsado'};
 function renderHistorico(D) {
   const alvo = $('historico-content');
   if (!alvo) return;
@@ -667,7 +666,7 @@ function renderHistorico(D) {
   const faixa = faixaModo(d); if (faixa) alvo.append(faixa);
   const integ = el('div', 'lv-integridade' + (d && d.verificacao && !d.verificacao.integro ? ' is-problema' : ''));
   if (d && d.modo === 'gravacao') {
-    integ.append(el('strong', null, d.verificacao.integro ? `Íntegro até o registro ${d.verificacao.ate}` : `${d.verificacao.problemas.length} registro(s) não conferem`),
+    integ.append(el('strong', null, d.verificacao.integro ? `Íntegro até o registro ${d.verificacao.ate.toLocaleString('pt-BR')}` : `${d.verificacao.problemas.length} registro(s) não conferem`),
       el('span', null, d.verificacao.integro ? 'Cada registro aponta o anterior, foi assinado por quem o escreveu e só abre com a chave do diário: o servidor não consegue alterar, reordenar nem forjar nada.' : d.verificacao.problemas.map(p => `#${p.seq}: ${p.problema}`).join(' · ')));
   } else integ.append(el('strong', null, 'Diário em treino'), el('span', null, 'Os registros desta sessão vivem só neste navegador.'));
   alvo.append(integ);
@@ -683,10 +682,10 @@ function renderHistorico(D) {
     const li = el('li', 'lv-hist-item');
     const ini = el('span', 'lv-inicial', (nomeDe(c, h.autora) || '?').charAt(0));
     const corpo = el('div');
-    corpo.append(el('p', null, `${nomeDe(c, h.autora)} ${verbo(h)} · ${h.resumo || ''}`));
-    for (const k of camposMudados(h)) {
+    corpo.append(el('p', null, [`${nomeDe(c, h.autora)} ${verbo(h) || 'fez um registro'}`, resumoDe(h)].filter(Boolean).join(' · ')));
+    for (const [k, antes, depois] of camposMudados(h)) {
       const p = el('p', 'lv-diff');
-      p.append(el('span', 'lv-campo-nome', (NOMES_CAMPO[k] || k) + ': '), el('del', null, fmtCampo(k, h.antes[k], h.antes)), ' → ', el('ins', null, fmtCampo(k, h.depois[k], h.depois)));
+      p.append(el('span', 'lv-campo-nome', nomeCampo(k) + ': '), el('del', null, fmtCampo(k, antes, h.antes, h, c)), ' → ', el('ins', null, fmtCampo(k, depois, h.depois, h, c)));
       corpo.append(p);
     }
     if (h.motivo) corpo.append(el('p', 'lv-motivo', 'Motivo: ' + h.motivo));
@@ -698,37 +697,100 @@ function renderHistorico(D) {
   if (aplicado.recusados.length) {
     const sec = cartao('Recusados', 'Registros que chegaram ao diário mas não passaram nas regras: não entram em nenhuma conta.');
     const ul = el('ul', 'lv-excluidos');
-    for (const r of aplicado.recusados) ul.append(el('li', null, `${nomeDe(c, r.autora)} · ${verbo(r) || 'registro'} · ${horaBR(r.quando)}: ${r.motivo}`));
+    for (const r of aplicado.recusados) ul.append(el('li', null, `${nomeDe(c, r.autora)} · ${verbo(r) || 'registro de tipo desconhecido'} · ${horaBR(r.quando)}: ${r.motivo}`));
     sec.append(ul); alvo.append(sec);
   }
 }
-// o verbo vem do razão quando ele manda (h.verbo); senão, o desta tabela; senão, o nome da ação
-const verbo = h => h.verbo || VERBOS[h.acao] || h.acao;
+// o verbo vem do razão: h.verbo, ou a tabela VERBOS que ele exporta. Ação que esta versão não conhece não mostra o
+// nome técnico (quem chama escreve "fez um registro").
+const verbo = h => h.verbo || R.VERBOS[h.acao] || null;
+// o resumo do razão; o do parâmetro e o do saldo são refeitos aqui a partir dos dados, porque o razão os escreve com a
+// data ISO e o decimal com ponto ("5.1234 R$ por US$ desde 2026-10-18")
+function resumoDe(h) {
+  const d = h.depois && typeof h.depois === 'object' ? h.depois : null;
+  if (h.acao === 'set_parameter' && d) { const item = R.itemCatalogo(d.chave); if (item) return `${item.rotulo}: ${formatarParam(d.valor, item)} desde ${dataBR(d.desde)}`; }
+  if (h.acao === 'set_balance' && d && Number.isSafeInteger(d.valorMinor)) return `${d.conta} · ${dinheiro(d.valorMinor, R.MOEDAS.includes(d.moeda) ? d.moeda : 'BRL')} em ${dataBR(d.data)}`;
+  return h.resumo || '';
+}
 // antes → depois de qualquer ação: os campos simples que existem dos dois lados e mudaram (vazio, null e ausente são o
-// mesmo "—"); os de controle e de autoria ficam de fora, porque a linha já diz quem fez e quando
-const CAMPOS_DE_CONTROLE = new Set(['id', 'versao', 'versoes', 'seq', 'quando', 'por', 'alteradoEm', 'alteradoPor', 'criadoEm', 'criadoPor']);
+// mesmo "—"). Ficam de fora os de controle (ids, versões, selo) e os de autoria e hora (…Por, …Em), porque a linha já
+// diz quem fez e quando; só "quem pagou" (pagoPor) é dado do gasto e aparece, com o nome da sócia. Cada campo sai com o
+// nome em português e o valor como a sócia lê: dinheiro, dd/mm/aaaa, mês por extenso, rótulo do enumerado.
+const CAMPOS_DE_CONTROLE = new Set(['id', 'versao', 'versoes', 'seq', 'quando', 'por', 'em', 'chave', 'alvo', 'ordem', 'semente', 'doPacote', 'planoId', 'reembolsoId', 'gastoIds', 'selo', 'cabeca', 'totais', 'itens']);
+const DE_AUTORIA = /(Por|Em)$/;
+const NOMES_CAMPO = {
+  // gastos
+  descricao: 'descrição', valorMinor: 'valor', moeda: 'moeda', data: 'data', competencia: 'competência', categoria: 'categoria', forma: 'forma de pagamento',
+  destino: 'destino', faturaBrlMinor: 'valor da fatura', estado: 'situação', reembolso: 'reembolso', pagoPor: 'quem pagou', documento: 'documento', nota: 'nota', ciclo: 'ciclo pago',
+  // parâmetros
+  valor: 'valor', desde: 'vale desde', fonte: 'fonte',
+  // assinaturas e passos de venda
+  servico: 'serviço', plano: 'plano', periodo: 'período', diaVencimento: 'vencimento', proximaData: 'próxima cobrança', status: 'situação',
+  confirmado: 'confirmada', assinatura: 'assinatura', encerrado: 'encerrada a partir de', feito: 'feito',
+  // receitas
+  canal: 'canal', produto: 'produto', brutoMinor: 'receita bruta', canceladosMinor: 'cancelamentos', transacoes: 'vendas', taxasMinor: 'taxas',
+  pagantesAtivos: 'pagantes ativos', pagantesNovos: 'pagantes novos', pagantesPerdidos: 'pagantes perdidos', testes: 'testes', cadastros: 'cadastros',
+  // acertos, saldos, fatura e mês
+  tipo: 'tipo', de: 'de', para: 'para', conta: 'conta', estimadoMinor: 'estimado', faturaMinor: 'fatura', totalFaturaMinor: 'total da fatura',
+  diferencaMinor: 'diferença', fechado: 'mês fechado',
+};
+// campo novo, sem nome na tabela: nunca o camelCase cru ("algumCampoMinor" → "algum campo")
+const nomeCampo = k => NOMES_CAMPO[k] || k.replace(/Minor$/, '').replace(/_/g, ' ').replace(/([a-zà-ú])([A-Z])/g, '$1 $2').toLowerCase();
+const escondido = k => CAMPOS_DE_CONTROLE.has(k) || (DE_AUTORIA.test(k) && !NOMES_CAMPO[k]);
+// o encerramento da assinatura é um objeto {desde, por, em, motivo}: no antes → depois, vale a data
+const normalizar = (k, v) => k === 'encerrado' ? (v && typeof v === 'object' ? v.desde || null : v ?? null) : v;
 const vazio = v => v === null || v === undefined || v === '' || (Array.isArray(v) && !v.length);
-const NOMES_CAMPO = {descricao: 'descrição', valorMinor: 'valor', moeda: 'moeda', data: 'data', competencia: 'competência', categoria: 'categoria', forma: 'forma de pagamento', destino: 'destino', faturaBrlMinor: 'valor da fatura', estado: 'situação', valor: 'valor', desde: 'vale desde', fonte: 'fonte', nota: 'nota', status: 'situação'};
 const simples = v => v === null || v === undefined || typeof v !== 'object' || (Array.isArray(v) && v.every(x => x === null || typeof x !== 'object'));
 function camposMudados(h) {
   if (!h.antes || !h.depois || typeof h.antes !== 'object' || typeof h.depois !== 'object') return [];
   const chaves = [...new Set([...Object.keys(h.antes), ...Object.keys(h.depois)])];
-  return chaves.filter(k => !CAMPOS_DE_CONTROLE.has(k) && k in h.antes && k in h.depois && simples(h.antes[k]) && simples(h.depois[k])
-    && !(vazio(h.antes[k]) && vazio(h.depois[k])) && JSON.stringify(h.antes[k]) !== JSON.stringify(h.depois[k]));
+  return chaves.filter(k => !escondido(k) && k in h.antes && k in h.depois)
+    .map(k => [k, normalizar(k, h.antes[k]), normalizar(k, h.depois[k])])
+    .filter(([, a, b]) => simples(a) && simples(b) && !(vazio(a) && vazio(b)) && JSON.stringify(a) !== JSON.stringify(b));
 }
-const ESTADOS_GASTO = {lancado: 'lançado', anulado: 'anulado', conferido: 'conferido'};
-function fmtCampo(k, v, g) {
-  if (v === null || v === undefined || v === '') return '—';
-  if (k === 'faturaBrlMinor') return dinheiro(v);
-  if (/Minor$/.test(k) && Number.isSafeInteger(v)) return dinheiro(v, g && R.MOEDAS.includes(g.moeda) ? g.moeda : 'BRL');
-  if (k === 'categoria') return R.rotuloCategoria(v);
-  if (k === 'forma') return R.rotuloForma(v);
-  if (k === 'destino') return (R.DESTINOS.find(x => x.id === v) || {}).rotulo || String(v);
-  if (k === 'estado') return ESTADOS_GASTO[v] || String(v);
+// valores enumerados sempre pelo rótulo em português (nunca "nao_aplica" nem "inactive")
+const ROTULOS_VALOR = {
+  estado: {lancado: 'lançado', anulado: 'anulado', anulada: 'anulada', conferido: 'conferido', vigente: 'vigente', a_confirmar: 'a confirmar', substituido: 'substituído'},
+  reembolso: {nao_aplica: 'não se aplica', pendente: 'pendente', reembolsado: 'reembolsado', convertido: 'virou aporte'},
+  destino: {nao_aplica: 'não se aplica (pago pela empresa)'},
+  assinatura: {active: 'ativa', inactive: 'encerrada', unconfirmed: 'a confirmar', not_applicable: 'não se aplica'},
+  periodo: {monthly: 'mensal', mes: 'mensal', yearly: 'anual', ano: 'anual'},
+};
+const ROTULOS_GERAIS = {nao_aplica: 'não se aplica', a_confirmar: 'a confirmar', nao_informado: 'não informado'};
+// textos livres das sócias: aparecem como foram escritos
+const TEXTO_LIVRE = new Set(['descricao', 'nota', 'fonte', 'documento', 'servico', 'plano', 'produto', 'status', 'conta']);
+const rotuloDe = (lista, id) => (lista.find(x => x.id === id) || {}).rotulo || null;
+function enumerado(k, v) {
+  const s = String(v);
+  if (TEXTO_LIVRE.has(k)) return s;
+  const t = (ROTULOS_VALOR[k] && ROTULOS_VALOR[k][s]) || ROTULOS_GERAIS[s];
+  if (t) return t;
+  return /^[a-z]+(_[a-z]+)+$/.test(s) ? s.replace(/_/g, ' ') : s;   // código desconhecido: ao menos sem o "_"
+}
+// lado = o objeto (antes ou depois) do qual o valor saiu: dá a moeda do dinheiro; h e c dão o parâmetro e os nomes
+function fmtCampo(k, v, lado, h, c) {
+  if (vazio(v)) return '—';
+  if (/Minor$/.test(k) && Number.isSafeInteger(v)) return dinheiro(v, k !== 'faturaBrlMinor' && lado && R.MOEDAS.includes(lado.moeda) ? lado.moeda : 'BRL');
   if (typeof v === 'boolean') return v ? 'sim' : 'não';
-  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return dataBR(v);
-  if (typeof v === 'string' && /^\d+\.\d+$/.test(v)) return v.replace('.', ',');   // decimal de parâmetro: 4.20 → 4,20
-  if (Array.isArray(v)) return v.length ? v.join(', ') : '—';
+  if (Array.isArray(v)) return v.map(x => fmtCampo(k, x, lado, h, c)).join(', ');
+  if (k === 'categoria') return R.rotuloCategoria(v);
+  if (k === 'forma') return rotuloDe(R.FORMAS, v) || rotuloDe(R.FORMAS_ACERTO, v) || enumerado(k, v);
+  if (k === 'destino') return rotuloDe(R.DESTINOS, v) || enumerado(k, v);
+  if (k === 'canal') return rotuloDe(R.CANAIS, v) || enumerado(k, v);
+  if (k === 'tipo') return rotuloDe(R.TIPOS_ACERTO, v) || enumerado(k, v);
+  if (k === 'moeda') return SIMBOLOS[v] || String(v);
+  if (k === 'pagoPor' || k === 'de' || k === 'para' || /Por$/.test(k)) return v === 'empresa' ? 'a empresa' : nomeDe(c, v);
+  if (/Em$/.test(k)) return horaBR(v);
+  if (k === 'diaVencimento' && Number.isInteger(v)) return 'dia ' + v;
+  if (k === 'valor' && h && h.acao === 'set_parameter') { const item = R.itemCatalogo((h.depois && h.depois.chave) || h.alvo); if (item) return formatarParam(v, item); }
+  if (typeof v === 'number') return v.toLocaleString('pt-BR');
+  if (typeof v === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return dataBR(v);
+    if (/^\d{4}-\d{2}-\d{2}T/.test(v)) return horaBR(v);
+    if (/^\d{4}-\d{2}$/.test(v)) return mesLongo(v);
+    if (/^\d+\.\d+$/.test(v)) return v.replace('.', ',');   // decimal: 4.20 → 4,20
+    return enumerado(k, v);
+  }
   return String(v);
 }
 
