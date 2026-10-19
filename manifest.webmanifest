@@ -14,5 +14,21 @@
       "sizes": "any",
       "type": "image/svg+xml"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lançar gasto",
+      "short_name": "Lançar",
+      "description": "Abre a folha para lançar um gasto da empresa, depois da senha.",
+      "url": "./#lancar",
+      "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    },
+    {
+      "name": "Lançamentos",
+      "short_name": "Lançamentos",
+      "description": "Abre a lista de gastos lançados pelas sócias, depois da senha.",
+      "url": "./#lancamentos",
+      "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+    }
   ]
 }
