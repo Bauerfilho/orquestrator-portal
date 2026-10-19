@@ -1,0 +1,8 @@
+# Servidor do diário do Finanças (projeto Netlify "orquestrator-diario"). Base: esta pasta.
+[build]
+  publish = "publico"
+  command = ""
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
