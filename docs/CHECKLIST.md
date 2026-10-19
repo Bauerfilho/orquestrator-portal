@@ -47,22 +47,26 @@ Plano aprovado: `docs/PLANO-PORTAL.md`. Este arquivo é riscado a cada checkpoin
   - "Ver a conta".
 - [x] Testes do núcleo (`node --test testes/*.test.mjs`) com os vetores do plano e o exemplo de outubro, centavo a
   centavo.
-- [ ] Servidor do diário (`servidor/`): função Netlify com Blobs, só-acréscimo e CAS. Testes com armazenamento em
-  memória.
-- [ ] Cliente do diário (`diario.js`):
+- [x] Servidor do diário (`servidor/`): função Netlify com Blobs, só-acréscimo e CAS. Testes com armazenamento em
+  memória (5 testes).
+- [x] Cliente do diário (`diario.js`), com 3 testes: duas sócias, conflito, republicação, servidor que não vê nada
+  em claro e adulteração detectada.
   - cifra AES-GCM e assinatura ECDSA;
   - embrulho de chaves por sócia e por publicação;
   - modo treino quando o servidor não está configurado.
-- [ ] Interface:
+- [x] Interface:
   - kit de gráficos;
   - páginas Livro do mês, Lançamentos, Parâmetros (com PTAX do Banco Central) e Histórico;
   - botão "+ Lançar";
   - estado da gravação no cabeçalho;
   - resumo do mês no Meu painel.
-- [ ] Arnês local com o portal novo (sem senha) e fotos em claro e escuro, no desktop e no celular, sem erro de
-  script nem de CSP.
-- [ ] CSP liberando o servidor do diário e a PTAX do BCB. Bloqueio de moldura.
-- [ ] README do portal: o GitHub é a fonte, e como publicar o servidor.
+- [x] Arnês local com o portal novo (sem senha) e fotos em claro e escuro, no desktop e no celular, sem erro de
+  script nem de CSP: 72 fotos, 0 erros. Fluxo ponta a ponta no navegador, com gravação cifrada real: 11 de 11 passos.
+- [x] CSP liberando o servidor do diário e a PTAX do BCB. Bloqueio de moldura (`app.js`).
+- [x] README do portal: o GitHub é a fonte, e como publicar o servidor. CI com `node --test`.
+- [x] Controles honestos: na versão online, "Editar cobrança" vira "Lançar pagamento" (já preenchido), e o
+  estado da assinatura e os passos de venda ficam desabilitados, com o motivo.
+- [x] Menu em grupos (Dinheiro · Planejar · Empresa · Registro). Botão flutuante de lançar no celular.
 - [ ] PR em rascunho e relatório da manhã.
 
 ## O que só o Bauer pode fazer (quando acordar)
@@ -70,3 +74,12 @@ Plano aprovado: `docs/PLANO-PORTAL.md`. Este arquivo é riscado a cada checkpoin
 1. Publicar o servidor do diário: um comando ou um clique, descrito no README (`servidor/LEIA.md`).
 2. Revisar e fazer o merge do PR do portal. O merge publica no GitHub Pages, ou seja, em produção.
 3. Primeiro acesso depois do merge: entrar no portal. A chave do diário nasce no navegador dele.
+
+## Ficou para as próximas fases (do plano)
+
+- **P1:** fechamento do mês com selo e pacote do contador, receitas por canal, saldos bancários e fôlego (runway),
+  conciliação da fatura item a item, e as assinaturas editáveis pelo diário (nova, confirmar, encerrar).
+- **P2:** impostos calculados (Simples, fator R, DAS), comprovantes cifrados, domínio próprio com Face ID, e o Med
+  Painel ligado aos parâmetros.
+- **Quatro olhos para impostos (D4):** hoje qualquer sócia muda qualquer parâmetro, sempre com autora, data e fonte
+  registradas, e com a prévia de impacto antes de salvar.

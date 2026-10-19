@@ -369,7 +369,8 @@ function toast(texto, tom = 'ok', desfazerFn = null) {
 
 // ── + Lançar: valor primeiro, descrição com autocompletar das assinaturas, prévia da conversão e da sua parte ─────────
 let folha = null;
-function abrirLancar(existente = null) {
+function abrirLancar(existente = null, sugestao = null) {
+  if (existente && !existente.id) { sugestao = existente; existente = null; }
   const D = dados();
   if (!D) return;
   const {c, lista} = D;
@@ -380,6 +381,11 @@ function abrirLancar(existente = null) {
   f.noValidate = true;
   const hoje = hojeDe(c), ontem = new Date(new Date(hoje + 'T12:00:00').getTime() - 864e5).toISOString().slice(0, 10);
   const g = existente || {data: hoje, competencia: hoje.slice(0, 7), moeda: 'BRL', forma: 'cartao_pj', pagoPor: c.membro.id, destino: 'empresa_reembolsa', categoria: '', descricao: '', valorMinor: null, documento: '', nota: '', faturaBrlMinor: null, planoId: null};
+  if (sugestao) { // "Lançar pagamento" de uma assinatura: descrição, moeda, valor e categoria já vêm preenchidos
+    const plano = (c.estado.plans || []).find(p => p.id === sugestao.planoId);
+    Object.assign(g, {descricao: sugestao.descricao || '', planoId: sugestao.planoId || null});
+    if (plano) Object.assign(g, {moeda: R.MOEDAS.includes(plano.currency) ? plano.currency : 'BRL', valorMinor: Number.isSafeInteger(plano.amountMinor) ? plano.amountMinor : null, categoria: R.palpiteCategoria(plano.servico)});
+  }
   const topo = el('div', 'lv-dialogo-topo');
   const tt = el('div'); tt.append(el('p', 'eyebrow', existente ? 'Corrigir é criar uma versão nova: a anterior fica no histórico' : 'Gasto da empresa'), el('h2', null, existente ? 'Editar lançamento' : 'Lançar gasto'));
   topo.append(tt, botao('Fechar', 'button-outline', () => folha.close()));
@@ -697,6 +703,11 @@ function renderTudo(forcar = false) {
   const D = dados();
   const lancar = $('lancar-button');
   if (lancar) lancar.hidden = !D;
+  // no celular o botão do cabeçalho espremia o título: vira um botão flutuante, fora do cabeçalho (que tem
+  // backdrop-filter e por isso prenderia um position:fixed dentro dele)
+  let fab = $('lancar-fab');
+  if (!fab && D) { fab = el('button', 'lv-fab', '+ Lançar'); fab.id = 'lancar-fab'; fab.type = 'button'; fab.setAttribute('aria-label', 'Lançar um gasto da empresa'); fab.addEventListener('click', () => abrirLancar()); document.body.append(fab); }
+  if (fab) fab.hidden = !D || !document.getElementById('dashboard') || document.getElementById('dashboard').hidden;
   if (!D) return;
   if (!mesAtual) mesAtual = hojeDe(D.c).slice(0, 7);
   const assinatura = [D.d ? D.d.modo + ':' + D.d.cabeca + ':' + D.d.eventos.length + ':' + D.d.verificacao.problemas.length : 'x', D.c.estado.revision, mesAtual, filtro.socia, filtro.mes].join('|');
@@ -706,7 +717,9 @@ function renderTudo(forcar = false) {
   renderResumo(D); renderLivro(D); renderLancamentos(D); renderParametros(D); renderHistorico(D);
 }
 window.financeLivroRender = () => renderTudo(false);
-window.financeLivro = {abrirLancar: () => abrirLancar(), renderTudo};
+window.financeLivro = {abrirLancar: (sugestao) => abrirLancar(null, sugestao || null), renderTudo};
+const painel = $('dashboard');
+if (painel) new MutationObserver(() => renderTudo(true)).observe(painel, {attributes: true, attributeFilter: ['hidden']});
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#lancar-button')) abrirLancar(); });
 document.addEventListener('financeiro:diario', () => renderTudo(true));
 async function sincronizarDeTempoEmTempo() {

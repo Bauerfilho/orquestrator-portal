@@ -1,6 +1,8 @@
 "use strict";
 
 (() => {
+  // o portal grava agora: dentro da moldura de outro site, não se desenha (meta CSP não aceita frame-ancestors)
+  if (window.top !== window.self) { document.documentElement.replaceChildren(); return; }
   const byId = (id) => document.getElementById(id);
   const requests = new Map();
   const actions = new Set(["login", "logout", "snapshot", "toggle_step", "edit_plan", "change_password", "restore_session", "set_subscription", "preferences", "set_decision"]);
@@ -522,7 +524,9 @@
       details.append(element("span", "plan-next-date", (plan.schedule_derived === true ? "Próxima data prevista: " : "Próxima data: ") + dateLabel(plan.proxima_data)));
       if (typeof plan.schedule_issue === "string" && plan.schedule_issue.trim()) details.append(element("span", "plan-schedule-issue", plan.schedule_issue));
       details.append(element("span", "badge" + (plan.overdue ? " badge-danger" : plan.due_soon ? " badge-gold" : ""), "Cobrança: " + paymentLabel(plan)));
-      bottom.append(details, button("Editar cobrança", "button-quiet", () => {
+      // controles honestos: na versão só de leitura, nada de formulário que depois recusa; o pagamento vira lançamento
+      if (host().readOnly === true && window.financeLivro) bottom.append(details, button("Lançar pagamento", "button-quiet", () => window.financeLivro.abrirLancar({descricao: [plan.servico, plan.plano].filter(Boolean).join(" · "), planoId: plan.id})));
+      else bottom.append(details, button("Editar cobrança", "button-quiet", () => {
         editingPlan = plan.index; renderSubscriptions(block, user);
         const field = byId("plan-value-" + plan.index); if (field) field.focus();
       }));
@@ -531,6 +535,7 @@
       const selector = element("select"); selector.setAttribute("aria-label", "Estado da assinatura " + text(plan.servico)); selector.dataset.subscriptionIndex = String(plan.index); selector.id = "subscription-state-" + plan.index;
       [["unconfirmed", "A confirmar"], ["active", "Ativa"], ["inactive", "Inativa"]].forEach(([value, caption]) => { const option = element("option", "", caption); option.value = value; option.disabled = value === "unconfirmed"; selector.append(option); });
       selector.value = subscriptionState(plan);
+      if (host().readOnly === true) { selector.disabled = true; label.title = "Na versão online o estado da assinatura muda pela aba Finanças do AI Cask."; }
       label.append(selector); management.append(label);
       selector.addEventListener("change", async () => {
         if (mutationBusy) { selector.value = subscriptionState(plan); return; }
@@ -659,6 +664,7 @@
         checkbox.type = "checkbox";
         checkbox.checked = step.checked === true;
         checkbox.dataset.stepIndex = String(step.index);
+        if (host().readOnly === true) { checkbox.disabled = true; label.title = "Na versão online os passos se marcam pela aba Finanças do AI Cask."; }
         const copy = element("span", "", step.text);
         label.append(checkbox, copy);
         item.append(label);

@@ -256,3 +256,11 @@
 .nav-grupo:first-child{margin-top:4px}
 .lv-filtros .lv-select{width:auto;flex:0 1 240px;min-width:0}
 @media (max-width:620px){.lv-filtros .lv-select{flex:1 1 140px}}
+/* botão flutuante de lançar, só no celular (56 px, acima da área segura) */
+.lv-fab{display:none}
+@media (max-width:620px){
+  #lancar-button{display:none!important}
+  .lv-fab:not([hidden]){display:inline-flex;align-items:center;position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:45;min-height:56px;padding:0 22px;border:0;border-radius:999px;background:var(--gold);color:#19170f;font:600 15px var(--sans);box-shadow:0 10px 30px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.18)}
+  html.drawer-open .lv-fab{display:none}
+  .page-stage{padding-bottom:84px}
+}

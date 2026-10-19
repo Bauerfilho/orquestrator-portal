@@ -90,7 +90,8 @@ for (const [tela] of TELAS) for (const tema of TEMAS) {
     const grafico = await pagina.$('#medpainel-content svg.mp-svg');
     if (grafico) { await grafico.scrollIntoViewIfNeeded(); await grafico.focus(); await assentar(pagina, true); await foto(pagina, `${combo}-extra-grafico-dica`, {fullPage: false}); }
     // Controles que o portal oferece mas recusa (somente leitura): editar cobrança e marcar passo.
-    if (!/escrita=1/.test(QUERY)) {
+    // (os controles que antes recusavam depois de preenchidos agora vêm desabilitados com o motivo: nada a fotografar)
+    if (false) {
       await pagina.evaluate(() => window.financeNavigate('subscriptions', false)); await assentar(pagina);
       await pagina.locator('.plan-card button', {hasText: 'Editar cobrança'}).first().click(); await assentar(pagina);
       await pagina.fill('#plan-value-0', '210'); await pagina.locator('[data-plan-form="0"] button[type=submit]').click(); await assentar(pagina);
