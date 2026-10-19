@@ -1,10 +1,12 @@
 // A ponte estática do Finanças (GitHub Pages): a mesma interface da ponte nativa do AI Cask (financeRequest), com os dados
 // vindos do pacote cifrado e o domínio (domain.js) rodando no navegador. As mutações antigas do pacote respondem read_only;
-// o que as sócias gravam (lançamentos, parâmetros, perfis…) vai pelo diário cifrado (diario.js). A chave mestra vive SÓ em
-// memória (nunca em storage): recarregar = entrar de novo.
+// o que as sócias gravam (lançamentos, parâmetros, perfis…) vai pelo diário cifrado (diario.js). A chave mestra vive em
+// memória; recarregar = entrar de novo, a não ser que a sócia tenha marcado "Lembrar deste aparelho" (lembrar.js): aí a
+// mestra fica no IndexedDB, cifrada com uma chave do aparelho que não se copia, e a entrada é direta. A senha nunca fica.
 import {unlock, fetchManifest, loadBundle, b64} from './portal-crypto.js';
 import {buildSnapshot, civilDate, validateState} from './domain.js';
-import {abrirDiario} from './diario.js';
+import {abrirDiario, chaveDaSenhaDoDiario} from './diario.js';
+import {lembrarAparelho, esquecerAparelho, lembrado, mostrarCaixaLembrar} from './lembrar.js';
 import {criarGaleria} from './galeria.js';
 import {carregarPerfis, lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from './perfis.js';
 import {aplicar, limparPerfil} from './razao.js';
@@ -136,33 +138,68 @@ async function activate(sess) {
   chave = sess;
   return {user: {nome: nomeVisivel(member), participacao_pct: member.participationPct ?? null, decide: false}, must_change_password: false, decide: false};
 }
+// A sessão de um diário que abre em segundo plano (a chave da senha, já derivada ou a caminho, e a mestra do pacote).
+function abrirDiarioDaSessao(memberId, kek, masterRaw) {
+  diarioPromessa = Promise.resolve(kek).then(k => abrirDiario({url: DIARIO_URL, membroId: memberId, kek: k, masterRaw}))
+    .then(d => { if (member && member.id === memberId) { diarioAtual = d; atualizarPerfis(); document.dispatchEvent(new CustomEvent('financeiro:diario')); } })
+    .catch(() => {});
+}
+// "Lembrar deste aparelho": a entrada sem senha. Lê o que o aparelho lembra, confere que a sócia ainda está no manifesto,
+// abre o pacote e o perfis.json de novo (activate, frescos) e o diário com a chave guardada. O que não fecha (pacote
+// lacrado de novo, chave que não abre, no_account, IndexedDB limpo ou indisponível) apaga o registro e devolve null: a
+// tela de entrada aparece, sem erro. Sem rede, o registro fica para a próxima vez.
+const semRede = erro => erro instanceof TypeError || /baixar o pacote|manifesto/.test(String(erro && erro.message));
+async function entrarPeloAparelho() {
+  let aberto;
+  try { aberto = await lembrado(); } catch { return null; }
+  if (!aberto) return null;
+  const desistir = async () => { esquecer(); await esquecerAparelho().catch(() => {}); return null; };
+  let lista;
+  try { lista = await getManifest(); } catch { return null; }
+  if (!Array.isArray(lista.members) || !lista.members.some(m => m && m.id === aberto.memberId)) return desistir();
+  let entrada;
+  try { entrada = await activate({memberId: aberto.memberId, masterRaw: aberto.masterRaw}); }
+  catch (erro) { if (semRede(erro)) { esquecer(); return null; } return desistir(); }
+  if (!member || member.id !== aberto.membroDiario) return desistir();
+  abrirDiarioDaSessao(member.id, aberto.diarioKek, aberto.masterRaw);
+  return entrada;
+}
 function prepareForm() {
-  // No portal a senha identifica o membro: sem CPF e sem "lembrar" (a sessão dura enquanto a página estiver aberta).
+  // No portal a senha identifica o membro: sem CPF. "Lembrar deste aparelho" (lembrar.js) deixa entrar direto depois.
   const cpf = $('login-cpf');
   if (cpf) { cpf.required = false; ['pattern', 'minlength', 'maxlength'].forEach(a => cpf.removeAttribute(a)); const row = cpf.closest('.field') || cpf.parentElement; row.hidden = true; }
-  const remember = $('login-remember'); if (remember) { const row = remember.closest('label'); if (row) row.hidden = true; }
+  mostrarCaixaLembrar(document);
   const help = $('login-help'); if (help) help.textContent = 'A senha é a do portal. Sem senha? Fale com o Criador.';
   const access = $('cloud-access'); if (access) access.hidden = true;
   const form = $('login-form'); if (form) { form.hidden = false; form.inert = false; form.removeAttribute('aria-hidden'); }
 }
 window.financeWebRequest = async (action, payload = {}) => {
   if (action === 'restore_session') {
-    if (!chave) fail('Entre com a senha do portal.', 'unauthenticated');
-    try { return await activate(chave); }
-    catch (error) { if (error.code === 'no_account') throw error; esquecer(); fail('A sessão acabou. Entre de novo.', 'unauthenticated'); }
+    if (chave) {
+      try { return await activate(chave); }
+      catch (error) { if (error.code === 'no_account') throw error; esquecer(); fail('A sessão acabou. Entre de novo.', 'unauthenticated'); }
+    }
+    const entrada = await entrarPeloAparelho();
+    if (entrada) return entrada;
+    fail('Entre com a senha do portal.', 'unauthenticated');
   }
   if (action === 'login') {
-    const got = await unlock(await getManifest(), String(payload.password || ''));
+    const senha = String(payload.password || '');
+    const got = await unlock(await getManifest(), senha);
     if (!got) fail('Senha não reconhecida.', 'unauthenticated');
     const entrada = await activate(got);
-    // a chave do diário vem da senha (PBKDF2, ~meio segundo): abre em segundo plano, sem atrasar a entrada
-    const memberId = member.id, senha = String(payload.password || '');
-    diarioPromessa = abrirDiario({url: DIARIO_URL, membroId: memberId, senha, masterRaw: got.masterRaw instanceof Uint8Array ? got.masterRaw : b64.dec(got.masterRaw)})
-      .then(d => { if (member && member.id === memberId) { diarioAtual = d; atualizarPerfis(); document.dispatchEvent(new CustomEvent('financeiro:diario')); } })
-      .catch(() => {});
+    const memberId = member.id, masterRaw = got.masterRaw instanceof Uint8Array ? got.masterRaw : b64.dec(got.masterRaw);
+    // a chave do diário vem da senha (PBKDF2, ~meio segundo), uma vez só: abre o diário em segundo plano e, com
+    // "Lembrar deste aparelho", vai para o IndexedDB no lugar da senha (que não fica em lugar nenhum)
+    const kek = chaveDaSenhaDoDiario(senha, memberId);
+    abrirDiarioDaSessao(memberId, kek, masterRaw);
+    if (payload.remember) {
+      try { await lembrarAparelho({memberId: got.memberId, membroDiario: memberId, masterRaw, diarioKek: await kek}); }
+      catch { entrada.remember_error = true; esquecerAparelho().catch(() => {}); }
+    } else esquecerAparelho().catch(() => {});   // entrar sem marcar esquece um registro antigo deste aparelho (sem esperar: um IndexedDB travado não segura a entrada)
     return entrada;
   }
-  if (action === 'logout') { esquecer(); return {logged_out: true}; }
+  if (action === 'logout') { esquecer(); await esquecerAparelho().catch(() => {}); return {logged_out: true}; }
   if (action === 'preferences') { window.financeHost.tema = payload.tema === 'escuro' ? 'escuro' : 'claro'; return {tema: window.financeHost.tema}; }
   if (action === 'change_password') fail('A senha do portal é definida pelo Criador, fora do painel.', 'identity_managed');
   if (!state) fail('Entre com a senha do portal.', 'unauthenticated');

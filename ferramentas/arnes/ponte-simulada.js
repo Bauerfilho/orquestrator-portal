@@ -3,7 +3,12 @@
 // senha nem pacote cifrado. O domínio é o domain.js publicado, sem mudança: buildSnapshot faz toda a conta.
 //
 // Parâmetros de URL (todos opcionais):
-//   ?login=1          mostra a tela de entrada (restore_session falha; qualquer senha entra)
+//   ?login=1          mostra a tela de entrada (qualquer senha entra). Com "Lembrar deste aparelho" marcado, o arnês faz
+//                     o mesmo que a ponte publicada (lembrar.js): guarda no IndexedDB a chave mestra fictícia cifrada com a
+//                     chave do aparelho e a chave do diário, e recarregar entra direto, com o diário abrindo pela chave
+//                     guardada. Sair esquece; entrar sem marcar também
+//   ?pacote=novo      simula o pacote lacrado de novo (outra chave mestra fictícia): o aparelho lembrado não abre mais,
+//                     o registro é apagado e a tela de entrada aparece
 //   ?data=AAAA-MM-DD  data civil do cálculo (padrão 2026-10-19, para as fotos serem reproduzíveis)
 //   ?membro=m-ana     quem está vendo (m-bauer, m-ana, m-bia)
 //   ?escrita=1        readOnly false: toggle_step / edit_plan / set_subscription aplicam applyMutation em memória
@@ -19,7 +24,8 @@
 //                     catálogo como "Sem stand" e um apps/sinal.html antigo, que tem de PERDER para o do repositório
 import {buildSnapshot, validateState, applyMutation, civilDate} from './domain.js';
 import {estadoFicticio} from './estado-ficticio.js';
-import {abrirDiario} from './diario.js';
+import {abrirDiario, chaveDaSenhaDoDiario} from './diario.js';
+import {lembrarAparelho, esquecerAparelho, lembrado, mostrarCaixaLembrar} from './lembrar.js';
 import {criarGaleria} from './galeria.js';
 import {lerColado, mesclarPerfis, podeEditarPerfil, perfilParaTela, estadoDosPerfis, marcaDosPerfis, acompanharDiario} from './perfis.js';
 import {aplicar, limparPerfil} from './razao.js';
@@ -37,6 +43,9 @@ const ESCRITA = params.get('escrita') === '1';
 const GUARDA = 'arnes-financas.estado';
 const fail = (message, code) => { const error = new Error(message); error.code = code; throw error; };
 const temaAtual = () => document.documentElement.dataset.tema === 'escuro' ? 'escuro' : 'claro';
+// a chave mestra fictícia do arnês (a do diário e a do "Lembrar"); ?pacote=novo é a de um pacote lacrado de novo
+const MESTRA = new Uint8Array(32).fill(params.get('pacote') === 'novo' ? 4 : 3);
+const senhaDoArnes = id => 'arnes-' + id;   // a "senha" do diário no arnês (a tela aceita qualquer uma)
 
 function estadoInicial() {
   if (ESCRITA && params.get('zerar') !== '1') {
@@ -131,9 +140,12 @@ window.financeHost = {
     diario() { return diario; },
   },
 };
-async function abrirDiarioDoArnes() {
+// kek: a chave da senha do diário já derivada (no login) ou guardada pelo "Lembrar" (na entrada direta); sem ela, a senha
+async function abrirDiarioDoArnes(kek) {
   if (!sessao) return;
-  const d = await abrirDiario({url: params.get('diario') === 'local' ? location.origin : null, membroId: sessao.id, senha: 'arnes-' + sessao.id, masterRaw: new Uint8Array(32).fill(3)});
+  const membro = sessao.id;
+  const d = await abrirDiario({url: params.get('diario') === 'local' ? location.origin : null, membroId: membro, ...(kek ? {kek: await kek} : {senha: senhaDoArnes(membro)}), masterRaw: MESTRA});
+  if (!sessao || sessao.id !== membro) return;
   if (params.get('demo') === '1' && d.modo === 'treino') {
     const ultimo = d.eventos.length ? d.eventos[d.eventos.length - 1].seq : 0;
     for (const ev of demonstracao(state, {fotoDoMes, seloDoMes, aplicar}, {primeiroSeq: ultimo + 1})) d.eventos.push({...ev, treino: true});
@@ -143,10 +155,39 @@ async function abrirDiarioDoArnes() {
   document.dispatchEvent(new CustomEvent('financeiro:diario'));
 }
 const usuario = m => ({user: {nome: nomeVisivel(m.id), participacao_pct: m.participationPct ?? null, decide: false}, must_change_password: false, decide: false});
+// "Lembrar deste aparelho", como na ponte publicada: o registro abre, a sócia existe e a mestra é a deste "pacote"; senão,
+// apaga o registro e devolve null (tela de entrada, sem erro)
+async function entrarPeloAparelho() {
+  let aberto;
+  try { aberto = await lembrado(); } catch { return null; }
+  if (!aberto) return null;
+  const m = membroDe(aberto.memberId);
+  const mesmaMestra = aberto.masterRaw.length === MESTRA.length && aberto.masterRaw.every((b, i) => b === MESTRA[i]);
+  if (!m || !mesmaMestra || aberto.membroDiario !== m.id) { await esquecerAparelho().catch(() => {}); return null; }
+  sessao = m;
+  abrirDiarioDoArnes(aberto.diarioKek);
+  return usuario(sessao);
+}
 window.financeWebRequest = async (action, payload = {}) => {
-  if (action === 'restore_session') { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); if (!diario) abrirDiarioDoArnes(); return usuario(sessao); }
-  if (action === 'login') { sessao = membroDe(membroId); if (!sessao) fail('Seu perfil não está neste pacote.', 'no_account'); abrirDiarioDoArnes(); return usuario(sessao); }
-  if (action === 'logout') { sessao = null; galeria.esquecer(); return {logged_out: true}; }
+  if (action === 'restore_session') {
+    if (sessao) { if (!diario) abrirDiarioDoArnes(); return usuario(sessao); }
+    const entrada = await entrarPeloAparelho();
+    if (entrada) return entrada;
+    fail('Entre com a senha do portal.', 'unauthenticated');
+  }
+  if (action === 'login') {
+    sessao = membroDe(membroId);
+    if (!sessao) fail('Seu perfil não está neste pacote.', 'no_account');
+    const kek = chaveDaSenhaDoDiario(senhaDoArnes(sessao.id), sessao.id);
+    abrirDiarioDoArnes(kek);
+    const entrada = usuario(sessao);
+    if (payload.remember) {
+      try { await lembrarAparelho({memberId: sessao.id, membroDiario: sessao.id, masterRaw: MESTRA, diarioKek: await kek}); }
+      catch { entrada.remember_error = true; esquecerAparelho().catch(() => {}); }
+    } else esquecerAparelho().catch(() => {});
+    return entrada;
+  }
+  if (action === 'logout') { sessao = null; diario = null; galeria.esquecer(); await esquecerAparelho().catch(() => {}); return {logged_out: true}; }
   if (action === 'preferences') { window.financeHost.tema = payload.tema === 'escuro' ? 'escuro' : 'claro'; return {tema: window.financeHost.tema}; }
   if (action === 'change_password') fail('A senha do portal é definida pelo Criador, fora do painel.', 'identity_managed');
   if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated');
@@ -187,11 +228,11 @@ window.financeOpenTeam = async () => {
   dialog.showModal();
 };
 
-// Mesma preparação da tela de entrada da ponte publicada (sem CPF, sem "lembrar", com o olho da senha).
+// Mesma preparação da tela de entrada da ponte publicada (sem CPF, com "Lembrar deste aparelho" e o olho da senha).
 function prepareForm() {
   const cpf = $('login-cpf');
   if (cpf) { cpf.required = false; ['pattern', 'minlength', 'maxlength'].forEach(a => cpf.removeAttribute(a)); const row = cpf.closest('.field') || cpf.parentElement; row.hidden = true; }
-  const remember = $('login-remember'); if (remember) { const row = remember.closest('label'); if (row) row.hidden = true; }
+  mostrarCaixaLembrar(document);
   const help = $('login-help'); if (help) help.textContent = 'A senha é a do portal. Sem senha? Fale com o Criador.';
   const form = $('login-form'); if (form) { form.hidden = false; form.inert = false; form.removeAttribute('aria-hidden'); }
 }
