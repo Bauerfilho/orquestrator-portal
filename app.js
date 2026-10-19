@@ -2896,7 +2896,7 @@
     if (!result || !result.user) return;
     sessionGeneration += 1;
     authenticated = true;
-    sessionNotice = result.remember_error ? "Você entrou, mas não foi possível lembrar a sessão neste Mac. Ao reabrir, entre novamente." : "";
+    sessionNotice = result.remember_error ? "Você entrou, mas não foi possível lembrar a sessão neste aparelho. Ao reabrir, entre novamente." : "";
     byId("login-form").reset();
     message("login-error", "");
     if (result.must_change_password) {
@@ -2966,7 +2966,7 @@
   async function logout() {
     resetSession();
     try { history.replaceState(null, "", location.pathname + location.search); } catch (_) {}
-    try { await window.financeRequest("logout"); announce("Você saiu. A sessão lembrada foi removida deste Mac."); }
+    try { await window.financeRequest("logout"); announce("Você saiu. A sessão lembrada foi removida deste aparelho."); }
     catch (failure) { message("login-error", failure.message); }
     byId("login-cpf").focus();
   }
@@ -3015,7 +3015,7 @@
     try {
       const result = await window.financeRequest("change_password", payload);
       if (!authenticated || generation !== sessionGeneration) return;
-      if (result && result.remember_error) sessionNotice = "Sua senha foi alterada, mas não foi possível atualizar a sessão lembrada neste Mac. Ao reabrir, entre novamente.";
+      if (result && result.remember_error) sessionNotice = "Sua senha foi alterada, mas não foi possível atualizar a sessão lembrada neste aparelho. Ao reabrir, entre novamente.";
       mustChangePassword = false;
       byId("password-dialog").close();
       byId("login-view").hidden = true;
@@ -3127,7 +3127,11 @@
     try { registrarPaginaNova(definicao); } catch (erro) { console.error(erro); }
   });
   window.financeReady = true;
+  // "Lembrar deste aparelho": o index.html chega com data-entrada="conferindo", que esconde a tela de entrada (sem piscar)
+  // enquanto a ponte confere se este aparelho foi lembrado. Respondida a conferência, ela aparece (a válvula de 6 s é do
+  // style.css, para valer mesmo com um app.js antigo no cache).
+  const liberarEntrada = () => { delete document.documentElement.dataset.entrada; };
   window.financeRequest("restore_session").then(enterSession).catch((failure) => {
     if (failure.code === "bridge_unavailable") message("login-error", failure.message);
-  });
+  }).finally(liberarEntrada);
 })();

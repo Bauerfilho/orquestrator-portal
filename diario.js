@@ -28,7 +28,10 @@ const hex = bytes => [...new Uint8Array(bytes)].map(b => b.toString(16).padStart
 const sha256hex = async texto => hex(await subtle().digest('SHA-256', enc.encode(texto)));
 const aleatorio = n => globalThis.crypto.getRandomValues(new Uint8Array(n));
 
-async function chaveDaSenha(senha, membroId) {
+// A chave da senha de uma sócia no diário (PBKDF2-SHA256, 600 mil iterações, ~meio segundo), NÃO extraível. Abre os
+// embrulhos dela no servidor (a chave do diário e a assinatura). O "Lembrar deste aparelho" (lembrar.js) guarda esta chave
+// no próprio navegador, nunca a senha, e a devolve a abrirDiario({kek}).
+export async function chaveDaSenhaDoDiario(senha, membroId) {
   const base = await subtle().importKey('raw', enc.encode(String(senha).normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
   return subtle().deriveKey({name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode('orquestrator-diario/v1|' + membroId), iterations: ITERACOES}, base, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
 }
@@ -231,9 +234,10 @@ export function portaMemoria({limitePagina} = {}) {
 }
 
 // ── o diário ────────────────────────────────────────────────────────────────────────────────────────────────────
-// opções: {porta | url, membroId, senha, masterRaw (Uint8Array), fetch?}. {url} é o mesmo que {porta: portaHttp(url, fetch)}.
-// Sem porta nem url → modo treino.
-export async function abrirDiario({url, porta, membroId, senha, masterRaw, fetch: f}) {
+// opções: {porta | url, membroId, senha | kek, masterRaw (Uint8Array), fetch?}. {url} é o mesmo que {porta: portaHttp(url, fetch)}.
+// {kek} é a chave da senha já derivada (chaveDaSenhaDoDiario): a mesma chave, sem a senha e sem a espera do PBKDF2; nada
+// muda no servidor nem no formato. Sem porta nem url → modo treino.
+export async function abrirDiario({url, porta, membroId, senha, kek: kekPronta, masterRaw, fetch: f}) {
   if (!porta && url) porta = portaHttp(url, f);
   const d = {modo: 'treino', motivo: porta ? '' : 'Servidor do diário ainda não configurado.', eventos: [], cabeca: 0, hashAnterior: '0',
     verificacao: {integro: true, ate: 0, problemas: []}, membroId, ultimaSincronia: null, fila: 0,
@@ -359,7 +363,7 @@ export async function abrirDiario({url, porta, membroId, senha, masterRaw, fetch
     return d;
   }
   try {
-    const kek = await chaveDaSenha(senha, membroId);
+    const kek = kekPronta || await chaveDaSenhaDoDiario(senha, membroId);
     const pubId = await identificadorDaPublicacao(masterRaw);
     const kpub = await hkdf(masterRaw, 'orquestrator-diario/pub/v1');
     const estado = await porta.estado();
