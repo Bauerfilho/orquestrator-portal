@@ -1,7 +1,7 @@
 // Perfis da sociedade (perfis.js): cifra só com a chave mestra, outra chave não abre, colagem casa com o roster.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {cifrarPerfis, abrirPerfis, carregarPerfis, lerColado, normalizarPerfis, foneLegivel, foneDiscavel} from '../perfis.js';
+import {cifrarPerfis, abrirPerfis, carregarPerfis, lerColado, juntarPerfis, normalizarPerfis, foneLegivel, foneDiscavel} from '../perfis.js';
 
 const mestra = new Uint8Array(32).fill(7);
 const outra = new Uint8Array(32).fill(8);
@@ -50,6 +50,19 @@ test('colagem: pelo rótulo do pacote (com e sem acento), pelo número de "Sóci
   const ruim = lerColado(JSON.stringify({'Sócio 9': {nome: 'Z'}, 'Sócio 1': {nome: 'A'}, 'socio 1': {nome: 'A2'}}), roster);
   assert.equal(ruim.avisos.length, 2);
   assert.equal(lerColado('não é json', roster).avisos[0], 'O texto colado não é um JSON válido.');
+  const semNome = lerColado(JSON.stringify({'Sócio 1': {funcao: 'Só função'}}), roster);
+  assert.deepEqual(semNome.membros, {});
+  assert.match(semNome.avisos[0], /sem nome/);
+});
+
+test('colar só uma sócia junta com as outras; null apaga; envelope do arnês nunca abre', async () => {
+  const atuais = {m1: {nome: 'A'}, m2: {nome: 'B', fone: '64900000002'}, m3: {nome: 'C'}};
+  const colado = lerColado(JSON.stringify({'Sócia 2': {nome: 'B2'}, 'Sócio 3': null}), roster);
+  assert.deepEqual(colado.remover, ['m3']);
+  assert.deepEqual(juntarPerfis(atuais, colado.membros, colado.remover), {m1: {nome: 'A'}, m2: {nome: 'B2'}});
+  assert.deepEqual(juntarPerfis(null, {m1: {nome: 'A'}}), {m1: {nome: 'A'}});
+  const envelope = {...(await cifrarPerfis(mestra, dados)), arnes: true};
+  assert.equal((await abrirPerfis(mestra, envelope)).estado, 'ilegivel');
 });
 
 test('telefone: legível e discável', () => {

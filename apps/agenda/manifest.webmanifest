@@ -3,7 +3,6 @@
   "short_name": "Agenda",
   "description": "Página pública de agendamento de consulta: o paciente escolhe o dia no calendário, o horário no seu fuso e confirma com três campos. Marca fictícia: Encontro, com a agenda da Dra. Helena Prado.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

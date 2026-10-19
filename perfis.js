@@ -47,7 +47,8 @@ export async function cifrarPerfis(masterRaw, dados) {
 
 /** {estado: 'ok', membros} · {estado: 'outra-chave'} (lacrado de novo) · {estado: 'ilegivel'} (envelope estragado). */
 export async function abrirPerfis(masterRaw, envelope) {
-  if (!envelope || envelope.v !== 1 || typeof envelope.iv !== 'string' || typeof envelope.ct !== 'string') return {estado: 'ilegivel'};
+  // envelope.arnes: cifrado com a chave fictícia do arnês; nunca vale como perfis de verdade
+  if (!envelope || envelope.v !== 1 || envelope.arnes || typeof envelope.iv !== 'string' || typeof envelope.ct !== 'string') return {estado: 'ilegivel'};
   if (envelope.publicacao !== await publicacao(masterRaw)) return {estado: 'outra-chave'};
   try {
     const plano = await subtle().decrypt({name: 'AES-GCM', iv: b64.dec(envelope.iv), additionalData: enc.encode(AAD)}, await chave(masterRaw), b64.dec(envelope.ct));
@@ -74,25 +75,36 @@ const numeroDoRotulo = s => { const m = /^s[oó]ci[oa]s?\s*(\d+)$/.exec(semAcent
  *   · {"Sócio 1": {...}, "Sócio 2": {...}}  → pelo nome que o pacote mostra; "Sócio N" sem par vira o N-ésimo do roster;
  *   · {"m53cd…": {...}}                     → direto pelo id;
  *   · [{...}, {...}]                        → na ordem do roster.
- * Devolve {membros, avisos}: avisos explica o que não casou.
+ * Uma sócia com null ({"Sócio 3": null}) é para REMOVER o perfil dela. Quem não aparece no texto fica como está
+ * (juntarPerfis). Devolve {membros, remover, avisos}: avisos explica o que não casou.
  */
 export function lerColado(texto, roster) {
   let dados;
-  try { dados = JSON.parse(String(texto || '')); } catch { return {membros: {}, avisos: ['O texto colado não é um JSON válido.']}; }
+  try { dados = JSON.parse(String(texto || '')); } catch { return {membros: {}, remover: [], avisos: ['O texto colado não é um JSON válido.']}; }
   const lista = Array.isArray(roster) ? roster : [];
   const porId = new Map(lista.map(m => [m.id, m]));
   const porNome = new Map(lista.map(m => [semAcento(m.rotulo || m.displayName), m]));
-  const membros = {}, avisos = [];
+  const membros = {}, avisos = [], remover = [];
   const pares = Array.isArray(dados) ? dados.map((p, i) => [String(i + 1), p, i]) : Object.entries(dados && typeof dados === 'object' ? dados : {}).map(([k, p]) => [k, p, null]);
   for (const [chaveColada, perfil, indice] of pares) {
     let alvo = porId.get(chaveColada) || porNome.get(semAcento(chaveColada)) || null;
     if (!alvo && indice !== null) alvo = lista[indice] || null;
     if (!alvo) { const n = numeroDoRotulo(chaveColada); if (n) alvo = lista[n - 1] || null; }
     if (!alvo) { avisos.push(`"${chaveColada}" não corresponde a ninguém do pacote.`); continue; }
-    if (membros[alvo.id]) { avisos.push(`"${chaveColada}" repete ${alvo.rotulo || alvo.displayName}.`); continue; }
+    if (membros[alvo.id] || remover.includes(alvo.id)) { avisos.push(`"${chaveColada}" repete ${alvo.rotulo || alvo.displayName}.`); continue; }
+    if (perfil === null) { remover.push(alvo.id); continue; }
     membros[alvo.id] = perfil;
   }
-  return {membros: normalizarPerfis({membros}).membros, avisos};
+  const limpos = normalizarPerfis({membros}).membros;
+  for (const id of Object.keys(membros)) if (!limpos[id]) avisos.push(`${(porId.get(id) || {}).rotulo || id}: sem nome, o perfil não entra.`);
+  return {membros: limpos, remover, avisos};
+}
+
+/** O que vai para o envelope: os perfis já abertos, com os colados por cima (sócia inteira) e os removidos fora. */
+export function juntarPerfis(atuais, colados, remover = []) {
+  const todos = {...(atuais || {}), ...(colados || {})};
+  for (const id of remover || []) delete todos[id];
+  return todos;
 }
 
 /** Telefone brasileiro legível: 64900000001 → (64) 90000-0001. Outro formato volta como veio. */

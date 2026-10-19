@@ -3,7 +3,6 @@
   "short_name": "Quadro",
   "description": "Quadro kanban para equipes pequenas: colunas, cartões com etiquetas, prazos e checklists, arrastar e soltar de verdade.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

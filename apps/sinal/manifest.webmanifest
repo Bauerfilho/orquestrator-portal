@@ -3,7 +3,6 @@
   "short_name": "Sinal",
   "description": "Observabilidade local: eventos, incidentes, prova de entrega e fila de revisão.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

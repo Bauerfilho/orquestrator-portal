@@ -18,7 +18,7 @@ import {buildSnapshot, validateState, applyMutation, civilDate} from './domain.j
 import {estadoFicticio} from './estado-ficticio.js';
 import {abrirDiario} from './diario.js';
 import {criarGaleria} from './galeria.js';
-import {cifrarPerfis, lerColado, foneLegivel, foneDiscavel} from './perfis.js';
+import {cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
 //   ?demo=1           o diário em treino já vem com lançamentos e parâmetros de exemplo (o outubro do plano)
 //   ?diario=local     grava de verdade, cifrado, no servidor do diário que o arnês roda em /api (memória)
 
@@ -79,7 +79,12 @@ window.financeHost = {
       })};
     },
     conferir(texto) { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); return lerColado(texto, state.members.map(m => ({id: m.id, rotulo: ROTULOS[m.id] || m.displayName}))); },
-    async cifrar(membros) { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); return JSON.stringify(await cifrarPerfis(new Uint8Array(32).fill(3), {membros}), null, 1) + '\n'; },
+    // chave fictícia do arnês: o envelope sai marcado (arnes) e abrirPerfis o recusa, para nunca virar perfis de verdade
+    async cifrar(membros, remover = []) {
+      if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated');
+      const envelope = await cifrarPerfis(new Uint8Array(32).fill(3), {membros: juntarPerfis(PERFIS.estado === 'ok' ? PERFIS.membros : {}, membros, remover)});
+      return JSON.stringify({...envelope, arnes: true}, null, 1) + '\n';
+    },
   },
   livro: {
     contexto() { return sessao ? {estado: state, membro: {id: sessao.id, nome: sessao.displayName, papel: sessao.role, pct: sessao.participationPct}, hoje: HOJE} : null; },

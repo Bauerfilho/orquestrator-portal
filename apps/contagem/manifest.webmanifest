@@ -3,7 +3,6 @@
   "short_name": "Contagem",
   "description": "Analytics de site sem cookies: uma página com visitantes, páginas, origens, locais e tempo real, para quem quer os números sem vigiar ninguém.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

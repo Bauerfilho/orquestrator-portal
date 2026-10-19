@@ -3,7 +3,6 @@
   "short_name": "Conversa",
   "description": "Chat de equipe com canais, mensagens agrupadas por autor, reações, menções, anexos, fios de resposta e uma busca que filtra por pessoa, canal e data, tudo com um compositor que envia de verdade.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

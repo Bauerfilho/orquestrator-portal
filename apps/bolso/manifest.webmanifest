@@ -3,7 +3,6 @@
   "short_name": "Bolso",
   "description": "Finanças pessoais com envelopes: quanto ainda dá para gastar no mês em número grande, para onde o dinheiro foi numa rosca, um gasto lançado em poucos toques no teclado numérico e um orçamento que se remaneja entre categorias.",
   "lang": "pt-BR",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
