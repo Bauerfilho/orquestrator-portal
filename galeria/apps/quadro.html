@@ -1,0 +1,1849 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quadro · Maquete</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "quadro",
+  "nome": "Quadro",
+  "colecao": "referencia",
+  "tipo": "App web",
+  "tela": "ampla",
+  "resumo": "Quadro kanban para equipes pequenas: colunas, cartões com etiquetas, prazos e checklists, arrastar e soltar de verdade.",
+  "referencias": [
+    {
+      "nome": "Planka",
+      "modelo": "open source",
+      "licenca": "AGPL-3.0"
+    },
+    {
+      "nome": "Wekan",
+      "modelo": "open source",
+      "licenca": "MIT"
+    },
+    {
+      "nome": "Trello",
+      "modelo": "freemium"
+    }
+  ],
+  "direcao": "Off-white calmo, colunas como bandejas suaves, um único acento cobalto e etiquetas em pílulas pastel. No escuro, ardósia com as mesmas pílulas em versão tingida. Marca fictícia: Tramo. Densidade confortável, cantos de 12 a 18 px, sombras quase invisíveis até o cartão ser levantado.",
+  "estados": [
+    {
+      "nome": "Quadro",
+      "descricao": "Quatro bandejas com 14 cartões (etiquetas, pessoas, prazos, checklists). Arrastar e soltar entre colunas com pointer events, adicionar cartão na própria coluna, busca e filtros por etiqueta, pessoa e prazo."
+    },
+    {
+      "nome": "Cartão aberto",
+      "descricao": "O cartão em painel: descrição editável, checklist com progresso clicável, etiquetas, membros, prazo, anexos, comentários e atividade; mover e arquivar com desfazer."
+    },
+    {
+      "nome": "Novo quadro",
+      "descricao": "Vazio convidativo: modelos para começar (Sprint, Mudança de casa, Plantões do mês) com prévia, ou criar do zero com nome, cor e visibilidade."
+    }
+  ],
+  "paleta": [
+    {
+      "nome": "Off-white",
+      "hex": "#f6f5f1"
+    },
+    {
+      "nome": "Bandeja",
+      "hex": "#ebeae4"
+    },
+    {
+      "nome": "Tinta",
+      "hex": "#1f2430"
+    },
+    {
+      "nome": "Cobalto",
+      "hex": "#2f5bea"
+    },
+    {
+      "nome": "Ardósia",
+      "hex": "#14181f"
+    },
+    {
+      "nome": "Lilás",
+      "hex": "#ece6ff"
+    },
+    {
+      "nome": "Menta",
+      "hex": "#d7f2e5"
+    },
+    {
+      "nome": "Pêssego",
+      "hex": "#ffe5d5"
+    }
+  ],
+  "tipografia": "Pilha do sistema (SF Pro, Inter, Segoe UI): título do quadro em 650 com tracking negativo, cartões em 500 a 14 px, metadados em 12 px com números tabulares; a marca usa a variante arredondada do sistema quando existe.",
+  "componentes": [
+    "Barra lateral de quadros",
+    "Cabeçalho com título editável, estrela e convite",
+    "Busca e filtro em popover",
+    "Coluna-bandeja com limite de WIP",
+    "Cartão com etiquetas, prazo, checklist e pessoas",
+    "Arrastar e soltar com vaga fantasma",
+    "Compositor de cartão na coluna",
+    "Painel do cartão",
+    "Checklist com barra de progresso",
+    "Comentários e atividade",
+    "Aviso com desfazer",
+    "Galeria de modelos com prévia"
+  ],
+  "replicar": [
+    "Modelo de dados: Quadro (nome, cor, visibilidade, membros, etiquetas) → Coluna (nome, posição, limite) → Cartão (título, descrição, posição, prazo, concluído, etiquetas, membros) → ItemChecklist, Comentario, Anexo e Atividade, todos com autor e data.",
+    "Pilha sugerida: Next.js ou SvelteKit com Postgres; posição dos cartões como fração (rank lexicográfico) para mover sem renumerar a coluna; atualização em tempo real pelo Supabase Realtime ou por um canal de socket próprio.",
+    "Arrastar e soltar: pointer events como aqui (mouse direto, toque com pressão longa) ou dnd-kit no React; a ordem otimista vai para a tela na hora e o servidor confirma.",
+    "Integrações: convite por e-mail (Resend), anexos em S3 compatível, lembrete de prazo por e-mail ou WhatsApp, importação de CSV.",
+    "Corte do MVP: um espaço de trabalho, sem automações, sem anexos (só links), etiquetas fixas por quadro e histórico só de comentários."
+  ],
+  "proposta": "Freemium",
+  "modelo_negocio": "Grátis até 3 quadros e 5 pessoas; o plano pago libera automações, quadros ilimitados e histórico completo."
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+/* Tramo · quadro kanban. Tudo mora em #app. Claro: off-white e bandejas; escuro: ardósia. Um acento só: cobalto. */
+#app{
+  --q-fundo:#f6f5f1;--q-lateral:#efeee8;--q-bandeja:#ebeae4;--q-cartao:#fff;--q-modal:#fbfaf7;--q-campo:#fff;
+  --q-tinta:#1f2430;--q-suave:#5b6170;--q-fraco:#656b7a;--q-fio:rgba(31,36,48,.08);--q-fio-forte:rgba(31,36,48,.15);--q-tingido:rgba(31,36,48,.05);--q-tingido-forte:rgba(31,36,48,.09);
+  --q-cobalto:#2f5bea;--q-cobalto-forte:#2449c8;--q-cobalto-tinta:#fff;--q-cobalto-texto:#2449c8;--q-cobalto-suave:rgba(47,91,234,.1);
+  --q-veu:rgba(25,29,40,.34);
+  --q-sombra:0 1px 0 rgba(31,36,48,.05),0 1px 2px rgba(31,36,48,.06);
+  --q-sombra-media:0 2px 4px rgba(31,36,48,.05),0 8px 20px -6px rgba(31,36,48,.14);
+  --q-sombra-alta:0 2px 6px rgba(31,36,48,.08),0 24px 56px -12px rgba(31,36,48,.32);
+  --q-lilas-f:#ece6ff;--q-lilas-t:#5536b8;--q-pessego-f:#ffe5d5;--q-pessego-t:#9a3f12;--q-menta-f:#d7f2e5;--q-menta-t:#17694a;
+  --q-manteiga-f:#faf0c4;--q-manteiga-t:#765a00;--q-rosa-f:#ffdfe4;--q-rosa-t:#a51d3a;--q-ceu-f:#dbedfd;--q-ceu-t:#1b5a91;--q-cobalto-f:#dfe6ff;--q-cobalto-t:#2449c8;
+  --q-sans:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",system-ui,sans-serif;
+  --q-display:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Inter Display","Inter","Segoe UI",system-ui,sans-serif;
+  --q-redondo:ui-rounded,"SF Pro Rounded","Nunito","Inter Display","Inter",system-ui,sans-serif;
+  container:app / inline-size;position:relative;overflow-x:clip;display:flex;flex-direction:column;background:var(--q-fundo);color:var(--q-tinta);
+  font:400 14px/1.45 var(--q-sans);-webkit-font-smoothing:antialiased;color-scheme:light}
+:root[data-tema=escuro] #app{
+  --q-fundo:#14181f;--q-lateral:#11151b;--q-bandeja:#1b2029;--q-cartao:#262c37;--q-modal:#1d222b;--q-campo:#161a21;
+  --q-tinta:#e6e9ef;--q-suave:#a5adbb;--q-fraco:#8d95a5;--q-fio:rgba(230,233,239,.08);--q-fio-forte:rgba(230,233,239,.15);--q-tingido:rgba(230,233,239,.05);--q-tingido-forte:rgba(230,233,239,.09);
+  --q-cobalto:#7d9bff;--q-cobalto-forte:#9ab1ff;--q-cobalto-tinta:#0b1433;--q-cobalto-texto:#9ab1ff;--q-cobalto-suave:rgba(125,155,255,.15);
+  --q-veu:rgba(5,7,10,.58);
+  --q-sombra:0 1px 0 rgba(0,0,0,.25),0 1px 3px rgba(0,0,0,.25);
+  --q-sombra-media:0 2px 6px rgba(0,0,0,.3),0 10px 24px -8px rgba(0,0,0,.5);
+  --q-sombra-alta:0 2px 8px rgba(0,0,0,.4),0 28px 64px -12px rgba(0,0,0,.7);
+  --q-lilas-f:rgba(150,120,255,.2);--q-lilas-t:#cdbfff;--q-pessego-f:rgba(255,150,90,.18);--q-pessego-t:#ffc7a5;--q-menta-f:rgba(60,200,140,.17);--q-menta-t:#93e2bf;
+  --q-manteiga-f:rgba(240,200,40,.16);--q-manteiga-t:#f0d777;--q-rosa-f:rgba(255,90,120,.18);--q-rosa-t:#ffaebe;--q-ceu-f:rgba(80,170,255,.18);--q-ceu-t:#a7d4ff;--q-cobalto-f:rgba(125,155,255,.2);--q-cobalto-t:#b3c4ff;
+  color-scheme:dark}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app button,#app input,#app textarea{font:inherit;color:inherit}
+#app button{background:none;border:0;margin:0;padding:0;cursor:pointer}
+#app h1,#app h2,#app h3,#app h4,#app p,#app ol,#app ul,#app figure{margin:0;padding:0}
+#app ol,#app ul{list-style:none}
+#app svg{flex:none}
+#app :focus-visible{outline:2px solid var(--q-cobalto);outline-offset:2px}
+#app .q-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ── peças comuns ─────────────────────────────────────────────────────── */
+#app .q-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;padding:0 13px;border-radius:10px;font:600 13px/1 var(--q-sans);white-space:nowrap;
+  background:var(--q-tingido);color:var(--q-tinta);transition:background-color .15s ease,box-shadow .15s ease,transform .1s ease}
+#app .q-btn:hover{background:var(--q-tingido-forte)}
+#app .q-btn:active{transform:translateY(1px)}
+#app .q-btn-cobalto{background:var(--q-cobalto);color:var(--q-cobalto-tinta)}
+#app .q-btn-cobalto:hover{background:var(--q-cobalto-forte)}
+#app .q-btn-fantasma{background:transparent;color:var(--q-suave)}
+#app .q-btn-fantasma:hover{background:var(--q-tingido);color:var(--q-tinta)}
+#app .q-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+#app .q-icone{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:9px;color:var(--q-suave);transition:background-color .15s ease,color .15s ease}
+#app .q-icone:hover{background:var(--q-tingido-forte);color:var(--q-tinta)}
+#app .q-icone[aria-pressed=true]{color:var(--q-tinta)}
+#app .q-et{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 8px;border-radius:999px;font:600 11px/1 var(--q-sans);letter-spacing:.01em;white-space:nowrap;background:var(--q-tingido);color:var(--q-suave)}
+#app [data-cor=lilas]{--f:var(--q-lilas-f);--t:var(--q-lilas-t)}
+#app [data-cor=pessego]{--f:var(--q-pessego-f);--t:var(--q-pessego-t)}
+#app [data-cor=menta]{--f:var(--q-menta-f);--t:var(--q-menta-t)}
+#app [data-cor=manteiga]{--f:var(--q-manteiga-f);--t:var(--q-manteiga-t)}
+#app [data-cor=rosa]{--f:var(--q-rosa-f);--t:var(--q-rosa-t)}
+#app [data-cor=ceu]{--f:var(--q-ceu-f);--t:var(--q-ceu-t)}
+#app [data-cor=cobalto]{--f:var(--q-cobalto-f);--t:var(--q-cobalto-t)}
+#app .q-et[data-cor],#app .q-av[data-cor]{background:var(--f);color:var(--t)}
+#app .q-av{display:inline-grid;place-items:center;width:26px;height:26px;flex:none;border-radius:50%;font:650 10.5px/1 var(--q-sans);letter-spacing:.02em;background:var(--q-tingido-forte)}
+#app .q-pilha{display:inline-flex;align-items:center}
+#app .q-pilha .q-av{box-shadow:0 0 0 2px var(--q-cartao)}
+#app .q-pilha .q-av+.q-av{margin-left:-6px}
+#app .q-campo-txt{width:100%;height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--q-fio-forte);background:var(--q-campo);font:400 13.5px/1 var(--q-sans);transition:border-color .15s ease,box-shadow .15s ease}
+#app .q-campo-txt::placeholder,#app textarea::placeholder{color:var(--q-fraco)}
+#app .q-campo-txt:focus,#app textarea:focus{outline:none;border-color:var(--q-cobalto);box-shadow:0 0 0 3px var(--q-cobalto-suave)}
+#app .q-campo-txt[aria-invalid=true]{border-color:var(--q-rosa-t);box-shadow:0 0 0 3px var(--q-rosa-f)}
+#app .q-erro{margin-top:6px;font-size:12px;color:var(--q-rosa-t)}
+#app .q-erro:empty{display:none}
+#app .q-pop{position:absolute;z-index:40;top:calc(100% + 8px);right:0;width:300px;padding:14px;border-radius:14px;background:var(--q-modal);border:1px solid var(--q-fio);box-shadow:var(--q-sombra-alta)}
+#app .q-pop[hidden]{display:none}
+#app .q-pop h3{margin-bottom:10px;font:650 13px/1.2 var(--q-sans)}
+#app .q-pop h4{margin:12px 0 8px;font:600 11px/1.2 var(--q-sans);letter-spacing:.06em;text-transform:uppercase;color:var(--q-fraco)}
+#app .q-opcoes{display:flex;flex-wrap:wrap;gap:6px}
+#app .q-opcao{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px 0 6px;border-radius:999px;border:1px solid var(--q-fio-forte);font:500 12.5px/1 var(--q-sans);transition:border-color .15s ease,background-color .15s ease}
+#app .q-opcao:hover{border-color:var(--q-suave)}
+#app .q-opcao[aria-pressed=true]{border-color:var(--q-cobalto);background:var(--q-cobalto-suave);color:var(--q-cobalto-texto)}
+#app .q-opcao .q-av{width:20px;height:20px;font-size:9px}
+#app .q-opcao .q-ponto{width:10px;height:10px;border-radius:50%;background:var(--t);opacity:.8}
+#app .q-link{font:600 12.5px/1.2 var(--q-sans);color:var(--q-cobalto-texto);text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px}
+#app .q-link:hover{text-decoration-color:currentColor}
+
+/* ── casca e lateral ──────────────────────────────────────────────────── */
+#app .q-casca{flex:1 0 auto;display:grid;grid-template-columns:236px minmax(0,1fr)}
+#app .q-lateral{position:relative;display:flex;flex-direction:column;gap:20px;padding:16px 12px 18px;background:var(--q-lateral);border-right:1px solid var(--q-fio);min-width:0}
+#app .q-marca{display:flex;align-items:center;gap:10px;padding:2px 6px}
+#app .q-logo{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--q-cobalto);color:var(--q-cobalto-tinta)}
+#app .q-marca b{font:700 18px/1 var(--q-redondo);letter-spacing:-.02em}
+#app .q-espaco{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:12px;background:var(--q-cartao);box-shadow:var(--q-sombra);text-align:left}
+#app .q-espaco-ico{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:9px;background:var(--q-menta-f);color:var(--q-menta-t);font:700 12px/1 var(--q-redondo)}
+#app .q-espaco>span{display:grid;gap:2px;min-width:0}
+#app .q-espaco b{font:600 13.5px/1.15 var(--q-sans)}
+#app .q-espaco small{font-size:11.5px;color:var(--q-suave)}
+#app .q-nav{display:grid;gap:2px}
+#app .q-nav-item{display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 10px;border-radius:9px;font:500 13.5px/1 var(--q-sans);color:var(--q-suave);text-align:left;transition:background-color .15s ease,color .15s ease}
+#app .q-nav-item:hover{background:var(--q-tingido-forte);color:var(--q-tinta)}
+#app .q-nav-item[aria-pressed=true],#app .q-nav-item[aria-current=page]{background:var(--q-cartao);color:var(--q-tinta);box-shadow:var(--q-sombra)}
+#app .q-nav-item em{margin-left:auto;font:600 11px/1 var(--q-sans);font-style:normal;color:var(--q-fraco);font-variant-numeric:tabular-nums}
+#app .q-lat-tit{display:flex;align-items:center;justify-content:space-between;padding:0 10px 6px;font:600 11px/1.2 var(--q-sans);letter-spacing:.07em;text-transform:uppercase;color:var(--q-fraco)}
+#app .q-quadros{display:grid;gap:2px}
+#app .q-quadro-item{display:flex;align-items:center;gap:10px;width:100%;min-height:36px;padding:6px 10px;border-radius:9px;font:500 13.5px/1.25 var(--q-sans);text-align:left;color:var(--q-tinta);transition:background-color .15s ease}
+#app .q-quadro-item:hover{background:var(--q-tingido-forte)}
+#app .q-quadro-item[aria-current=true]{background:var(--q-cobalto-suave);color:var(--q-cobalto-texto);font-weight:600}
+#app .q-quadro-item i{width:14px;height:14px;flex:none;border-radius:4px;background:var(--t)}
+#app .q-quadro-item span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .q-quadro-item svg{color:#e2a400}
+#app .q-novo-btn{display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 10px;margin-top:4px;border-radius:9px;border:1px dashed var(--q-fio-forte);font:600 13px/1 var(--q-sans);color:var(--q-suave)}
+#app .q-novo-btn:hover{border-color:var(--q-cobalto);color:var(--q-cobalto-texto);background:var(--q-cobalto-suave)}
+#app .q-eu{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;border:1px solid var(--q-fio)}
+#app .q-eu span{display:grid;gap:1px;min-width:0}
+#app .q-eu b{font:600 13px/1.2 var(--q-sans)}
+#app .q-eu small{font-size:11.5px;color:var(--q-suave)}
+#app .q-eu .q-av{width:32px;height:32px;font-size:11.5px}
+
+/* ── cabeçalho do quadro ──────────────────────────────────────────────── */
+#app .q-principal{min-width:0;display:flex;flex-direction:column}
+#app .q-palco{display:grid;flex:1 0 auto}
+#app .q-palco>*{grid-area:1/1;min-width:0}
+#app .q-vista{display:flex;flex-direction:column;min-width:0}
+#app .q-cab{position:relative;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:16px 20px 14px}
+#app .q-menu{display:none}
+#app .q-titulo-caixa{display:flex;align-items:center;gap:6px;min-width:0;margin-right:auto}
+#app .q-titulo-caixa h1{min-width:0;margin-left:-8px}
+#app .q-titulo{display:block;max-width:100%;padding:4px 8px;border-radius:9px;font:650 21px/1.2 var(--q-display);letter-spacing:-.02em;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background-color .15s ease}
+#app .q-titulo:hover{background:var(--q-tingido-forte)}
+#app .q-titulo-edit{width:min(420px,100%);height:38px;padding:0 8px;border-radius:9px;border:2px solid var(--q-cobalto);background:var(--q-campo);font:650 21px/1 var(--q-display);letter-spacing:-.02em}
+#app .q-titulo-edit:focus{outline:none}
+#app .q-estrela[aria-pressed=true]{color:#e2a400}
+#app .q-estrela[aria-pressed=true] svg{fill:currentColor}
+#app .q-visib{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;font:600 12px/1 var(--q-sans);color:var(--q-suave);background:var(--q-tingido)}
+#app .q-visib:hover{background:var(--q-tingido-forte);color:var(--q-tinta)}
+#app .q-ferr{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+#app .q-ancora{position:relative}
+#app .q-busca{position:relative;width:220px}
+#app .q-busca svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--q-fraco);pointer-events:none}
+#app .q-busca input{padding-left:34px}
+#app .q-filtro-n{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--q-cobalto);color:var(--q-cobalto-tinta);font:700 10.5px/1 var(--q-sans)}
+#app .q-filtro-n:empty{display:none}
+#app .q-faixa-filtro{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-4px 20px 12px;padding:8px 12px;border-radius:12px;background:var(--q-cobalto-suave);color:var(--q-cobalto-texto);font:500 13px/1.3 var(--q-sans)}
+#app .q-faixa-filtro[hidden]{display:none}
+#app .q-faixa-filtro .q-link{margin-left:auto}
+
+/* ── colunas e cartões ────────────────────────────────────────────────── */
+#app .q-abas-col{display:none}
+#app .q-colunas{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(244px,1fr);align-items:start;gap:12px;padding:2px 20px 28px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+#app .q-coluna{display:flex;flex-direction:column;min-width:0;padding:10px 8px 8px;border-radius:16px;background:var(--q-bandeja);transition:box-shadow .15s ease,background-color .15s ease}
+#app .q-coluna.alvo{box-shadow:inset 0 0 0 2px var(--q-cobalto)}
+#app .q-col-cab{position:relative;display:flex;align-items:center;gap:8px;padding:0 4px 10px 6px;min-height:32px}
+#app .q-col-nome{min-width:0;padding:4px 6px;margin-left:-6px;border-radius:8px;font:650 13.5px/1.2 var(--q-sans);text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .q-col-nome:hover{background:var(--q-tingido-forte)}
+#app .q-col-edit{flex:1;min-width:0;height:30px;padding:0 6px;border-radius:8px;border:2px solid var(--q-cobalto);background:var(--q-campo);font:650 13.5px/1 var(--q-sans)}
+#app .q-col-edit:focus{outline:none}
+#app .q-col-n{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:var(--q-tingido-forte);font:600 11px/1 var(--q-sans);color:var(--q-suave);font-variant-numeric:tabular-nums;white-space:nowrap}
+#app .q-col-n[data-wip=cheio]{background:var(--q-manteiga-f);color:var(--q-manteiga-t)}
+#app .q-col-n[data-wip=estourado]{background:var(--q-rosa-f);color:var(--q-rosa-t)}
+#app .q-col-cab .q-icone{margin-left:auto;width:28px;height:28px}
+#app .q-col-cab .q-pop{width:220px;padding:6px;top:calc(100% - 4px)}
+#app .q-menu-item{display:flex;align-items:center;gap:10px;width:100%;height:34px;padding:0 10px;border-radius:8px;font:500 13px/1 var(--q-sans);text-align:left}
+#app .q-menu-item:hover{background:var(--q-tingido-forte)}
+#app .q-lista{display:flex;flex-direction:column;gap:8px;min-height:8px}
+#app .q-cartao{position:relative;display:block;width:100%;padding:11px 12px 10px;border-radius:12px;background:var(--q-cartao);box-shadow:var(--q-sombra);text-align:left;cursor:grab;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:box-shadow .18s ease,transform .18s ease}
+#app .q-cartao:hover{box-shadow:var(--q-sombra-media)}
+#app .q-cartao:focus-visible{outline-offset:1px}
+#app .q-cartao.oculto{display:none}
+#app .q-cartao.pousou{animation:q-pousa .6s ease}
+#app .q-capa{height:34px;margin:-11px -12px 10px;border-radius:12px 12px 0 0;background-color:var(--f);background-image:radial-gradient(circle,color-mix(in srgb,var(--t) 28%,transparent) 1.1px,transparent 1.7px);background-size:11px 11px;background-position:3px 3px}
+#app .q-ets{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+#app .q-cartao h3{font:500 14px/1.38 var(--q-sans);letter-spacing:-.003em;overflow-wrap:anywhere}
+#app .q-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:9px;font:500 12px/1 var(--q-sans);color:var(--q-suave);font-variant-numeric:tabular-nums}
+#app .q-meta:empty{display:none}
+#app .q-meta>span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+#app .q-prazo{height:22px;padding:0 7px 0 6px;margin-left:-2px;border-radius:6px}
+#app .q-prazo[data-s=hoje],#app .q-prazo[data-s=breve]{background:var(--q-manteiga-f);color:var(--q-manteiga-t)}
+#app .q-prazo[data-s=atrasado]{background:var(--q-rosa-f);color:var(--q-rosa-t)}
+#app .q-prazo[data-s=feito]{background:var(--q-menta-f);color:var(--q-menta-t)}
+#app .q-chk[data-s=completo]{color:var(--q-menta-t);font-weight:650}
+#app .q-meta .q-pilha{margin-left:auto}
+#app .q-meta .q-av{width:24px;height:24px;font-size:9.5px}
+#app .q-vaga{border-radius:12px;background:var(--q-tingido-forte);box-shadow:inset 0 0 0 2px var(--q-fio-forte);border:0}
+#app .q-fantasma{position:absolute;left:0;top:0;z-index:80;margin:0;pointer-events:none;box-shadow:var(--q-sombra-alta);cursor:grabbing}
+#app.q-arrastando,#app.q-arrastando *{cursor:grabbing!important}
+#app .q-vazio-col{padding:16px 10px;border-radius:12px;border:1.5px dashed var(--q-fio-forte);font-size:12.5px;line-height:1.4;color:var(--q-suave);text-align:center}
+#app .q-add{display:flex;align-items:center;gap:7px;width:100%;height:36px;padding:0 10px;margin-top:6px;border-radius:10px;font:500 13px/1 var(--q-sans);color:var(--q-suave);transition:background-color .15s ease,color .15s ease}
+#app .q-add:hover{background:var(--q-tingido-forte);color:var(--q-tinta)}
+#app .q-compor{display:grid;gap:8px;margin-top:8px}
+#app .q-compor textarea{width:100%;min-height:64px;resize:none;padding:10px 12px;border-radius:12px;border:1px solid var(--q-fio-forte);background:var(--q-cartao);box-shadow:var(--q-sombra);font:500 14px/1.38 var(--q-sans)}
+#app .q-compor div{display:flex;align-items:center;gap:6px}
+#app .q-compor .q-dica{margin-left:auto;font-size:11px;color:var(--q-fraco)}
+#app .q-compor.treme{animation:q-treme .35s ease}
+
+/* ── cartão aberto ────────────────────────────────────────────────────── */
+#app .q-camada{display:none;z-index:30;padding:28px 24px 48px;background:var(--q-veu)}
+#app[data-estado="2"] .q-camada{display:block}
+#app[data-estado="2"] .q-lateral::after{content:"";position:absolute;inset:0;z-index:30;background:var(--q-veu);cursor:pointer}
+#app .q-modal{position:relative;max-width:820px;margin:0 auto;border-radius:18px;background:var(--q-modal);box-shadow:var(--q-sombra-alta);overflow:hidden}
+#app[data-estado="2"] .q-modal{animation:q-surge .22s ease}
+#app .q-m-capa{height:64px;background-color:var(--f);background-image:radial-gradient(circle,color-mix(in srgb,var(--t) 28%,transparent) 1.2px,transparent 1.9px);background-size:13px 13px;background-position:4px 4px}
+#app .q-m-cab{display:flex;align-items:flex-start;gap:12px;padding:20px 22px 6px}
+#app .q-m-cab>svg{margin-top:9px;color:var(--q-suave)}
+#app .q-m-titulos{flex:1;min-width:0}
+#app .q-m-titulo{display:block;width:100%;resize:none;overflow:hidden;padding:4px 8px;margin-left:-8px;border:2px solid transparent;border-radius:9px;background:transparent;font:650 21px/1.25 var(--q-display);letter-spacing:-.018em}
+#app .q-m-titulo:hover{background:var(--q-tingido)}
+#app .q-m-titulo:focus{background:var(--q-campo);border-color:var(--q-cobalto);box-shadow:none}
+#app .q-m-onde{margin-top:2px;font-size:12.5px;color:var(--q-suave)}
+#app .q-fechar{margin:-2px -6px 0 0}
+#app .q-m-corpo{display:grid;grid-template-columns:minmax(0,1fr) 184px;gap:24px;padding:12px 22px 24px}
+#app .q-m-fatos{display:flex;flex-wrap:wrap;gap:16px 24px;margin-bottom:22px}
+#app .q-m-h4,#app .q-m-lado h4{margin-bottom:8px;font:600 11px/1.2 var(--q-sans);letter-spacing:.06em;text-transform:uppercase;color:var(--q-fraco)}
+#app .q-m-fila{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+#app .q-m-fila .q-av{width:30px;height:30px;font-size:11px}
+#app .q-m-fila .q-et{height:26px;padding:0 10px;font-size:12px}
+#app .q-mais{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--q-tingido-forte);color:var(--q-suave)}
+#app .q-mais:hover{background:var(--q-cobalto-suave);color:var(--q-cobalto-texto)}
+#app .q-et+.q-mais{border-radius:999px;height:26px;width:26px}
+#app .q-m-prazo{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 10px 0 8px;border-radius:9px;background:var(--q-tingido);font:500 13px/1 var(--q-sans)}
+#app .q-m-prazo:hover{background:var(--q-tingido-forte)}
+#app .q-m-prazo .q-caixa{width:16px;height:16px}
+#app .q-m-prazo small{padding:3px 6px;border-radius:5px;font:600 11px/1 var(--q-sans)}
+#app .q-m-prazo small[data-s=hoje],#app .q-m-prazo small[data-s=breve]{background:var(--q-manteiga-f);color:var(--q-manteiga-t)}
+#app .q-m-prazo small[data-s=atrasado]{background:var(--q-rosa-f);color:var(--q-rosa-t)}
+#app .q-m-prazo small[data-s=feito]{background:var(--q-menta-f);color:var(--q-menta-t)}
+#app .q-m-prazo small[data-s=ok]{background:var(--q-tingido-forte);color:var(--q-suave)}
+#app .q-sec{margin-top:22px}
+#app .q-sec-cab{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+#app .q-sec-cab>svg{color:var(--q-suave)}
+#app .q-sec-cab h3{font:650 15px/1.2 var(--q-sans)}
+#app .q-sec-cab .q-btn{margin-left:auto;height:30px;padding:0 11px;font-size:12.5px}
+#app .q-desc{padding-left:30px;font-size:14px;line-height:1.6;color:var(--q-tinta)}
+#app .q-desc p+p{margin-top:8px}
+#app .q-desc-vazia{display:block;width:100%;padding:14px;border-radius:10px;background:var(--q-tingido);color:var(--q-suave);text-align:left}
+#app .q-desc textarea,#app .q-coment textarea{width:100%;min-height:110px;resize:vertical;padding:10px 12px;border-radius:10px;border:1px solid var(--q-fio-forte);background:var(--q-campo);font:400 14px/1.55 var(--q-sans)}
+#app .q-desc .q-acoes-desc{display:flex;gap:6px;margin-top:8px}
+#app .q-prog{display:flex;align-items:center;gap:10px;padding-left:30px;margin-bottom:6px}
+#app .q-prog b{min-width:36px;font:600 12px/1 var(--q-sans);color:var(--q-suave);font-variant-numeric:tabular-nums}
+#app .q-barra{flex:1;height:8px;border-radius:999px;background:var(--q-tingido-forte);overflow:hidden}
+#app .q-barra i{display:block;height:100%;border-radius:999px;background:var(--q-cobalto);transition:width .35s ease,background-color .2s ease}
+#app .q-barra.cheia i{background:var(--q-menta-t)}
+#app .q-itens{display:grid;gap:2px;padding-left:20px}
+#app .q-item{display:flex;align-items:flex-start;gap:10px;width:100%;padding:7px 10px;border-radius:9px;text-align:left;font-size:14px;line-height:1.4;transition:background-color .15s ease}
+#app .q-item:hover{background:var(--q-tingido)}
+#app .q-caixa{display:inline-grid;place-items:center;width:18px;height:18px;flex:none;margin-top:1px;border-radius:5px;border:1.5px solid var(--q-fio-forte);background:var(--q-campo);color:#fff;transition:background-color .15s ease,border-color .15s ease}
+#app .q-caixa svg{opacity:0;transition:opacity .12s ease}
+#app [aria-checked=true]>.q-caixa,#app [aria-pressed=true]>.q-caixa{background:var(--q-cobalto);border-color:var(--q-cobalto);color:var(--q-cobalto-tinta)}
+#app [aria-checked=true]>.q-caixa svg,#app [aria-pressed=true]>.q-caixa svg{opacity:1}
+#app .q-item[aria-checked=true] span:last-child{color:var(--q-suave);text-decoration:line-through;text-decoration-color:var(--q-fraco)}
+#app .q-novo-item{display:flex;gap:6px;padding:6px 0 0 30px}
+#app .q-anexos{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;padding-left:30px}
+#app .q-anexo{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:11px;border:1px solid var(--q-fio);background:var(--q-cartao)}
+#app .q-anexo-ico{display:grid;place-items:center;width:36px;height:40px;flex:none;border-radius:7px;font:700 9.5px/1 var(--q-sans);letter-spacing:.04em;text-transform:uppercase;background:var(--f);color:var(--t)}
+#app .q-anexo span{display:grid;gap:2px;min-width:0}
+#app .q-anexo b{font:600 13px/1.25 var(--q-sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .q-anexo small{font-size:11.5px;color:var(--q-suave)}
+#app .q-coment{display:flex;gap:10px;padding-left:0;margin-bottom:14px}
+#app .q-coment>div{flex:1;min-width:0}
+#app .q-coment textarea{min-height:44px;height:44px;resize:none;transition:height .15s ease,border-color .15s ease,box-shadow .15s ease}
+#app .q-coment textarea:focus,#app .q-coment.ativo textarea{height:88px}
+#app .q-coment-acoes{display:flex;align-items:center;gap:8px;margin-top:8px}
+#app .q-coment-acoes small{font-size:11.5px;color:var(--q-fraco)}
+#app .q-ativ{display:grid;gap:14px}
+#app .q-ativ li{display:flex;gap:10px}
+#app .q-ativ li>div{min-width:0;flex:1}
+#app .q-ativ .q-av{width:30px;height:30px;font-size:11px}
+#app .q-ativ header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:13px}
+#app .q-ativ header b{font-weight:650}
+#app .q-ativ header time{font-size:12px;color:var(--q-fraco)}
+#app .q-ativ .q-bolha{margin-top:5px;padding:9px 12px;border-radius:4px 12px 12px 12px;background:var(--q-cartao);box-shadow:var(--q-sombra);font-size:13.5px;line-height:1.5}
+#app .q-ativ li.evento{align-items:center;font-size:13px;color:var(--q-suave)}
+#app .q-ativ li.evento .q-av{width:24px;height:24px;font-size:9.5px;margin:0 3px}
+#app .q-ativ li.evento b{color:var(--q-tinta);font-weight:600}
+#app .q-ativ li.novo{animation:q-surge .3s ease}
+#app .q-m-lado{display:grid;align-content:start;gap:4px}
+#app .q-m-lado h4+.q-acao,#app .q-m-lado .q-acao+h4{margin-top:0}
+#app .q-m-lado h4:not(:first-child){margin-top:14px}
+#app .q-acao{display:flex;align-items:center;gap:9px;width:100%;height:34px;padding:0 10px;border-radius:9px;background:var(--q-tingido);font:500 13px/1 var(--q-sans);text-align:left;transition:background-color .15s ease}
+#app .q-acao:hover{background:var(--q-tingido-forte)}
+#app .q-acao[aria-expanded=true]{background:var(--q-cobalto-suave);color:var(--q-cobalto-texto)}
+#app .q-acao.perigo:hover{background:var(--q-rosa-f);color:var(--q-rosa-t)}
+#app .q-painel{margin-top:6px;padding:10px;border-radius:12px;background:var(--q-cartao);box-shadow:var(--q-sombra-media)}
+#app .q-painel:empty{display:none}
+#app .q-painel h5{margin:0 0 8px;font:600 12px/1.2 var(--q-sans);color:var(--q-suave)}
+#app .q-escolha{display:flex;align-items:center;gap:8px;width:100%;min-height:32px;padding:4px 6px;border-radius:8px;font:500 13px/1.25 var(--q-sans);text-align:left}
+#app .q-escolha:hover{background:var(--q-tingido-forte)}
+#app .q-escolha .q-et{flex:1;justify-content:flex-start;height:24px}
+#app .q-escolha .q-av{width:24px;height:24px;font-size:9.5px}
+#app .q-escolha small{margin-left:auto;font-size:11.5px;color:var(--q-fraco)}
+#app .q-escolha[aria-checked=true]::after{content:"";width:6px;height:10px;margin:0 4px 3px auto;border:solid var(--q-cobalto-texto);border-width:0 2px 2px 0;transform:rotate(45deg)}
+#app .q-escolha[aria-checked=true] small{display:none}
+
+/* ── novo quadro ──────────────────────────────────────────────────────── */
+#app .q-novo{display:none;padding:28px 28px 40px;min-width:0}
+#app[data-estado="3"] .q-novo{display:block}
+#app[data-estado="3"] .q-palco{display:none}
+#app .q-novo-topo{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin:-10px 0 14px -8px}
+#app .q-novo-passos{margin-left:auto;font-size:12.5px;color:var(--q-suave)}
+#app .q-novo-passos b{font-weight:600;color:var(--q-tinta)}
+#app .q-heroi{display:grid;grid-template-columns:minmax(0,1fr) 300px;align-items:center;gap:28px;padding:28px 32px;border-radius:22px;background:var(--q-cartao);box-shadow:var(--q-sombra)}
+#app .q-olho{font:600 11.5px/1.2 var(--q-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--q-cobalto-texto)}
+#app .q-heroi h1{margin:10px 0 10px;font:650 30px/1.12 var(--q-display);letter-spacing:-.028em;max-width:24ch}
+#app .q-heroi p{max-width:52ch;font-size:15px;line-height:1.6;color:var(--q-suave)}
+#app .q-heroi svg{width:100%;height:auto}
+#app .q-novo-grade{display:grid;grid-template-columns:minmax(0,1fr) 312px;align-items:start;gap:20px;margin-top:22px}
+#app .q-modelos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#app .q-modelo{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:18px;background:var(--q-cartao);box-shadow:var(--q-sombra);text-align:left;border:2px solid transparent;transition:border-color .15s ease,box-shadow .2s ease,transform .2s ease}
+#app .q-modelo:hover{box-shadow:var(--q-sombra-media);transform:translateY(-2px)}
+#app .q-modelo[aria-pressed=true]{border-color:var(--q-cobalto);box-shadow:0 0 0 4px var(--q-cobalto-suave),var(--q-sombra-media)}
+#app .q-mini{display:flex;gap:5px;height:104px;padding:9px;border-radius:12px;background:var(--f,var(--q-tingido));overflow:hidden}
+#app .q-mini>div{flex:1;display:flex;flex-direction:column;gap:4px;padding:5px;border-radius:7px;background:rgba(255,255,255,.55);min-width:0}
+:root[data-tema=escuro] #app .q-mini>div{background:rgba(20,24,31,.5)}
+#app .q-mini>div>b{height:5px;width:60%;border-radius:3px;background:var(--q-fio-forte);margin-bottom:2px}
+#app .q-mini>div>i{height:13px;border-radius:4px;background:var(--q-cartao);box-shadow:0 1px 1px rgba(0,0,0,.05);border-left:3px solid var(--t)}
+#app .q-modelo-txt{display:grid;gap:4px;padding:0 2px}
+#app .q-modelo-txt b{font:650 15px/1.25 var(--q-sans);letter-spacing:-.01em}
+#app .q-modelo-txt span{font-size:13px;line-height:1.45;color:var(--q-suave)}
+#app .q-modelo-txt small{margin-top:4px;font:600 11.5px/1 var(--q-sans);color:var(--q-fraco)}
+#app .q-modelo-zero .q-mini{align-items:center;justify-content:center;background:transparent;border:2px dashed var(--q-fio-forte);color:var(--q-suave)}
+#app .q-criar{position:sticky;top:16px;display:grid;gap:16px;padding:18px;border-radius:18px;background:var(--q-cartao);box-shadow:var(--q-sombra-media)}
+#app .q-criar h2{font:650 17px/1.25 var(--q-display);letter-spacing:-.015em}
+#app .q-criar>p{margin-top:-10px;font-size:13px;color:var(--q-suave)}
+#app .q-rotulo{display:block;margin-bottom:7px;font:600 12px/1.2 var(--q-sans);color:var(--q-suave)}
+#app .q-cores{display:flex;flex-wrap:wrap;gap:8px}
+#app .q-cor{width:30px;height:30px;border-radius:9px;background:var(--t);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);transition:transform .12s ease}
+#app .q-cor:hover{transform:scale(1.08)}
+#app .q-cor[aria-checked=true]{box-shadow:0 0 0 2px var(--q-cartao),0 0 0 4px var(--t)}
+#app .q-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--q-tingido)}
+#app .q-seg button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;border-radius:8px;font:600 12.5px/1 var(--q-sans);color:var(--q-suave)}
+#app .q-seg button[aria-checked=true]{background:var(--q-cartao);color:var(--q-tinta);box-shadow:var(--q-sombra)}
+#app .q-previa-cols{display:flex;flex-wrap:wrap;gap:5px}
+#app .q-previa-cols span{padding:4px 9px;border-radius:7px;background:var(--q-tingido);font:500 12px/1.2 var(--q-sans);color:var(--q-suave)}
+#app .q-criar .q-btn-cobalto{height:42px;font-size:14px}
+
+/* ── aviso ────────────────────────────────────────────────────────────── */
+#app .q-avisos{position:sticky;bottom:18px;height:0;z-index:90;pointer-events:none}
+#app .q-aviso{position:absolute;left:50%;bottom:0;display:flex;align-items:center;gap:12px;max-width:min(460px,calc(100% - 32px));padding:9px 10px 9px 16px;border-radius:12px;
+  background:var(--q-tinta);color:var(--q-fundo);box-shadow:var(--q-sombra-alta);font:500 13.5px/1.35 var(--q-sans);opacity:0;transform:translate(-50%,10px);transition:opacity .2s ease,transform .2s ease}
+#app .q-aviso.ver{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#app .q-aviso button{flex:none;height:30px;padding:0 10px;border-radius:8px;font:650 13px/1 var(--q-sans);color:var(--q-fundo);background:rgba(255,255,255,.14)}
+:root[data-tema=escuro] #app .q-aviso button{background:rgba(0,0,0,.1)}
+#app .q-aviso button:hover{background:rgba(255,255,255,.24)}
+#app .q-aviso button[hidden]{display:none}
+
+@keyframes q-surge{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes q-pousa{0%{box-shadow:0 0 0 3px var(--q-cobalto),var(--q-sombra-media)}100%{box-shadow:var(--q-sombra)}}
+@keyframes q-treme{0%,100%{transform:none}30%{transform:translateX(-5px)}60%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){
+  #app *,#app *::before,#app *::after{animation:none!important;transition:none!important}
+}
+
+/* ── responsivo: pela largura do próprio app ─────────────────────────── */
+@container app (max-width: 1040px){
+  #app .q-casca{grid-template-columns:minmax(0,1fr)}
+  #app .q-lateral{display:none;border-right:0;border-bottom:1px solid var(--q-fio)}
+  #app.q-lat-aberta .q-lateral{display:flex;grid-row:1}
+  #app .q-lateral .q-eu{display:none}
+  #app .q-menu{display:inline-grid}
+  #app .q-novo-grade{grid-template-columns:minmax(0,1fr)}
+  #app .q-criar{position:static}
+}
+@container app (max-width: 720px){
+  #app .q-cab{padding:12px 14px 10px;gap:10px 8px}
+  #app .q-titulo-caixa{flex:1}
+  #app .q-titulo{font-size:18px}
+  #app .q-visib span,#app .q-cab .q-pilha,#app .q-convite-rot{display:none}
+  #app .q-ferr{width:100%}
+  #app .q-busca{flex:1;width:auto}
+  #app .q-pop{right:auto;left:0;width:min(300px,calc(100cqw - 28px))}
+  #app .q-ancora-dir .q-pop{left:auto;right:0}
+  #app .q-faixa-filtro{margin:0 14px 10px}
+  #app .q-abas-col{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto;scrollbar-width:none}
+  #app .q-abas-col::-webkit-scrollbar{display:none}
+  #app .q-abas-col button{flex:none;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:999px;background:var(--q-tingido);font:600 12.5px/1 var(--q-sans);color:var(--q-suave);white-space:nowrap}
+  #app .q-abas-col button[aria-current=true]{background:var(--q-tinta);color:var(--q-fundo)}
+  #app .q-abas-col button em{font-style:normal;font-weight:500;opacity:.75}
+  #app .q-colunas{display:flex;gap:10px;padding:0 14px 24px;scroll-snap-type:x mandatory;scroll-padding:0 14px;scrollbar-width:none}
+  #app .q-colunas::-webkit-scrollbar{display:none}
+  #app .q-coluna{flex:0 0 86%;scroll-snap-align:start}
+  #app .q-camada{padding:0;background:none}
+  #app[data-estado="2"] .q-vista{display:none}
+  #app .q-modal{border-radius:0;box-shadow:none;background:var(--q-fundo)}
+  #app .q-m-cab{padding:16px 14px 4px}
+  #app .q-m-corpo{grid-template-columns:minmax(0,1fr);gap:0;padding:8px 14px 28px}
+  #app .q-m-lado{order:-1;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  #app .q-m-lado h4{display:none}
+  #app .q-acao{width:auto;height:32px;padding:0 11px;border-radius:999px}
+  #app .q-painel{flex-basis:100%}
+  #app .q-desc,#app .q-prog,#app .q-anexos{padding-left:0}
+  #app .q-itens{padding-left:0}
+  #app .q-novo-item{padding-left:0}
+  #app .q-novo{padding:14px 14px 32px}
+  #app .q-novo-topo{margin:-4px 0 10px -8px}
+  #app .q-novo-passos{display:none}
+  #app .q-heroi{grid-template-columns:minmax(0,1fr);gap:8px;padding:20px 18px}
+  #app .q-heroi svg{order:-1;max-width:240px}
+  #app .q-heroi h1{font-size:24px}
+  #app .q-modelos{grid-template-columns:minmax(0,1fr)}
+  #app .q-mini{height:84px}
+}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1">
+  <div class="q-casca">
+    <aside class="q-lateral" aria-label="Quadros e espaço de trabalho">
+      <div class="q-marca">
+        <span class="q-logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="5" height="16" rx="2"/><rect x="9.5" y="4" width="5" height="10" rx="2" opacity=".75"/><rect x="16" y="4" width="5" height="13" rx="2" opacity=".5"/></svg></span>
+        <b>tramo</b>
+      </div>
+      <button class="q-espaco" type="button" data-espaco title="Espaço de trabalho">
+        <span class="q-espaco-ico" aria-hidden="true">CI</span>
+        <span><b>Clínica Ipê</b><small>Plano Equipe · <span data-n-membros>5</span> pessoas</small></span>
+      </button>
+      <nav class="q-nav" aria-label="Atalhos">
+        <button class="q-nav-item" type="button" data-atalho="quadros" aria-current="page"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M9.5 4v16M15 4v9"/></svg>Quadros</button>
+        <button class="q-nav-item" type="button" data-atalho="meus" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1-3.6 3.8-5.5 7-5.5s6 1.9 7 5.5"/></svg>Meus cartões<em data-n-meus></em></button>
+        <button class="q-nav-item" type="button" data-atalho="semana" aria-pressed="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Prazos da semana<em data-n-semana></em></button>
+      </nav>
+      <div>
+        <div class="q-lat-tit"><span>Seus quadros</span><span data-n-quadros>3</span></div>
+        <div class="q-quadros" data-quadros></div>
+        <button class="q-novo-btn" type="button" data-ir="3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Novo quadro</button>
+      </div>
+      <div class="q-eu"><span class="q-av" data-cor="ceu">ML</span><span><b>Marina Lopes</b><small>Coordenação · você</small></span></div>
+    </aside>
+
+    <div class="q-principal">
+      <div class="q-palco">
+        <div class="q-vista">
+          <header class="q-cab">
+            <button class="q-icone q-menu" type="button" data-menu aria-label="Mostrar quadros" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+            <div class="q-titulo-caixa">
+              <h1 data-titulo-caixa><button class="q-titulo" type="button" data-renomear title="Renomear quadro">Site da Clínica Ipê</button></h1>
+              <button class="q-icone q-estrela" type="button" data-estrela aria-pressed="true" aria-label="Marcar quadro com estrela"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></button>
+              <button class="q-visib" type="button" data-visib title="Quem vê este quadro"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.8-3 3-4.6 5.5-4.6s4.7 1.6 5.5 4.6M16 6.2a3 3 0 0 1 0 5.6M18 14.8c1.4.6 2.2 2 2.6 4.2"/></svg><span data-visib-txt>Equipe</span></button>
+            </div>
+            <div class="q-ferr">
+              <span class="q-pilha" data-pilha aria-label="Membros do quadro"></span>
+              <div class="q-ancora q-ancora-dir">
+                <button class="q-btn" type="button" data-convidar aria-expanded="false" aria-label="Convidar pessoas"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="8.5" r="3.5"/><path d="M3.5 20c.9-3.4 3.4-5.3 6.5-5.3 1.5 0 2.8.4 3.9 1.2M18 13v6M15 16h6"/></svg><span class="q-convite-rot">Convidar</span></button>
+                <form class="q-pop" data-pop-convite hidden novalidate>
+                  <h3>Convidar para o quadro</h3>
+                  <label class="q-sr" for="q-email">E-mail</label>
+                  <input class="q-campo-txt" id="q-email" type="email" placeholder="nome@clinicaipe.com.br" autocomplete="off" data-email>
+                  <p class="q-erro" data-email-erro></p>
+                  <div style="display:flex;gap:6px;margin-top:10px"><button class="q-btn q-btn-cobalto" type="submit">Enviar convite</button><button class="q-btn q-btn-fantasma" type="button" data-fechar-pop>Cancelar</button></div>
+                </form>
+              </div>
+              <div class="q-ancora">
+                <button class="q-btn" type="button" data-filtrar aria-expanded="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtrar<span class="q-filtro-n" data-filtro-n></span></button>
+                <div class="q-pop" data-pop-filtro hidden></div>
+              </div>
+              <label class="q-busca"><span class="q-sr">Buscar cartões</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input class="q-campo-txt" type="search" placeholder="Buscar cartões" data-busca></label>
+            </div>
+          </header>
+          <div class="q-faixa-filtro" data-faixa hidden></div>
+          <div class="q-abas-col" data-abas-col aria-label="Ir para a coluna"></div>
+          <div class="q-colunas" data-colunas aria-label="Colunas do quadro"></div>
+        </div>
+        <div class="q-camada" data-camada>
+          <div class="q-modal" data-modal role="dialog" aria-label="Cartão aberto"></div>
+        </div>
+      </div>
+
+      <section class="q-novo" aria-label="Novo quadro">
+        <div class="q-novo-topo">
+          <button class="q-btn q-btn-fantasma" type="button" data-ir="1"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span>Voltar para <span data-voltar-nome>o quadro</span></span></button>
+          <span class="q-novo-passos">Espaço <b>Clínica Ipê</b> · <span data-n-quadros-novo>3</span> quadros</span>
+        </div>
+        <div class="q-heroi">
+          <div>
+            <span class="q-olho">Novo quadro</span>
+            <h1>Comece por um modelo, ou do zero.</h1>
+            <p>Um quadro é uma mesa com bandejas: cada coluna é uma etapa, cada cartão uma tarefa que anda da esquerda para a direita. Escolha um ponto de partida; colunas, etiquetas e cartões mudam quando você quiser.</p>
+          </div>
+          <svg viewBox="0 0 300 190" role="img" aria-label="Três bandejas com cartões coloridos e um cartão sendo levado">
+            <rect x="8" y="22" width="86" height="160" rx="14" fill="var(--q-bandeja)"/>
+            <rect x="106" y="22" width="86" height="122" rx="14" fill="var(--q-bandeja)"/>
+            <rect x="204" y="22" width="86" height="140" rx="14" fill="var(--q-bandeja)"/>
+            <rect x="20" y="34" width="34" height="6" rx="3" fill="var(--q-fio-forte)"/><rect x="118" y="34" width="44" height="6" rx="3" fill="var(--q-fio-forte)"/><rect x="216" y="34" width="28" height="6" rx="3" fill="var(--q-fio-forte)"/>
+            <g fill="var(--q-cartao)"><rect x="18" y="50" width="66" height="38" rx="8"/><rect x="18" y="96" width="66" height="30" rx="8"/><rect x="18" y="134" width="66" height="38" rx="8"/><rect x="116" y="50" width="66" height="30" rx="8"/><rect x="214" y="50" width="66" height="38" rx="8"/><rect x="214" y="96" width="66" height="30" rx="8"/></g>
+            <rect x="26" y="58" width="24" height="6" rx="3" fill="var(--q-lilas-t)" opacity=".55"/><rect x="26" y="70" width="46" height="5" rx="2.5" fill="var(--q-fio-forte)"/>
+            <rect x="26" y="104" width="20" height="6" rx="3" fill="var(--q-menta-t)" opacity=".55"/><rect x="26" y="142" width="28" height="6" rx="3" fill="var(--q-pessego-t)" opacity=".55"/><rect x="26" y="154" width="40" height="5" rx="2.5" fill="var(--q-fio-forte)"/>
+            <rect x="124" y="58" width="30" height="6" rx="3" fill="var(--q-ceu-t)" opacity=".55"/><rect x="222" y="58" width="22" height="6" rx="3" fill="var(--q-rosa-t)" opacity=".55"/><rect x="222" y="70" width="48" height="5" rx="2.5" fill="var(--q-fio-forte)"/><rect x="222" y="104" width="26" height="6" rx="3" fill="var(--q-menta-t)" opacity=".55"/>
+            <rect x="116" y="90" width="66" height="44" rx="8" fill="none" stroke="var(--q-fio-forte)" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <g transform="rotate(-6 160 110)"><rect x="128" y="96" width="78" height="46" rx="9" fill="var(--q-cartao)" stroke="var(--q-cobalto)" stroke-width="2"/><rect x="138" y="106" width="30" height="7" rx="3.5" fill="var(--q-manteiga-t)" opacity=".6"/><rect x="138" y="119" width="56" height="5" rx="2.5" fill="var(--q-fio-forte)"/><rect x="138" y="129" width="38" height="5" rx="2.5" fill="var(--q-fio-forte)"/></g>
+            <circle cx="262" cy="176" r="12" fill="var(--q-cobalto)"/><path d="M262 170v12M256 176h12" stroke="var(--q-cobalto-tinta)" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="q-novo-grade">
+          <div class="q-modelos" data-modelos role="group" aria-label="Modelos para começar"></div>
+          <form class="q-criar" data-criar novalidate>
+            <div>
+              <h2 data-criar-tit>Sprint de duas semanas</h2>
+            </div>
+            <p data-criar-sub>5 colunas e 7 cartões de exemplo, prontos para editar.</p>
+            <div>
+              <label class="q-rotulo" for="q-nome-quadro">Nome do quadro</label>
+              <input class="q-campo-txt" id="q-nome-quadro" data-nome-quadro autocomplete="off" aria-describedby="q-nome-erro">
+              <p class="q-erro" id="q-nome-erro" data-nome-erro></p>
+            </div>
+            <div>
+              <span class="q-rotulo" id="q-cor-rot">Cor</span>
+              <div class="q-cores" role="radiogroup" aria-labelledby="q-cor-rot" data-cores></div>
+            </div>
+            <div>
+              <span class="q-rotulo" id="q-vis-rot">Quem vê</span>
+              <div class="q-seg" role="radiogroup" aria-labelledby="q-vis-rot" data-visib-novo>
+                <button type="button" role="radio" aria-checked="false" data-v="Privado"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Só eu</button>
+                <button type="button" role="radio" aria-checked="true" data-v="Equipe"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="9" r="3"/><path d="M3.5 19c.8-3 3-4.6 5.5-4.6s4.7 1.6 5.5 4.6M16 6.4a3 3 0 0 1 0 5.4"/></svg>Clínica Ipê</button>
+              </div>
+            </div>
+            <div>
+              <span class="q-rotulo">Colunas</span>
+              <div class="q-previa-cols" data-previa-cols></div>
+            </div>
+            <button class="q-btn q-btn-cobalto" type="submit">Criar quadro</button>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="q-avisos"><div class="q-aviso" data-aviso role="status" aria-live="polite"><span data-aviso-txt></span><button type="button" data-desfazer hidden>Desfazer</button></div></div>
+</main>
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tramo: quadro com quatro bandejas e cartões com etiquetas pastel">
+  <rect width="320" height="180" fill="#f6f5f1"/>
+  <rect x="0" y="0" width="320" height="26" fill="#efeee8"/>
+  <rect x="12" y="8" width="10" height="10" rx="3" fill="#2f5bea"/>
+  <rect x="28" y="10" width="64" height="6" rx="3" fill="#1f2430" opacity=".75"/>
+  <rect x="262" y="7" width="46" height="12" rx="6" fill="#2f5bea"/>
+  <g fill="#ebeae4"><rect x="12" y="36" width="70" height="134" rx="10"/><rect x="88" y="36" width="70" height="110" rx="10"/><rect x="164" y="36" width="70" height="124" rx="10"/><rect x="240" y="36" width="70" height="92" rx="10"/></g>
+  <g fill="#fff"><rect x="18" y="52" width="58" height="34" rx="6"/><rect x="18" y="92" width="58" height="28" rx="6"/><rect x="18" y="126" width="58" height="34" rx="6"/><rect x="94" y="52" width="58" height="40" rx="6"/><rect x="94" y="98" width="58" height="28" rx="6"/><rect x="170" y="52" width="58" height="28" rx="6"/><rect x="170" y="86" width="58" height="34" rx="6"/><rect x="246" y="52" width="58" height="28" rx="6"/><rect x="246" y="86" width="58" height="28" rx="6"/></g>
+  <rect x="94" y="52" width="58" height="10" rx="5" fill="#dbedfd"/>
+  <g><rect x="22" y="57" width="20" height="5" rx="2.5" fill="#ece6ff"/><rect x="22" y="97" width="16" height="5" rx="2.5" fill="#d7f2e5"/><rect x="22" y="131" width="24" height="5" rx="2.5" fill="#ffe5d5"/><rect x="98" y="67" width="20" height="5" rx="2.5" fill="#ffdfe4"/><rect x="174" y="57" width="18" height="5" rx="2.5" fill="#faf0c4"/><rect x="174" y="91" width="22" height="5" rx="2.5" fill="#ece6ff"/><rect x="250" y="57" width="20" height="5" rx="2.5" fill="#d7f2e5"/></g>
+  <g fill="#1f2430" opacity=".18"><rect x="22" y="67" width="44" height="4" rx="2"/><rect x="22" y="107" width="38" height="4" rx="2"/><rect x="22" y="141" width="46" height="4" rx="2"/><rect x="98" y="77" width="42" height="4" rx="2"/><rect x="174" y="67" width="40" height="4" rx="2"/><rect x="174" y="101" width="44" height="4" rx="2"/><rect x="250" y="67" width="36" height="4" rx="2"/></g>
+  <g transform="rotate(-5 200 140)"><rect x="168" y="124" width="62" height="34" rx="6" fill="#fff" stroke="#2f5bea" stroke-width="1.6"/><rect x="174" y="130" width="22" height="5" rx="2.5" fill="#d7f2e5"/><rect x="174" y="140" width="44" height="4" rx="2" fill="#1f2430" opacity=".18"/></g>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Tramo · quadro kanban. Funciona sozinho (sem o stand): os estados vivem em #app[data-estado].
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+
+  // ── utilidades ────────────────────────────────────────────────────────
+  function $(s, r) { return (r || app).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || app).querySelectorAll(s)); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+  function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  function svg(d, w, extra) { return '<svg width="' + (w || 15) + '" height="' + (w || 15) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || "") + '>' + d + '</svg>'; }
+  var ICO = {
+    relogio: '<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
+    lista: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+    balao: '<path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5v-3.5H5A1.5 1.5 0 0 1 3.5 15V7A1.5 1.5 0 0 1 5 5.5z"/>',
+    clipe: '<path d="m19 11.5-7.2 7.2a4.5 4.5 0 0 1-6.4-6.4l7.6-7.6a3 3 0 0 1 4.2 4.2l-7.4 7.4a1.5 1.5 0 0 1-2.1-2.1l6.8-6.8"/>',
+    mais: '<path d="M12 5v14M5 12h14"/>',
+    x: '<path d="M6 6l12 12M18 6 6 18"/>',
+    pontos: '<circle cx="6" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18" cy="12" r="1.3" fill="currentColor"/>',
+    cartao: '<rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M7.5 10h9M7.5 14h5"/>',
+    texto: '<path d="M4 6h16M4 11h16M4 16h10"/>',
+    ativ: '<path d="M3.5 12h4l2.5-6 4 12 2.5-6h4"/>',
+    pessoa: '<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1-3.6 3.8-5.5 7-5.5s6 1.9 7 5.5"/>',
+    etiqueta: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.2 6.2a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8" cy="8" r="1.4"/>',
+    cal: '<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+    seta: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    arquivo: '<rect x="3.5" y="4" width="17" height="5" rx="1.5"/><path d="M5.5 9v9.5a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V9M10 13h4"/>',
+    ordenar: '<path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M14 6h6M14 11h5M14 16h3"/>',
+    check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>'
+  };
+  function ico(n, w) { return svg(ICO[n], w); }
+  var CHECK = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+
+  // ── datas (hoje fictício: segunda, 19 de outubro de 2026) ─────────────
+  var HOJE = Date.UTC(2026, 9, 19);
+  var MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  function dataUTC(iso) { var p = iso.split("-"); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  function diasAte(iso) { return Math.round((dataUTC(iso) - HOJE) / 86400000); }
+  function curta(iso) { var d = new Date(dataUTC(iso)); return d.getUTCDate() + " " + MESES[d.getUTCMonth()]; }
+  function isoMais(n) { var d = new Date(HOJE + n * 86400000); return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0"); }
+  function prazoInfo(c) {
+    if (!c.prazo) return null;
+    var d = diasAte(c.prazo);
+    var s = c.feito ? "feito" : d < 0 ? "atrasado" : d === 0 ? "hoje" : d <= 3 ? "breve" : "ok";
+    var rel = c.feito ? "concluído" : d < -1 ? "venceu há " + (-d) + " dias" : d === -1 ? "venceu ontem" : d === 0 ? "vence hoje" : d === 1 ? "vence amanhã" : "em " + d + " dias";
+    return {s: s, curta: curta(c.prazo), rel: rel};
+  }
+
+  // ── dados fictícios ───────────────────────────────────────────────────
+  var EU = "ML";
+  var PESSOAS = {
+    ML: {nome: "Marina Lopes", cor: "ceu", papel: "Coordenação"},
+    RT: {nome: "Rafael Tavares", cor: "menta", papel: "Desenvolvimento"},
+    JP: {nome: "Juliana Prado", cor: "lilas", papel: "Design"},
+    CM: {nome: "Caio Menezes", cor: "manteiga", papel: "Pesquisa"},
+    BF: {nome: "Bianca Freitas", cor: "pessego", papel: "Conteúdo e jurídico"}
+  };
+  var CORES = ["cobalto", "ceu", "lilas", "menta", "pessego", "rosa", "manteiga"];
+  var NOMES_COR = {cobalto: "Cobalto", ceu: "Céu", lilas: "Lilás", menta: "Menta", pessego: "Pêssego", rosa: "Rosa", manteiga: "Manteiga"};
+  var seq = 100;
+  function novoId(p) { seq++; return p + seq; }
+  function cartao(titulo, o) {
+    o = o || {};
+    return {id: o.id || novoId("c"), titulo: titulo, etiquetas: o.et || [], membros: o.m || [], prazo: o.prazo || null, feito: !!o.feito, capa: o.capa || null,
+      descricao: o.desc || "", checklist: (o.chk || []).map(function (x) { return {t: x[0], ok: !!x[1]}; }),
+      anexos: o.anexos || [], comentarios: o.coment || [], atividade: o.ativ || [{p: (o.m || [EU])[0], t: o.criado || "12 out", x: "criou este cartão"}]};
+  }
+
+  var QUADROS = [{
+    id: "ipe", nome: "Site da Clínica Ipê", cor: "cobalto", estrela: true, visib: "Equipe", membros: ["ML", "RT", "JP", "CM", "BF"],
+    etiquetas: [{id: "design", nome: "Design", cor: "lilas"}, {id: "conteudo", nome: "Conteúdo", cor: "pessego"}, {id: "dev", nome: "Desenvolvimento", cor: "menta"},
+      {id: "juridico", nome: "Jurídico", cor: "manteiga"}, {id: "urgente", nome: "Urgente", cor: "rosa"}, {id: "pesquisa", nome: "Pesquisa", cor: "ceu"}],
+    colunas: [
+      {id: "k1", nome: "A fazer", cartoes: [
+        cartao("Fotografar recepção e consultórios", {et: ["design"], m: ["JP"], prazo: "2026-10-28", capa: "lilas",
+          desc: "Fotos novas para a página inicial e para a página de cada especialidade. Luz natural, sem pacientes no quadro.",
+          chk: [["Agendar com a Lia (fotógrafa)"], ["Recepção e sala de espera"], ["Consultórios 1 a 4"], ["Foto da equipe reunida"]],
+          coment: [{p: "JP", t: "ontem", x: "A Lia tem quinta de manhã ou sábado. Prefiro quinta, com a clínica vazia até 9 h."}, {p: "ML", t: "ontem", x: "Quinta fechado. Aviso a recepção."}]}),
+        cartao("Política de privacidade e termo LGPD", {et: ["juridico", "urgente"], m: ["BF"], prazo: "2026-10-22",
+          desc: "Revisar com a assessoria jurídica antes de publicar o formulário de agendamento. Precisa citar o encarregado de dados e o prazo de guarda dos prontuários.",
+          chk: [["Rascunho com base no modelo da assessoria", 1], ["Revisão do Dr. André"], ["Aceite no formulário"]],
+          anexos: [{nome: "politica-privacidade-v2.docx", tam: "86 KB", tipo: "doc", cor: "ceu"}],
+          coment: [{p: "BF", t: "sex", x: "Enviei a versão 2 para o Dr. André; ele responde até quarta."}]}),
+        cartao("Página de convênios aceitos", {et: ["conteudo"], m: ["ML"],
+          chk: [["Unimed BH", 1], ["Amil"], ["SulAmérica"], ["Bradesco Saúde"], ["Particular e reembolso"], ["Texto sobre guias e autorização"]]}),
+        cartao("Entrevistar 5 pacientes sobre o agendamento", {et: ["pesquisa"], m: ["CM", "ML"], prazo: "2026-10-31",
+          desc: "Entender como marcam hoje (telefone, WhatsApp, recepção) e o que travaria o agendamento pelo site.",
+          coment: [{p: "CM", t: "seg", x: "Roteiro pronto, 8 perguntas, 20 min cada."}, {p: "ML", t: "seg", x: "A Lúcia da recepção indica três pacientes que topam."}, {p: "CM", t: "hoje, 9:12", x: "Duas entrevistas marcadas para quinta."}]})
+      ]},
+      {id: "k2", nome: "Em andamento", limite: 4, cartoes: [
+        cartao("Configurar agendamento online", {id: "c5", et: ["dev", "urgente"], m: ["RT", "ML"], prazo: "2026-10-24", capa: "ceu", criado: "12 out",
+          desc: "Integrar o agendamento ao site com os horários reais dos quatro consultórios. O paciente escolhe especialidade, profissional e horário; a confirmação vai por WhatsApp 24 h antes.\nConvênios aceitos no fluxo: Unimed BH, Amil, SulAmérica e particular. Retorno em até 30 dias não cobra consulta.",
+          chk: [["Definir horários por profissional", 1], ["Tela de escolha de especialidade", 1], ["Integração com a agenda da recepção", 1], ["Lembrete por WhatsApp 24 h antes"], ["Teste com a recepção (Lúcia)"]],
+          anexos: [{nome: "fluxo-agendamento.pdf", tam: "412 KB", tipo: "pdf", cor: "rosa"}, {nome: "horarios-consultorios.xlsx", tam: "38 KB", tipo: "xls", cor: "menta"}],
+          coment: [{p: "ML", t: "há 2 h", x: "A Lúcia pediu para bloquear sábados à tarde e deixar 15 min entre consultas da pediatria."}, {p: "RT", t: "ontem, 17:42", x: "Feito. Subi a versão em homologação; falta só o lembrete."}],
+          ativ: [{p: "JP", t: "15 out", x: "adicionou a etiqueta Urgente"}, {p: "RT", t: "14 out", x: "moveu este cartão de A fazer para Em andamento"}, {p: "ML", t: "12 out", x: "criou este cartão"}]}),
+        cartao("Textos da página inicial", {et: ["conteudo"], m: ["ML"], prazo: "2026-10-20", chk: [["Título e subtítulo", 1], ["Blocos de especialidades", 1], ["Rodapé com endereço e CRM do diretor técnico"]]}),
+        cartao("Aplicar o novo logotipo no cabeçalho", {et: ["design"], m: ["JP"], coment: [{p: "JP", t: "sex", x: "Versão horizontal para desktop, símbolo sozinho no celular."}]}),
+        cartao("Migrar domínio e e-mails", {et: ["dev"], m: ["RT", "CM"], prazo: "2026-10-17", chk: [["Apontar DNS", 1], ["Certificado", 1], ["Caixas de e-mail da equipe"], ["Redirecionar endereço antigo"]]})
+      ]},
+      {id: "k3", nome: "Em revisão", cartoes: [
+        cartao("Mapa e como chegar (Savassi, BH)", {et: ["conteudo"], m: ["BF"], prazo: "2026-10-21", chk: [["Mapa com o estacionamento conveniado", 1], ["Linhas de ônibus e metrô", 1]]}),
+        cartao("Formulário de contato com WhatsApp", {et: ["dev"], m: ["RT"], anexos: [{nome: "mensagens-padrao.txt", tam: "4 KB", tipo: "txt", cor: "manteiga"}],
+          coment: [{p: "RT", t: "sex", x: "O botão abre a conversa já com o nome e o motivo."}, {p: "BF", t: "sex", x: "Trocar “motivo” por “como podemos ajudar?”."}, {p: "RT", t: "hoje, 8:40", x: "Trocado."}]}),
+        cartao("Paleta e tipografia do site", {et: ["design"], m: ["JP", "ML"], capa: "pessego",
+          anexos: [{nome: "paleta-ipe.png", tam: "1,2 MB", tipo: "png", cor: "lilas"}, {nome: "tipografia.pdf", tam: "640 KB", tipo: "pdf", cor: "rosa"}, {nome: "exemplos-botoes.png", tam: "880 KB", tipo: "png", cor: "lilas"}]})
+      ]},
+      {id: "k4", nome: "Concluído", cartoes: [
+        cartao("Briefing com a Dra. Helena Ipê", {et: ["pesquisa"], m: ["ML"], prazo: "2026-10-08", feito: true}),
+        cartao("Levantamento de concorrentes em BH", {et: ["pesquisa"], m: ["CM"], chk: [["Clínicas na Savassi", 1], ["Clínicas no Funcionários", 1], ["Preços de consulta", 1], ["Como agendam", 1], ["Resumo em uma página", 1]]}),
+        cartao("Contratar hospedagem", {et: ["dev"], m: ["RT"], prazo: "2026-10-10", feito: true})
+      ]}
+    ]
+  }];
+
+  var MODELOS = {
+    sprint: {nome: "Sprint de duas semanas", desc: "Para times de produto: do backlog ao feito, com revisão no meio do caminho.", cor: "ceu", sugestao: "Sprint 42 · App Plantão+",
+      etiquetas: [["front", "Front", "lilas"], ["back", "Back", "menta"], ["bug", "Bug", "rosa"], ["design", "Design", "pessego"], ["texto", "Conteúdo", "manteiga"]],
+      colunas: [["Backlog", [["Retrospectiva da sprint 41", []], ["Testar no iPhone SE", ["front"]]]], ["Na sprint", [["Tela de login com e-mail", ["front"]], ["Ícones da barra inferior", ["design"]]]],
+        ["Fazendo", [["Fuso horário dos lembretes", ["bug", "back"]]]], ["Revisão", [["Textos do onboarding", ["texto"]]]], ["Feito", [["Meta da sprint definida", []]]]]},
+    mudanca: {nome: "Mudança de casa", desc: "Caixas, contratos e serviços, sem esquecer de devolver a chave do vizinho.", cor: "pessego", sugestao: "Mudança · Rua Ceará",
+      etiquetas: [["compras", "Compras", "lilas"], ["servicos", "Serviços", "menta"], ["buro", "Burocracia", "manteiga"], ["urg", "Urgente", "rosa"]],
+      colunas: [["Antes", [["Orçar 3 transportadoras", ["servicos"]], ["Separar caixas por cômodo", []]]], ["Semana da mudança", [["Transferir internet e luz", ["servicos", "urg"]], ["Trocar a fechadura", ["compras"]]]],
+        ["Depois", [["Atualizar endereço no banco", ["buro"]], ["Cortinas do quarto", ["compras"]]]], ["Resolvido", [["Vistoria do apartamento novo", ["buro"]]]]]},
+    plantoes: {nome: "Plantões do mês", desc: "Escala, trocas e repasses num lugar só. Feito para quem dá plantão.", cor: "menta", sugestao: "Plantões de dezembro",
+      etiquetas: [["dia", "Diurno", "manteiga"], ["noite", "Noturno", "lilas"], ["h24", "24 h", "rosa"], ["troca", "Troca", "ceu"], ["fin", "Financeiro", "menta"]],
+      colunas: [["Escala", [["UPA Centro-Sul · sáb 7/11 · 12 h", ["dia"]], ["UTI Santa Clara · sáb 21/11 · 24 h", ["h24"]]]], ["Trocas pedidas", [["Troca com o Dr. Paulo · sáb 14/11", ["troca", "noite"]]]],
+        ["Confirmados", [["Hospital Santa Clara · ter 10/11 · noturno", ["noite"]], ["Pronto Atendimento Pampulha · sáb 28/11", ["dia"]]]], ["Pagos", [["Repasse de outubro · R$ 9.840,00", ["fin"]]]]]},
+    zero: {nome: "Do zero", desc: "Três colunas em branco: A fazer, Fazendo e Feito. O resto é com você.", cor: "cobalto", sugestao: "",
+      etiquetas: [["a", "Prioridade", "rosa"], ["b", "Ideia", "lilas"], ["c", "Esperando", "manteiga"]],
+      colunas: [["A fazer", []], ["Fazendo", []], ["Feito", []]]}
+  };
+  function deModelo(chave, nome, cor, visib) {
+    var m = MODELOS[chave];
+    return {id: novoId("q"), nome: nome, cor: cor || m.cor, estrela: false, visib: visib || "Equipe", membros: ["ML"], modelo: chave,
+      etiquetas: m.etiquetas.map(function (e) { return {id: e[0], nome: e[1], cor: e[2]}; }),
+      colunas: m.colunas.map(function (c) { return {id: novoId("k"), nome: c[0], cartoes: c[1].map(function (x) { return cartao(x[0], {et: x[1], m: ["ML"], criado: "hoje"}); })}; })};
+  }
+  var q2 = deModelo("plantoes", "Plantões de novembro", "menta"); q2.membros = ["ML", "CM"]; q2.estrela = true;
+  var q3 = deModelo("mudanca", "Mudança · Rua Harmonia", "pessego", "Privado");
+  QUADROS.push(q2, q3);
+
+  var est = {quadro: "ipe", cartao: "c5", busca: "", et: {}, pessoas: {}, prazo: null, compondo: null, painel: null, editDesc: false,
+    modelo: "sprint", corNova: "ceu", visibNova: "Equipe", nomeEditado: false, pop: null, menuCol: null, colAtiva: 0};
+  var desfazerFn = null, avisoTimer = 0;
+
+  function quadro() { for (var i = 0; i < QUADROS.length; i++) if (QUADROS[i].id === est.quadro) return QUADROS[i]; return QUADROS[0]; }
+  function etq(id) { var e = quadro().etiquetas; for (var i = 0; i < e.length; i++) if (e[i].id === id) return e[i]; return {id: id, nome: id, cor: "cobalto"}; }
+  function acharCartao(id) {
+    var q = quadro();
+    for (var i = 0; i < q.colunas.length; i++) for (var j = 0; j < q.colunas[i].cartoes.length; j++) if (q.colunas[i].cartoes[j].id === id) return {c: q.colunas[i].cartoes[j], col: q.colunas[i], i: j};
+    return null;
+  }
+  function pessoa(p) { return PESSOAS[p] || {nome: p, cor: "rosa"}; }
+  function av(p, extra) { var pe = pessoa(p); return '<span class="q-av" data-cor="' + pe.cor + '" title="' + esc(pe.nome) + '"' + (extra || "") + '>' + esc(p) + '</span>'; }
+
+  // ── estados ───────────────────────────────────────────────────────────
+  function estado() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function irPara(n) { app.setAttribute("data-estado", String(n)); aplicar(n); }
+  function aplicar(n) {
+    fecharPops();
+    if (n === 2 && !acharCartao(est.cartao)) { var q = quadro(); var prim = q.colunas.filter(function (c) { return c.cartoes.length; })[0]; if (prim) est.cartao = prim.cartoes[0].id; else { app.setAttribute("data-estado", "1"); n = 1; } }
+    desenharLateral();
+    if (n === 1 || n === 2) { desenharCab(); desenharQuadro(); }
+    if (n === 2) {
+      est.painel = null; est.editDesc = false; desenharModal();
+      var t = $("[data-m-titulo]"); if (t) autoAltura(t);
+      var fx = $("[data-fechar]"); if (fx && est.porTeclado) fx.focus({preventScroll: true});
+      est.porTeclado = false;
+    }
+    else $("[data-modal]").innerHTML = "";
+    if (n === 3) desenharNovo();
+  }
+  app.addEventListener("maquete:estado", function (e) { aplicar(e.detail && e.detail.estado ? +e.detail.estado : estado()); });
+
+  function aviso(txt, desfazer) {
+    var a = $("[data-aviso]");
+    $("[data-aviso-txt]").textContent = txt;
+    desfazerFn = desfazer || null;
+    $("[data-desfazer]").hidden = !desfazer;
+    a.classList.add("ver");
+    clearTimeout(avisoTimer);
+    avisoTimer = setTimeout(function () { a.classList.remove("ver"); desfazerFn = null; }, desfazer ? 5200 : 3000);
+  }
+
+  // ── lateral ───────────────────────────────────────────────────────────
+  function desenharLateral() {
+    $("[data-quadros]").innerHTML = QUADROS.map(function (q) {
+      return '<button class="q-quadro-item" type="button" data-quadro="' + q.id + '" data-cor="' + q.cor + '" aria-current="' + (q.id === est.quadro && estado() !== 3) + '"><i aria-hidden="true"></i><span>' + esc(q.nome) + '</span>' +
+        (q.estrela ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-label="com estrela"><path d="m12 3.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg>' : "") + '</button>';
+    }).join("");
+    $("[data-n-quadros]").textContent = QUADROS.length;
+    var q = quadro(), meus = 0, semana = 0;
+    q.colunas.forEach(function (c) { c.cartoes.forEach(function (k) {
+      if (k.membros.indexOf(EU) >= 0) meus++;
+      if (k.prazo && !k.feito && diasAte(k.prazo) >= 0 && diasAte(k.prazo) <= 7) semana++;
+    }); });
+    $("[data-n-meus]").textContent = meus;
+    $("[data-n-semana]").textContent = semana;
+    $('[data-atalho="meus"]').setAttribute("aria-pressed", String(!!est.pessoas[EU] && Object.keys(est.pessoas).filter(function (k) { return est.pessoas[k]; }).length === 1));
+    $('[data-atalho="semana"]').setAttribute("aria-pressed", String(est.prazo === "semana"));
+    $('[data-atalho="quadros"]').setAttribute("aria-current", estado() === 3 ? "false" : "page");
+    $("[data-n-membros]").textContent = Object.keys(PESSOAS).length;
+  }
+
+  // ── cabeçalho ─────────────────────────────────────────────────────────
+  function nFiltros() { return Object.keys(est.et).filter(function (k) { return est.et[k]; }).length + Object.keys(est.pessoas).filter(function (k) { return est.pessoas[k]; }).length + (est.prazo ? 1 : 0); }
+  function desenharCab() {
+    var q = quadro();
+    var tc = $("[data-titulo-caixa]");
+    if (!tc.querySelector("input")) tc.innerHTML = '<button class="q-titulo" type="button" data-renomear title="Renomear quadro">' + esc(q.nome) + '</button>';
+    $("[data-estrela]").setAttribute("aria-pressed", String(q.estrela));
+    $("[data-estrela]").setAttribute("aria-label", q.estrela ? "Tirar a estrela do quadro" : "Marcar quadro com estrela");
+    $("[data-visib-txt]").textContent = q.visib === "Privado" ? "Só eu" : "Equipe";
+    $("[data-visib]").setAttribute("aria-label", "Quem vê: " + (q.visib === "Privado" ? "só você" : "toda a equipe") + ". Clique para trocar.");
+    $("[data-pilha]").innerHTML = q.membros.slice(0, 5).map(function (p) { return av(p); }).join("") + (q.membros.length > 5 ? '<span class="q-av">+' + (q.membros.length - 5) + '</span>' : "");
+    var n = nFiltros();
+    $("[data-filtro-n]").textContent = n ? String(n) : "";
+    var faixa = $("[data-faixa]");
+    if (n || est.busca) {
+      var vis = 0, tot = 0;
+      q.colunas.forEach(function (c) { c.cartoes.forEach(function (k) { tot++; if (passa(k)) vis++; }); });
+      faixa.hidden = false;
+      faixa.innerHTML = svg('<path d="M4 6h16M7 12h10M10 18h4"/>', 15) + '<span><b>' + vis + " de " + tot + '</b> cartões ' + (est.busca ? "para “" + esc(est.busca) + "”" : "com o filtro") + (n && est.busca ? " e o filtro" : "") + '</span><button class="q-link" type="button" data-limpar>Limpar</button>';
+    } else { faixa.hidden = true; faixa.innerHTML = ""; }
+  }
+  function desenharFiltro() {
+    var q = quadro(), pop = $("[data-pop-filtro]");
+    pop.innerHTML = '<h3>Filtrar cartões</h3>' +
+      '<h4>Etiquetas</h4><div class="q-opcoes">' + q.etiquetas.map(function (e) { return '<button type="button" class="q-opcao" data-cor="' + e.cor + '" data-f-et="' + e.id + '" aria-pressed="' + !!est.et[e.id] + '"><span class="q-ponto"></span>' + esc(e.nome) + '</button>'; }).join("") + '</div>' +
+      '<h4>Pessoas</h4><div class="q-opcoes">' + q.membros.map(function (p) { return '<button type="button" class="q-opcao" data-f-p="' + p + '" aria-pressed="' + !!est.pessoas[p] + '">' + av(p) + esc(pessoa(p).nome.split(" ")[0]) + '</button>'; }).join("") + '</div>' +
+      '<h4>Prazo</h4><div class="q-opcoes">' + [["atrasado", "Atrasados"], ["semana", "Nesta semana"], ["sem", "Sem prazo"]].map(function (o) { return '<button type="button" class="q-opcao" data-f-prazo="' + o[0] + '" aria-pressed="' + (est.prazo === o[0]) + '" style="padding-left:10px">' + o[1] + '</button>'; }).join("") + '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px"><button class="q-link" type="button" data-limpar>Limpar filtros</button><button class="q-btn q-btn-cobalto" type="button" data-fechar-pop>Pronto</button></div>';
+  }
+  function passa(c) {
+    if (est.busca && norm(c.titulo + " " + c.descricao).indexOf(norm(est.busca)) < 0) return false;
+    var ets = Object.keys(est.et).filter(function (k) { return est.et[k]; });
+    if (ets.length && !ets.some(function (e) { return c.etiquetas.indexOf(e) >= 0; })) return false;
+    var ps = Object.keys(est.pessoas).filter(function (k) { return est.pessoas[k]; });
+    if (ps.length && !ps.some(function (p) { return c.membros.indexOf(p) >= 0; })) return false;
+    if (est.prazo === "atrasado" && !(c.prazo && !c.feito && diasAte(c.prazo) < 0)) return false;
+    if (est.prazo === "semana" && !(c.prazo && !c.feito && diasAte(c.prazo) >= 0 && diasAte(c.prazo) <= 7)) return false;
+    if (est.prazo === "sem" && c.prazo) return false;
+    return true;
+  }
+  function fecharPops() {
+    $$(".q-pop").forEach(function (p) { p.hidden = true; });
+    $$("[data-convidar],[data-filtrar]").forEach(function (b) { b.setAttribute("aria-expanded", "false"); });
+    est.pop = null;
+    if (est.menuCol) { est.menuCol = null; var m = $("[data-menu-col-pop]"); if (m) m.remove(); }
+  }
+
+  // ── quadro ────────────────────────────────────────────────────────────
+  function htmlCartao(c) {
+    var pz = prazoInfo(c), feitos = c.checklist.filter(function (x) { return x.ok; }).length;
+    var meta = [];
+    if (pz) meta.push('<span class="q-prazo" data-s="' + pz.s + '" title="Prazo: ' + pz.rel + '">' + (c.feito ? ico("check", 13) : ico("relogio", 13)) + pz.curta + '</span>');
+    if (c.checklist.length) meta.push('<span class="q-chk" data-s="' + (feitos === c.checklist.length ? "completo" : "parcial") + '" title="Checklist">' + ico("lista", 13) + feitos + "/" + c.checklist.length + '</span>');
+    if (c.comentarios.length) meta.push('<span title="Comentários">' + ico("balao", 13) + c.comentarios.length + '</span>');
+    if (c.anexos.length) meta.push('<span title="Anexos">' + ico("clipe", 13) + c.anexos.length + '</span>');
+    if (c.membros.length) meta.push('<span class="q-pilha">' + c.membros.map(function (p) { return av(p); }).join("") + '</span>');
+    var rot = c.titulo + (c.etiquetas.length ? ", etiquetas " + c.etiquetas.map(function (e) { return etq(e).nome; }).join(", ") : "") + (pz ? ", prazo " + pz.curta + " (" + pz.rel + ")" : "") + (c.checklist.length ? ", checklist " + feitos + " de " + c.checklist.length : "");
+    return '<article class="q-cartao" data-cartao="' + c.id + '" tabindex="0" role="button" aria-label="' + esc(rot) + '">' +
+      (c.capa ? '<div class="q-capa" data-cor="' + c.capa + '" aria-hidden="true"></div>' : "") +
+      (c.etiquetas.length ? '<div class="q-ets">' + c.etiquetas.map(function (e) { var x = etq(e); return '<span class="q-et" data-cor="' + x.cor + '">' + esc(x.nome) + '</span>'; }).join("") + '</div>' : "") +
+      '<h3>' + esc(c.titulo) + '</h3><div class="q-meta">' + meta.join("") + '</div></article>';
+  }
+  function desenharQuadro() {
+    var q = quadro(), filtrando = nFiltros() || est.busca;
+    $("[data-colunas]").innerHTML = q.colunas.map(function (col) {
+      var vis = col.cartoes.filter(passa), total = col.cartoes.length;
+      var wip = col.limite ? (total > col.limite ? "estourado" : total === col.limite ? "cheio" : "") : "";
+      var cont = col.limite ? total + "/" + col.limite : filtrando && vis.length !== total ? vis.length + " de " + total : String(total);
+      var lista = vis.map(htmlCartao).join("");
+      if (!total && est.compondo !== col.id) lista = '<div class="q-vazio-col">Nenhum cartão ainda. Arraste um para cá ou crie o primeiro.</div>';
+      else if (!vis.length && total) lista = '<div class="q-vazio-col">Nenhum cartão passa no filtro aqui.</div>';
+      var compor = est.compondo === col.id
+        ? '<form class="q-compor" data-compor="' + col.id + '"><label class="q-sr" for="q-novo-' + col.id + '">Título do cartão</label><textarea id="q-novo-' + col.id + '" placeholder="Escreva o título do cartão…" data-compor-txt></textarea><div><button class="q-btn q-btn-cobalto" type="submit">Adicionar cartão</button><button class="q-icone" type="button" data-cancelar-compor aria-label="Cancelar">' + ico("x", 16) + '</button><span class="q-dica">Enter adiciona · Esc fecha</span></div></form>'
+        : '<button class="q-add" type="button" data-compor-abrir="' + col.id + '">' + ico("mais", 15) + 'Adicionar cartão</button>';
+      return '<section class="q-coluna" data-coluna="' + col.id + '" aria-label="' + esc(col.nome) + ", " + total + ' cartões">' +
+        '<header class="q-col-cab"><button class="q-col-nome" type="button" data-renomear-col="' + col.id + '" title="Renomear coluna">' + esc(col.nome) + '</button>' +
+        '<span class="q-col-n"' + (wip ? ' data-wip="' + wip + '"' : "") + ' title="' + (col.limite ? "Limite de " + col.limite + " cartões em andamento" : "Cartões") + '">' + cont + '</span>' +
+        '<button class="q-icone" type="button" data-menu-col="' + col.id + '" aria-label="Opções da coluna ' + esc(col.nome) + '" aria-haspopup="true">' + ico("pontos", 16) + '</button></header>' +
+        '<div class="q-lista">' + lista + '</div>' + compor + '</section>';
+    }).join("");
+    $("[data-abas-col]").innerHTML = q.colunas.map(function (col, i) { return '<button type="button" data-ir-col="' + i + '" aria-current="' + (i === est.colAtiva) + '">' + esc(col.nome) + ' <em>' + col.cartoes.length + '</em></button>'; }).join("");
+    if (est.compondo) { var t = $("[data-compor-txt]"); if (t) t.focus(); }
+    desenharCab();
+  }
+
+  function moverCartao(id, paraCol, antesId, silencioso) {
+    var q = quadro(), achado = acharCartao(id);
+    if (!achado) return;
+    var de = achado.col, iDe = achado.i;
+    de.cartoes.splice(iDe, 1);
+    var destino = q.colunas.filter(function (c) { return c.id === paraCol; })[0];
+    var idx = antesId ? destino.cartoes.map(function (c) { return c.id; }).indexOf(antesId) : -1;
+    if (idx < 0) destino.cartoes.push(achado.c); else destino.cartoes.splice(idx, 0, achado.c);
+    if (de !== destino) {
+      achado.c.atividade.unshift({p: EU, t: "agora", x: "moveu este cartão de " + de.nome + " para " + destino.nome, novo: true});
+      if (/conclu|feito|pago|resolvido/i.test(destino.nome) && achado.c.prazo) achado.c.feito = true;
+      if (!silencioso) aviso("“" + achado.c.titulo + "” foi para " + destino.nome + ".", function () {
+        var agora = acharCartao(id); if (!agora) return;
+        agora.col.cartoes.splice(agora.i, 1); de.cartoes.splice(Math.min(iDe, de.cartoes.length), 0, agora.c); agora.c.atividade.shift();
+        desenharQuadro(); desenharLateral(); if (estado() === 2) desenharModal(); aviso("Movimento desfeito.");
+      });
+    }
+  }
+
+  // ── arrastar e soltar (pointer events) ────────────────────────────────
+  var drag = null, ignoraClique = false;
+  function emScroll() { var cs = getComputedStyle(app); return /(auto|scroll)/.test(cs.overflowY) && app.scrollHeight > app.clientHeight; }
+  function iniciarArraste(e) {
+    var r = drag.el.getBoundingClientRect();
+    drag.ativo = true; drag.offX = e.clientX - r.left; drag.offY = e.clientY - r.top;
+    drag.fantasma = drag.el.cloneNode(true);
+    drag.fantasma.className = "q-cartao q-fantasma";
+    drag.fantasma.removeAttribute("tabindex"); drag.fantasma.setAttribute("aria-hidden", "true");
+    drag.fantasma.style.width = r.width + "px";
+    app.appendChild(drag.fantasma);
+    drag.vaga = document.createElement("div");
+    drag.vaga.className = "q-vaga"; drag.vaga.style.height = r.height + "px";
+    drag.el.parentNode.insertBefore(drag.vaga, drag.el);
+    drag.el.classList.add("oculto");
+    app.classList.add("q-arrastando");
+    if (navigator.vibrate && drag.toque) try { navigator.vibrate(12); } catch (x) { /* sem vibração */ }
+    moverArraste(e);
+    (function rolar() {
+      if (!drag || !drag.ativo) return;
+      var sc = $("[data-colunas]"), rs = sc.getBoundingClientRect(), v = 0;
+      if (drag.px < rs.left + 56) v = -14; else if (drag.px > rs.right - 56) v = 14;
+      if (v) { sc.scrollLeft += v; }
+      var topo = emScroll() ? app.getBoundingClientRect().top : 0, base = emScroll() ? app.getBoundingClientRect().bottom : window.innerHeight, dv = 0;
+      if (drag.py < topo + 50) dv = -12; else if (drag.py > base - 50) dv = 12;
+      if (dv) { if (emScroll()) app.scrollTop += dv; else window.scrollBy(0, dv); }
+      if (v || dv) moverArraste(drag.ultimo);
+      requestAnimationFrame(rolar);
+    })();
+  }
+  function moverArraste(e) {
+    if (!drag || !drag.ativo || !e) return;
+    drag.ultimo = {clientX: e.clientX, clientY: e.clientY}; drag.px = e.clientX; drag.py = e.clientY;
+    var a = app.getBoundingClientRect();
+    var x = e.clientX - a.left - drag.offX + app.scrollLeft, y = e.clientY - a.top - drag.offY + app.scrollTop;
+    x = Math.max(2, Math.min(x, app.clientWidth - drag.fantasma.offsetWidth - 2));
+    drag.fantasma.style.transform = "translate(" + x + "px," + y + "px) rotate(" + (calmo ? 0 : 2.5) + "deg)";
+    var alvo = document.elementFromPoint(e.clientX, e.clientY);
+    var col = alvo && alvo.closest ? alvo.closest(".q-coluna") : null;
+    if (!col) return;
+    $$(".q-coluna.alvo").forEach(function (c) { if (c !== col) c.classList.remove("alvo"); });
+    col.classList.add("alvo");
+    var lista = col.querySelector(".q-lista");
+    var vazio = lista.querySelector(".q-vazio-col"); if (vazio) vazio.remove();
+    var cards = $$(".q-cartao:not(.oculto)", lista), antes = null;
+    for (var i = 0; i < cards.length; i++) { var rr = cards[i].getBoundingClientRect(); if (e.clientY < rr.top + rr.height / 2) { antes = cards[i]; break; } }
+    if (antes) { if (drag.vaga.nextElementSibling !== antes) lista.insertBefore(drag.vaga, antes); }
+    else if (lista.lastElementChild !== drag.vaga) lista.appendChild(drag.vaga);
+  }
+  function encerrarArraste(soltou) {
+    if (!drag) return;
+    clearTimeout(drag.timer);
+    if (drag.ativo) {
+      ignoraClique = true; setTimeout(function () { ignoraClique = false; }, 0);
+      drag.fantasma.remove();
+      app.classList.remove("q-arrastando");
+      var col = drag.vaga.closest(".q-coluna"), prox = drag.vaga.nextElementSibling;
+      while (prox && !prox.classList.contains("q-cartao")) prox = prox.nextElementSibling;
+      if (prox && prox.classList.contains("oculto")) { prox = prox.nextElementSibling; while (prox && !prox.classList.contains("q-cartao")) prox = prox.nextElementSibling; }
+      var id = drag.id;
+      if (soltou && col) moverCartao(id, col.getAttribute("data-coluna"), prox ? prox.getAttribute("data-cartao") : null);
+      drag = null;
+      desenharQuadro(); desenharLateral();
+      var novo = $('[data-cartao="' + id + '"]'); if (novo) novo.classList.add("pousou");
+      return;
+    }
+    drag = null;
+  }
+  app.addEventListener("pointerdown", function (e) {
+    var el = e.target.closest(".q-cartao");
+    if (!el || e.button !== 0 || !el.closest("[data-colunas]") || e.target.closest("button,input,textarea")) return;
+    drag = {el: el, id: el.getAttribute("data-cartao"), x0: e.clientX, y0: e.clientY, pid: e.pointerId, ativo: false, toque: e.pointerType === "touch"};
+    if (drag.toque) drag.timer = setTimeout(function () { if (drag && !drag.ativo) iniciarArraste({clientX: drag.x0, clientY: drag.y0}); }, 280);
+  });
+  document.addEventListener("pointermove", function (e) {
+    if (!drag || e.pointerId !== drag.pid) return;
+    var dist = Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0);
+    if (!drag.ativo) {
+      if (drag.toque) { if (dist > 10) { clearTimeout(drag.timer); drag = null; } return; }
+      if (dist < 6) return;
+      iniciarArraste(e);
+    }
+    e.preventDefault();
+    moverArraste(e);
+  });
+  document.addEventListener("pointerup", function (e) { if (drag && e.pointerId === drag.pid) encerrarArraste(true); });
+  document.addEventListener("pointercancel", function () { encerrarArraste(false); });
+  app.addEventListener("touchmove", function (e) { if (drag && drag.ativo) e.preventDefault(); }, {passive: false});
+  app.addEventListener("contextmenu", function (e) { if (drag && drag.ativo) e.preventDefault(); });
+
+  // ── cartão aberto ─────────────────────────────────────────────────────
+  function desenharModal() {
+    var a = acharCartao(est.cartao), box = $("[data-modal]");
+    if (!a) { box.innerHTML = ""; return; }
+    var c = a.c, q = quadro(), pz = prazoInfo(c);
+    var feitos = c.checklist.filter(function (x) { return x.ok; }).length, pct = c.checklist.length ? Math.round(feitos / c.checklist.length * 100) : 0;
+    var h = [];
+    if (c.capa) h.push('<div class="q-m-capa" data-cor="' + c.capa + '" aria-hidden="true"></div>');
+    h.push('<header class="q-m-cab">' + ico("cartao", 20) + '<div class="q-m-titulos"><label class="q-sr" for="q-m-titulo">Título do cartão</label><textarea class="q-m-titulo" id="q-m-titulo" rows="1" data-m-titulo>' + esc(c.titulo) + '</textarea>' +
+      '<p class="q-m-onde">na coluna <button class="q-link" type="button" data-painel="mover">' + esc(a.col.nome) + '</button> do quadro ' + esc(q.nome) + '</p></div>' +
+      '<button class="q-icone q-fechar" type="button" data-fechar aria-label="Fechar cartão">' + ico("x", 18) + '</button></header>');
+    h.push('<div class="q-m-corpo"><div class="q-m-principal">');
+    h.push('<div class="q-m-fatos">' +
+      '<div><h4 class="q-m-h4">Membros</h4><div class="q-m-fila">' + c.membros.map(function (p) { return av(p); }).join("") + '<button class="q-mais" type="button" data-painel="membros" aria-label="Escolher membros">' + ico("mais", 14) + '</button></div></div>' +
+      '<div><h4 class="q-m-h4">Etiquetas</h4><div class="q-m-fila">' + c.etiquetas.map(function (e) { var x = etq(e); return '<span class="q-et" data-cor="' + x.cor + '">' + esc(x.nome) + '</span>'; }).join("") + '<button class="q-mais" type="button" data-painel="etiquetas" aria-label="Escolher etiquetas">' + ico("mais", 14) + '</button></div></div>' +
+      '<div><h4 class="q-m-h4">Prazo</h4><div class="q-m-fila">' + (pz
+        ? '<button class="q-m-prazo" type="button" data-prazo-feito aria-pressed="' + c.feito + '" title="Marcar prazo como concluído"><span class="q-caixa">' + CHECK + '</span>' + new Date(dataUTC(c.prazo)).getUTCDate() + " de " + MESES[new Date(dataUTC(c.prazo)).getUTCMonth()] + ', 18:00<small data-s="' + pz.s + '">' + pz.rel + '</small></button>'
+        : '<button class="q-m-prazo" type="button" data-painel="datas">' + ico("cal", 15) + 'Definir prazo</button>') + '</div></div></div>');
+    // descrição
+    h.push('<section class="q-sec"><div class="q-sec-cab">' + ico("texto", 18) + '<h3>Descrição</h3>' + (c.descricao && !est.editDesc ? '<button class="q-btn" type="button" data-editar-desc>Editar</button>' : "") + '</div><div class="q-desc">' +
+      (est.editDesc ? '<label class="q-sr" for="q-desc">Descrição</label><textarea id="q-desc" data-desc-txt placeholder="Contexto, links, o que conta como pronto…">' + esc(c.descricao) + '</textarea><div class="q-acoes-desc"><button class="q-btn q-btn-cobalto" type="button" data-salvar-desc>Salvar</button><button class="q-btn q-btn-fantasma" type="button" data-cancelar-desc>Cancelar</button></div>'
+        : c.descricao ? c.descricao.split("\n").map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("") : '<button class="q-desc-vazia" type="button" data-editar-desc>Adicione uma descrição: o contexto, os links e o que conta como pronto.</button>') + '</div></section>');
+    // checklist
+    h.push('<section class="q-sec"><div class="q-sec-cab">' + ico("lista", 18) + '<h3>Etapas</h3>' + (c.checklist.some(function (x) { return x.ok; }) ? '<button class="q-btn" type="button" data-ocultar-feitos aria-pressed="' + !!est.ocultarFeitos + '">' + (est.ocultarFeitos ? "Mostrar marcados" : "Ocultar marcados") + '</button>' : "") + '</div>' +
+      (c.checklist.length ? '<div class="q-prog"><b>' + pct + '%</b><div class="q-barra' + (pct === 100 ? " cheia" : "") + '" role="progressbar" aria-label="Progresso das etapas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div></div>' : "") +
+      '<div class="q-itens">' + c.checklist.map(function (x, i) { return est.ocultarFeitos && x.ok ? "" : '<button class="q-item" type="button" role="checkbox" aria-checked="' + x.ok + '" data-item="' + i + '"><span class="q-caixa">' + CHECK + '</span><span>' + esc(x.t) + '</span></button>'; }).join("") + '</div>' +
+      '<form class="q-novo-item" data-novo-item><label class="q-sr" for="q-item-novo">Nova etapa</label><input class="q-campo-txt" id="q-item-novo" placeholder="Adicionar uma etapa" data-item-txt autocomplete="off"><button class="q-btn" type="submit">Adicionar</button></form></section>');
+    // anexos
+    if (c.anexos.length) h.push('<section class="q-sec"><div class="q-sec-cab">' + ico("clipe", 18) + '<h3>Anexos</h3></div><div class="q-anexos">' + c.anexos.map(function (x) {
+      return '<div class="q-anexo"><span class="q-anexo-ico" data-cor="' + x.cor + '">' + esc(x.tipo) + '</span><span><b>' + esc(x.nome) + '</b><small>' + esc(x.tam) + '</small></span></div>'; }).join("") + '</div></section>');
+    // atividade
+    var itens = c.comentarios.map(function (m) { return {tipo: "c", p: m.p, t: m.t, x: m.x, novo: m.novo}; }).concat(c.atividade.map(function (v) { return {tipo: "e", p: v.p, t: v.t, x: v.x, novo: v.novo}; }));
+    h.push('<section class="q-sec"><div class="q-sec-cab">' + ico("ativ", 18) + '<h3>Comentários e atividade</h3></div>' +
+      '<form class="q-coment" data-coment>' + av(EU) + '<div><label class="q-sr" for="q-coment">Escrever um comentário</label><textarea id="q-coment" placeholder="Escreva um comentário…" data-coment-txt></textarea>' +
+      '<div class="q-coment-acoes"><button class="q-btn q-btn-cobalto" type="submit" data-comentar disabled>Comentar</button><small>⌘ ou Ctrl + Enter</small></div></div></form>' +
+      '<ol class="q-ativ">' + itens.map(function (it) {
+        var pe = pessoa(it.p);
+        if (it.tipo === "c") return '<li' + (it.novo ? ' class="novo"' : "") + '>' + av(it.p) + '<div><header><b>' + esc(pe.nome) + '</b><time>' + esc(it.t) + '</time></header><p class="q-bolha">' + esc(it.x) + '</p></div></li>';
+        return '<li class="evento' + (it.novo ? " novo" : "") + '">' + av(it.p) + '<span><b>' + esc(pe.nome.split(" ")[0]) + '</b> ' + esc(it.x) + ' · ' + esc(it.t) + '</span></li>';
+      }).join("") + '</ol></section>');
+    c.comentarios.forEach(function (m) { m.novo = false; }); c.atividade.forEach(function (m) { m.novo = false; });
+    h.push('</div>');
+    // lado
+    h.push('<aside class="q-m-lado" aria-label="Ações do cartão"><h4>Adicionar ao cartão</h4>' +
+      acao("membros", "pessoa", "Membros") + acao("etiquetas", "etiqueta", "Etiquetas") + acao("checklist", "lista", "Etapa") + acao("datas", "cal", "Prazo") +
+      '<h4>Ações</h4>' + acao("mover", "seta", "Mover") + '<button class="q-acao perigo" type="button" data-arquivar>' + ico("arquivo", 15) + 'Arquivar</button>' +
+      '<div class="q-painel" data-painel-caixa>' + painel() + '</div></aside>');
+    h.push('</div>');
+    box.innerHTML = h.join("");
+    box.setAttribute("aria-label", "Cartão: " + c.titulo);
+  }
+  function acao(id, icone, rot) { return '<button class="q-acao" type="button" data-painel="' + id + '" aria-expanded="' + (est.painel === id) + '">' + ico(icone, 15) + rot + '</button>'; }
+  function painel() {
+    var a = acharCartao(est.cartao); if (!a) return "";
+    var c = a.c, q = quadro();
+    if (est.painel === "membros") return '<h5>Membros do quadro</h5>' + q.membros.map(function (p) { return '<button class="q-escolha" type="button" role="checkbox" aria-checked="' + (c.membros.indexOf(p) >= 0) + '" data-escolha-p="' + p + '">' + av(p) + esc(pessoa(p).nome) + '<small>' + esc(pessoa(p).papel || "convidado") + '</small></button>'; }).join("");
+    if (est.painel === "etiquetas") return '<h5>Etiquetas</h5>' + q.etiquetas.map(function (e) { return '<button class="q-escolha" type="button" role="checkbox" aria-checked="' + (c.etiquetas.indexOf(e.id) >= 0) + '" data-escolha-e="' + e.id + '"><span class="q-et" data-cor="' + e.cor + '">' + esc(e.nome) + '</span></button>'; }).join("");
+    if (est.painel === "datas") return '<h5>Prazo</h5>' + [[0, "Hoje"], [1, "Amanhã"], [4, "Sexta, 23 out"], [7, "Segunda, 26 out"], [14, "Daqui a 2 semanas"]].map(function (o) { return '<button class="q-escolha" type="button" data-escolha-d="' + o[0] + '">' + o[1] + '<small>' + curta(isoMais(o[0])) + '</small></button>'; }).join("") + (c.prazo ? '<button class="q-escolha" type="button" data-escolha-d="nenhum" style="color:var(--q-rosa-t)">Remover prazo</button>' : "");
+    if (est.painel === "mover") return '<h5>Mover para</h5>' + q.colunas.map(function (col) { return '<button class="q-escolha" type="button" role="radio" aria-checked="' + (col === a.col) + '" data-escolha-col="' + col.id + '">' + esc(col.nome) + '<small>' + col.cartoes.length + '</small></button>'; }).join("");
+    return "";
+  }
+  function autoAltura(t) { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+
+  // ── novo quadro ───────────────────────────────────────────────────────
+  function desenharNovo() {
+    var ordem = ["sprint", "mudanca", "plantoes", "zero"];
+    $("[data-modelos]").innerHTML = ordem.map(function (k) {
+      var m = MODELOS[k], nCards = m.colunas.reduce(function (s, c) { return s + c[1].length; }, 0);
+      var mini = k === "zero" ? '<div class="q-mini">' + svg(ICO.mais, 26) + '</div>'
+        : '<div class="q-mini" data-cor="' + m.cor + '">' + m.colunas.slice(0, 4).map(function (c) {
+          return '<div><b></b>' + c[1].slice(0, 3).map(function (x) { var e = m.etiquetas.filter(function (y) { return y[0] === x[1][0]; })[0]; return '<i data-cor="' + (e ? e[2] : "cobalto") + '"></i>'; }).join("") + '</div>';
+        }).join("") + '</div>';
+      return '<button type="button" class="q-modelo' + (k === "zero" ? " q-modelo-zero" : "") + '" data-modelo="' + k + '" aria-pressed="' + (est.modelo === k) + '">' + mini +
+        '<span class="q-modelo-txt"><b>' + esc(m.nome) + '</b><span>' + esc(m.desc) + '</span><small>' + m.colunas.length + " colunas" + (nCards ? " · " + nCards + " cartões de exemplo" : " vazias") + '</small></span></button>';
+    }).join("");
+    var m = MODELOS[est.modelo], nC = m.colunas.reduce(function (s, c) { return s + c[1].length; }, 0);
+    $("[data-criar-tit]").textContent = est.modelo === "zero" ? "Quadro em branco" : m.nome;
+    $("[data-criar-sub]").textContent = nC ? m.colunas.length + " colunas e " + nC + " cartões de exemplo, prontos para editar." : "Três colunas vazias. Os cartões são seus.";
+    var campo = $("[data-nome-quadro]");
+    if (!est.nomeEditado) campo.value = m.sugestao;
+    campo.placeholder = est.modelo === "zero" ? "Ex.: Reforma da recepção" : m.sugestao;
+    $("[data-cores]").innerHTML = CORES.map(function (c) { return '<button type="button" class="q-cor" role="radio" data-cor="' + c + '" data-escolher-cor="' + c + '" aria-checked="' + (est.corNova === c) + '" aria-label="' + NOMES_COR[c] + '"></button>'; }).join("");
+    $$("[data-visib-novo] button").forEach(function (b) { b.setAttribute("aria-checked", String(b.getAttribute("data-v") === est.visibNova)); });
+    $("[data-voltar-nome]").textContent = quadro().nome;
+    $("[data-n-quadros-novo]").textContent = QUADROS.length;
+    $("[data-previa-cols]").innerHTML = m.colunas.map(function (c) { return "<span>" + esc(c[0]) + "</span>"; }).join("");
+  }
+  function criarQuadro() {
+    var campo = $("[data-nome-quadro]"), nome = campo.value.trim();
+    if (!nome) { campo.setAttribute("aria-invalid", "true"); $("[data-nome-erro]").textContent = "Dê um nome ao quadro para criar."; campo.focus(); return; }
+    var q = deModelo(est.modelo, nome, est.corNova, est.visibNova);
+    QUADROS.push(q);
+    est.quadro = q.id; est.nomeEditado = false; est.busca = ""; est.et = {}; est.pessoas = {}; est.prazo = null; est.colAtiva = 0;
+    $("[data-busca]").value = "";
+    irPara(1);
+    aviso("Quadro “" + nome + "” criado com " + q.colunas.length + " colunas.");
+  }
+
+  // ── cliques ───────────────────────────────────────────────────────────
+  app.addEventListener("click", function (e) {
+    var t = e.target;
+    var ir = t.closest("[data-ir]");
+    if (ir) { if (estado() !== 3) est.nomeEditado = false; app.classList.remove("q-lat-aberta"); irPara(+ir.getAttribute("data-ir")); return; }
+    if (t.closest("[data-desfazer]")) { var f = desfazerFn; desfazerFn = null; $("[data-aviso]").classList.remove("ver"); if (f) f(); return; }
+    // pops abertos fecham com clique fora
+    if (est.pop && !t.closest(".q-pop") && !t.closest("[data-convidar],[data-filtrar]")) fecharPops();
+    if (est.menuCol && !t.closest("[data-menu-col-pop]") && !t.closest("[data-menu-col]")) fecharPops();
+
+    // lateral
+    var qb = t.closest("[data-quadro]");
+    if (qb) { est.quadro = qb.getAttribute("data-quadro"); est.compondo = null; est.et = {}; est.pessoas = {}; est.prazo = null; est.colAtiva = 0; app.classList.remove("q-lat-aberta"); $("[data-menu]").setAttribute("aria-expanded", "false"); irPara(1); return; }
+    var at = t.closest("[data-atalho]");
+    if (at) {
+      var k = at.getAttribute("data-atalho");
+      if (k === "meus") { var ativo = at.getAttribute("aria-pressed") === "true"; est.pessoas = ativo ? {} : {ML: true}; }
+      if (k === "semana") est.prazo = est.prazo === "semana" ? null : "semana";
+      app.classList.remove("q-lat-aberta");
+      if (estado() !== 1) irPara(1); else { desenharQuadro(); desenharLateral(); }
+      return;
+    }
+    if (t.closest("[data-espaco]")) { aviso("Clínica Ipê é o seu único espaço de trabalho por enquanto."); return; }
+    if (t.closest("[data-menu]")) { var ab = app.classList.toggle("q-lat-aberta"); t.closest("[data-menu]").setAttribute("aria-expanded", String(ab)); return; }
+
+    // cabeçalho
+    if (t.closest("[data-renomear]")) {
+      var tc = $("[data-titulo-caixa]");
+      tc.innerHTML = '<label class="q-sr" for="q-tit-edit">Nome do quadro</label><input class="q-titulo-edit" id="q-tit-edit" data-titulo-edit value="' + esc(quadro().nome) + '">';
+      var inp = $("[data-titulo-edit]"); inp.focus(); inp.select(); return;
+    }
+    if (t.closest("[data-estrela]")) { var q = quadro(); q.estrela = !q.estrela; desenharCab(); desenharLateral(); aviso(q.estrela ? "Quadro marcado com estrela." : "Estrela removida."); return; }
+    if (t.closest("[data-visib]")) { var qv = quadro(); qv.visib = qv.visib === "Privado" ? "Equipe" : "Privado"; desenharCab(); aviso(qv.visib === "Privado" ? "Agora só você vê este quadro." : "Toda a Clínica Ipê vê este quadro."); return; }
+    if (t.closest("[data-convidar]")) {
+      var aberto = !$("[data-pop-convite]").hidden; fecharPops();
+      if (!aberto) { $("[data-pop-convite]").hidden = false; t.closest("[data-convidar]").setAttribute("aria-expanded", "true"); est.pop = "convite"; $("[data-email]").focus(); }
+      return;
+    }
+    if (t.closest("[data-filtrar]")) {
+      var aberto2 = !$("[data-pop-filtro]").hidden; fecharPops();
+      if (!aberto2) { desenharFiltro(); $("[data-pop-filtro]").hidden = false; t.closest("[data-filtrar]").setAttribute("aria-expanded", "true"); est.pop = "filtro"; }
+      return;
+    }
+    if (t.closest("[data-fechar-pop]")) { fecharPops(); return; }
+    var fe = t.closest("[data-f-et]"), fp = t.closest("[data-f-p]"), fz = t.closest("[data-f-prazo]");
+    if (fe || fp || fz) {
+      if (fe) est.et[fe.getAttribute("data-f-et")] = !est.et[fe.getAttribute("data-f-et")];
+      if (fp) est.pessoas[fp.getAttribute("data-f-p")] = !est.pessoas[fp.getAttribute("data-f-p")];
+      if (fz) est.prazo = est.prazo === fz.getAttribute("data-f-prazo") ? null : fz.getAttribute("data-f-prazo");
+      desenharFiltro(); desenharQuadro(); desenharLateral(); return;
+    }
+    if (t.closest("[data-limpar]")) { est.et = {}; est.pessoas = {}; est.prazo = null; est.busca = ""; $("[data-busca]").value = ""; if (est.pop === "filtro") desenharFiltro(); desenharQuadro(); desenharLateral(); return; }
+
+    // colunas
+    var ic = t.closest("[data-ir-col]");
+    if (ic) { var i = +ic.getAttribute("data-ir-col"), alvo = $$(".q-coluna")[i]; if (alvo) $("[data-colunas]").scrollTo({left: alvo.offsetLeft - 14, behavior: calmo ? "auto" : "smooth"}); est.colAtiva = i; $$("[data-ir-col]").forEach(function (b, j) { b.setAttribute("aria-current", String(j === i)); }); return; }
+    var ca = t.closest("[data-compor-abrir]");
+    if (ca) { est.compondo = ca.getAttribute("data-compor-abrir"); desenharQuadro(); return; }
+    if (t.closest("[data-cancelar-compor]")) { est.compondo = null; desenharQuadro(); return; }
+    var rc = t.closest("[data-renomear-col]");
+    if (rc) {
+      var colId = rc.getAttribute("data-renomear-col"), colR = quadro().colunas.filter(function (c) { return c.id === colId; })[0];
+      rc.outerHTML = '<input class="q-col-edit" data-col-edit="' + colId + '" value="' + esc(colR.nome) + '" aria-label="Nome da coluna">';
+      var ce = $("[data-col-edit]"); ce.focus(); ce.select(); return;
+    }
+    var mc = t.closest("[data-menu-col]");
+    if (mc) {
+      var id = mc.getAttribute("data-menu-col"), ja = est.menuCol === id; fecharPops();
+      if (!ja) {
+        est.menuCol = id;
+        mc.insertAdjacentHTML("afterend", '<div class="q-pop" data-menu-col-pop role="menu"><button class="q-menu-item" type="button" role="menuitem" data-ordenar="prazo">' + ico("cal", 15) + 'Ordenar por prazo</button><button class="q-menu-item" type="button" role="menuitem" data-ordenar="titulo">' + ico("ordenar", 15) + 'Ordenar de A a Z</button><button class="q-menu-item" type="button" role="menuitem" data-ordenar="compor">' + ico("mais", 15) + 'Adicionar cartão</button></div>');
+      }
+      return;
+    }
+    var or = t.closest("[data-ordenar]");
+    if (or) {
+      var modo = or.getAttribute("data-ordenar"), colO = quadro().colunas.filter(function (c) { return c.id === est.menuCol; })[0];
+      fecharPops();
+      if (modo === "compor") { est.compondo = colO.id; desenharQuadro(); return; }
+      var antes = colO.cartoes.slice();
+      colO.cartoes.sort(modo === "prazo" ? function (x, y) { return (x.prazo || "9999") < (y.prazo || "9999") ? -1 : (x.prazo || "9999") > (y.prazo || "9999") ? 1 : 0; } : function (x, y) { return x.titulo.localeCompare(y.titulo, "pt-BR"); });
+      desenharQuadro();
+      aviso(colO.nome + " ordenada " + (modo === "prazo" ? "por prazo." : "de A a Z."), function () { colO.cartoes = antes; desenharQuadro(); });
+      return;
+    }
+    var card = t.closest(".q-cartao");
+    if (card && card.closest("[data-colunas]") && !ignoraClique) { est.cartao = card.getAttribute("data-cartao"); est.ocultarFeitos = false; irPara(2); return; }
+
+    // cartão aberto
+    if (t.closest("[data-fechar]") || t === $("[data-camada]") || (estado() === 2 && t.matches(".q-lateral"))) { irPara(1); var vol = $('[data-cartao="' + est.cartao + '"]'); if (vol) vol.focus(); return; }
+    var pn = t.closest("[data-painel]");
+    if (pn) {
+      var qual = pn.getAttribute("data-painel");
+      if (qual === "checklist") { est.painel = null; desenharModal(); var it = $("[data-item-txt]"); if (it) { it.focus(); it.scrollIntoView({block: "center", behavior: calmo ? "auto" : "smooth"}); } return; }
+      est.painel = est.painel === qual ? null : qual; desenharModal();
+      var pc = $("[data-painel-caixa]"); if (pc && est.painel) { var b1 = pc.querySelector("button"); if (b1) b1.focus(); }
+      return;
+    }
+    // novo quadro
+    var mo = t.closest("[data-modelo]");
+    if (mo) { est.modelo = mo.getAttribute("data-modelo"); est.corNova = MODELOS[est.modelo].cor; est.nomeEditado = false; $("[data-nome-quadro]").removeAttribute("aria-invalid"); $("[data-nome-erro]").textContent = ""; desenharNovo(); var nq = $('[data-modelo="' + est.modelo + '"]'); if (nq) nq.focus(); if (est.modelo === "zero") $("[data-nome-quadro]").focus(); return; }
+    var co = t.closest("[data-escolher-cor]");
+    if (co) { est.corNova = co.getAttribute("data-escolher-cor"); desenharNovo(); var nc = $('[data-escolher-cor="' + est.corNova + '"]'); if (nc) nc.focus(); return; }
+    var vn = t.closest("[data-visib-novo] button");
+    if (vn) { est.visibNova = vn.getAttribute("data-v"); desenharNovo(); return; }
+    var ac = acharCartao(est.cartao);
+    if (!ac) return;
+    var c = ac.c;
+    var ep = t.closest("[data-escolha-p]");
+    if (ep) { var p = ep.getAttribute("data-escolha-p"), ix = c.membros.indexOf(p); if (ix >= 0) c.membros.splice(ix, 1); else { c.membros.push(p); c.atividade.unshift({p: EU, t: "agora", x: "adicionou " + pessoa(p).nome.split(" ")[0] + " ao cartão", novo: true}); } refazerCartao(); return; }
+    var ee = t.closest("[data-escolha-e]");
+    if (ee) { var eid = ee.getAttribute("data-escolha-e"), ie = c.etiquetas.indexOf(eid); if (ie >= 0) c.etiquetas.splice(ie, 1); else { c.etiquetas.push(eid); c.atividade.unshift({p: EU, t: "agora", x: "adicionou a etiqueta " + etq(eid).nome, novo: true}); } refazerCartao(); return; }
+    var ed = t.closest("[data-escolha-d]");
+    if (ed) { var v = ed.getAttribute("data-escolha-d"); if (v === "nenhum") { c.prazo = null; c.feito = false; } else { c.prazo = isoMais(+v); c.feito = false; c.atividade.unshift({p: EU, t: "agora", x: "definiu o prazo para " + curta(c.prazo), novo: true}); } est.painel = null; refazerCartao(); return; }
+    var ec = t.closest("[data-escolha-col]");
+    if (ec) { moverCartao(c.id, ec.getAttribute("data-escolha-col"), null); est.painel = null; refazerCartao(); return; }
+    if (t.closest("[data-prazo-feito]")) { c.feito = !c.feito; if (c.feito) c.atividade.unshift({p: EU, t: "agora", x: "marcou o prazo como concluído", novo: true}); refazerCartao(); return; }
+    var item = t.closest("[data-item]");
+    if (item) { var x = c.checklist[+item.getAttribute("data-item")]; x.ok = !x.ok; refazerCartao(); var ni = $('[data-item="' + item.getAttribute("data-item") + '"]'); if (ni) ni.focus(); return; }
+    if (t.closest("[data-ocultar-feitos]")) { est.ocultarFeitos = !est.ocultarFeitos; desenharModal(); return; }
+    if (t.closest("[data-editar-desc]")) { est.editDesc = true; desenharModal(); var dt = $("[data-desc-txt]"); if (dt) { dt.focus(); dt.setSelectionRange(dt.value.length, dt.value.length); } return; }
+    if (t.closest("[data-cancelar-desc]")) { est.editDesc = false; desenharModal(); return; }
+    if (t.closest("[data-salvar-desc]")) { c.descricao = $("[data-desc-txt]").value.trim(); est.editDesc = false; c.atividade.unshift({p: EU, t: "agora", x: "editou a descrição", novo: true}); refazerCartao(); return; }
+    if (t.closest("[data-arquivar]")) {
+      var col = ac.col, pos = ac.i; col.cartoes.splice(pos, 1);
+      irPara(1);
+      aviso("“" + c.titulo + "” arquivado.", function () { col.cartoes.splice(pos, 0, c); desenharQuadro(); desenharLateral(); aviso("Cartão de volta em " + col.nome + "."); });
+      return;
+    }
+
+  });
+  function refazerCartao() { desenharModal(); desenharQuadro(); desenharLateral(); }
+
+  // ── formulários e teclado ─────────────────────────────────────────────
+  app.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var f = e.target;
+    if (f.matches("[data-compor]")) { adicionarCartao(f); return; }
+    if (f.matches("[data-novo-item]")) {
+      var inp = $("[data-item-txt]"), txt = inp.value.trim(); if (!txt) { inp.focus(); return; }
+      acharCartao(est.cartao).c.checklist.push({t: txt, ok: false}); refazerCartao(); var n2 = $("[data-item-txt]"); if (n2) n2.focus(); return;
+    }
+    if (f.matches("[data-coment]")) { comentar(); return; }
+    if (f.matches("[data-pop-convite]")) {
+      var em = $("[data-email]"), v = em.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { em.setAttribute("aria-invalid", "true"); $("[data-email-erro]").textContent = "Esse e-mail não parece completo."; em.focus(); return; }
+      var local = v.split("@")[0].split(/[._-]/).filter(Boolean), ini = ((local[0] || "x").charAt(0) + (local[1] || local[0] || "x").charAt(local[1] ? 0 : 1)).toUpperCase();
+      while (PESSOAS[ini]) ini = ini.charAt(0) + String.fromCharCode(ini.charCodeAt(1) + 1);
+      PESSOAS[ini] = {nome: local.map(function (s) { return s.charAt(0).toUpperCase() + s.slice(1); }).join(" "), cor: "rosa", papel: "convidado"};
+      quadro().membros.push(ini);
+      em.value = ""; fecharPops(); desenharCab(); desenharLateral();
+      aviso("Convite enviado para " + v + ".");
+      return;
+    }
+    if (f.matches("[data-criar]")) { criarQuadro(); return; }
+  });
+  function adicionarCartao(f) {
+    var ta = f.querySelector("textarea"), txt = ta.value.trim();
+    if (!txt) { f.classList.remove("treme"); void f.offsetWidth; f.classList.add("treme"); ta.focus(); return; }
+    var col = quadro().colunas.filter(function (c) { return c.id === f.getAttribute("data-compor"); })[0];
+    var novo = cartao(txt, {m: [EU], criado: "agora"});
+    col.cartoes.push(novo);
+    desenharQuadro(); desenharLateral();
+    var el = $('[data-cartao="' + novo.id + '"]'); if (el) el.classList.add("pousou");
+  }
+  function comentar() {
+    var ta = $("[data-coment-txt]"), txt = ta ? ta.value.trim() : "";
+    if (!txt) return;
+    acharCartao(est.cartao).c.comentarios.unshift({p: EU, t: "agora", x: txt, novo: true});
+    refazerCartao();
+    aviso("Comentário publicado.");
+  }
+  app.addEventListener("input", function (e) {
+    var t = e.target;
+    if (t.matches("[data-busca]")) { est.busca = t.value.trim(); desenharQuadro(); return; }
+    if (t.matches("[data-coment-txt]")) { $("[data-comentar]").disabled = !t.value.trim(); t.closest(".q-coment").classList.toggle("ativo", !!t.value); return; }
+    if (t.matches("[data-m-titulo]")) { autoAltura(t); return; }
+    if (t.matches("[data-email]")) { t.removeAttribute("aria-invalid"); $("[data-email-erro]").textContent = ""; return; }
+    if (t.matches("[data-nome-quadro]")) { est.nomeEditado = true; t.removeAttribute("aria-invalid"); $("[data-nome-erro]").textContent = ""; return; }
+  });
+  app.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.matches("[data-m-titulo]")) { var a = acharCartao(est.cartao), v = t.value.replace(/\s+/g, " ").trim(); if (a && v && v !== a.c.titulo) { a.c.titulo = v; a.c.atividade.unshift({p: EU, t: "agora", x: "renomeou o cartão", novo: true}); desenharQuadro(); aviso("Título salvo."); } else if (a) t.value = a.c.titulo; }
+  });
+  app.addEventListener("focusout", function (e) {
+    var t = e.target;
+    if (t.matches("[data-titulo-edit]")) salvarTitulo(t);
+    if (t.matches("[data-col-edit]")) salvarColuna(t);
+  });
+  function salvarTitulo(t) {
+    if (!t.isConnected) return;
+    var v = t.value.trim(), q = quadro();
+    if (v) q.nome = v;
+    $("[data-titulo-caixa]").innerHTML = '<button class="q-titulo" type="button" data-renomear title="Renomear quadro">' + esc(q.nome) + '</button>';
+    desenharLateral();
+  }
+  function salvarColuna(t) {
+    if (!t.isConnected) return;
+    var id = t.getAttribute("data-col-edit"), col = quadro().colunas.filter(function (c) { return c.id === id; })[0], v = t.value.trim();
+    if (v) col.nome = v;
+    desenharQuadro();
+  }
+  app.addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (t.matches("[data-compor-txt]")) {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); adicionarCartao(t.closest("form")); return; }
+      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); est.compondo = null; desenharQuadro(); return; }
+    }
+    if (t.matches("[data-titulo-edit]")) {
+      if (e.key === "Enter") { e.preventDefault(); t.blur(); }
+      if (e.key === "Escape") { t.value = quadro().nome; t.blur(); }
+      return;
+    }
+    if (t.matches("[data-col-edit]")) {
+      if (e.key === "Enter") { e.preventDefault(); t.blur(); }
+      if (e.key === "Escape") { t.value = ""; t.blur(); }
+      return;
+    }
+    if (t.matches("[data-m-titulo]") && e.key === "Enter") { e.preventDefault(); t.blur(); return; }
+    if (t.matches("[data-coment-txt]") && e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); comentar(); return; }
+    if ((e.key === "Enter" || e.key === " ") && t.matches(".q-cartao")) { e.preventDefault(); est.porTeclado = true; t.click(); return; }
+    if (e.key === "Escape") {
+      if (est.pop || est.menuCol) { fecharPops(); return; }
+      if (estado() === 2 && !t.matches("textarea,input")) { irPara(1); var vol = $('[data-cartao="' + est.cartao + '"]'); if (vol) vol.focus(); }
+    }
+  });
+
+  // Esc fecha o cartão mesmo quando o foco ficou fora do app (depois de um clique que redesenhou o quadro)
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" || estado() !== 2 || app.contains(e.target) || (e.target.closest && e.target.closest("dialog"))) return;
+    irPara(1);
+  });
+
+  // celular: a aba da coluna acompanha a rolagem horizontal
+  var rolTimer = 0;
+  $("[data-colunas]").addEventListener("scroll", function () {
+    clearTimeout(rolTimer);
+    rolTimer = setTimeout(function () {
+      var sc = $("[data-colunas]"), cols = $$(".q-coluna"), melhor = 0, dist = Infinity;
+      cols.forEach(function (c, i) { var d = Math.abs(c.offsetLeft - 14 - sc.scrollLeft); if (d < dist) { dist = d; melhor = i; } });
+      est.colAtiva = melhor;
+      $$("[data-ir-col]").forEach(function (b, j) { b.setAttribute("aria-current", String(j === melhor)); });
+    }, 80);
+  }, {passive: true});
+
+  aplicar(estado());
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>

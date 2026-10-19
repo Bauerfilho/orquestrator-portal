@@ -1,0 +1,1724 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Céu · Maquete</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "ceu",
+  "nome": "Céu",
+  "colecao": "referencia",
+  "tipo": "App celular",
+  "tela": "celular",
+  "resumo": "App de clima em que o céu inteiro é a interface: o fundo muda com a condição e a hora, a temperatura ocupa a tela, os cartões são de vidro e os ícones se mexem. Quatro cidades, previsão por hora, dez dias e um alerta de tempestade severa.",
+  "referencias": [
+    {
+      "nome": "Breezy Weather",
+      "modelo": "open source",
+      "licenca": "LGPL-3.0"
+    },
+    {
+      "nome": "Carrot Weather",
+      "modelo": "pago"
+    }
+  ],
+  "direcao": "O fundo é um gradiente de céu que muda sozinho: azul de meio-dia, rosa e laranja no entardecer, índigo à noite, cinza-ardósia na chuva, e um âmbar de aviso no alerta. Temperatura enorme em peso fino, cartões de vidro fosco com texto branco sobre vidro escuro (contraste AA), sol, lua, nuvens, chuva e raio desenhados em SVG e animados. No tema escuro o céu fica mais fundo e dessaturado; o alerta vira um âmbar incandescente sobre marrom.",
+  "estados": [
+    {
+      "nome": "Agora",
+      "descricao": "Temperatura enorme de Goiânia (e de Brasília, São Paulo e Fortaleza no seletor), sensação, máxima e mínima, faixa por hora que se pode tocar para ver o céu daquela hora, e cartões de UV, vento com bússola, umidade, chuva, nascer e pôr do sol em arco, pressão e visibilidade. Em tela larga, um painel de três colunas."
+    },
+    {
+      "nome": "Próximos 10 dias",
+      "descricao": "Lista de dez dias com ícone, chance de chuva e uma barra de faixa mínima–máxima na mesma escala; cada dia abre os detalhes (em tela larga, o dia escolhido ganha um gráfico de temperatura e chuva hora a hora ao lado)."
+    },
+    {
+      "nome": "Alerta",
+      "descricao": "Alerta de tempestade severa em âmbar e laranja: nível, contagem regressiva, janela de horário, linha do tempo da intensidade, o que esperar, mapa da área com radar, lista de cuidados que se marca e lembrete antes do início. Cidades sem alerta mostram um estado calmo."
+    }
+  ],
+  "paleta": [
+    {
+      "nome": "Azul de meio-dia",
+      "hex": "#1a5fc8"
+    },
+    {
+      "nome": "Azul horizonte",
+      "hex": "#5fa7e8"
+    },
+    {
+      "nome": "Entardecer",
+      "hex": "#b2557c"
+    },
+    {
+      "nome": "Noite",
+      "hex": "#0b1535"
+    },
+    {
+      "nome": "Ardósia",
+      "hex": "#3e5068"
+    },
+    {
+      "nome": "Âmbar de aviso",
+      "hex": "#ffcf55"
+    },
+    {
+      "nome": "Laranja de alerta",
+      "hex": "#ee7a24"
+    },
+    {
+      "nome": "Tinta do alerta",
+      "hex": "#2a1100"
+    }
+  ],
+  "tipografia": "Pilha do sistema (SF Pro Display, Avenir Next, Inter): a temperatura em peso 200 e tamanho em unidades do contêiner (cqi), rótulos de cartão em caixa-alta com 0,1em de espaçamento, números tabulares nos horários e na contagem regressiva. Texto pequeno só sobre vidro escuro; sobre o céu aberto, só texto grande e negrito.",
+  "componentes": [
+    "Céu em gradiente com sol, lua, nuvens, chuva e relâmpago",
+    "Seletor de cidade (folha no celular, lateral em tela larga)",
+    "Temperatura de herói com ícone animado",
+    "Faixa por hora selecionável",
+    "Cartão UV com escala",
+    "Bússola de vento",
+    "Arco do sol",
+    "Lista de 10 dias com barra de faixa",
+    "Gráfico do dia (temperatura e chuva)",
+    "Faixa de alerta e contagem regressiva",
+    "Linha do tempo de intensidade",
+    "Mapa de área com radar",
+    "Lista de cuidados marcável",
+    "Barra de abas de vidro"
+  ],
+  "replicar": [
+    "Modelo de dados: Local (id, nome, lat, lon, fuso), Observacao (local_id, instante, temperatura, sensação, umidade, vento, rajada, direção, pressão, UV, visibilidade), PrevisaoHoraria e PrevisaoDiaria (mínima, máxima, chance de chuva, mm, código de condição), Alerta (local_id, nível, fenômeno, início, fim, polígono, texto). A condição é um código curto (limpo, parcial, nublado, chuva, tempestade) que escolhe ícone, céu e frase.",
+    "O céu vem de duas entradas: o código da condição e a posição do sol (nascer e pôr do sol do local, no instante escolhido). Com isso se escolhe a paleta, o ponto do sol ou da lua no arco e a densidade de nuvens, exatamente como a função que decide o céu aqui.",
+    "Pilha sugerida: PWA em SvelteKit ou Next.js com cache offline da última previsão; ou React Native/Expo com widgets de tela inicial. Notificações por Web Push (alerta e lembrete) e geolocalização opcional.",
+    "Fontes de dados: o Open-Meteo (aberto, sem chave) cobre previsão horária e diária no mundo todo; para o Brasil, o INMET publica avisos e estações abertas. Alertas reais entram como CAP/Atom e viram polígonos no mapa.",
+    "O radar e o mapa são camadas de tiles (MapLibre) com a área do alerta em GeoJSON; aqui é um desenho esquemático. Ícones animados em SVG com CSS respeitam prefers-reduced-motion e funcionam como estáticos.",
+    "Corte do MVP: uma cidade, agora, hora a hora e dez dias com o céu em gradiente. Alertas, mapa, cartões extras, cidades salvas e unidades vêm depois."
+  ],
+  "proposta": "Freemium",
+  "modelo_negocio": "Previsão básica grátis; a assinatura libera radar, alertas personalizados por bairro, widgets e previsão minuto a minuto."
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+@property --c1{syntax:"<color>";inherits:true;initial-value:#1a5fc8}
+@property --c2{syntax:"<color>";inherits:true;initial-value:#3b8be0}
+@property --c3{syntax:"<color>";inherits:true;initial-value:#5fa7e8}
+:root{
+  --tx:#ffffff;--tx2:rgba(255,255,255,.93);--realce:#bfe4ff;
+  --vidro:rgba(10,26,60,.44);--vidro2:rgba(10,26,60,.58);--borda:rgba(255,255,255,.2);--hover:rgba(255,255,255,.12);
+  --folha-bg:#f4f7fb;--folha-tx:#12213a;--folha-suave:#4a5a75;--folha-fio:rgba(18,33,58,.12);
+  --sombra:0 10px 30px rgba(5,18,45,.28);
+  --fonte:"SF Pro Display","SF Pro Text","Avenir Next",Inter,system-ui,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+}
+:root[data-tema=escuro]{
+  --vidro:rgba(0,0,0,.34);--vidro2:rgba(0,0,0,.5);--borda:rgba(255,255,255,.14);--hover:rgba(255,255,255,.1);
+  --folha-bg:#0f1826;--folha-tx:#f1f5fb;--folha-suave:#a9b6ca;--folha-fio:rgba(255,255,255,.12);
+  --sombra:0 10px 34px rgba(0,0,0,.5);
+}
+/* céus: claro (padrão) e escuro */
+#app{--c1:#1a5fc8;--c2:#3b8be0;--c3:#5fa7e8}
+#app[data-ceu=dia]{--c1:#1a5fc8;--c2:#3b8be0;--c3:#5fa7e8}
+#app[data-ceu=parcial]{--c1:#1f5fc0;--c2:#4287d8;--c3:#6ba6e2}
+#app[data-ceu=nublado]{--c1:#4f6b8f;--c2:#6f8aaa;--c3:#93a8c0}
+#app[data-ceu=chuva]{--c1:#3e5068;--c2:#58708c;--c3:#7d94ad}
+#app[data-ceu=tempestade]{--c1:#323a52;--c2:#4a5673;--c3:#6b7897}
+#app[data-ceu=entardecer]{--c1:#3a3f93;--c2:#b2557c;--c3:#e8864f}
+#app[data-ceu=amanhecer]{--c1:#35529f;--c2:#b46a8d;--c3:#f0a16b}
+#app[data-ceu=noite]{--c1:#0b1535;--c2:#14285c;--c3:#234479}
+#app[data-ceu=noite-chuva]{--c1:#0f1624;--c2:#1c2940;--c3:#2f4260}
+:root[data-tema=escuro] #app[data-ceu=dia]{--c1:#0b2a57;--c2:#12427d;--c3:#1d5c9f}
+:root[data-tema=escuro] #app[data-ceu=parcial]{--c1:#0f3262;--c2:#1a4f8a;--c3:#2a6aa4}
+:root[data-tema=escuro] #app[data-ceu=nublado]{--c1:#1e2d44;--c2:#2c4160;--c3:#3e5878}
+:root[data-tema=escuro] #app[data-ceu=chuva]{--c1:#151f2e;--c2:#223349;--c3:#31475f}
+:root[data-tema=escuro] #app[data-ceu=tempestade]{--c1:#0d111a;--c2:#182033;--c3:#27324a}
+:root[data-tema=escuro] #app[data-ceu=entardecer]{--c1:#1b1d4a;--c2:#6b2f5a;--c3:#a85a38}
+:root[data-tema=escuro] #app[data-ceu=amanhecer]{--c1:#1a2650;--c2:#6d4668;--c3:#b0714f}
+:root[data-tema=escuro] #app[data-ceu=noite]{--c1:#050912;--c2:#0a1430;--c3:#132a55}
+:root[data-tema=escuro] #app[data-ceu=noite-chuva]{--c1:#05080f;--c2:#0d1626;--c3:#18263d}
+/* alerta: âmbar de aviso (claro, tinta escura) e brasa sobre marrom (escuro) */
+#app[data-ceu=alerta]{--c1:#ffcf55;--c2:#ffa22b;--c3:#ee7a24;--tx:#2a1100;--tx2:#3a1a06;--realce:#7a2a00;--vidro:rgba(255,255,255,.34);--vidro2:rgba(255,255,255,.5);--borda:rgba(42,17,0,.18);--hover:rgba(42,17,0,.1)}
+:root[data-tema=escuro] #app[data-ceu=alerta]{--c1:#3a1706;--c2:#4f2008;--c3:#1b0c05;--tx:#fff6ea;--tx2:#ffe9cf;--realce:#ffb347;--vidro:rgba(255,160,50,.1);--vidro2:rgba(255,160,50,.16);--borda:rgba(255,179,71,.28);--hover:rgba(255,179,71,.14)}
+#app[data-ceu=alerta-calmo]{--c1:#2a6bc2;--c2:#3f8fd8;--c3:#5ba3e2}
+:root[data-tema=escuro] #app[data-ceu=alerta-calmo]{--c1:#0d2c58;--c2:#143f76;--c3:#1d5391}
+
+#app{container:app / inline-size;display:flex;flex-direction:column;position:relative;isolation:isolate;color:var(--tx);
+  font:400 15px/1.45 var(--fonte);letter-spacing:-.003em;-webkit-font-smoothing:antialiased;
+  background:linear-gradient(180deg,var(--c1) 0%,var(--c2) 55%,var(--c3) 100%);
+  transition:--c1 1.1s ease,--c2 1.1s ease,--c3 1.1s ease}
+#app *{box-sizing:border-box}
+#app button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app h1,#app h2,#app h3,#app h4,#app p,#app ol,#app ul,#app dl,#app dd,#app figure{margin:0;padding:0}
+#app ol,#app ul{list-style:none}
+#app :focus-visible{outline:2.5px solid var(--tx);outline-offset:3px;border-radius:10px}
+#app .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .c-sprite{position:absolute;width:0;height:0;overflow:hidden}
+#app .i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+#app .i16{width:16px;height:16px}#app .i18{width:18px;height:18px}#app .i22{width:22px;height:22px}#app .i24{width:24px;height:24px}
+
+/* ───── o céu (camada decorativa) ───── */
+#app .c-ceu{position:sticky;top:0;height:0;z-index:0;pointer-events:none}
+#app .c-ceu-in{position:absolute;top:0;left:0;right:0;height:100vh;max-height:920px;overflow:hidden;--ox:50%;--oy:30%}
+#app .c-orbe{position:absolute;left:var(--ox);top:var(--oy);width:210px;height:210px;margin:-105px 0 0 -105px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,250,215,.95) 0,rgba(255,236,150,.8) 9%,rgba(255,214,102,.42) 22%,rgba(255,200,90,.16) 42%,transparent 68%);
+  opacity:var(--orbe-op,.95);transition:left 1.2s cubic-bezier(.3,.7,.2,1),top 1.2s cubic-bezier(.3,.7,.2,1),opacity .9s}
+#app[data-orbe=lua] .c-orbe{background:radial-gradient(circle,rgba(255,253,240,.98) 0,rgba(236,240,255,.85) 8%,rgba(190,206,255,.36) 22%,rgba(170,190,255,.12) 42%,transparent 68%)}
+#app[data-orbe=poente] .c-orbe{background:radial-gradient(circle,rgba(255,240,205,.98) 0,rgba(255,190,110,.85) 9%,rgba(255,140,80,.45) 24%,rgba(255,110,70,.18) 46%,transparent 70%)}
+#app .c-estrelas{position:absolute;inset:0;opacity:0;transition:opacity 1s;
+  background-image:radial-gradient(1.4px 1.4px at 12% 18%,#fff 98%,transparent),radial-gradient(1px 1px at 28% 8%,#fff 98%,transparent),radial-gradient(1.6px 1.6px at 44% 22%,#fff 98%,transparent),radial-gradient(1px 1px at 61% 12%,#fff 98%,transparent),radial-gradient(1.5px 1.5px at 78% 26%,#fff 98%,transparent),radial-gradient(1px 1px at 90% 10%,#fff 98%,transparent),radial-gradient(1.2px 1.2px at 20% 38%,#fff 98%,transparent),radial-gradient(1.4px 1.4px at 52% 42%,#fff 98%,transparent),radial-gradient(1px 1px at 84% 46%,#fff 98%,transparent),radial-gradient(1.2px 1.2px at 6% 52%,#fff 98%,transparent),radial-gradient(1px 1px at 68% 6%,#fff 98%,transparent)}
+#app[data-estrelas="1"] .c-estrelas{opacity:.85;animation:c-brilha 5s ease-in-out infinite alternate}
+@keyframes c-brilha{from{opacity:.5}to{opacity:.95}}
+#app .c-nuv{position:absolute;color:#eaf3ff;opacity:0;filter:blur(.4px);transition:opacity 1s,color 1s;will-change:transform}
+#app .c-nuv.n1{top:9%;width:min(86%,520px);left:-20%;animation:c-passa 120s linear -34s infinite}
+#app .c-nuv.n2{top:23%;width:min(70%,430px);left:-60%;animation:c-passa 160s linear -92s infinite}
+#app .c-nuv.n3{top:36%;width:min(95%,560px);left:-30%;animation:c-passa 200s linear -128s infinite}
+#app .c-nuv.n4{top:15%;width:min(60%,360px);left:-70%;animation:c-passa 140s linear -70s infinite}
+@keyframes c-passa{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 40%))}}
+#app[data-nuvens="0"] .c-nuv.n4{opacity:.22}
+#app[data-nuvens="1"] .c-nuv.n1,#app[data-nuvens="1"] .c-nuv.n2,#app[data-nuvens="1"] .c-nuv.n4{opacity:.34}
+#app[data-nuvens="2"] .c-nuv{opacity:.4}
+#app[data-nuvens="3"] .c-nuv{opacity:.55;color:#8b9bb5}
+#app[data-ceu=nublado] .c-nuv{color:#8b9bb5;opacity:.5}
+#app[data-ceu=chuva] .c-nuv,#app[data-ceu=noite-chuva] .c-nuv{color:#667792;opacity:.6}
+#app[data-ceu=tempestade] .c-nuv{color:#4b556d;opacity:.75}
+#app[data-ceu=entardecer] .c-nuv{color:#ffcfb0;opacity:.4}
+#app[data-ceu=amanhecer] .c-nuv{color:#ffd9c9;opacity:.4}
+#app[data-ceu=noite] .c-nuv{color:#5a6c99;opacity:.42}
+#app[data-ceu=noite-chuva] .c-nuv{color:#46556f;opacity:.7}
+:root[data-tema=escuro] #app .c-nuv{filter:blur(.4px) brightness(.6)}
+#app[data-ceu=alerta] .c-nuv{color:#a8541c;opacity:.32}
+:root[data-tema=escuro] #app[data-ceu=alerta] .c-nuv{color:#8a4a22;opacity:.7;filter:blur(.4px) brightness(.55)}
+#app .c-chuva{position:absolute;inset:0;opacity:0;transition:opacity .9s;
+  background:repeating-linear-gradient(103deg,rgba(255,255,255,0) 0 18px,rgba(210,230,255,.34) 18px 19px,rgba(255,255,255,0) 19px 41px),repeating-linear-gradient(103deg,rgba(255,255,255,0) 0 31px,rgba(210,230,255,.2) 31px 32px,rgba(255,255,255,0) 32px 57px);
+  background-size:300px 300px,420px 420px;animation:c-chove .9s linear infinite;-webkit-mask-image:linear-gradient(180deg,#000 0,#000 60%,transparent);mask-image:linear-gradient(180deg,#000 0,#000 60%,transparent)}
+@keyframes c-chove{from{background-position:0 0,0 0}to{background-position:-48px 300px,-70px 420px}}
+#app[data-chuva="1"] .c-chuva{opacity:.5}
+#app[data-chuva="2"] .c-chuva{opacity:.9}
+#app .c-relampago{position:absolute;inset:0;opacity:0;background:radial-gradient(60% 40% at 70% 12%,rgba(255,255,255,.55),transparent 70%)}
+#app[data-tempestade="1"] .c-relampago{animation:c-relampago 7s linear infinite}
+@keyframes c-relampago{0%,86%,100%{opacity:0}87%{opacity:.5}88%{opacity:.05}90%{opacity:.4}93%{opacity:0}}
+#app[data-ceu=alerta] .c-orbe,#app[data-ceu=alerta] .c-estrelas{display:none}
+:root[data-tema=escuro] #app[data-ceu=alerta] .c-ceu-in::after{content:"";position:absolute;inset:0;background:radial-gradient(80% 46% at 24% 0%,rgba(255,150,40,.38),transparent 72%),radial-gradient(60% 40% at 90% 10%,rgba(255,90,30,.2),transparent 70%)}
+
+/* ───── layout ───── */
+#app .c-app{--c-pad:36px;position:relative;z-index:1;flex:none;display:grid;grid-template-columns:276px minmax(0,1fr);height:var(--c-alt,calc(100vh - 54px));min-height:0;overflow:hidden}
+#app .c-ceu{position:absolute;inset:0;height:auto}
+#app .c-ceu-in{height:100%;max-height:none}
+#app .c-vista{display:none;min-width:0;overflow:auto;padding:30px var(--c-pad) 40px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+#app[data-estado="1"] .c-agora,#app[data-estado="2"] .c-dias,#app[data-estado="3"] .c-alerta{display:grid}
+#app .c-abas{display:none}
+
+/* lateral */
+#app .c-lateral{display:flex;flex-direction:column;gap:22px;padding:26px 16px 18px;border-right:1px solid var(--borda);background:var(--vidro);backdrop-filter:blur(26px) saturate(1.3);-webkit-backdrop-filter:blur(26px) saturate(1.3);overflow:auto;scrollbar-width:none}
+#app .c-marca{display:flex;align-items:center;gap:11px;padding:0 10px;font-weight:700;font-size:22px;letter-spacing:-.03em}
+#app .c-marca svg{width:32px;height:32px;border-radius:10px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+#app .c-nav{display:grid;gap:3px}
+#app .c-nav button{display:flex;align-items:center;gap:12px;height:44px;padding:0 12px;border-radius:12px;font-weight:620;font-size:14.5px;transition:background-color .15s}
+#app .c-nav button:hover{background:var(--hover)}
+#app .c-nav button[aria-current=page]{background:var(--vidro2);box-shadow:inset 0 0 0 1px var(--borda)}
+#app .c-nav .ponto{margin-left:auto;width:9px;height:9px;border-radius:50%;background:#ffb02e;box-shadow:0 0 0 3px rgba(255,176,46,.28)}
+#app .c-lat-tit{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:0 12px 8px;color:var(--tx2)}
+#app .c-cidades{display:grid;gap:6px}
+#app .c-cidade{display:grid;grid-template-columns:minmax(0,1fr) auto 38px;align-items:center;gap:8px;padding:11px 12px;border-radius:16px;background:var(--vidro);border:1px solid var(--borda);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:background-color .15s,transform .15s,box-shadow .15s}
+#app .c-cidade:hover{background:var(--vidro2);transform:translateY(-1px)}
+#app .c-cidade[aria-pressed=true]{background:var(--vidro2);box-shadow:inset 0 0 0 1.5px var(--tx)}
+#app .c-cidade strong{display:block;font-size:15px;font-weight:680;letter-spacing:-.015em}
+#app .c-cidade small{display:block;font-size:12.5px;color:var(--tx2)}
+#app .c-cidade .tp{font-size:26px;font-weight:300;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+#app .c-cidade .wi{width:38px;height:38px}
+#app .c-cidade .al{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffb02e;margin-right:6px;vertical-align:1px}
+#app .c-un{display:flex;padding:3px;border-radius:12px;background:var(--vidro);border:1px solid var(--borda)}
+#app .c-un button{flex:1;height:34px;border-radius:9px;text-align:center;font-weight:650;font-size:13.5px;transition:background-color .15s}
+#app .c-un button[aria-pressed=true]{background:#fff;color:#12213a}
+#app .c-rodape{margin-top:auto;font-size:12px;color:var(--tx2);padding:0 10px;line-height:1.5}
+
+/* painéis em vidro */
+#app .c-vidro{background:var(--vidro);border:1px solid var(--borda);border-radius:24px;backdrop-filter:blur(20px) saturate(1.35);-webkit-backdrop-filter:blur(20px) saturate(1.35);box-shadow:0 1px 0 rgba(255,255,255,.08) inset}
+#app .c-rot{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)}
+#app .c-rot .i{width:15px;height:15px}
+
+/* ───── ESTADO 1 · Agora ───── */
+#app .c-agora{grid-template-columns:minmax(0,1fr) 352px;grid-template-areas:"topo lado" "hero lado" "banner lado" "horas lado" "cards lado";grid-template-rows:repeat(5,auto);gap:20px 28px;align-content:start}
+#app .c-topo{grid-area:topo;display:flex;align-items:center;gap:10px}
+#app .c-topo-cid{display:none}
+#app .c-atual{margin-left:auto;font-size:13px;font-weight:600;color:var(--tx2)}
+#app .c-hero{grid-area:hero;display:flex;align-items:center;gap:28px;padding:6px 0 4px}
+#app .c-hero .wi{width:min(30cqi,168px);height:min(30cqi,168px);flex:none;filter:drop-shadow(0 12px 22px rgba(0,0,0,.22))}
+#app .c-hero-tx{min-width:0}
+#app .c-hero-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#app .c-cond{font-size:21px;font-weight:700;letter-spacing:-.02em;text-shadow:0 1px 12px rgba(6,24,60,.4)}
+#app .c-grau{display:block;font-size:min(23cqi,148px);line-height:.95;font-weight:200;letter-spacing:-.06em;font-variant-numeric:tabular-nums;margin:2px 0 6px -.04em;text-shadow:0 2px 26px rgba(6,24,60,.32)}
+#app .c-hl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;text-shadow:0 1px 10px rgba(6,24,60,.4)}
+#app .c-chip{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:999px;background:var(--vidro);border:1px solid var(--borda);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-size:14px;font-weight:620;font-variant-numeric:tabular-nums}
+#app .c-chip.hora-x{cursor:pointer;transition:background-color .15s}
+#app .c-chip.hora-x:hover{background:var(--vidro2)}
+#app .c-banner{grid-area:banner;display:none}
+#app .c-lado{grid-area:lado;display:grid;gap:16px;align-content:start}
+#app .c-faixa{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;padding:13px 14px;border-radius:20px;text-align:left;background:linear-gradient(135deg,rgba(255,176,46,.95),rgba(242,112,28,.95));color:#2a1100;box-shadow:0 10px 28px rgba(242,112,28,.35);transition:transform .15s}
+#app .c-faixa:hover{transform:translateY(-2px)}
+#app .c-faixa:active{transform:scale(.985)}
+#app .c-faixa .ic{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:rgba(42,17,0,.12)}
+#app .c-faixa strong{display:block;font-size:15px;font-weight:760;letter-spacing:-.015em}
+#app .c-faixa span.s{display:block;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+#app .c-faixa .i{width:22px;height:22px}
+#app .c-faixa.calma{background:var(--vidro);color:var(--tx);box-shadow:none;border:1px solid var(--borda)}
+#app .c-faixa.calma .ic{background:var(--hover)}
+#app .c-horas{grid-area:horas;padding:16px 0 12px}
+#app .c-horas .c-rot{padding:0 18px 12px}
+#app .c-horas-lista{display:flex;gap:4px;overflow-x:auto;padding:2px 12px 6px;scrollbar-width:none;scroll-snap-type:x proximity}
+#app .c-horas-lista::-webkit-scrollbar{display:none}
+#app .c-h{flex:none;display:grid;justify-items:center;gap:5px;width:62px;padding:10px 4px 9px;border-radius:18px;scroll-snap-align:start;text-align:center;font-variant-numeric:tabular-nums;border:1px solid transparent;transition:background-color .15s,border-color .15s}
+#app .c-h:hover{background:var(--hover)}
+#app .c-h[aria-pressed=true]{background:var(--hover);border-color:var(--borda);box-shadow:0 0 0 1px rgba(255,255,255,.1) inset}
+#app .c-h .h{font-size:13.5px;font-weight:650}
+#app .c-h .wi{width:36px;height:36px}
+#app .c-h .t{font-size:18px;font-weight:700;letter-spacing:-.02em}
+#app .c-h .p{font-size:12px;font-weight:700;color:var(--realce);min-height:16px}
+#app .c-h.ev{width:74px;gap:6px}
+#app .c-h.ev .h{font-size:12.5px}
+#app .c-h.ev .t{font-size:13.5px;font-weight:700}
+#app .c-h.ev .i{width:30px;height:30px;color:#ffd23f}
+#app .c-cards{grid-area:cards;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-content:start}
+#app .c-card{padding:16px 16px 15px;display:flex;flex-direction:column;gap:9px;min-height:152px;min-width:0}
+#app .c-card.dobro{grid-column:span 2}
+#app .c-valor{font-size:34px;font-weight:300;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+#app .c-valor small{font-size:15px;font-weight:600;letter-spacing:0;margin-left:3px}
+#app .c-card p{font-size:13.5px;line-height:1.4;color:var(--tx2);font-weight:500}
+#app .c-card p b{font-weight:700;color:var(--tx)}
+#app .c-uv-escala{position:relative;height:7px;border-radius:4px;background:linear-gradient(90deg,#4ec86b 0%,#f2d338 28%,#f59a2e 52%,#e8453a 76%,#9a4bd0 100%);margin:2px 0}
+#app .c-uv-escala i{position:absolute;top:50%;left:var(--x);width:15px;height:15px;margin:-7.5px 0 0 -7.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.3),0 2px 6px rgba(0,0,0,.4)}
+#app .c-vento-linha{display:flex;align-items:center;gap:12px}
+#app .c-vento-linha .c-valor small{display:block;margin:4px 0 0}
+#app .c-bussola{width:68px;height:68px;flex:none}
+#app .c-bussola .seta{transform-origin:50px 50px;transition:transform 1s cubic-bezier(.3,1.3,.5,1)}
+#app .c-barra{height:7px;border-radius:4px;background:rgba(255,255,255,.22);overflow:hidden}
+#app .c-barra i{display:block;height:100%;width:var(--w);border-radius:inherit;background:linear-gradient(90deg,#7cc6ff,#fff);transition:width .8s cubic-bezier(.3,.9,.3,1)}
+#app .c-arco{width:100%;height:auto;max-height:104px;overflow:visible}
+#app .c-arco text{font-family:inherit}
+#app .c-sol-linha{display:flex;justify-content:space-between;font-size:13.5px;font-weight:650;font-variant-numeric:tabular-nums}
+#app .c-sol-linha span{display:grid}
+#app .c-sol-linha small{font-size:11.5px;font-weight:600;color:var(--tx2)}
+#app .c-mm-barras{display:flex;align-items:flex-end;gap:2px;height:34px}
+#app .c-mm-barras i{flex:1;min-width:2px;border-radius:2px 2px 0 0;background:var(--realce);opacity:.9;height:max(8%,var(--h))}
+#app .c-spark{width:100%;height:34px}
+#app .c-trend{display:inline-flex;align-items:center;gap:4px;font-weight:700}
+
+/* próximos dias compactos (lado do estado 1) */
+#app .c-prox{padding:16px 6px 10px}
+#app .c-prox .c-rot{padding:0 14px 8px}
+#app .c-prox-lista{display:grid}
+#app .c-prox-ver{display:flex;align-items:center;justify-content:center;gap:6px;margin:6px 10px 6px;height:42px;border-radius:14px;font-weight:650;font-size:14px;background:var(--hover);transition:background-color .15s}
+#app .c-prox-ver:hover{background:var(--vidro2)}
+
+/* linhas de dia (compartilhadas) */
+#app .c-dia{width:100%;display:grid;grid-template-columns:62px 36px 52px 34px minmax(70px,1fr) 34px;align-items:center;gap:6px 10px;padding:11px 14px;border-radius:16px;text-align:left;font-variant-numeric:tabular-nums;transition:background-color .15s}
+#app .c-dia:hover{background:var(--hover)}
+#app .c-dia .nm{display:grid;line-height:1.2}
+#app .c-dia .nm b{font-size:15.5px;font-weight:700}
+#app .c-dia .nm small{font-size:12px;color:var(--tx2);font-weight:500}
+#app .c-dia .wi{width:36px;height:36px}
+#app .c-dia .pp{font-size:13px;font-weight:700;color:var(--realce);display:flex;align-items:center;gap:3px;min-height:18px}
+#app .c-dia .pp .i{width:13px;height:13px}
+#app .c-dia .mn,#app .c-dia .mx{font-size:16px;font-weight:700;text-align:right}
+#app .c-dia .mn{color:var(--tx2);font-weight:600}
+#app .c-faixa-temp{position:relative;height:7px;border-radius:4px;background:rgba(255,255,255,.22)}
+#app .c-faixa-temp i{position:absolute;top:0;bottom:0;left:var(--a);width:var(--l);border-radius:4px;background:linear-gradient(90deg,#8fd0ff,#ffe27a 55%,#ff9f45);box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+#app .c-faixa-temp b{position:absolute;top:50%;left:var(--agora);width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 2.5px rgba(0,0,0,.35)}
+#app .c-dia[aria-pressed=true],#app .c-dia[aria-expanded=true]{background:var(--hover)}
+#app .c-dia-det{display:none;grid-column:1/-1}
+
+/* ───── ESTADO 2 · Dias ───── */
+#app .c-dias{grid-template-columns:minmax(0,1fr) 400px;grid-template-areas:"topo detalhe" "tit detalhe" "lista detalhe";grid-template-rows:repeat(3,auto);gap:18px 28px;align-content:start}
+#app .c-tit h1{font-size:34px;line-height:1.05;font-weight:760;letter-spacing:-.035em}
+#app .c-tit p{margin-top:8px;font-size:16px;font-weight:600;max-width:46ch;line-height:1.4}
+#app .c-dias .c-topo{grid-area:topo}
+#app .c-dias .c-tit{grid-area:tit}
+#app .c-dias-lista{grid-area:lista;padding:10px 8px;display:grid;gap:2px;align-content:start}
+#app .c-detalhe{grid-area:detalhe;align-self:start;padding:20px 20px 18px;display:grid;gap:16px;align-content:start;position:sticky;top:0}
+#app .c-detalhe h2{font-size:23px;font-weight:720;letter-spacing:-.03em;line-height:1.1}
+#app .c-detalhe .sub{font-size:14px;color:var(--tx2);font-weight:600;margin-top:3px}
+#app .c-det-cab{display:flex;align-items:center;gap:14px}
+#app .c-det-cab .wi{width:64px;height:64px;flex:none}
+#app .c-det-cab .tp{margin-left:auto;text-align:right;font-size:36px;font-weight:200;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+#app .c-det-cab .tp small{display:block;font-size:14px;font-weight:600;letter-spacing:0;margin-top:5px;color:var(--tx2)}
+#app .c-grafico{width:100%;height:auto;overflow:visible}
+#app .c-grafico text{font-family:inherit;font-size:10.5px;font-weight:600;fill:var(--tx2);font-variant-numeric:tabular-nums}
+#app .c-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#app .c-stat{padding:11px 12px;border-radius:16px;background:var(--hover)}
+#app .c-stat small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)}
+#app .c-stat b{display:block;margin-top:2px;font-size:16.5px;font-weight:700;font-variant-numeric:tabular-nums}
+#app .c-dia-det .c-stats{padding:2px 0 10px}
+
+/* ───── ESTADO 3 · Alerta ───── */
+#app .c-alerta{grid-template-columns:minmax(0,1fr) 420px;grid-template-areas:"topo mapa" "aviso mapa" "contagem mapa" "espera mapa" "cuidados mapa";grid-template-rows:repeat(5,auto);gap:18px 28px;align-content:start}
+#app .c-alerta .c-topo{grid-area:topo}
+#app .c-aviso{grid-area:aviso;display:flex;align-items:center;gap:20px}
+#app .c-aviso .wi{width:min(26cqi,132px);height:min(26cqi,132px);flex:none;filter:drop-shadow(0 12px 22px rgba(0,0,0,.25))}
+#app .c-nivel{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 13px;border-radius:999px;background:#2a1100;color:#ffcf55;font-size:11.5px;font-weight:760;letter-spacing:.1em;text-transform:uppercase}
+:root[data-tema=escuro] #app .c-nivel{background:#ffb347;color:#2a1100}
+#app .c-nivel i{width:8px;height:8px;border-radius:50%;background:currentColor;animation:c-pulsa 1.6s ease-in-out infinite}
+@keyframes c-pulsa{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
+#app .c-aviso h1{font-size:min(10.5cqi,46px);line-height:1.02;font-weight:800;letter-spacing:-.04em;margin:10px 0 6px;text-wrap:balance}
+#app .c-aviso p{font-size:16px;font-weight:600;line-height:1.4;max-width:48ch}
+#app .c-contagem{grid-area:contagem;padding:18px 20px;display:grid;gap:12px}
+#app .c-cont-linha{display:flex;align-items:flex-end;gap:14px;justify-content:space-between;flex-wrap:wrap}
+#app .c-relogio{font-size:min(15cqi,58px);font-weight:300;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+#app .c-janela{font-size:14.5px;font-weight:650;text-align:left;line-height:1.35}
+#app .c-janela small{display:block;font-size:12.5px;font-weight:600;color:var(--tx2)}
+#app .c-linha-tempo{display:grid;gap:8px;margin-top:20px}
+#app .c-barras{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;align-items:end;height:92px;position:relative}
+#app .c-barras button{position:relative;display:flex;align-items:flex-end;height:100%;border-radius:8px}
+#app .c-barras button i{display:block;width:100%;border-radius:7px;height:var(--h);background:var(--cor);box-shadow:0 0 0 1px rgba(0,0,0,.08) inset;transition:transform .15s,filter .15s}
+#app .c-barras button:hover i{filter:brightness(1.12);transform:translateY(-2px)}
+#app .c-barras button[aria-pressed=true] i{box-shadow:0 0 0 2.5px var(--tx)}
+#app .c-barras button.agora::after{content:"agora";position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:760;letter-spacing:.08em;text-transform:uppercase;color:var(--tx)}
+#app .c-horas-eixo{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;font-size:11px;font-weight:650;text-align:center;font-variant-numeric:tabular-nums;color:var(--tx2)}
+#app .c-legenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;font-weight:600;color:var(--tx2)}
+#app .c-legenda span{display:inline-flex;align-items:center;gap:6px}
+#app .c-legenda i{width:10px;height:10px;border-radius:3px;background:var(--cor)}
+#app .c-dica{font-size:13.5px;font-weight:650;min-height:20px}
+#app .c-espera{grid-area:espera;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#app .c-esp{padding:14px 14px 13px;display:grid;gap:5px;align-content:start;border-radius:20px}
+#app .c-esp .i{width:22px;height:22px;margin-bottom:4px}
+#app .c-esp small{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)}
+#app .c-esp b{font-size:16.5px;font-weight:740;letter-spacing:-.015em;line-height:1.2}
+#app .c-cuidados{grid-area:cuidados;padding:18px 18px 16px;display:grid;gap:12px;align-content:start}
+#app .c-cuidados-cab{display:flex;align-items:center;gap:10px;justify-content:space-between}
+#app .c-cuidados-cab .prog{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+#app .c-lista{display:grid;gap:4px}
+#app .c-cuid{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start;width:100%;padding:10px 8px;border-radius:14px;text-align:left;font-size:15px;font-weight:560;line-height:1.4;transition:background-color .15s}
+#app .c-cuid:hover{background:var(--hover)}
+#app .c-cuid .cx{display:grid;place-items:center;width:26px;height:26px;border-radius:9px;border:2px solid var(--tx);color:transparent;margin-top:1px;transition:background-color .18s,color .18s,transform .18s}
+#app .c-cuid .cx .i{width:15px;height:15px;stroke-width:3}
+#app .c-cuid[aria-checked=true] .cx{background:var(--tx);color:var(--c1);transform:scale(1.04)}
+#app .c-cuid[aria-checked=true] span.tx{opacity:.82}
+#app .c-acoes{display:grid;gap:10px;padding-top:6px}
+#app .c-troca{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;border-radius:18px;text-align:left}
+#app .c-troca .tx{flex:1;font-size:14.5px;font-weight:650;line-height:1.3}
+#app .c-troca small{display:block;font-size:12.5px;font-weight:500;color:var(--tx2);margin-top:1px}
+#app .c-sw{position:relative;flex:none;width:50px;height:30px;border-radius:15px;background:rgba(255,255,255,.28);transition:background-color .2s}
+:root #app[data-ceu=alerta] .c-sw{background:rgba(42,17,0,.28)}
+#app .c-sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35);transition:transform .22s cubic-bezier(.3,1.3,.5,1)}
+#app .c-troca[aria-checked=true] .c-sw{background:#2f9e5b}
+#app .c-troca[aria-checked=true] .c-sw::after{transform:translateX(20px)}
+#app .c-botoes{display:flex;gap:10px}
+#app .c-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:16px;font-weight:700;font-size:15px;text-align:center;background:var(--vidro2);border:1px solid var(--borda);transition:transform .15s,background-color .15s}
+#app .c-btn:hover{background:var(--hover)}
+#app .c-btn:active{transform:scale(.97)}
+#app .c-btn.forte{background:var(--tx);color:var(--c1);border-color:transparent}
+:root #app[data-ceu=alerta] .c-btn.forte{background:#2a1100;color:#ffcf55}
+:root[data-tema=escuro] #app[data-ceu=alerta] .c-btn.forte{background:#ffb347;color:#2a1100}
+#app .c-mapa{grid-area:mapa;align-self:start;padding:16px;display:grid;gap:12px;align-content:start;position:sticky;top:0}
+#app .c-mapa svg{width:100%;height:auto;border-radius:18px;display:block;background:rgba(10,26,60,.35)}
+:root[data-tema=escuro] #app .c-mapa svg{background:rgba(0,0,0,.35)}
+#app[data-ceu=alerta] .c-mapa svg{background:rgba(42,17,0,.88)}
+#app .c-mapa .leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;font-weight:600}
+#app .c-mapa .leg span{display:inline-flex;align-items:center;gap:6px}
+#app .c-mapa .leg i{width:12px;height:12px;border-radius:4px}
+#app .c-mapa-tit{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#app .c-mapa .area{font-size:14px;font-weight:600;line-height:1.45}
+#app .c-radar{transform-origin:160px 118px;animation:c-varre 6s linear infinite}
+@keyframes c-varre{to{transform:rotate(360deg)}}
+#app .c-celula{animation:c-celula 9s ease-in-out infinite alternate}
+@keyframes c-celula{from{transform:translate(-8px,6px)}to{transform:translate(10px,-6px)}}
+#app .c-anel{transform-origin:150px 118px;animation:c-anel 3s ease-out infinite}
+#app .c-anel.b{animation-delay:-1.5s}
+@keyframes c-anel{from{transform:scale(.3);opacity:.9}to{transform:scale(1.5);opacity:0}}
+#app .c-hist{display:grid;gap:10px;padding-top:6px;border-top:1px solid var(--borda)}
+#app .c-hist ol{display:grid;gap:0}
+#app .c-hist li{position:relative;display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;padding:5px 0 5px 20px;font-size:14px;font-weight:560;line-height:1.35}
+#app .c-hist li::before{content:"";position:absolute;left:3px;top:11px;width:9px;height:9px;border-radius:50%;background:var(--tx)}
+#app .c-hist li::after{content:"";position:absolute;left:7px;top:22px;bottom:-8px;width:1.5px;background:var(--borda)}
+#app .c-hist li.ult::after{display:none}
+#app .c-hist li.ult::before{box-shadow:0 0 0 4px rgba(255,255,255,.2)}
+#app .c-hist time{font-weight:700;font-variant-numeric:tabular-nums}
+#app .c-calmo{grid-area:aviso;display:grid;gap:16px;align-content:start;justify-items:start;padding:8px 0}
+#app .c-calmo .wi{width:130px;height:130px}
+#app .c-calmo h1{font-size:34px;font-weight:760;letter-spacing:-.035em;line-height:1.05}
+#app .c-calmo p{font-size:16px;font-weight:600;max-width:46ch;line-height:1.45}
+#app .c-alerta[data-calmo="1"] .c-contagem,#app .c-alerta[data-calmo="1"] .c-espera,#app .c-alerta[data-calmo="1"] .c-cuidados,#app .c-alerta[data-calmo="1"] .c-aviso,#app .c-alerta[data-calmo="1"] .c-mapa{display:none}
+#app .c-alerta:not([data-calmo="1"]) .c-calmo{display:none}
+#app .c-alerta[data-calmo="1"]{grid-template-columns:minmax(0,1fr);grid-template-areas:"topo" "aviso"}
+
+/* ───── folha de cidades e aviso ───── */
+#app .c-camada{position:sticky;bottom:0;height:0;z-index:60;pointer-events:none}
+#app .c-veu{position:absolute;left:0;right:0;bottom:0;height:300vh;background:rgba(2,10,28,.5);opacity:0;visibility:hidden;transition:opacity .22s,visibility 0s linear .22s}
+#app .c-camada.aberta .c-veu{opacity:1;visibility:visible;transition:opacity .22s;pointer-events:auto}
+#app .c-folha{position:absolute;left:50%;bottom:0;width:min(100%,460px);transform:translateX(-50%);padding:10px 18px calc(22px + env(safe-area-inset-bottom,0px));border-radius:28px 28px 0 0;background:var(--folha-bg);color:var(--folha-tx);border:1px solid var(--folha-fio);border-bottom:0;box-shadow:0 -20px 60px rgba(0,0,0,.35);clip-path:inset(100% 0 0 0);opacity:0;visibility:hidden;transition:clip-path .3s cubic-bezier(.2,.8,.2,1),opacity .2s,visibility 0s linear .3s;pointer-events:auto}
+#app .c-folha.aberta{clip-path:inset(-40px 0 0 0);opacity:1;visibility:visible;transition:clip-path .34s cubic-bezier(.2,.8,.2,1),opacity .2s}
+#app .c-folha-puxa{width:40px;height:5px;border-radius:3px;background:var(--folha-fio);margin:0 auto 14px}
+#app .c-folha h3{font-size:19px;font-weight:740;letter-spacing:-.025em;padding:0 4px}
+#app .c-folha .c-cidades{margin-top:12px}
+#app .c-folha .c-cidade{background:rgba(127,150,190,.12);border-color:var(--folha-fio);color:var(--folha-tx);backdrop-filter:none;-webkit-backdrop-filter:none}
+#app .c-folha .c-cidade:hover{background:rgba(127,150,190,.2)}
+#app .c-folha .c-cidade[aria-pressed=true]{box-shadow:inset 0 0 0 2px #2f7de0;background:rgba(47,125,224,.12)}
+#app .c-folha .c-cidade small{color:var(--folha-suave)}
+#app .c-folha .c-cidade .wi{width:40px;height:40px}
+#app .c-folha .c-un{margin-top:14px;background:rgba(127,150,190,.14);border-color:var(--folha-fio)}
+#app .c-folha .c-un button{color:var(--folha-tx)}
+#app .c-folha .c-un button[aria-pressed=true]{background:#2f7de0;color:#fff}
+#app .c-folha-fim{margin-top:14px}
+#app .c-folha-fim button{width:100%;height:48px;border-radius:15px;background:var(--folha-tx);color:var(--folha-bg);font-weight:700;text-align:center}
+#app .c-toast{position:absolute;left:50%;bottom:var(--c-toast-b,24px);transform:translate(-50%,12px);width:max-content;max-width:min(calc(100% - 28px),420px);display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:16px;background:#10192b;color:#fff;font-size:14px;font-weight:600;box-shadow:0 12px 36px rgba(0,0,0,.45);opacity:0;visibility:hidden;transition:opacity .2s,transform .25s cubic-bezier(.2,.8,.2,1),visibility 0s linear .25s;pointer-events:auto}
+#app .c-toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .25s cubic-bezier(.2,.8,.2,1)}
+#app .c-camada.aberta .c-toast{opacity:0;visibility:hidden}
+
+/* ───── ícones animados ───── */
+#app .wi{display:block;overflow:visible}
+#app .wi .raios{transform-origin:32px 32px;animation:c-gira 36s linear infinite}
+@keyframes c-gira{to{transform:rotate(360deg)}}
+#app .wi .halo{animation:c-respira 5s ease-in-out infinite;transform-origin:32px 32px}
+@keyframes c-respira{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+#app .wi .nuv{animation:c-deriva 7s ease-in-out infinite alternate}
+#app .wi .nuv.b{animation-duration:9s;animation-direction:alternate-reverse}
+@keyframes c-deriva{from{transform:translateX(-1.5px)}to{transform:translateX(2.2px)}}
+#app .wi .gota{animation:c-cai 1.15s linear infinite}
+#app .wi .g2{animation-delay:-.38s}#app .wi .g3{animation-delay:-.76s}
+@keyframes c-cai{0%{transform:translateY(-3px);opacity:0}25%{opacity:1}100%{transform:translateY(9px);opacity:0}}
+#app .wi .raio{animation:c-raio 3.6s infinite}
+@keyframes c-raio{0%,50%,60%,100%{opacity:1}53%,57%{opacity:.2}}
+#app .wi .est{animation:c-pisca 3.2s ease-in-out infinite}
+@keyframes c-pisca{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ───── celular e janelas estreitas ───── */
+@container app (max-width: 899px){
+  #app .c-ceu{position:sticky;top:0;inset:auto;height:0}
+  #app .c-ceu-in{height:100vh;max-height:920px;position:absolute;inset:auto;top:0;left:0;right:0}
+  #app .c-app{--c-pad:20px;display:flex;flex-direction:column;height:auto;overflow:visible;flex:1 0 auto}
+  #app .c-lateral{display:none}
+  #app .c-vista{overflow:visible;padding:18px var(--c-pad) 120px}
+  #app[data-estado="1"] .c-agora,#app[data-estado="2"] .c-dias,#app[data-estado="3"] .c-alerta{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:none;gap:16px}
+  #app .c-agora{grid-template-areas:"topo" "hero" "banner" "horas" "cards"}
+  #app .c-lado{display:contents}
+  #app .c-prox{display:none}
+  #app .c-banner{display:block}
+  #app .c-topo-cid{display:inline-flex}
+  #app .c-hero{flex-direction:column;align-items:center;text-align:center;gap:0;padding:2px 0 0}
+  #app .c-hero .wi{width:112px;height:112px;margin-bottom:-4px}
+  #app .c-hl{justify-content:center}
+  #app .c-grau{font-size:min(31cqi,138px);margin:0 0 6px;text-align:center}
+  #app .c-hero-tx{display:grid;justify-items:center}
+  #app .c-hero-chips{justify-content:center}
+  #app .c-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  #app .c-card.dobro{grid-column:span 2}
+  #app .c-faixa{width:100%}
+  #app .c-dias{grid-template-areas:"topo" "tit" "lista"}
+  #app .c-detalhe{display:none}
+  #app .c-dia{grid-template-columns:54px 34px 50px 30px minmax(44px,1fr) 30px;gap:6px 8px;padding:11px 10px}
+  #app .c-dia-det{display:none}
+  #app .c-dia[aria-expanded=true]+.c-dia-det{display:block;padding:0 6px 10px}
+  #app .c-dias-lista{padding:8px 6px}
+  #app .c-tit h1{font-size:31px}
+  #app .c-alerta{grid-template-areas:"topo" "aviso" "contagem" "espera" "mapa" "cuidados"}
+  #app .c-alerta[data-calmo="1"]{grid-template-areas:"topo" "aviso"}
+  #app .c-mapa{position:static}
+  #app .c-espera{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #app .c-aviso{flex-direction:column;align-items:flex-start;gap:6px}
+  #app .c-aviso .wi{width:104px;height:104px}
+  #app .c-aviso h1{font-size:min(11.4cqi,44px)}
+  #app .c-relogio{font-size:min(16cqi,60px)}
+  #app .c-abas{display:grid;grid-template-columns:repeat(3,1fr);position:sticky;bottom:0;z-index:30;margin-top:auto;padding:6px 10px calc(10px + env(safe-area-inset-bottom,0px));background:var(--vidro2);border-top:1px solid var(--borda);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5)}
+  #app .c-aba{position:relative;display:grid;justify-items:center;gap:3px;padding:7px 0 5px;border-radius:14px;font-size:11.5px;font-weight:700;color:var(--tx2);transition:color .15s,background-color .15s}
+  #app .c-aba:hover{background:var(--hover)}
+  #app .c-aba[aria-current=page]{color:var(--tx)}
+  #app .c-aba[aria-current=page]::before{content:"";position:absolute;top:-7px;width:28px;height:3px;border-radius:2px;background:var(--tx)}
+  #app .c-aba .i{width:23px;height:23px}
+  #app .c-aba .ponto{position:absolute;top:5px;left:calc(50% + 7px);width:10px;height:10px;border-radius:50%;background:#ffb02e;box-shadow:0 0 0 2px rgba(0,0,0,.25)}
+  #app .c-toast{--c-toast-b:96px}
+  #app .c-camada .c-folha{width:min(100%,520px)}
+}
+@container app (max-width: 420px){
+  #app .c-espera{gap:8px}
+  #app .c-cuidados{padding:16px 14px 14px}
+  #app .c-dia{grid-template-columns:50px 32px 48px 28px minmax(36px,1fr) 28px;gap:6px}
+  #app .c-dia .mn,#app .c-dia .mx{font-size:15px}
+  #app .c-card{padding:14px 14px 13px;min-height:140px}
+  #app .c-valor{font-size:31px}
+}
+@container app (max-width: 350px){
+  #app .c-app{--c-pad:16px}
+  #app .c-dia{grid-template-columns:44px 30px 44px 26px minmax(28px,1fr) 26px;gap:4px}
+  #app .c-bussola{width:70px;height:70px}
+  #app .c-barras{gap:3px}
+}
+@container app (min-width: 900px) and (max-width: 1180px){
+  #app .c-app{grid-template-columns:220px minmax(0,1fr)}
+  #app .c-agora{grid-template-columns:minmax(0,1fr) 300px;gap:18px 20px}
+  #app .c-dias{grid-template-columns:minmax(0,1fr) 320px;gap:18px 20px}
+  #app .c-alerta{grid-template-columns:minmax(0,1fr) 340px;gap:18px 20px}
+  #app .c-vista{--c-pad:26px}
+  #app .c-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #app .c-hero .wi{width:120px;height:120px}
+  #app .c-grau{font-size:min(15cqi,120px)}
+  #app .c-espera{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #app .c-dia{grid-template-columns:56px 34px 42px 30px minmax(40px,1fr) 30px}
+}
+@media (prefers-reduced-motion: reduce){
+  #app *,#app *::before,#app *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  #app .c-nuv{transform:none}
+}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1" data-ceu="parcial" data-nuvens="1" data-chuva="0" data-tempestade="0" data-estrelas="0" data-orbe="sol">
+<svg class="c-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+<defs>
+  <radialGradient id="g-sol" cx="40%" cy="38%" r="70%"><stop offset="0" stop-color="#fff7c9"/><stop offset=".55" stop-color="#ffd93f"/><stop offset="1" stop-color="#ffab1a"/></radialGradient>
+  <radialGradient id="g-halo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe27a" stop-opacity=".6"/><stop offset="1" stop-color="#ffe27a" stop-opacity="0"/></radialGradient>
+  <linearGradient id="g-nuvem" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d3deef"/></linearGradient>
+  <linearGradient id="g-nuvem-c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3e9f3"/><stop offset="1" stop-color="#a3b0c6"/></linearGradient>
+  <linearGradient id="g-nuvem-t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ca8bf"/><stop offset="1" stop-color="#58637c"/></linearGradient>
+  <radialGradient id="g-lua" cx="38%" cy="35%" r="75%"><stop offset="0" stop-color="#fffbe6"/><stop offset="1" stop-color="#f2d98a"/></radialGradient>
+  <linearGradient id="g-marca" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ec1ff"/><stop offset="1" stop-color="#2465d6"/></linearGradient>
+  <linearGradient id="g-area" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffcf55"/><stop offset="1" stop-color="#ee7a24"/></linearGradient>
+  <symbol id="nuvem-g" viewBox="0 0 200 80"><path d="M38 76c-18 0-30-9-30-23 0-12 9-21 22-23C32 14 48 4 66 4c14 0 26 7 33 18 6-5 14-8 23-8 20 0 34 15 34 33v1c9 3 16 12 16 22 0 4-1 7-3 10z" fill="currentColor"/></symbol>
+
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6 7-11.3A7 7 0 0 0 5 9.7C5 15 12 21 12 21z"/><circle cx="12" cy="9.6" r="2.5"/></symbol>
+  <symbol id="i-baixo" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></symbol>
+  <symbol id="i-dir" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4.5" y="6" width="15" height="13.5" rx="2.5"/><path d="M4.5 10.5h15M9 3.8v4M15 3.8v4"/></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M12 4.2l9 15.6H3z"/><path d="M12 10v4.4M12 17.2v.1"/></symbol>
+  <symbol id="i-gota" viewBox="0 0 24 24"><path d="M12 3.5s6 6.2 6 10.5a6 6 0 0 1-12 0c0-4.3 6-10.5 6-10.5z"/></symbol>
+  <symbol id="i-vento" viewBox="0 0 24 24"><path d="M3 9h10.5a2.7 2.7 0 1 0-2.7-2.7M3 14h14.5a2.7 2.7 0 1 1-2.7 2.7M3 19h6"/></symbol>
+  <symbol id="i-olho" viewBox="0 0 24 24"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+  <symbol id="i-termo" viewBox="0 0 24 24"><path d="M10 14.6V5.5a2 2 0 0 1 4 0v9.1a4 4 0 1 1-4 0z"/></symbol>
+  <symbol id="i-pressao" viewBox="0 0 24 24"><path d="M4.4 17.6a8.6 8.6 0 1 1 15.2 0"/><path d="M12 13.4l3.6-4"/><circle cx="12" cy="13.6" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-nasce" viewBox="0 0 24 24"><path d="M3 18.5h18M7 18.5a5 5 0 0 1 10 0M12 5v3.4M5.4 10l1.8 1.8M18.6 10l-1.8 1.8"/></symbol>
+  <symbol id="i-chuva" viewBox="0 0 24 24"><path d="M7.5 14.5a4 4 0 0 1 .2-8 5.5 5.5 0 0 1 10.4 1.7 3.3 3.3 0 0 1-.6 6.3z"/><path d="M9 17.5l-.9 2.2M13 17.5l-.9 2.2M17 17.5l-.9 2.2"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-envia" viewBox="0 0 24 24"><path d="M12 15V4M8 7.5L12 4l4 3.5M5 12v6.2A1.8 1.8 0 0 0 6.8 20h10.4a1.8 1.8 0 0 0 1.8-1.8V12"/></symbol>
+  <symbol id="i-sino" viewBox="0 0 24 24"><path d="M6 16.5v-5.2a6 6 0 0 1 12 0v5.2l1.6 2H4.4z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></symbol>
+  <symbol id="i-raio" viewBox="0 0 24 24"><path d="M13.2 3L5 13.6h6L10 21l8.2-10.6h-6z"/></symbol>
+  <symbol id="i-granizo" viewBox="0 0 24 24"><path d="M7.5 13a4 4 0 0 1 .2-8 5.5 5.5 0 0 1 10.4 1.7A3.3 3.3 0 0 1 17.5 13z"/><circle cx="8.5" cy="17.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="13" cy="19" r="1.2" fill="currentColor" stroke="none"/><circle cx="17" cy="17" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-cima" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-baixa-seta" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-por" viewBox="0 0 24 24"><path d="M3 18.5h18M7 18.5a5 5 0 0 1 10 0M12 8v-3M12 5l-1.8 1.8M12 5l1.8 1.8"/></symbol>
+  <symbol id="marca-ceu" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="url(#g-marca)"/><circle cx="12.5" cy="13" r="5.2" fill="#ffe27a"/><path d="M11 24.5a4.5 4.5 0 0 1 .3-9 6.2 6.2 0 0 1 11.8 1.6 3.9 3.9 0 0 1 .4 7.4z" fill="#fff"/></symbol>
+</defs>
+</svg>
+
+<div class="c-ceu" aria-hidden="true">
+  <div class="c-ceu-in" id="ceu-in">
+    <div class="c-orbe"></div>
+    <div class="c-estrelas"></div>
+    <svg class="c-nuv n3" viewBox="0 0 200 80"><use href="#nuvem-g"/></svg>
+    <svg class="c-nuv n1" viewBox="0 0 200 80"><use href="#nuvem-g"/></svg>
+    <svg class="c-nuv n2" viewBox="0 0 200 80"><use href="#nuvem-g"/></svg>
+    <svg class="c-nuv n4" viewBox="0 0 200 80"><use href="#nuvem-g"/></svg>
+    <div class="c-chuva"></div>
+    <div class="c-relampago"></div>
+  </div>
+</div>
+
+<div class="c-app">
+  <aside class="c-lateral" aria-label="Cidades e navegação">
+    <div class="c-marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#marca-ceu"/></svg>Céu</div>
+    <nav class="c-nav" aria-label="Seções">
+      <button type="button" data-a="ir" data-n="1"><svg class="i" aria-hidden="true"><use href="#i-sol"/></svg>Agora</button>
+      <button type="button" data-a="ir" data-n="2"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg>Próximos 10 dias</button>
+      <button type="button" data-a="ir" data-n="3"><svg class="i" aria-hidden="true"><use href="#i-alerta"/></svg>Alerta<span class="ponto" data-ponto hidden></span></button>
+    </nav>
+    <div>
+      <h2 class="c-lat-tit">Cidades</h2>
+      <div class="c-cidades" id="lat-cidades"></div>
+    </div>
+    <div class="c-un" role="group" aria-label="Unidade de temperatura"><button type="button" data-a="unidade" data-u="C" aria-pressed="true">°C</button><button type="button" data-a="unidade" data-u="F" aria-pressed="false">°F</button></div>
+    <p class="c-rodape">Dados fictícios para demonstração. Atualizado às <span data-hora-atual>14:32</span>.</p>
+  </aside>
+
+  <!-- ESTADO 1 · Agora -->
+  <section class="c-vista c-agora" aria-label="Agora">
+    <div class="c-topo">
+      <button type="button" class="c-chip c-topo-cid" data-a="folha" aria-haspopup="dialog" id="b-cidade"><svg class="i i18" aria-hidden="true"><use href="#i-pin"/></svg><span id="t-cidade">Goiânia, GO</span><svg class="i i16" aria-hidden="true"><use href="#i-baixo"/></svg></button>
+      <span class="c-atual">Atualizado às <span data-hora-atual>14:32</span></span>
+    </div>
+    <h1 class="sr" id="h1-agora">Agora</h1>
+    <div class="c-hero" id="hero"></div>
+    <div class="c-banner" id="banner"></div>
+    <section class="c-horas c-vidro" aria-labelledby="h-horas">
+      <h2 class="c-rot" id="h-horas"><svg class="i" aria-hidden="true"><use href="#i-relogio"/></svg>Previsão por hora</h2>
+      <div class="c-horas-lista" id="horas" role="group" aria-label="Horas das próximas 24 horas"></div>
+    </section>
+    <div class="c-cards" id="cards"></div>
+    <div class="c-lado">
+      <div id="lado-faixa"></div>
+      <section class="c-prox c-vidro" aria-labelledby="h-prox">
+        <h2 class="c-rot" id="h-prox"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg>Próximos dias</h2>
+        <div class="c-prox-lista" id="prox"></div>
+        <button type="button" class="c-prox-ver" data-a="ir" data-n="2">Ver os 10 dias<svg class="i i16" aria-hidden="true"><use href="#i-dir"/></svg></button>
+      </section>
+    </div>
+  </section>
+
+  <!-- ESTADO 2 · Próximos 10 dias -->
+  <section class="c-vista c-dias" aria-label="Próximos 10 dias">
+    <div class="c-topo">
+      <button type="button" class="c-chip c-topo-cid" data-a="folha" aria-haspopup="dialog"><svg class="i i18" aria-hidden="true"><use href="#i-pin"/></svg><span data-t-cidade>Goiânia, GO</span><svg class="i i16" aria-hidden="true"><use href="#i-baixo"/></svg></button>
+      <span class="c-atual">Atualizado às <span data-hora-atual>14:32</span></span>
+    </div>
+    <div class="c-tit"><h1>Próximos 10 dias</h1><p id="dias-resumo"></p></div>
+    <div class="c-dias-lista c-vidro" id="dias"></div>
+    <aside class="c-detalhe c-vidro" id="detalhe" aria-live="polite"></aside>
+  </section>
+
+  <!-- ESTADO 3 · Alerta -->
+  <section class="c-vista c-alerta" aria-label="Alerta" id="alerta">
+    <div class="c-topo">
+      <button type="button" class="c-chip c-topo-cid" data-a="folha" aria-haspopup="dialog"><svg class="i i18" aria-hidden="true"><use href="#i-pin"/></svg><span data-t-cidade>Goiânia, GO</span><svg class="i i16" aria-hidden="true"><use href="#i-baixo"/></svg></button>
+      <span class="c-atual">Verificado às <span data-hora-atual>14:32</span></span>
+    </div>
+    <div class="c-aviso" id="al-aviso"></div>
+    <div class="c-calmo" id="al-calmo"></div>
+    <section class="c-contagem c-vidro" aria-labelledby="h-contagem" id="al-contagem"></section>
+    <div class="c-espera" id="al-espera"></div>
+    <section class="c-cuidados c-vidro" aria-labelledby="h-cuidados" id="al-cuidados"></section>
+    <aside class="c-mapa c-vidro" id="al-mapa"></aside>
+  </section>
+</div>
+
+<nav class="c-abas" aria-label="Seções">
+  <button type="button" class="c-aba" data-a="ir" data-n="1"><svg class="i" aria-hidden="true"><use href="#i-sol"/></svg>Agora</button>
+  <button type="button" class="c-aba" data-a="ir" data-n="2"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg>10 dias</button>
+  <button type="button" class="c-aba" data-a="ir" data-n="3"><svg class="i" aria-hidden="true"><use href="#i-alerta"/></svg>Alerta<span class="ponto" data-ponto hidden></span></button>
+</nav>
+
+<div class="c-camada" id="camada">
+  <div class="c-veu" data-a="fechar-folha"></div>
+  <div class="c-folha" id="folha" role="dialog" aria-modal="true" aria-labelledby="fc-t">
+    <div class="c-folha-puxa"></div>
+    <h3 id="fc-t">Escolher cidade</h3>
+    <div class="c-cidades" id="sheet-cidades"></div>
+    <div class="c-un" role="group" aria-label="Unidade de temperatura"><button type="button" data-a="unidade" data-u="C" aria-pressed="true">°C</button><button type="button" data-a="unidade" data-u="F" aria-pressed="false">°F</button></div>
+    <div class="c-folha-fim"><button type="button" data-a="fechar-folha">Concluir</button></div>
+  </div>
+  <div class="c-toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+</main>
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura do Céu: céu azul com sol e nuvem, temperatura enorme e cartões de vidro">
+  <defs>
+    <linearGradient id="ceum-ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a5fc8"/><stop offset=".6" stop-color="#3b8be0"/><stop offset="1" stop-color="#6fb3ee"/></linearGradient>
+    <radialGradient id="ceum-sol" cx="40%" cy="38%" r="70%"><stop offset="0" stop-color="#fff7c9"/><stop offset=".55" stop-color="#ffd93f"/><stop offset="1" stop-color="#ffab1a"/></radialGradient>
+    <radialGradient id="ceum-halo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe27a" stop-opacity=".7"/><stop offset="1" stop-color="#ffe27a" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ceum-nuvem" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d3deef"/></linearGradient>
+    <linearGradient id="ceum-barra" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8fd0ff"/><stop offset=".6" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff9f45"/></linearGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#ceum-ceu)"/>
+  <circle cx="226" cy="44" r="50" fill="url(#ceum-halo)"/>
+  <circle cx="226" cy="44" r="19" fill="url(#ceum-sol)"/>
+  <g fill="#fff" fill-opacity=".9"><path d="M168 74c-9 0-15-5-15-12 0-6 4-10 11-11 3-8 11-13 20-13 7 0 13 3 17 9 3-3 7-4 12-4 10 0 17 8 17 17 5 2 8 6 8 11 0 3-1 5-2 7z"/></g>
+  <text x="28" y="34" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff">Goiânia, GO</text>
+  <text x="24" y="94" font-family="Helvetica, Arial, sans-serif" font-size="58" font-weight="200" fill="#fff" letter-spacing="-3">32°</text>
+  <text x="28" y="110" font-family="Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#fff">Parcialmente nublado</text>
+  <rect x="14" y="120" width="292" height="48" rx="14" fill="#0a1a3c" fill-opacity=".42" stroke="#fff" stroke-opacity=".22"/>
+  <g font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#fff" text-anchor="middle"><text x="42" y="136">Agora</text><text x="86" y="136">15h</text><text x="130" y="136">16h</text><text x="174" y="136">17h</text><text x="218" y="136">18h</text><text x="262" y="136">19h</text></g>
+  <g fill="#ffd93f"><circle cx="42" cy="146" r="4.6"/><circle cx="86" cy="146" r="4.6"/></g>
+  <g transform="translate(130 144) scale(.74)"><ellipse cx="0" cy="3" rx="9" ry="5.2" fill="#c3cde0"/><circle cx="-3.5" cy="0" r="4.8" fill="#e2e9f4"/><circle cx="3.2" cy="-1.2" r="5.8" fill="#e2e9f4"/><path d="M1 4l-4 6h3l-1.4 5 5-7h-3z" fill="#ffd93d"/></g><g transform="translate(174 144) scale(.74)"><ellipse cx="0" cy="3" rx="9" ry="5.2" fill="#c3cde0"/><circle cx="-3.5" cy="0" r="4.8" fill="#e2e9f4"/><circle cx="3.2" cy="-1.2" r="5.8" fill="#e2e9f4"/><path d="M1 4l-4 6h3l-1.4 5 5-7h-3z" fill="#ffd93d"/></g><g transform="translate(218 144) scale(.74)"><ellipse cx="0" cy="3" rx="9" ry="5.2" fill="#c3cde0"/><circle cx="-3.5" cy="0" r="4.8" fill="#e2e9f4"/><circle cx="3.2" cy="-1.2" r="5.8" fill="#e2e9f4"/><path d="M-3 9l-1 3M2 9l-1 3M7 9l-1 3" stroke="#7cc6ff" stroke-width="1.6" stroke-linecap="round"/></g><g transform="translate(262 144) scale(.74)"><ellipse cx="0" cy="3" rx="9" ry="5.2" fill="#c3cde0"/><circle cx="-3.5" cy="0" r="4.8" fill="#e2e9f4"/><circle cx="3.2" cy="-1.2" r="5.8" fill="#e2e9f4"/><path d="M-3 9l-1 3M2 9l-1 3M7 9l-1 3" stroke="#7cc6ff" stroke-width="1.6" stroke-linecap="round"/></g>
+  <g font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle"><text x="42" y="162">32°</text><text x="86" y="162">33°</text><text x="130" y="162">28°</text><text x="174" y="162">26°</text><text x="218" y="162">25°</text><text x="262" y="162">24°</text></g>
+  <rect x="236" y="14" width="70" height="22" rx="11" fill="#ffb02e"/><path d="M251 29l5-9 5 9z" fill="none" stroke="#2a1100" stroke-width="1.6" stroke-linejoin="round"/><rect x="266" y="21" width="30" height="3.4" rx="1.7" fill="#2a1100"/><rect x="266" y="27" width="22" height="3.4" rx="1.7" fill="#2a1100" fill-opacity=".6"/>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Céu · app de clima. Tudo é calculado de poucos números por cidade (mínima, máxima, nascer e pôr do sol, faixas de
+// condição); o céu é função do código da condição e da posição do sol. Estado = atributo data-estado em #app.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  var doc = document;
+  var reduzido = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function $(s, r) { return (r || app).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || app).querySelectorAll(s)); }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function ico(n, c) { return '<svg class="i ' + (c || "") + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
+
+  /* ── dados ─────────────────────────────────────────────────────────────── */
+  var NOMES_DIA = ["Hoje", "ter.", "qua.", "qui.", "sex.", "sáb.", "dom.", "seg.", "ter.", "qua."];
+  var EXTENSO_DIA = ["segunda-feira, 19 de outubro", "terça-feira, 20 de outubro", "quarta-feira, 21 de outubro", "quinta-feira, 22 de outubro", "sexta-feira, 23 de outubro", "sábado, 24 de outubro", "domingo, 25 de outubro", "segunda-feira, 26 de outubro", "terça-feira, 27 de outubro", "quarta-feira, 28 de outubro"];
+  var DATA_CURTA = ["19 out.", "20 out.", "21 out.", "22 out.", "23 out.", "24 out.", "25 out.", "26 out.", "27 out.", "28 out."];
+  var CID = [
+    {id: "goiania", nome: "Goiânia", uf: "GO", tmin: 21, tmax: 33, dsens: 3, umid: 42, uv: 9, vento: 14, rajada: 26, dir: 45, pressao: 1012, tend: "em queda", visib: 12, orvalho: 18, nasc: [5, 48], poe: [18, 19],
+      ceu: [[0, 5, "p"], [6, 12, "l"], [13, 15, "p"], [16, 17, "t"], [18, 19, "c"], [20, 23, "n"]],
+      dias: "t,21,33,85,32;c,21,29,70,18;c,20,28,60,12;p,20,30,40,4;l,20,31,15,0;l,21,32,10,0;l,21,33,10,0;p,22,34,30,2;c,22,33,55,9;t,21,30,75,21",
+      resumo: "Tempestade hoje à tarde e chuva até quarta. A partir de quinta o tempo firma e o calor volta forte.",
+      alerta: {nivel: "laranja", num: "0412/26", titulo: "Tempestade severa", ini: 960, fim: 1320,
+        resumo: "Chuva forte, raios frequentes e rajadas de até 80 km/h em Goiânia e na região metropolitana.",
+        area: "Goiânia, Aparecida de Goiânia, Trindade, Senador Canedo e Goianira.",
+        espera: [["Chuva", "40 a 70 mm", "chuva"], ["Rajadas", "até 80 km/h", "vento"], ["Raios", "frequentes", "raio"], ["Granizo", "possível", "granizo"]],
+        cidades: [["Goiânia", 156, 118], ["Aparecida", 164, 146], ["Trindade", 120, 100], ["Sen. Canedo", 196, 126], ["Goianira", 112, 74]],
+        intens: [0, 1, 3, 3, 3, 2, 2, 1, 1, 0]}},
+    {id: "brasilia", nome: "Brasília", uf: "DF", tmin: 19, tmax: 30, dsens: 1, umid: 31, uv: 10, vento: 16, rajada: 29, dir: 90, pressao: 1014, tend: "estável", visib: 14, orvalho: 11, nasc: [5, 46], poe: [18, 11],
+      ceu: [[0, 5, "l"], [6, 12, "l"], [13, 16, "p"], [17, 18, "t"], [19, 20, "c"], [21, 23, "n"]],
+      dias: "t,19,30,80,22;c,19,27,65,12;n,18,26,45,5;p,18,28,30,2;l,18,29,10,0;l,19,30,5,0;l,19,31,5,0;p,20,32,25,1;c,20,31,50,8;t,19,29,70,16",
+      resumo: "Ar seco e sol forte pela manhã, com tempestade no fim da tarde. Quinta volta o tempo firme.",
+      alerta: {nivel: "laranja", num: "0388/26", titulo: "Tempestade severa", ini: 1050, fim: 1290,
+        resumo: "Chuva intensa com raios e ventos fortes no Distrito Federal e no Entorno, no fim da tarde.",
+        area: "Plano Piloto, Taguatinga, Ceilândia, Samambaia, Sobradinho e Entorno.",
+        espera: [["Chuva", "30 a 60 mm", "chuva"], ["Rajadas", "até 75 km/h", "vento"], ["Raios", "muito frequentes", "raio"], ["Granizo", "possível", "granizo"]],
+        cidades: [["Plano Piloto", 170, 112], ["Taguatinga", 138, 132], ["Ceilândia", 112, 128], ["Sobradinho", 188, 80], ["Samambaia", 126, 156]],
+        intens: [0, 0, 0, 1, 3, 3, 2, 2, 1, 0]}},
+    {id: "saopaulo", nome: "São Paulo", uf: "SP", tmin: 17, tmax: 23, dsens: -1, umid: 83, uv: 3, vento: 11, rajada: 21, dir: 180, pressao: 1009, tend: "em queda", visib: 7, orvalho: 18, nasc: [5, 41], poe: [18, 24],
+      ceu: [[0, 23, "c"]],
+      dias: "c,17,23,80,14;c,16,21,70,9;n,16,22,40,3;p,16,25,20,0;l,17,27,10,0;p,18,28,25,1;c,18,26,60,10;t,18,24,80,24;c,17,22,65,12;n,16,23,35,2",
+      resumo: "Garoa e chuva fraca o dia todo, mais forte à noite. Quinta o sol reaparece.",
+      alerta: {nivel: "amarelo", num: "0951/26", titulo: "Chuva forte", ini: 1140, fim: 1380,
+        resumo: "Chuva forte no fim do dia, com risco de alagamentos pontuais e ventos moderados.",
+        area: "Capital e Grande São Paulo.",
+        espera: [["Chuva", "30 a 50 mm", "chuva"], ["Rajadas", "até 55 km/h", "vento"], ["Raios", "ocasionais", "raio"], ["Granizo", "improvável", "granizo"]],
+        cidades: [["São Paulo", 154, 118], ["Guarulhos", 196, 92], ["Osasco", 112, 106], ["S. Bernardo", 178, 150], ["Santo André", 196, 138]],
+        intens: [0, 0, 0, 0, 1, 2, 2, 2, 1, 1]}},
+    {id: "fortaleza", nome: "Fortaleza", uf: "CE", tmin: 25, tmax: 31, dsens: 4, umid: 70, uv: 11, vento: 24, rajada: 35, dir: 100, pressao: 1010, tend: "estável", visib: 15, orvalho: 24, nasc: [5, 21], poe: [17, 34],
+      ceu: [[0, 4, "p"], [5, 17, "l"], [18, 23, "p"]],
+      dias: "l,25,31,10,0;p,25,31,20,0;p,25,32,20,0;l,25,32,10,0;p,26,32,25,1;c,25,31,45,5;p,25,31,30,2;l,25,32,10,0;l,25,32,5,0;p,25,31,20,0",
+      resumo: "Sol e brisa forte de leste a semana toda, com uma chuva rápida no sábado.",
+      alerta: null}
+  ];
+  var COND = {
+    l: ["Céu limpo", "Céu limpo"], p: ["Parcialmente nublado", "Poucas nuvens"], n: ["Nublado", "Nublado"], c: ["Chuva", "Chuva"], t: ["Tempestade", "Tempestade"]
+  };
+  var CUIDADOS = [
+    "Procure abrigo em local fechado e evite áreas abertas, topos de prédios e praias.",
+    "Não se abrigue sob árvores, postes ou estruturas metálicas durante os raios.",
+    "Evite atravessar ruas alagadas, a pé ou de carro: 30 cm de água já arrastam um veículo.",
+    "Desligue eletrônicos da tomada e deixe o celular carregado e com bateria sobrando.",
+    "Recolha objetos soltos de varandas, quintais e áreas externas antes das 16h."
+  ];
+  var CORES_INT = ["#ffe27a", "#ffb02e", "#f2701c", "#d92d20"];
+  var ROT_INT = ["Sem chuva forte", "Fraca a moderada", "Forte", "Muito forte com raios"];
+
+  CID.forEach(function (c) {
+    c.agoraH = 14.5;
+    c.dia = c.dias.split(";").map(function (s) { var p = s.split(","); return {cod: p[0], min: +p[1], max: +p[2], pop: +p[3], mm: +p[4]}; });
+    c.seq = [];
+    c.ceu.forEach(function (r) { for (var h = r[0]; h <= r[1]; h++) c.seq[h] = r[2]; });
+  });
+  var porId = {};
+  CID.forEach(function (c) { porId[c.id] = c; });
+
+  /* ── estado ────────────────────────────────────────────────────────────── */
+  var S = {cid: "goiania", hora: 0, dia: 0, un: "C", expandido: -1, lembrete: false, checks: {}, intSel: -1, voltarPara: 1};
+  var T0 = Date.now();
+  var AGORA_S = 14 * 3600 + 32 * 60;
+  function cidade() { return porId[S.cid]; }
+  function simS() { return AGORA_S + (Date.now() - T0) / 1000; }
+  function temp(v) { return Math.round(S.un === "C" ? v : v * 9 / 5 + 32) + "°"; }
+  function tempN(v) { return Math.round(S.un === "C" ? v : v * 9 / 5 + 32); }
+
+  /* ── física simples do tempo ───────────────────────────────────────────── */
+  function curva(c, h, cod, min, max) {
+    min = min == null ? c.tmin : min; max = max == null ? c.tmax : max;
+    var med = (min + max) / 2, amp = (max - min) / 2;
+    var v = med + amp * Math.cos((h - 15.2) / 24 * 2 * Math.PI);
+    var aj = {l: 0, p: -1, n: -2, c: -3.5, t: -5}[cod] || 0;
+    return v + aj * (amp / 6);
+  }
+  function ehNoite(c, x) { return x < c.nasc[0] + c.nasc[1] / 60 || x > c.poe[0] + c.poe[1] / 60; }
+  function popDe(cod, h, c) {
+    var base = {l: 3, p: 10, n: 26, c: 66, t: 90}[cod];
+    var j = ((h * 7 + c.nome.length * 3) % 9) - 4;
+    return clamp(base + j, 0, 98);
+  }
+  function horaDados(c, i) {
+    var h = (14 + i) % 24, cod = c.seq[h] || "p";
+    if (i === 0 && c.id === "goiania") cod = "p";
+    var x = i === 0 ? c.agoraH : h + 0.5;
+    var t = curva(c, x, cod);
+    return {h: h, cod: cod, t: t, noite: ehNoite(c, h + (i === 0 ? 0.5 : 0.5)), pop: popDe(cod, h, c), i: i};
+  }
+  function ceuDe(c, d, x) {
+    var nasc = c.nasc[0] + c.nasc[1] / 60, poe = c.poe[0] + c.poe[1] / 60;
+    var noite = x < nasc - 0.7 || x > poe + 0.8;
+    var amanhecer = x >= nasc - 0.7 && x < nasc + 0.9;
+    var entardecer = x >= poe - 1.3 && x <= poe + 0.8;
+    var cod = d.cod, chave, nuvens = 1, chuva = 0, tempestade = 0;
+    if (cod === "t") { chave = noite ? "noite-chuva" : "tempestade"; nuvens = 3; chuva = 2; tempestade = noite ? 0 : 1; }
+    else if (cod === "c") { chave = noite ? "noite-chuva" : "chuva"; nuvens = 3; chuva = 1; }
+    else if (cod === "n") { chave = noite ? "noite" : amanhecer ? "amanhecer" : entardecer ? "entardecer" : "nublado"; nuvens = 3; }
+    else if (noite) { chave = "noite"; nuvens = cod === "p" ? 1 : 0; }
+    else if (amanhecer) { chave = "amanhecer"; nuvens = cod === "p" ? 1 : 0; }
+    else if (entardecer) { chave = "entardecer"; nuvens = cod === "p" ? 1 : 0; }
+    else { chave = cod === "p" ? "parcial" : "dia"; nuvens = cod === "p" ? 1 : 0; }
+    // posição do sol ou da lua no arco
+    var orbe = "sol", p;
+    if (noite) {
+      orbe = "lua";
+      var dn = 24 - (poe - nasc), xx = x < nasc ? x + 24 - poe : x - poe;
+      p = clamp(xx / dn, 0, 1);
+    } else {
+      p = clamp((x - nasc) / (poe - nasc), 0, 1);
+      if (entardecer && p > 0.8) orbe = "poente";
+    }
+    var ox = 14 + 72 * p, oy = 46 - 34 * Math.sin(Math.PI * p);
+    var op = cod === "t" ? 0 : cod === "c" ? 0.18 : cod === "n" ? 0.35 : cod === "p" ? 0.8 : 0.95;
+    return {chave: chave, nuvens: nuvens, chuva: chuva, tempestade: tempestade, estrelas: noite && (cod === "l" || cod === "p") ? 1 : 0, orbe: orbe, ox: ox, oy: oy, op: op, noite: noite};
+  }
+
+  /* ── ícones animados ───────────────────────────────────────────────────── */
+  var NUV = "M18 47a8.5 8.5 0 0 1-.7-16.97A12.5 12.5 0 0 1 41.2 27.5 10 10 0 0 1 46.5 47z";
+  var RAIOS = '<g class="raios" stroke="#ffd23f" stroke-width="3.2" stroke-linecap="round"><path d="M32 6.5v6M32 51.5v6M6.5 32h6M51.5 32h6M14 14l4.2 4.2M45.8 45.8L50 50M14 50l4.2-4.2M45.8 18.2L50 14"/></g>';
+  function gSol(cx, cy, s) { return '<g transform="translate(' + cx + " " + cy + ") scale(" + s + ') translate(-32 -32)"><circle class="halo" cx="32" cy="32" r="24" fill="url(#g-halo)"/>' + RAIOS + '<circle cx="32" cy="32" r="11.5" fill="url(#g-sol)"/></g>'; }
+  function gLua(cx, cy, s) { return '<g transform="translate(' + cx + " " + cy + ") scale(" + s + ') translate(-32 -32)"><path d="M38 10.5A21.5 21.5 0 1 0 53.5 40 16.5 16.5 0 0 1 38 10.5z" fill="url(#g-lua)"/><path class="est" d="M49 14l1.2 2.6 2.6 1.2-2.6 1.2L49 21.6l-1.2-2.6-2.6-1.2 2.6-1.2z" fill="#fff"/><circle class="est" cx="54" cy="27" r="1.3" fill="#fff"/></g>'; }
+  function gNuv(g, x, y, s, extra) { return '<g class="nuv ' + (extra || "") + '" transform="translate(' + x + " " + y + ") scale(" + s + ')"><path d="' + NUV + '" fill="url(#' + g + ')"/></g>'; }
+  var GOTAS = '<g stroke="#7cc6ff" stroke-width="2.6" stroke-linecap="round"><path class="gota" d="M23 51l-1.6 4.4"/><path class="gota g2" d="M31 51l-1.6 4.4"/><path class="gota g3" d="M39 51l-1.6 4.4"/></g>';
+  var RAIO = '<path class="raio" d="M33.5 41.5l-7.5 11.5h5.2l-3 8.5 10-12.5h-5.4z" fill="#ffd93d" stroke="#ff9f1a" stroke-width=".8" stroke-linejoin="round"/>';
+  function wi(cod, noite, cls) {
+    var g;
+    if (cod === "l") g = noite ? gLua(32, 32, 1) : gSol(32, 32, 1);
+    else if (cod === "p") g = (noite ? gLua(26, 26, 0.7) : gSol(24, 25, 0.75)) + gNuv("g-nuvem", 2, 5, 1);
+    else if (cod === "n") g = gNuv("g-nuvem-c", 10, -5, 0.78, "b") + gNuv("g-nuvem", -3, 6, 1);
+    else if (cod === "c") g = gNuv("g-nuvem-c", 0, -3, 1) + GOTAS;
+    else g = gNuv("g-nuvem-t", 0, -4, 1) + RAIO + '<g stroke="#7cc6ff" stroke-width="2.4" stroke-linecap="round"><path class="gota" d="M22 51l-1.6 4.4"/><path class="gota g3" d="M44 51l-1.6 4.4"/></g>';
+    return '<svg class="wi ' + (cls || "") + '" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + g + "</svg>";
+  }
+  function wiAlerta(cls) { return '<svg class="wi ' + (cls || "") + '" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + gNuv("g-nuvem-t", 0, -5, 1.05) + RAIO.replace("#ffd93d", "#ffd93d") + '<g stroke="#7cc6ff" stroke-width="2.4" stroke-linecap="round"><path class="gota" d="M20 51l-1.6 4.4"/><path class="gota g2" d="M46 51l-1.6 4.4"/></g></svg>'; }
+
+  /* ── renderização ──────────────────────────────────────────────────────── */
+  function estadoAtual() { return parseInt(app.getAttribute("data-estado"), 10) || 1; }
+  function dadosDaHora() { return horaDados(cidade(), S.hora); }
+
+  function aplicarCeu() {
+    var c = cidade(), n = estadoAtual();
+    var d = dadosDaHora();
+    var x = S.hora === 0 ? c.agoraH : d.h + 0.5;
+    if (n === 2) { d = {cod: c.dia[S.dia].cod, h: 14, i: 0}; x = 13; }
+    var ceu = ceuDe(c, d, x);
+    var chave = ceu.chave;
+    if (n === 3) chave = c.alerta ? "alerta" : "alerta-calmo";
+    app.setAttribute("data-ceu", chave);
+    app.setAttribute("data-nuvens", String(n === 3 && c.alerta ? 3 : ceu.nuvens));
+    app.setAttribute("data-chuva", String(n === 3 && c.alerta ? 1 : ceu.chuva));
+    app.setAttribute("data-tempestade", String(n === 3 && c.alerta && c.alerta.nivel === "laranja" ? 1 : ceu.tempestade));
+    app.setAttribute("data-estrelas", String(n === 3 ? 0 : ceu.estrelas));
+    app.setAttribute("data-orbe", ceu.orbe);
+    var cin = $("#ceu-in");
+    cin.style.setProperty("--ox", ceu.ox.toFixed(1) + "%");
+    cin.style.setProperty("--oy", ceu.oy.toFixed(1) + "%");
+    app.style.setProperty("--orbe-op", String(ceu.op));
+  }
+
+  function horaTxt(m) { return pad(Math.floor(m / 60)) + ":" + pad(m % 60); }
+
+  function renderHero() {
+    var c = cidade(), d = dadosDaHora();
+    var cond = COND[d.cod][d.noite ? 1 : 0];
+    var rotulo = S.hora === 0 ? "Agora" : "Previsão para " + pad(d.h) + "h";
+    $("#h1-agora").textContent = rotulo + " em " + c.nome + ": " + cond + ", " + tempN(d.t) + " graus";
+    var sens = d.t + c.dsens + (d.cod === "c" || d.cod === "t" ? 1 : 0);
+    var hoje = c.dia[0];
+    $("#hero").innerHTML = wi(d.cod, d.noite) +
+      '<div class="c-hero-tx"><div class="c-cond">' + cond + '</div><span class="c-grau" aria-label="' + rotulo + ": " + tempN(d.t) + ' graus">' + temp(d.t) + "</span>" +
+      '<div class="c-hl"><span>Máx. ' + temp(hoje.max) + "</span><span>Mín. " + temp(hoje.min) + '</span></div>' +
+      '<div class="c-hero-chips"><span class="c-chip">' + ico("termo", "i18") + "Sensação " + temp(sens) + "</span>" +
+      (S.hora ? '<button type="button" class="c-chip hora-x" data-a="hora" data-i="0">' + ico("relogio", "i18") + rotulo + " · voltar para agora</button>" : '<span class="c-chip">' + ico("relogio", "i18") + rotulo + "</span>") + "</div></div>";
+  }
+  function faixaAlerta() {
+    var c = cidade(), a = c.alerta;
+    if (!a) return '<button type="button" class="c-faixa calma" data-a="ir" data-n="3"><span class="ic">' + ico("ok") + '</span><span><strong>Sem alertas em ' + c.nome + '</strong><span class="s">Tudo calmo por enquanto</span></span>' + ico("dir") + "</button>";
+    var restante = a.ini * 60 - simS();
+    var quando = restante > 0 ? "em " + fmtDur(restante) : "em andamento até " + horaTxt(a.fim);
+    return '<button type="button" class="c-faixa" data-a="ir" data-n="3"><span class="ic">' + ico("alerta") + "</span><span><strong>" + a.titulo + " · " + horaTxt(a.ini).replace(":00", "h") + " às " + horaTxt(a.fim).replace(":00", "h") + '</strong><span class="s">Alerta ' + a.nivel + " · " + quando + "</span></span>" + ico("dir") + "</button>";
+  }
+  function fmtDur(s) {
+    s = Math.max(0, Math.floor(s));
+    var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+    return h ? h + " h " + pad(m) + " min" : m + " min";
+  }
+  var bannerHtml = "";
+  function renderBanner() {
+    var html = faixaAlerta();
+    if (html !== bannerHtml) { bannerHtml = html; $("#banner").innerHTML = html; $("#lado-faixa").innerHTML = html; }
+    var tem = !!cidade().alerta;
+    $$("[data-ponto]").forEach(function (p) { p.hidden = !tem; });
+  }
+  function renderHoras() {
+    var c = cidade(), html = "";
+    for (var i = 0; i < 24; i++) {
+      var d = horaDados(c, i);
+      html += '<button type="button" class="c-h" data-a="hora" data-i="' + i + '" aria-pressed="' + (S.hora === i) + '" aria-label="' + (i ? pad(d.h) + " horas" : "Agora") + ", " + COND[d.cod][d.noite ? 1 : 0] + ", " + tempN(d.t) + ' graus, chance de chuva ' + Math.round(d.pop) + ' por cento">' +
+        '<span class="h">' + (i ? pad(d.h) + "h" : "Agora") + "</span>" + wi(d.cod, d.noite) + '<span class="t">' + temp(d.t) + '</span><span class="p">' + (d.pop >= 20 ? Math.round(d.pop / 5) * 5 + "%" : "") + "</span></button>";
+      if (d.h === c.poe[0]) html += '<div class="c-h ev"><span class="h">' + horaTxt(c.poe[0] * 60 + c.poe[1]) + '</span>' + ico("por") + '<span class="t">Pôr do sol</span><span class="p"></span></div>';
+      if (d.h === c.nasc[0]) html += '<div class="c-h ev"><span class="h">' + horaTxt(c.nasc[0] * 60 + c.nasc[1]) + '</span>' + ico("nasce") + '<span class="t">Nascer do sol</span><span class="p"></span></div>';
+    }
+    $("#horas").innerHTML = html;
+  }
+  function arcoSol(c, x) {
+    var nasc = c.nasc[0] + c.nasc[1] / 60, poe = c.poe[0] + c.poe[1] / 60;
+    var p = clamp((x - nasc) / (poe - nasc), 0, 1);
+    var th = Math.PI * (1 - p), cx = 100 + 86 * Math.cos(th), cy = 80 - 86 * Math.sin(th);
+    var fim = 'A86 86 0 0 1 ' + cx.toFixed(1) + " " + cy.toFixed(1);
+    var dia = Math.round((poe - nasc) * 60);
+    return '<svg class="c-arco" viewBox="0 0 200 92" role="img" aria-label="O sol nasce às ' + horaTxt(c.nasc[0] * 60 + c.nasc[1]) + " e se põe às " + horaTxt(c.poe[0] * 60 + c.poe[1]) + '">' +
+      '<path d="M14 80A86 86 0 0 1 186 80" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-dasharray="3 5"/>' +
+      '<path d="M14 80' + fim + '" fill="none" stroke="#ffd93d" stroke-width="3.2" stroke-linecap="round"/>' +
+      '<line x1="4" y1="80" x2="196" y2="80" stroke="rgba(255,255,255,.55)" stroke-width="1.4"/>' +
+      (p > 0 && p < 1 ? '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="12" fill="url(#g-halo)"/><circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="6.5" fill="url(#g-sol)"/>' : "") +
+      '<text x="100" y="88" text-anchor="middle" fill="#fff" font-size="10" font-weight="700" opacity=".95">dia de ' + Math.floor(dia / 60) + " h " + pad(dia % 60) + " min</text></svg>";
+  }
+  function spark(c) {
+    var pts = [1016, 1015.5, 1015, 1014.6, 1014, 1013.4, 1012.8, 1012.4, 1012];
+    if (c.tend === "estável") pts = [1013.6, 1013.8, 1013.5, 1013.9, 1014, 1013.8, 1014.1, 1014, 1014];
+    var mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts), w = 120, h = 30;
+    var d = pts.map(function (v, i) { return (i ? "L" : "M") + (i / (pts.length - 1) * w).toFixed(1) + " " + (h - 4 - (v - mn) / (mx - mn || 1) * (h - 8)).toFixed(1); }).join("");
+    return '<svg class="c-spark" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"><path d="' + d + '" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function bussola(c) {
+    var marcas = "";
+    for (var i = 0; i < 24; i++) { var a = i * 15 * Math.PI / 180, r1 = i % 6 === 0 ? 38 : 41, r2 = 44; marcas += '<line x1="' + (50 + r1 * Math.sin(a)).toFixed(1) + '" y1="' + (50 - r1 * Math.cos(a)).toFixed(1) + '" x2="' + (50 + r2 * Math.sin(a)).toFixed(1) + '" y2="' + (50 - r2 * Math.cos(a)).toFixed(1) + '" stroke="#fff" stroke-opacity="' + (i % 6 === 0 ? 0.9 : 0.4) + '" stroke-width="' + (i % 6 === 0 ? 2 : 1.2) + '"/>'; }
+    var dirs = {0: "norte", 45: "nordeste", 90: "leste", 135: "sudeste", 180: "sul", 225: "sudoeste", 270: "oeste", 315: "noroeste"};
+    return '<svg class="c-bussola" viewBox="0 0 100 100" role="img" aria-label="Vento de ' + dirs[c.dir] + '">' + marcas +
+      '<g fill="#fff" font-size="9" font-weight="700" text-anchor="middle" font-family="inherit"><text x="50" y="27">N</text><text x="76" y="53">L</text><text x="50" y="80">S</text><text x="24" y="53">O</text></g>' +
+      '<g class="seta" style="transform:rotate(' + c.dir + 'deg)"><path d="M50 22l6.5 28H43.5z" fill="#ffd93d"/><path d="M43.5 50h13L50 76z" fill="#fff" fill-opacity=".55"/><circle cx="50" cy="50" r="3" fill="#fff"/></g></svg>';
+  }
+  var DIRS = {0: "Norte", 45: "Nordeste", 90: "Leste", 135: "Sudeste", 180: "Sul", 225: "Sudoeste", 270: "Oeste", 315: "Noroeste"};
+  function uvTxt(v) { return v <= 2 ? "Baixo" : v <= 5 ? "Moderado" : v <= 7 ? "Alto" : v <= 10 ? "Muito alto" : "Extremo"; }
+  function renderCards() {
+    var c = cidade(), d = dadosDaHora();
+    var x = S.hora === 0 ? c.agoraH : d.h + 0.5;
+    var chuva24 = c.dia[0].mm, pops = [];
+    for (var i = 0; i < 24; i++) pops.push(horaDados(c, i).pop);
+    var sens = d.t + c.dsens + (d.cod === "c" || d.cod === "t" ? 1 : 0);
+    var tendIco = c.tend === "em queda" ? ico("baixa-seta", "i16") : c.tend === "subindo" ? ico("cima", "i16") : "";
+    var vis = c.visib >= 10 ? "Boa" : c.visib >= 5 ? "Moderada" : "Reduzida";
+    var h = "";
+    h += '<section class="c-card c-vidro" aria-labelledby="k-uv"><h3 class="c-rot" id="k-uv">' + ico("sol") + 'Índice UV</h3><div class="c-valor">' + c.uv + "<small>" + uvTxt(c.uv) + '</small></div><div class="c-uv-escala" aria-hidden="true"><i style="--x:' + clamp(c.uv / 12 * 100, 2, 98) + '%"></i></div><p>' + (c.uv >= 8 ? "Proteja-se entre <b>10h e 16h</b>." : c.uv >= 6 ? "Use protetor se ficar ao sol." : "Sem cuidados especiais.") + "</p></section>";
+    h += '<section class="c-card c-vidro" aria-labelledby="k-vento"><h3 class="c-rot" id="k-vento">' + ico("vento") + 'Vento</h3><div class="c-vento-linha">' + bussola(c) + '<div class="c-valor">' + c.vento + "<small>km/h</small></div></div><p>" + DIRS[c.dir] + ", rajadas de <b>" + c.rajada + " km/h</b></p></section>";
+    h += '<section class="c-card c-vidro" aria-labelledby="k-umid"><h3 class="c-rot" id="k-umid">' + ico("gota") + 'Umidade</h3><div class="c-valor">' + c.umid + "<small>%</small></div>" + '<div class="c-barra" aria-hidden="true"><i style="--w:' + c.umid + '%"></i></div><p>Ponto de orvalho em <b>' + temp(c.orvalho) + "</b>. " + (c.umid < 40 ? "O ar está seco." : c.umid > 75 ? "O ar está abafado." : "Nível confortável.") + "</p></section>";
+    h += '<section class="c-card c-vidro dobro" aria-labelledby="k-sol"><h3 class="c-rot" id="k-sol">' + ico("nasce") + 'Nascer e pôr do sol</h3>' + arcoSol(c, x) + '<div class="c-sol-linha"><span>' + horaTxt(c.nasc[0] * 60 + c.nasc[1]) + "<small>Nascer</small></span><span style=\"text-align:right\">" + horaTxt(c.poe[0] * 60 + c.poe[1]) + "<small>Pôr</small></span></div></section>";
+    h += '<section class="c-card c-vidro" aria-labelledby="k-chuva"><h3 class="c-rot" id="k-chuva">' + ico("chuva") + 'Chuva</h3><div class="c-valor">' + chuva24 + "<small>mm hoje</small></div>" + '<div class="c-mm-barras" aria-hidden="true">' + pops.map(function (p) { return '<i style="--h:' + Math.round(p) + '%"></i>'; }).join("") + "</div><p>Chance nas próximas 24 h.</p></section>";
+    h += '<section class="c-card c-vidro" aria-labelledby="k-pres"><h3 class="c-rot" id="k-pres">' + ico("pressao") + 'Pressão</h3><div class="c-valor">' + c.pressao + "<small>hPa</small></div>" + spark(c) + '<p><span class="c-trend">' + tendIco + c.tend + "</span> nas últimas 6 h</p></section>";
+    h += '<section class="c-card c-vidro" aria-labelledby="k-vis"><h3 class="c-rot" id="k-vis">' + ico("olho") + 'Visibilidade</h3><div class="c-valor">' + c.visib + "<small>km</small></div><p>" + vis + (c.visib < 8 ? ", com garoa e neblina." : ". Dá para ver longe.") + "</p></section>";
+    h += '<section class="c-card c-vidro" aria-labelledby="k-sens"><h3 class="c-rot" id="k-sens">' + ico("termo") + 'Sensação</h3><div class="c-valor">' + temp(sens) + '</div><p>' + (sens - d.t >= 3 ? "Parece mais quente que o termômetro: " + (c.umid > 60 ? "a umidade pesa." : "o sol forte pesa.") : sens - d.t <= -1 ? "Um pouco mais fresco que o termômetro, por causa do vento." : "Parecida com a temperatura real.") + "</p></section>";
+    $("#cards").innerHTML = h;
+  }
+
+  function linhaDia(c, i, modo) {
+    var d = c.dia[i], gmin = Math.min.apply(null, c.dia.map(function (x) { return x.min; })), gmax = Math.max.apply(null, c.dia.map(function (x) { return x.max; }));
+    gmin = Math.min(gmin, c.tmin); gmax = Math.max(gmax, c.tmax);
+    var a = (d.min - gmin) / (gmax - gmin) * 100, l = (d.max - d.min) / (gmax - gmin) * 100;
+    var agora = i === 0 ? clamp((curva(c, c.agoraH, c.seq[14] || "p") - gmin) / (gmax - gmin) * 100, a, a + l) : -1;
+    var pressed = modo === "sel" ? ' aria-pressed="' + (S.dia === i) + '"' : modo === "exp" ? ' aria-expanded="' + (S.expandido === i) + '"' : "";
+    return '<button type="button" class="c-dia" data-a="' + (modo === "exp" ? "dia-exp" : "dia") + '" data-i="' + i + '"' + pressed + ' aria-label="' + EXTENSO_DIA[i] + ", " + COND[d.cod][0] + ", mínima " + tempN(d.min) + ", máxima " + tempN(d.max) + ", chance de chuva " + d.pop + ' por cento"><span class="nm"><b>' + NOMES_DIA[i] + "</b><small>" + DATA_CURTA[i] + "</small></span>" + wi(d.cod, false) +
+      '<span class="pp">' + (d.pop >= 20 ? ico("gota") + d.pop + "%" : "") + '</span><span class="mn">' + temp(d.min) + '</span><span class="c-faixa-temp" aria-hidden="true"><i style="--a:' + a.toFixed(1) + "%;--l:" + l.toFixed(1) + '%"></i>' + (agora >= 0 ? '<b style="--agora:' + agora.toFixed(1) + '%"></b>' : "") + '</span><span class="mx">' + temp(d.max) + "</span></button>";
+  }
+  function pontosDia(c, i) {
+    var d = c.dia[i], out = [];
+    for (var h = 0; h < 24; h++) {
+      var base = curva(c, h + 0.5, "l", d.min, d.max), cool = 0, pop;
+      if (d.cod === "t") { cool = -5 * Math.exp(-Math.pow((h - 17) / 2.6, 2)); pop = Math.round(6 + 82 * Math.exp(-Math.pow((h - 17) / 3, 2))); }
+      else if (d.cod === "c") { cool = -3 * Math.exp(-Math.pow((h - 15) / 4, 2)); pop = Math.round(10 + 55 * Math.exp(-Math.pow((h - 14) / 5, 2))); }
+      else if (d.cod === "n") { cool = -1.2; pop = Math.round(16 + 8 * Math.sin(h / 3)); }
+      else if (d.cod === "p") { cool = -0.6; pop = 5 + (h * 3) % 5; }
+      else { pop = 2 + (h % 3); }
+      out.push({h: h, v: base + cool, pop: pop});
+    }
+    var mn = Math.min.apply(null, out.map(function (p) { return p.v; })), mx = Math.max.apply(null, out.map(function (p) { return p.v; }));
+    out.forEach(function (p) { p.v = d.min + (p.v - mn) / (mx - mn || 1) * (d.max - d.min); });
+    return out;
+  }
+  function statsDia(c, i) {
+    var d = c.dia[i], p = pontosDia(c, i);
+    var uv = d.cod === "c" || d.cod === "t" ? Math.max(3, c.uv - 5) : d.cod === "n" ? c.uv - 3 : c.uv;
+    var vento = Math.round(c.vento + (d.cod === "t" ? 12 : d.cod === "c" ? 4 : 0));
+    function cel(rot, val) { return '<div class="c-stat"><small>' + rot + "</small><b>" + val + "</b></div>"; }
+    return '<div class="c-stats">' + cel("Chuva", d.mm + " mm") + cel("Vento", vento + " km/h") + cel("UV", uv) + cel("Manhã", temp(p[8].v)) + cel("Tarde", temp(p[15].v)) + cel("Noite", temp(p[21].v)) + "</div>";
+  }
+  function graficoDia(c, i) {
+    var W = 360, H = 150, px = 16, py = 18, pts = pontosDia(c, i), mn = 99, mx = -99;
+    pts.forEach(function (p) { mn = Math.min(mn, p.v); mx = Math.max(mx, p.v); });
+    var xs = function (h) { return px + h / 23 * (W - 2 * px); }, ys = function (v) { return py + (1 - (v - mn) / (mx - mn || 1)) * (H - 56); };
+    var dd = pts.map(function (p, k) { return (k ? "L" : "M") + xs(p.h).toFixed(1) + " " + ys(p.v).toFixed(1); }).join("");
+    var area = dd + "L" + xs(23) + " " + (H - 36) + "L" + xs(0) + " " + (H - 36) + "z";
+    var barras = pts.map(function (p) { var hh = Math.max(2, p.pop / 100 * 26); return '<rect x="' + (xs(p.h) - 4.4).toFixed(1) + '" y="' + (H - 6 - hh).toFixed(1) + '" width="8.8" height="' + hh.toFixed(1) + '" rx="2.4" fill="#8fd0ff" fill-opacity="' + (0.35 + p.pop / 160).toFixed(2) + '"/>'; }).join("");
+    var imax = pts.reduce(function (a, p) { return p.v > a.v ? p : a; }, pts[0]), imin = pts.reduce(function (a, p) { return p.v < a.v ? p : a; }, pts[0]);
+    var lab = [0, 6, 12, 18].map(function (h) { return '<text x="' + xs(h).toFixed(1) + '" y="' + (H + 11) + '" text-anchor="middle">' + pad(h) + "h</text>"; }).join("");
+    return '<svg class="c-grafico" viewBox="0 0 ' + W + " " + (H + 16) + '" role="img" aria-label="Temperatura hora a hora: mínima ' + tempN(mn) + ", máxima " + tempN(mx) + '">' +
+      '<defs><linearGradient id="g-curva" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#g-curva)"/><path d="' + dd + '" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' + barras +
+      '<g><circle cx="' + xs(imax.h).toFixed(1) + '" cy="' + ys(imax.v).toFixed(1) + '" r="4.2" fill="#fff"/><text x="' + xs(imax.h).toFixed(1) + '" y="' + (ys(imax.v) - 9).toFixed(1) + '" text-anchor="middle" style="fill:#fff;font-size:12px;font-weight:700">' + temp(imax.v) + '</text>' +
+      '<circle cx="' + xs(imin.h).toFixed(1) + '" cy="' + ys(imin.v).toFixed(1) + '" r="4.2" fill="#fff"/><text x="' + xs(imin.h).toFixed(1) + '" y="' + (ys(imin.v) + 18).toFixed(1) + '" text-anchor="middle" style="fill:#fff;font-size:12px;font-weight:700">' + temp(imin.v) + "</text></g>" + lab + "</svg>";
+  }
+  function renderDias() {
+    var c = cidade(), largo = largura() >= 900;
+    $("#dias-resumo").textContent = c.resumo;
+    // celular: cada dia abre os detalhes na própria linha; tela larga: o dia escolhido abre no painel ao lado
+    $("#dias").innerHTML = c.dia.map(function (d, i) {
+      return largo ? linhaDia(c, i, "sel") : linhaDia(c, i, "exp") + '<div class="c-dia-det">' + statsDia(c, i) + "</div>";
+    }).join("");
+    renderDetalhe();
+    $("#prox").innerHTML = c.dia.slice(0, 7).map(function (d, i) { return linhaDia(c, i, "go"); }).join("");
+  }
+  function renderDetalhe() {
+    var c = cidade(), i = S.dia, d = c.dia[i];
+    $("#detalhe").innerHTML = '<div class="c-det-cab">' + wi(d.cod, false) + '<div><h2>' + EXTENSO_DIA[i].replace(/^./, function (m) { return m.toUpperCase(); }) + '</h2><div class="sub">' + COND[d.cod][0] + ' · ' + d.pop + '% de chuva</div></div><div class="tp">' + temp(d.max) + "<small>mín. " + temp(d.min) + "</small></div></div>" +
+      '<div><div class="c-rot" style="margin-bottom:6px">' + ico("termo") + 'Temperatura e chuva, hora a hora</div>' + graficoDia(c, i) + "</div>" + statsDia(c, i);
+  }
+  function largura() { return app.getBoundingClientRect().width; }
+
+  /* cidades (lateral e folha) */
+  function renderCidades() {
+    var html = CID.map(function (c) {
+      var d = horaDados(c, 0);
+      return '<button type="button" class="c-cidade" data-a="cidade" data-id="' + c.id + '" aria-pressed="' + (c.id === S.cid) + '"><span><strong>' + c.nome + ", " + c.uf + "</strong><small>" + (c.alerta ? '<i class="al" aria-hidden="true"></i>' : "") + COND[d.cod][0] + '</small></span><span class="tp">' + temp(d.t) + "</span>" + wi(d.cod, false) + "</button>";
+    }).join("");
+    $("#lat-cidades").innerHTML = html;
+    $("#sheet-cidades").innerHTML = html;
+    $$('[data-a="unidade"]').forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-u") === S.un)); });
+    var nome = cidade().nome + ", " + cidade().uf;
+    $("#t-cidade").textContent = nome;
+    $$("[data-t-cidade]").forEach(function (e) { e.textContent = nome; });
+  }
+
+  /* alerta */
+  function renderAlerta() {
+    var c = cidade(), a = c.alerta, sec = $("#alerta");
+    sec.setAttribute("data-calmo", a ? "0" : "1");
+    if (!a) {
+      $("#al-calmo").innerHTML = wi("l", false) + "<h1>Sem alertas em " + c.nome + "</h1><p>Nenhum aviso de tempo severo vale para " + c.nome + " agora. Verificamos de novo a cada 15 minutos e avisamos se algo mudar.</p>" +
+        '<div class="c-botoes" style="width:100%;max-width:420px"><button type="button" class="c-btn forte" data-a="cidade" data-id="goiania">' + ico("alerta") + "Ver o alerta de Goiânia</button></div>";
+      $("#al-aviso").innerHTML = ""; $("#al-contagem").innerHTML = ""; $("#al-espera").innerHTML = ""; $("#al-cuidados").innerHTML = ""; $("#al-mapa").innerHTML = "";
+      return;
+    }
+    var laranja = a.nivel === "laranja";
+    $("#al-aviso").innerHTML = wiAlerta() + '<div><span class="c-nivel"><i></i>Alerta ' + a.nivel + " · nível " + (laranja ? "2" : "1") + " de 3</span><h1>" + a.titulo + "</h1><p>" + a.resumo + "</p></div>";
+    $("#al-contagem").innerHTML = '<h2 class="c-rot" id="h-contagem">' + ico("relogio") + 'Janela do alerta</h2><div class="c-cont-linha"><div><div class="c-relogio" id="relogio" aria-live="off">--:--</div><div class="c-janela" style="margin-top:6px"><small id="relogio-sub">para começar</small></div></div><div class="c-janela">Hoje, ' + horaTxt(a.ini) + " às " + horaTxt(a.fim) + "<small>duração de " + fmtDur((a.fim - a.ini) * 60) + " · aviso nº " + a.num + "</small></div></div>" +
+      '<div class="c-linha-tempo"><div class="c-barras" role="group" aria-label="Intensidade prevista por hora">' + a.intens.map(function (v, k) {
+        var h = 14 + k, ag = k === 0;
+        return '<button type="button" class="' + (ag ? "agora" : "") + '" data-a="intens" data-k="' + k + '" aria-pressed="' + (S.intSel === k) + '" aria-label="' + pad(h) + ' horas: ' + ROT_INT[v] + '"><i style="--h:' + (14 + v * 28) + "%;--cor:" + CORES_INT[v] + '"></i></button>';
+      }).join("") + '</div><div class="c-horas-eixo" aria-hidden="true">' + a.intens.map(function (v, k) { return "<span>" + pad(14 + k) + "h</span>"; }).join("") + '</div><div class="c-dica" id="int-dica" aria-live="polite">' + dicaInt(a) + '</div><div class="c-legenda">' + ROT_INT.map(function (r, k) { return '<span><i style="--cor:' + CORES_INT[k] + '"></i>' + r + "</span>"; }).join("") + "</div></div>";
+    $("#al-espera").innerHTML = a.espera.map(function (e) { return '<div class="c-esp c-vidro">' + ico(e[2]) + "<small>" + e[0] + "</small><b>" + e[1] + "</b></div>"; }).join("");
+    var feitas = CUIDADOS.filter(function (_, k) { return S.checks[k]; }).length;
+    $("#al-cuidados").innerHTML = '<div class="c-cuidados-cab"><h2 class="c-rot" id="h-cuidados">' + ico("ok") + 'O que fazer</h2><span class="prog" id="prog-cuid">' + feitas + " de " + CUIDADOS.length + " feitas</span></div>" +
+      '<div class="c-lista" role="group" aria-label="Lista de cuidados">' + CUIDADOS.map(function (t, k) { return '<button type="button" class="c-cuid" role="checkbox" aria-checked="' + !!S.checks[k] + '" data-a="cuid" data-k="' + k + '"><span class="cx">' + ico("ok") + '</span><span class="tx">' + t + "</span></button>"; }).join("") + "</div>" +
+      '<div class="c-acoes"><button type="button" class="c-troca c-vidro" role="switch" aria-checked="' + S.lembrete + '" data-a="lembrete"><span class="tx">Avisar 30 minutos antes do início<small>Uma notificação às ' + horaTxt(a.ini - 30) + "</small></span><span class=\"c-sw\" aria-hidden=\"true\"></span></button>" +
+      '<div class="c-botoes"><button type="button" class="c-btn" data-a="compartilhar">' + ico("envia") + 'Compartilhar</button><button type="button" class="c-btn forte" data-a="ir" data-n="1">' + ico("sol") + "Ver o tempo</button></div></div>";
+    $("#al-mapa").innerHTML = mapa(c, a);
+  }
+  function dicaInt(a) {
+    if (S.intSel < 0) return "Toque numa barra para ver a hora.";
+    var k = S.intSel;
+    return pad(14 + k) + "h: " + ROT_INT[a.intens[k]];
+  }
+  function historico(a) {
+    var laranja = a.nivel === "laranja";
+    var itens = [[horaTxt(a.ini - 175), "Aviso nº " + a.num + " emitido em nível amarelo"]];
+    if (laranja) itens.push([horaTxt(a.ini - 130), "Elevado para nível laranja"]);
+    itens.push(["14:32", "Atualizado: área e horários mantidos"]);
+    return '<div class="c-hist"><h3 class="c-rot">' + ico("relogio") + "Histórico do aviso</h3><ol>" + itens.map(function (x, k) { return '<li class="' + (k === itens.length - 1 ? "ult" : "") + '"><time>' + x[0] + "</time><span>" + x[1] + "</span></li>"; }).join("") + "</ol></div>";
+  }
+  function mapa(c, a) {
+    var pontos = a.cidades.map(function (p, k) { return '<g><circle cx="' + p[1] + '" cy="' + p[2] + '" r="' + (k ? 3.6 : 5.2) + '" fill="#fff" stroke="#2a1100" stroke-width="1.6"/><text x="' + (p[1] + 8) + '" y="' + (p[2] + 3.5) + '" fill="#fff" font-size="9.5" font-weight="700" font-family="inherit" paint-order="stroke" stroke="#2a1100" stroke-width="2.6" stroke-linejoin="round">' + p[0] + "</text></g>"; }).join("");
+    var grade = "";
+    for (var i = 1; i < 8; i++) grade += '<line x1="' + i * 40 + '" y1="0" x2="' + i * 40 + '" y2="236" stroke="#fff" stroke-opacity=".08"/>';
+    for (var j = 1; j < 6; j++) grade += '<line x1="0" y1="' + j * 40 + '" x2="320" y2="' + j * 40 + '" stroke="#fff" stroke-opacity=".08"/>';
+    return '<div class="c-mapa-tit"><h2 class="c-rot">' + ico("pin") + "Área sob alerta</h2><span class=\"c-chip\" style=\"height:28px;font-size:12.5px\">Radar simulado</span></div>" +
+      '<svg viewBox="0 0 320 236" role="img" aria-label="Mapa esquemático da área sob alerta em ' + c.nome + '"><defs><radialGradient id="g-eco" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#d92d20" stop-opacity=".85"/><stop offset=".45" stop-color="#f2701c" stop-opacity=".6"/><stop offset="1" stop-color="#ffcf55" stop-opacity="0"/></radialGradient><linearGradient id="g-varre" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffcf55" stop-opacity="0"/><stop offset="1" stop-color="#ffcf55" stop-opacity=".5"/></linearGradient></defs>' +
+      '<rect width="320" height="236" fill="none"/>' + grade +
+      '<path d="M18 60C40 26 98 14 150 22s118 4 144 48c18 32 8 74-14 106-26 38-84 50-134 44-54-6-112-24-128-76C2 120 4 82 18 60z" fill="#fff" fill-opacity=".08" stroke="#fff" stroke-opacity=".3" stroke-dasharray="4 4"/>' +
+      '<path d="M54 74c18-26 62-34 104-30s84 14 98 44c12 26 4 56-18 78-24 24-68 28-104 22-40-6-84-22-92-52-4-24 0-44 12-62z" fill="url(#g-area)" fill-opacity=".34" stroke="#ffcf55" stroke-width="2" stroke-dasharray="6 4"/>' +
+      '<g class="c-radar"><path d="M160 118L260 70A112 112 0 0 1 272 118z" fill="url(#g-varre)"/></g>' +
+      '<g class="c-celula"><ellipse cx="150" cy="118" rx="52" ry="36" fill="url(#g-eco)"/><ellipse cx="176" cy="104" rx="26" ry="18" fill="url(#g-eco)" opacity=".8"/></g>' +
+      '<circle class="c-anel" cx="150" cy="118" r="60" fill="none" stroke="#ffcf55" stroke-width="1.6"/><circle class="c-anel b" cx="150" cy="118" r="60" fill="none" stroke="#ffcf55" stroke-width="1.6"/>' + pontos +
+      '<g transform="translate(296 22)"><circle r="12" fill="#fff" fill-opacity=".16"/><path d="M0-8l4 9h-8z" fill="#fff"/><text y="9" text-anchor="middle" fill="#fff" font-size="7" font-weight="700" font-family="inherit">N</text></g></svg>' +
+      '<div class="leg"><span><i style="background:#ffcf55"></i>Área do alerta</span><span><i style="background:#d92d20"></i>Núcleo da tempestade</span></div><p class="area"><b>' + (a.cidades.length) + " cidades:</b> " + a.area + "</p>" + historico(a);
+  }
+
+  /* contagem regressiva e relógio */
+  function tick() {
+    var c = cidade(), a = c.alerta;
+    var s = simS(), hh = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60);
+    $$("[data-hora-atual]").forEach(function (e) { var t = pad(hh) + ":" + pad(mm); if (e.textContent !== t) e.textContent = t; });
+    var rel = $("#relogio");
+    if (rel && a) {
+      var r = a.ini * 60 - s, sub = "para começar";
+      if (r <= 0) { r = a.fim * 60 - s; sub = "para terminar"; }
+      if (r <= 0) { r = 0; sub = "alerta encerrado"; }
+      var h = Math.floor(r / 3600), m = Math.floor(r % 3600 / 60), x = Math.floor(r % 60);
+      rel.textContent = pad(h) + ":" + pad(m) + ":" + pad(x);
+      $("#relogio-sub").textContent = sub;
+    }
+    if (estadoAtual() === 1 && a && Math.floor(s) % 15 === 0) renderBanner();
+  }
+
+  /* ── folha e aviso ─────────────────────────────────────────────────────── */
+  var camada = $("#camada"), folha = $("#folha"), gatilho = null;
+  function abrirFolha(de) { gatilho = de || null; camada.classList.add("aberta"); folha.classList.add("aberta"); var alvo = $(".c-cidade[aria-pressed=true]", folha); if (alvo) setTimeout(function () { try { alvo.focus({preventScroll: true}); } catch (x) {} }, 40); }
+  function fecharFolha(semFoco) { if (!folha.classList.contains("aberta")) return; folha.classList.remove("aberta"); camada.classList.remove("aberta"); if (!semFoco && gatilho) { try { gatilho.focus({preventScroll: true}); } catch (x) {} } }
+  var toastT = null;
+  function toast(txt) { var t = $("#toast"); t.textContent = txt; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("on"); }, 2600); }
+
+  /* ── ações ─────────────────────────────────────────────────────────────── */
+  function renderTudo() {
+    renderCidades(); renderHero(); renderBanner(); renderHoras(); renderCards(); renderDias(); renderAlerta(); aplicarCeu(); marcar();
+  }
+  function marcar() {
+    var n = String(estadoAtual());
+    $$(".c-aba,.c-nav button").forEach(function (b) { if (b.getAttribute("data-n") === n) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  }
+  function ir(n) { app.setAttribute("data-estado", String(n)); }
+  function trocarCidade(id) {
+    S.cid = id; S.hora = 0; S.dia = 0; S.expandido = -1; S.intSel = -1; S.checks = {}; S.lembrete = false;
+    renderTudo();
+    var c = cidade();
+    toast(c.nome + ", " + c.uf + (c.alerta ? " · alerta ativo" : ""));
+  }
+
+  app.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-a]");
+    if (!b || !app.contains(b)) return;
+    var a = b.getAttribute("data-a");
+    switch (a) {
+      case "ir": ir(parseInt(b.getAttribute("data-n"), 10)); break;
+      case "folha": abrirFolha(b); break;
+      case "fechar-folha": fecharFolha(); break;
+      case "cidade": fecharFolha(true); trocarCidade(b.getAttribute("data-id")); if (estadoAtual() === 3 && !cidade().alerta) {} break;
+      case "unidade": S.un = b.getAttribute("data-u"); renderTudo(); break;
+      case "hora":
+        S.hora = parseInt(b.getAttribute("data-i"), 10);
+        renderHero(); renderHoras(); renderCards(); aplicarCeu();
+        $$(".c-h[aria-pressed=true]", app).forEach(function (e) { try { e.scrollIntoView({inline: "center", block: "nearest", behavior: reduzido ? "auto" : "smooth"}); } catch (x) {} });
+        break;
+      case "dia":
+        S.dia = parseInt(b.getAttribute("data-i"), 10);
+        if (b.closest("#prox")) { ir(2); renderDias(); }
+        else { $$("#dias .c-dia").forEach(function (e) { e.setAttribute("aria-pressed", String(parseInt(e.getAttribute("data-i"), 10) === S.dia)); }); renderDetalhe(); }
+        aplicarCeu();
+        break;
+      case "dia-exp":
+        var i = parseInt(b.getAttribute("data-i"), 10);
+        S.expandido = S.expandido === i ? -1 : i; S.dia = i;
+        $$("#dias .c-dia").forEach(function (e) { e.setAttribute("aria-expanded", String(parseInt(e.getAttribute("data-i"), 10) === S.expandido)); });
+        aplicarCeu();
+        break;
+      case "intens":
+        var k = parseInt(b.getAttribute("data-k"), 10);
+        S.intSel = S.intSel === k ? -1 : k;
+        $$(".c-barras button").forEach(function (e) { e.setAttribute("aria-pressed", String(parseInt(e.getAttribute("data-k"), 10) === S.intSel)); });
+        $("#int-dica").textContent = dicaInt(cidade().alerta);
+        break;
+      case "cuid":
+        var q = parseInt(b.getAttribute("data-k"), 10);
+        S.checks[q] = !S.checks[q];
+        b.setAttribute("aria-checked", String(!!S.checks[q]));
+        var n = CUIDADOS.filter(function (_, z) { return S.checks[z]; }).length;
+        $("#prog-cuid").textContent = n + " de " + CUIDADOS.length + " feitas";
+        if (n === CUIDADOS.length) toast("Tudo pronto para a tempestade");
+        break;
+      case "lembrete":
+        S.lembrete = !S.lembrete;
+        b.setAttribute("aria-checked", String(S.lembrete));
+        toast(S.lembrete ? "Aviso marcado para " + horaTxt(cidade().alerta.ini - 30) : "Aviso desligado");
+        break;
+      case "compartilhar": toast("Link do alerta copiado"); break;
+    }
+  });
+  doc.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") fecharFolha();
+    if (e.key === "Tab" && folha.classList.contains("aberta")) {
+      var f = $$("button", folha).filter(function (x) { return x.offsetParent !== null; });
+      if (!f.length) return;
+      if (e.shiftKey && doc.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && doc.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    }
+  });
+  $("#horas").addEventListener("keydown", function (e) {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    var bs = $$(".c-h[data-a=hora]", $("#horas")), i = bs.indexOf(doc.activeElement);
+    if (i < 0) return;
+    var j = clamp(i + (e.key === "ArrowRight" ? 1 : -1), 0, bs.length - 1);
+    bs[j].focus(); e.preventDefault();
+  });
+
+  /* estado e medida */
+  var jaLargo = null;
+  function aoMudarEstado() {
+    var n = estadoAtual();
+    marcar(); fecharFolha(true);
+    app.scrollTop = 0;
+    $$(".c-vista").forEach(function (v) { v.scrollTop = 0; });
+    medir();
+    aplicarCeu();
+    if (n === 2) renderDias();
+    if (n === 1) renderBanner();
+  }
+  new MutationObserver(aoMudarEstado).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  function medir() {
+    var r = app.getBoundingClientRect();
+    var topo = r.top + (window.pageYOffset || 0);
+    app.style.setProperty("--c-alt", Math.max(480, window.innerHeight - topo) + "px");
+    var largo = largura() >= 900;
+    if (jaLargo !== largo) { jaLargo = largo; if (doc.readyState !== "loading") renderDias(); }
+  }
+  window.addEventListener("resize", medir);
+  window.addEventListener("load", medir);
+  if (window.ResizeObserver) { var ro = new ResizeObserver(medir); ro.observe(doc.body); ro.observe(app); }
+
+  /* início */
+  renderTudo();
+  medir();
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>
