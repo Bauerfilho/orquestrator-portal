@@ -9,7 +9,7 @@
 // os ajudantes de tela, o gravar, a folha comum e os ganchos registrarPagina/registrarExtra. Este arquivo não importa
 // nenhum deles (sem ciclo): só o razao.js e o graficos.js.
 import * as R from './razao.js';
-import {dinheiro, barra100, ranking, colunas, divergentes, mesLongo} from './graficos.js';
+import {dinheiro, barra100, ranking, colunas, mesLongo} from './graficos.js';
 
 const $ = id => document.getElementById(id);
 export function el(tag, cls, txt) { const n = document.createElement(tag); if (cls) n.className = cls; if (txt !== undefined && txt !== null) n.textContent = String(txt); return n; }
@@ -91,6 +91,10 @@ function desenharModo() {
 // Assinaturas; câmbio, spread e IOF abrem o parâmetro. Um termo com {detalhe: {titulo, explica}} (Realizado, Previsto)
 // abre a conta dele aqui mesmo, com "‹ Voltar". Assim "de onde vem este número" chega ao lançamento em até 3 toques.
 let dialogoConta = null;
+// o operador de cada termo como veio da conta: o razão usa '-' e o contas.js o sinal de menos de verdade (U+2212), '='
+// e '÷'; o que não for nenhum desses conta como soma
+const OPERADORES = {'+': '+', '-': '−', '−': '−', '=': '=', '÷': '÷', '×': '×'};
+const comMenos = minor => dinheiro(minor).replace('-', '−');   // valor negativo com o sinal de menos (U+2212), como no resto da tela
 export function verConta(titulo, explica, c, voltar = null) {
   if (!dialogoConta) { dialogoConta = el('dialog', 'lv-dialogo lv-conta'); dialogoConta.setAttribute('aria-label', 'A conta'); document.body.append(dialogoConta); dialogoConta.addEventListener('click', e => { if (e.target === dialogoConta) dialogoConta.close(); }); }
   const jaAberto = dialogoConta.open;
@@ -107,7 +111,7 @@ export function verConta(titulo, explica, c, voltar = null) {
   for (const t of explica.termos) {
     const li = el('li');
     const cab = el('div', 'lv-termo-cab');
-    cab.append(el('span', 'lv-termo-op', t.op === '-' ? '−' : '+'), rotuloDoTermo(t, c, aqui), el('span', 'lv-termo-valor', dinheiro(t.brl)));
+    cab.append(el('span', 'lv-termo-op', OPERADORES[t.op] || '+'), rotuloDoTermo(t, c, aqui), el('span', 'lv-termo-valor', comMenos(t.brl)));
     li.append(cab);
     if (t.original && t.original.moeda !== 'BRL') li.append(contaComLinks(t.original, t.conta, t.conversao));
     lista.append(li);
@@ -115,7 +119,7 @@ export function verConta(titulo, explica, c, voltar = null) {
   if (!explica.termos.length) lista.append(el('li', 'lv-vazio', 'Nenhum item entra nesta conta ainda.'));
   dialogoConta.append(lista);
   const tot = el('div', 'lv-termo-total');
-  tot.append(el('span', null, '='), el('strong', null, dinheiro(explica.resultado)));
+  tot.append(el('span', null, '='), el('strong', null, comMenos(explica.resultado)));
   dialogoConta.append(tot);
   if (explica.excluidos && explica.excluidos.length) {
     dialogoConta.append(el('h3', 'lv-sub', 'Ficaram de fora'));
@@ -241,24 +245,27 @@ function renderLivro(D) {
   const cartaoSerie = cartao('Últimos seis meses', 'O que foi lançado em cada mês; no mês aberto, o previsto aparece hachurado por cima.');
   cartaoSerie.append(colunas(serie.map((s, k) => k === serie.length - 1 ? s : {...s, previsto: 0}), {rotulo: 'Custo lançado por mês nos últimos seis meses.', destaque: mesAtual}));
   alvo.append(cartaoSerie);
-  // sócias: parte, adiantou, a receber, acerto
-  const cartaoSoc = cartao('Entre as sócias', l.balanceado ? 'A parte de cada uma no custo do mês, o que adiantou do bolso e o acerto sugerido.' : 'A participação cadastrada não fecha 100%: o rateio fica suspenso até o cadastro ser corrigido.');
+  // sócias: o que é DESTE mês (parte, o que pagou do bolso, reembolso pendente dos gastos do mês); o acerto entre elas é
+  // o acumulado até hoje, com os Pix e reembolsos registrados, desenhado pelo acerto.js no extra 'livro-acerto' (a mesma
+  // conta da Sociedade: contas.acertoAcumulado). Assim o Livro e a Sociedade nunca dizem coisas diferentes.
+  const cartaoSoc = cartao('Entre as sócias', l.balanceado ? 'Neste mês: a parte de cada uma no custo e o que cada uma pagou do próprio bolso. O acerto entre vocês, logo abaixo, é o acumulado até hoje.' : 'A participação cadastrada não fecha 100%: o rateio fica suspenso até o cadastro ser corrigido.');
   const tab = el('div', 'lv-socias');
   for (const s of l.porSocia) {
     const linha = el('div', 'lv-socia' + (s.id === c.membro.id ? ' is-eu' : ''));
     linha.append(el('strong', 'lv-socia-nome', s.nome + (s.id === c.membro.id ? ' (você)' : '')), dado('Participação', s.pct === null || s.pct === undefined ? 'a confirmar' : s.pct + '%'),
-      dado('Parte no mês', s.parte === null ? '—' : dinheiro(s.parte), 'destaque'), dado('Adiantou do bolso', dinheiro(s.adiantou)), dado('A receber da empresa', dinheiro(s.aReceberDaEmpresa)));
+      dado('Parte neste mês', s.parte === null ? '—' : dinheiro(s.parte), 'destaque'), dado('Pagou do bolso neste mês', dinheiro(s.adiantou)), dado('Reembolso pendente deste mês', dinheiro(s.aReceberDaEmpresa)));
     tab.append(linha);
   }
   cartaoSoc.append(tab);
-  const saldos = l.porSocia.filter(s => s.saldoAcerto);
-  if (saldos.length) {
-    cartaoSoc.append(el('h4', 'lv-sub', 'Acerto dos gastos divididos'));
-    cartaoSoc.append(divergentes(l.porSocia.map(s => ({rotulo: s.nome, valor: s.saldoAcerto})), {rotulo: 'Saldo de cada sócia nos gastos divididos: positivo recebe, negativo paga.'}));
-    const ul = el('ul', 'lv-transferencias');
-    for (const t of l.acerto.transferencias) ul.append(el('li', null, `${nomeDe(c, t.de)} paga ${dinheiro(t.brl)} a ${nomeDe(c, t.para)}`));
-    cartaoSoc.append(ul);
-  }
+  anexarExtras(cartaoSoc, 'livro-acerto', D, {mes: mesAtual}, 'lv-extras lv-acerto-livro');
+  const irAoAcerto = el('a', 'lv-termo-link lv-link-acerto', 'Ver o acerto acumulado na Sociedade ›');
+  irAoAcerto.href = window.financeRotas ? window.financeRotas.montar('society') : '#sociedade';
+  irAoAcerto.addEventListener('click', e => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || typeof window.financeNavigate !== 'function') return;
+    e.preventDefault();
+    irPara('society', 'sociedade-acerto-titulo', 'livro');
+  });
+  cartaoSoc.append(irAoAcerto);
   alvo.append(cartaoSoc);
   // nível 3: o livro
   const cartaoLivro = cartao('O livro do mês, até o centavo', 'Cada linha com a moeda original, os reais e de onde veio a conversão. Toque numa linha para ver a conta.');
@@ -322,7 +329,7 @@ function renderResumo(D) {
   box.append(cab, el('p', 'lv-manchete', manchete(l, c)));
   const nums = el('div', 'lv-kpis is-compacto');
   nums.append(kpi('Já lançado', l.realizado, 'no mês'), kpi('Custo do mês', l.total, 'lançado + previsto', null, 'total'), kpi('Sua parte', eu ? eu.parte : null, eu && eu.pct !== null ? eu.pct + '%' : '', null, 'destaque'),
-    kpi('A receber da empresa', eu ? eu.aReceberDaEmpresa : 0, 'reembolsos pendentes'));
+    kpi('Reembolso pendente', eu ? eu.aReceberDaEmpresa : 0, 'dos seus gastos deste mês'));
   box.append(nums);
   if (l.porCategoria.length) box.append(barra100(l.porCategoria.map(x => ({rotulo: x.rotulo, valor: x.brl, permil: x.permil, slot: x.slot})), {rotulo: 'Composição do custo do mês.'}));
   alvo.append(box);
@@ -383,6 +390,7 @@ function cartaoGasto(g, D) {
   const {c, lista} = D;
   const r = R.reaisDoGasto(g, lista);
   const art = el('article', 'lv-gasto' + (g.estado === 'anulado' ? ' is-anulado' : ''));
+  art.dataset.gasto = g.id;   // as telas da rotina devolvem o foco a este cartão depois de uma ação nele
   const cor = el('i', 'gf-cor'); cor.dataset.slot = String(R.slotCategoria(g.categoria));
   const corpo = el('div', 'lv-gasto-corpo');
   corpo.append(el('strong', 'lv-gasto-desc', g.descricao), el('span', 'lv-gasto-meta', `${dataBR(g.data)} · ${R.rotuloCategoria(g.categoria)} · ${R.rotuloForma(g.forma)}${R.formaDaEmpresa(g.forma) ? '' : ' · ' + ((R.DESTINOS.find(x => x.id === g.destino) || {}).rotulo || '')}`));
@@ -390,7 +398,8 @@ function cartaoGasto(g, D) {
   corpo.append(autoria);
   if (g.estado === 'anulado') corpo.append(el('span', 'lv-motivo', `Anulado por ${nomeDe(c, g.anuladoPor)}: ${g.motivoAnulacao}`));
   if (destacado && g.id === destacado) destacar(art, corpo, 'lv-gasto-destacado');
-  if (g.destino === 'empresa_reembolsa' && g.estado !== 'anulado') corpo.append(pilula(g.reembolsadoEm ? 'reembolsado' : 'reembolso pendente', g.reembolsadoEm ? 'ok' : 'pendente'));
+  // a situação do reembolso: reembolsado (pelo acerto ou marcado no treino antigo), virou aporte ou pendente
+  if (g.destino === 'empresa_reembolsa' && g.estado !== 'anulado') corpo.append(g.convertidoEm ? pilula('virou aporte', 'neutro') : (g.reembolsadoEm || g.reembolsoId) ? pilula('reembolsado', 'ok') : pilula('reembolso pendente', 'pendente'));
   const valor = el('div', 'lv-gasto-valor');
   valor.append(el('strong', null, dinheiro(g.valorMinor, g.moeda)));
   if (g.moeda !== 'BRL') valor.append(el('span', null, r.brl === null ? 'sem câmbio' : `≈ ${dinheiro(r.brl)} · ${r.tipo === 'efetivo' ? 'fatura' : 'estimado'}`));
@@ -400,7 +409,9 @@ function cartaoGasto(g, D) {
     acoes.append(botao('Editar', 'button-quiet', () => abrirLancar(g)));
     acoes.append(botao('Anular', 'button-quiet', () => anular(g)));
   }
-  if (g.estado !== 'anulado' && g.destino === 'empresa_reembolsa' && !g.reembolsadoEm) acoes.append(botao('Marcar reembolsado', 'button-quiet', () => gravar({acao: 'mark_reimbursed', alvo: g.id, versao: g.versao}, 'Reembolso marcado.')));
+  // reembolso pendente: "Reembolsar" (só a responsável) e "Converter em aporte" (só quem pagou) vêm do acerto.js pelo
+  // extra 'gasto-acoes', com a mesma folha da Sociedade. O antigo "Marcar reembolsado" saiu: um jeito só de quitar.
+  acoes.append(...desenharExtras('gasto-acoes', D, {gasto: g}));
   if (g.versoes.length) acoes.append(botao(`Histórico (${g.versoes.length})`, 'button-quiet', () => window.financeNavigate && window.financeNavigate('historico')));
   art.append(cor, corpo, valor, acoes);
   return art;
@@ -924,11 +935,23 @@ function destacar(caixa, onde, id) {
   caixa.style.borderRadius = '12px';
   onde.prepend(pilula(rotuloDestaque, 'neutro'));
 }
-function focarDestaque(id) {
+function focarDestaque(id, bloco = 'center') {
   const n = $(id);
   if (!n || n.closest('[hidden]')) return;
-  try { n.scrollIntoView({block: 'center', behavior: 'instant'}); } catch { n.scrollIntoView({block: 'center'}); }
+  try { n.scrollIntoView({block: bloco, behavior: 'instant'}); } catch { n.scrollIntoView({block: bloco}); }
   n.focus({preventScroll: true});
+}
+// leva a outra página e a um ponto dela: irPara('society', 'sociedade-acerto-titulo') abre a Sociedade (empilhando no
+// histórico: o Voltar do navegador volta) e, depois do app.js restaurar a rolagem e focar o título, rola até o alvo e o
+// foca (o alvo precisa ter tabIndex, como os títulos das seções da rotina). Fecha o "Ver a conta" se estiver aberto.
+export function irPara(pagina, alvoId = null, origem = 'link') {
+  if (dialogoConta && dialogoConta.open) dialogoConta.close();
+  if (typeof window.financeNavigate !== 'function' || !window.financeNavigate(pagina, !alvoId, {origem})) return false;
+  if (alvoId) requestAnimationFrame(() => requestAnimationFrame(() => {
+    if ($(alvoId)) focarDestaque(alvoId, 'start');
+    else if ($('dashboard-title')) $('dashboard-title').focus({preventScroll: true});   // o alvo não existe: foca a página, como sem alvo
+  }));
+  return true;
 }
 const PAGINAS_COM_ROTA = new Set(['livro', 'lancamentos', 'parametros']);
 function aplicarRota(r, origem) {
@@ -949,8 +972,10 @@ document.addEventListener('financeiro:rota', e => { const r = e.detail || {}; if
 // registrarPagina(fn): fn(D) roda a cada redesenho (o mesmo de renderTudo), depois das páginas daqui.
 // registrarExtra(lugar, fn): fn(D, contexto) devolve um nó (ou lista de nós, ou nada) para um lugar fixo de uma página
 // daqui. Nenhum dos dois roda com uma folha aberta. Um módulo que falha não derruba os outros (o erro vai ao console).
+// Lugares: 'livro-topo' {mes} · 'livro-acerto' {mes} (no cartão "Entre as sócias") · 'lancamentos-barra' {filtro} ·
+// 'gasto-acoes' {gasto} (os botões de cada lançamento) · 'parametros-barra' · 'historico-barra'.
 const paginas = [];
-const LUGARES = ['livro-topo', 'lancamentos-barra', 'parametros-barra', 'historico-barra'];
+const LUGARES = ['livro-topo', 'livro-acerto', 'lancamentos-barra', 'gasto-acoes', 'parametros-barra', 'historico-barra'];
 const extras = Object.fromEntries(LUGARES.map(l => [l, []]));
 let redesenhoMarcado = false;
 function marcarRedesenho() { if (redesenhoMarcado) return; redesenhoMarcado = true; queueMicrotask(() => { redesenhoMarcado = false; renderTudo(true); }); }
