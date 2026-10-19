@@ -1,0 +1,9 @@
+{
+  "name": "orquestrator-diario",
+  "private": true,
+  "type": "module",
+  "description": "Servidor do diário cifrado do portal Finanças: só guarda envelopes cifrados, só acrescenta.",
+  "dependencies": {
+    "@netlify/blobs": "11.1.2"
+  }
+}
