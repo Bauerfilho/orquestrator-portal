@@ -1655,6 +1655,12 @@ html[data-enxame-modo="neon"] .enxame-term{background:#03060a}
   // Tema: o portal manda #tema=claro|escuro; o app chama os dois de palha e carvão.
   var h = location.hash, escuro = /tema=escuro/.test(h) || (!/tema=claro/.test(h) && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.tema = escuro ? 'carvao' : 'palha';
+  // O portal troca o tema mudando só o #tema da moldura (isso não recarrega a página): a sala acompanha na hora.
+  addEventListener('hashchange', function(){
+    var t = /tema=escuro/.test(location.hash) ? 'carvao' : /tema=claro/.test(location.hash) ? 'palha' : null;
+    if (!t) return;
+    if (typeof window.tema === 'function') window.tema(t); else document.documentElement.dataset.tema = t;
+  });
   function p(n){ return String(n).padStart(2, '0'); }
   function iso(d){ var o = -d.getTimezoneOffset(), s = o >= 0 ? '+' : '-'; o = Math.abs(o); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + s + p(Math.floor(o / 60)) + ':' + p(o % 60); }
   function hms(ms){ var d = new Date(ms); return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()); }
