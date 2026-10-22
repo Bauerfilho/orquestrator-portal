@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora obstétrica · maquete</title>
+<style>
+/* Paleta copiada do app (ObstetricPalette, CalculatorView.swift): claro e escuro. */
+:root{--bg:#F4F3EF;--surface:#FEFEFB;--well:#EAECE8;--ink:#1F2929;--muted:#5C6B6B;--accent:#145154;--on-accent:#FFFFFF;--accent-soft:#D9E8E3;--rule:#DEE3DE;--error:#9E332B;--mesa:#ECEAE4;--mesa-tinta:#5f6a6a}
+:root[data-tema=escuro]{--bg:#101516;--surface:#1A2021;--well:#242B2D;--ink:#EDF2F0;--muted:#A6B8B8;--accent:#7AC9C4;--on-accent:#0F2426;--accent-soft:#244040;--rule:#384547;--error:#FFA899;--mesa:#0E1113;--mesa-tinta:#8c9898}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--mesa);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column;align-items:center;padding:18px 12px 28px}
+.selo{margin:0 0 14px;font-size:11px;letter-spacing:.06em;color:var(--mesa-tinta)}
+/* O iPhone: moldura, ilha dinâmica, barra de estado e indicador de início. */
+.iphone{width:390px;max-width:100%;padding:11px;border-radius:60px;background:linear-gradient(160deg,#3a3c40,#1a1b1e 40%,#101113);box-shadow:0 40px 90px rgba(0,0,0,.35),inset 0 0 0 2px #0a0a0b,inset 0 0 0 3px #4a4c50;position:relative}
+.iphone::before,.iphone::after{content:"";position:absolute;background:#2a2c30;border-radius:3px}
+.iphone::before{left:-3px;top:150px;width:3px;height:64px}
+.iphone::after{right:-3px;top:190px;width:3px;height:92px}
+.tela{width:100%;height:792px;border-radius:49px;background:var(--bg);overflow:hidden;position:relative}
+.ilha{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:34px;border-radius:20px;background:#000;z-index:3}
+.estado{display:flex;justify-content:space-between;align-items:center;padding:17px 30px 0;font-size:15px;font-weight:600;height:52px}
+.estado .icones{display:flex;align-items:center;gap:6px}
+.sinal{display:inline-flex;align-items:flex-end;gap:2px;height:11px}.sinal i{display:block;width:3px;background:var(--ink);border-radius:1px}
+.wifi{width:15px;height:11px;border-radius:50% 50% 0 0;border:2.5px solid var(--ink);border-bottom:0;position:relative;top:1px}
+.bateria{width:26px;height:12px;border:1.5px solid var(--ink);border-radius:4px;position:relative;padding:1.5px}.bateria i{display:block;height:100%;width:80%;background:var(--ink);border-radius:2px}.bateria::after{content:"";position:absolute;right:-4px;top:3px;width:2px;height:5px;background:var(--ink);border-radius:1px}
+.inicio{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--ink);opacity:.9}
+.app{padding:6px 18px 0;display:flex;flex-direction:column;gap:12px}
+.cab{display:flex;justify-content:space-between;align-items:flex-start}
+.cab h1{margin:0;font-size:27px;letter-spacing:-.01em;font-weight:700}
+.cab p{margin:2px 0 0;font-size:12.5px;font-weight:600;color:var(--muted)}
+.info{width:28px;height:28px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);display:grid;place-items:center;font:700 14px Georgia,serif;margin-top:4px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--well);border-radius:14px;padding:4px}
+.seg button{border:0;background:transparent;color:var(--muted);font-family:inherit;font-size:15px;font-weight:600;padding:9px 0;border-radius:11px;cursor:pointer}
+.seg button[aria-selected=true]{background:var(--accent);color:var(--on-accent)}
+.para{display:flex;justify-content:space-between;color:var(--muted);font-size:13.5px;margin:-2px 4px 0}
+.cartao{background:var(--surface);border-radius:18px;padding:13px 15px 15px}
+.linha{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.linha label{font-size:15.5px;white-space:nowrap}
+.data{border:0;background:transparent;color:var(--accent);font-family:inherit;font-size:16px;font-weight:500;text-align:right;min-width:0;max-width:170px}
+:root[data-tema=escuro] .data{color-scheme:dark}
+.div{height:1px;background:var(--rule);margin:11px 0}
+.rot{font-size:15.5px}
+.dupla{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.dupla span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px}
+.dupla input{width:100%;border:2px solid transparent;background:var(--well);color:var(--ink);border-radius:12px;padding:9px 12px;font-family:inherit;font-size:21px;font-weight:500}
+.dupla input:focus{outline:0;border-color:var(--accent)}
+.res h2,.nota-titulo{margin:0 0 3px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.res .grande{font-size:24px;font-weight:700;letter-spacing:-.01em;margin:1px 0}
+.res .orig{font-size:12.5px;color:var(--muted);margin:0}
+.res .dpp{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.res .dpp b{font-size:18px;color:var(--accent)}
+.res .aviso{font-size:11.5px;color:var(--muted);margin:7px 0 0;line-height:1.4}
+.comp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.comp div{background:var(--well);border-radius:12px;padding:10px}
+.comp small{display:block;color:var(--muted);font-size:11.5px;margin-bottom:3px}
+.comp b{font-size:15.5px}
+.dif{margin:9px 0 0;font-size:13.5px}
+.dif b{color:var(--accent)}
+.nota{background:var(--accent-soft);border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.4;margin:6px 0 9px}
+.copiar{width:100%;border:0;border-radius:12px;padding:11px;background:var(--accent);color:var(--on-accent);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer}
+#copiar-dois{display:grid;grid-template-columns:1fr 1fr;gap:8px}#copiar-dois .copiar{font-size:13px;padding:10px 4px}
+.vazio{color:var(--muted);font-size:13.5px;margin:0}
+.fontes{font-size:10.5px;color:var(--muted);line-height:1.5;margin:0 2px}
+.fontes b{color:var(--ink);font-weight:600}
+[hidden]{display:none!important}
+@media(max-width:420px){.iphone{padding:8px;border-radius:48px}.tela{border-radius:40px}}
+</style>
+</head>
+<body>
+<p class="selo">maquete · recriação da tela do app de iPhone</p>
+<div class="iphone" role="img" aria-label="Calculadora obstétrica no iPhone">
+  <div class="tela">
+    <div class="ilha" aria-hidden="true"></div>
+    <div class="estado"><span id="hora">9:41</span><span class="icones"><span class="sinal" aria-hidden="true"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:11px"></i></span><span class="wifi" aria-hidden="true"></span><span class="bateria" aria-hidden="true"><i></i></span></span></div>
+    <div class="app">
+      <div class="cab"><div><h1>Obstétrica</h1><p>Orquestrator.ai</p></div><span class="info" aria-hidden="true">i</span></div>
+      <div class="seg" role="tablist" aria-label="Modo de cálculo">
+        <button role="tab" data-modo="dum" aria-selected="false">DUM</button>
+        <button role="tab" data-modo="usg" aria-selected="true">USG</button>
+        <button role="tab" data-modo="comparar" aria-selected="false">Comparar</button>
+      </div>
+      <div class="para"><span>Calcular para</span><span id="hoje">Hoje</span></div>
+      <section class="cartao" id="c-dum" hidden>
+        <div class="linha"><label for="dum">Primeiro dia da DUM</label><input class="data" id="dum" type="date"></div>
+      </section>
+      <section class="cartao" id="c-usg">
+        <div class="linha"><label for="exame">Data do exame</label><input class="data" id="exame" type="date"></div>
+        <div class="div"></div>
+        <div class="rot">IG no exame</div>
+        <div class="dupla">
+          <label><span>Semanas</span><input id="sem" type="number" inputmode="numeric" min="0" max="42" value="12"></label>
+          <label><span>Dias</span><input id="dias" type="number" inputmode="numeric" min="0" max="6" value="3"></label>
+        </div>
+      </section>
+      <section class="cartao res" id="resultado" aria-live="polite"></section>
+      <section class="cartao" id="c-nota">
+        <h2 class="nota-titulo">Texto para prontuário</h2>
+        <p class="nota" id="nota"></p>
+        <button class="copiar" id="copiar" type="button">Copiar</button>
+        <div id="copiar-dois" hidden><button class="copiar" data-copia="dum" type="button">Copiar pela DUM</button><button class="copiar" data-copia="usg" type="button">Copiar pela USG</button></div>
+      </section>
+      <p class="fontes"><b>Fontes</b> · ACOG / AIUM / SMFM · CO 700 · 2017 · Ministério da Saúde · CAB 32 · 2012</p>
+    </div>
+    <div class="inicio" aria-hidden="true"></div>
+  </div>
+</div>
+<script>
+(function(){
+  // Tema: o portal manda #tema=claro|escuro; sem ele, segue o sistema.
+  var t = (location.hash.match(/tema=(claro|escuro)/) || [])[1] || (matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro');
+  document.documentElement.dataset.tema = t;
+  var $ = function(id){ return document.getElementById(id); };
+  var DIA = 86400000;
+  function civil(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function br(d){ return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear(); }
+  function lerData(v){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; }
+  function dias(a, b){ return Math.round((civil(b) - civil(a)) / DIA); }
+  function soma(d, n){ var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function ig(n){ var s = Math.floor(n/7), d = n % 7; return s + (s === 1 ? ' semana' : ' semanas') + ' e ' + d + (d === 1 ? ' dia' : ' dias'); }
+  var hoje = civil(new Date());
+  $('hoje').textContent = 'Hoje · ' + br(hoje);
+  $('hora').textContent = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  // Valores da maquete: os mesmos das capturas do app (USG em 09/10/2026, 12s3d) e uma DUM três dias antes da equivalente.
+  $('exame').value = '2026-10-09';
+  $('dum').value = '2026-07-11';
+  var modo = 'usg', notas = {};
+  function porDum(){ var d = lerData($('dum').value); if (!d) return null; var n = dias(d, hoje); return n >= 0 && n <= 44*7 ? {n:n, dum:d, origem:'pela DUM (' + br(d) + ').', rotulo:'Pela DUM'} : null; }
+  function porUsg(){
+    var e = lerData($('exame').value), s = parseInt($('sem').value, 10), d = parseInt($('dias').value, 10);
+    if (!e || isNaN(s) || isNaN(d) || s < 0 || s > 42 || d < 0 || d > 6) return null;
+    var no = s*7 + d, n = no + dias(e, hoje);
+    return n >= 0 && n <= 44*7 ? {n:n, dum:soma(e, -no), origem:'pela USG do dia ' + br(e) + '.', rotulo:'Pelo USG informado'} : null;
+  }
+  function desenha(){
+    document.querySelectorAll('.seg button').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.modo === modo)); });
+    $('c-dum').hidden = modo === 'usg';
+    $('c-usg').hidden = modo === 'dum';
+    $('copiar').hidden = modo === 'comparar'; $('copiar-dois').hidden = modo !== 'comparar';
+    var r = $('resultado'), a = porDum(), u = porUsg(), base = modo === 'dum' ? a : u;
+    if (modo === 'comparar'){
+      if (!a || !u){ r.innerHTML = '<p class="vazio">Confira os dados e conclua a entrada para ver a diferença.</p>'; $('nota').textContent = '—'; return; }
+      var dif = Math.abs(a.n - u.n);
+      r.innerHTML = '<h2>Duas estimativas para a mesma data</h2><div class="comp"><div><small>Pela DUM</small><b>' + ig(a.n) + '</b></div><div><small>Pelo USG</small><b>' + ig(u.n) + '</b></div></div>' +
+        '<p class="dif">Diferença: <b>' + dif + (dif === 1 ? ' dia' : ' dias') + '</b></p>';
+      $('nota').innerHTML = 'IG de ' + ig(a.n) + ' ' + a.origem + '<br>IG de ' + ig(u.n) + ' ' + u.origem;
+      notas = {dum: 'IG de ' + ig(a.n) + ' ' + a.origem, usg: 'IG de ' + ig(u.n) + ' ' + u.origem};
+      return;
+    }
+    if (!base){ r.innerHTML = '<p class="vazio">O resultado aparece quando os campos estiverem completos e válidos.</p>'; $('nota').textContent = '—'; return; }
+    r.innerHTML = '<h2>Idade gestacional</h2><p class="grande">' + ig(base.n) + '</p><p class="orig">' + base.rotulo + '</p>' +
+      '<div class="dpp"><span>DPP estimada</span><b>' + br(soma(base.dum, 280)) + '</b></div>' +
+      '<p class="aviso">A DPP é uma estimativa; não prevê o dia em que o parto acontecerá.</p>';
+    $('nota').textContent = 'IG de ' + ig(base.n) + ' ' + base.origem;
+  }
+  document.querySelectorAll('.seg button').forEach(function(b){ b.addEventListener('click', function(){ modo = b.dataset.modo; desenha(); }); });
+  ['dum','exame','sem','dias'].forEach(function(id){ $(id).addEventListener('input', desenha); });
+  function copia(b, txt, rot){
+    var ok = function(){ b.textContent = 'Copiado'; setTimeout(function(){ b.textContent = rot; }, 1400); };
+    try { navigator.clipboard.writeText(txt).then(ok, ok); } catch (e) { ok(); }
+  }
+  document.querySelectorAll('[data-copia]').forEach(function(b){ b.addEventListener('click', function(){ copia(b, notas[b.dataset.copia] || '', b.textContent); }); });
+  $('copiar').addEventListener('click', function(){ copia($('copiar'), $('nota').textContent, 'Copiar'); });
+  desenha();
+})();
+</script>
+</body>
+</html>

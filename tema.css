@@ -141,3 +141,8 @@ html[data-tema=escuro] .theme-toggle .tema-lua{display:none}
 :root[data-tema=claro] .app-header .page-help.icon-button,:root[data-tema=claro] .app-header .page-help.icon-button:hover{background:transparent;border-color:transparent}
 :root[data-tema=claro] .app-header .page-help.icon-button::before{background:var(--tinta-suave);border-color:transparent}
 :root[data-tema=claro] .app-header .page-help.icon-button:hover::before{background:rgba(207,172,105,.25)}
+
+/* Produtos (22/10/2026): o painel lateral direito no tema claro. */
+:root[data-tema=claro] .products-drawer{background:rgba(250,249,245,.92);border-left-color:var(--line);box-shadow:-24px 0 90px rgba(21,33,26,.18);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+:root[data-tema=claro] .products-drawer::backdrop{background:rgba(21,33,26,.28);backdrop-filter:blur(5px)}
+:root[data-tema=claro] .product-mark{border-color:rgba(150,120,40,.3);background:linear-gradient(150deg,#b89d5520,#b89d5506)}
