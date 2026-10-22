@@ -36,7 +36,7 @@ test('produtos.js registra os produtos em grupos conhecidos, com rota, título e
 test('as maquetes existem em produtos/, como arquivo único, sem rede nem srcdoc', () => {
   const js = ler('produtos.js');
   const arquivos = [...js.matchAll(/maquete: "([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(arquivos, ['produto-ai-swarm.html', 'produto-ai-chat.html', 'produto-calc-obstetrica.html', 'produto-rcog-tev.html']);
+  assert.deepEqual(arquivos, ['produto-ai-swarm.html', 'produto-ai-chat.html', 'produto-calc-obstetrica.html', 'produto-rcog-tev.html', 'produto-orquestrator.html']);
   for (const arquivo of arquivos) {
     const caminho = join(raiz, 'produtos', arquivo);
     assert.ok(existsSync(caminho), arquivo + ' não está em produtos/');
@@ -44,6 +44,20 @@ test('as maquetes existem em produtos/, como arquivo único, sem rede nem srcdoc
     assert.doesNotMatch(html, /\s(src|href)=["']https?:\/\//, arquivo + ': carrega algo da rede');
     assert.doesNotMatch(html, /srcdoc=/, arquivo + ': srcdoc não abre sob a CSP (frame-src blob:)');
   }
+});
+
+test('as maquetes com tema trocam ao vivo: o portal só muda o #tema da moldura, e isso não recarrega a página', () => {
+  // Defeito de 22/10: a moldura recebia #tema=escuro, mas a maquete só lia o tema ao carregar e ficava clara.
+  for (const arquivo of ['produto-ai-chat.html', 'produto-orquestrator.html']) {
+    const html = readFileSync(join(raiz, 'produtos', arquivo), 'utf8');
+    assert.match(html, /addEventListener\('hashchange'/, arquivo + ': não escuta a troca de #tema');
+  }
+});
+
+test('o Orquestrator tem maquete e o link de tela cheia', () => {
+  const js = ler('produtos.js');
+  assert.match(js, /chave: "orquestrator"[\s\S]*?maquete: "produto-orquestrator\.html", telaCheia: true/);
+  assert.match(js, /a\.dataset\.telaCheia = new URL\("produtos\/" \+ p\.maquete, document\.baseURI\)\.href/);
 });
 
 test('o index.html carrega o produtos.js depois do paginas.js e antes do app.js', () => {

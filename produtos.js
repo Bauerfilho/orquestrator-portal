@@ -45,21 +45,24 @@
       modelo: ["No iPhone: pagamento único pela Apple (R$ 5,90), decisão de 11/10/2026, com anúncios para quem não compra.", "A página publicada hoje continua aberta."],
       maquete: "produto-rcog-tev.html", telefone: true, dica: "A lista de fatores rola dentro do telefone.",
       app: {url: "https://bauerfilho.github.io/score-tev-rcog/", rotulo: "Abrir a calculadora funcionando"}},
-    {chave: "orquestrator", rota: "orquestrator", titulo: "Orquestrator", eyebrow: "Produto · o app da casa", estado: "em discussão",
-      descricao: "O app que reúne as IAs numa mesa só: conversa, enxame, navegadores e terminais.",
-      ajuda: {oque: "O lugar reservado ao app Orquestrator: o que ele é e o que ainda está em discussão.",
-        deonde: "Das decisões do Bauer registradas na conversa de 22/10/2026.",
-        naoe: "Ainda não há maquete nem modelo de venda: nada aqui está decidido."},
-      texto: "O app da casa: a mesa onde as IAs conversam, trabalham em enxame e usam navegadores e terminais, com a pessoa no comando. Ainda em discussão se será o app com o nome da casa.",
-      modelo: ["Em discussão: se o app vai levar o nome Orquestrator.", "Modelo de venda ainda não decidido."],
-      maquete: null, app: null, nota: "Maquete em preparo."},
+    {chave: "orquestrator", rota: "orquestrator", titulo: "Orquestrator", eyebrow: "Produto · o app da casa", estado: "em construção",
+      descricao: "O app que reúne as IAs numa mesa só: conversa, enxame, navegadores, terminais e a central de comunicação.",
+      ajuda: {oque: "A maquete do app Orquestrator: a sala das IAs, o enxame, o navegador, o terminal, o mini dock e a COMUNICATION, com dados fictícios.",
+        deonde: "Da interface real do app (a sala, o Golden Dock e a COMUNICATION) montada numa página só, sem servidor; o enxame repete uma captura real de 22/10/2026.",
+        naoe: "Não é o produto final: nada é enviado, nenhuma IA responde, o navegador só abre um Google e um YouTube de mentira e o terminal é simulado."},
+      texto: "O app da casa: a mesa onde as IAs conversam, trabalham em enxame e usam navegadores e terminais, com a pessoa no comando. A maquete é a interface real do app com dados fictícios: troque de janela no alto (sala, enxame, painel, groupchat, navegador, terminal, comunication) e abra o mini dock, a pílula dourada no pé da tela.",
+      modelo: ["Em construção: não é o produto final.", "COMUNICATION (e-mail, mensagens, agenda, ligações e notas numa central só): em produção — dá para ver o que já existe, com dados fictícios.",
+        "Em discussão: se o app vai levar o nome da casa, Orquestrator.", "Modelo de venda ainda não decidido."],
+      maquete: "produto-orquestrator.html", telaCheia: true,
+      dica: "No navegador há um Google e um YouTube de mentira: digite youtube.com ou qualquer pesquisa na barra. O mini dock (a pílula dourada no pé) abre chat, navegador e terminal. Para ver com folga, abra em tela cheia.",
+      app: null, nota: "Não é o produto final: por enquanto, a maquete."},
   ];
   const ORDEM_PAINEL = [{chave: "medpainel", sigla: "MP", nome: "Med Painel", linha: "O painel lateral do médico · plano de venda"},
     {chave: "aiswarm", sigla: "AS", nome: "AI Swarm", linha: "A frota de IAs trabalhando, ao vivo"},
     {chave: "aichat", sigla: "AC", nome: "AI Chat", linha: "As IAs conversando numa sala só"},
     {chave: "obstetrica", sigla: "OB", nome: "Calculadora obstétrica", linha: "IG e DPP pela DUM e pelo ultrassom"},
     {chave: "rcog", sigla: "TEV", nome: "Calculadora RCOG", linha: "Risco de TEV na gestação e no puerpério"},
-    {chave: "orquestrator", sigla: "OR", nome: "Orquestrator", linha: "O app da casa · em discussão"}];
+    {chave: "orquestrator", sigla: "OR", nome: "Orquestrator", linha: "O app da casa · em construção"}];
   const porChave = Object.fromEntries(PRODUTOS.map((p) => [p.chave, p]));
   const el = (tag, cls, texto) => { const node = document.createElement(tag); if (cls) node.className = cls; if (texto !== undefined) node.textContent = texto; return node; };
   const tema = () => document.documentElement.getAttribute("data-tema") === "escuro" ? "escuro" : "claro";
@@ -121,6 +124,15 @@
     alvo.append(modelo);
     if (!p.maquete) return;
     const mesa = secao("Veja a maquete", p.dica || "Funciona aqui dentro, numa moldura isolada, com dados fictícios.");
+    if (p.telaCheia) {
+      // a maquete sozinha, numa aba nova, ocupando a tela inteira (o arquivo é o mesmo de produtos/, com o tema do portal)
+      const fora = el("p", "product-actions");
+      const a = el("a", "button button-primary", "Ver em tela cheia ↗");
+      a.target = "_blank"; a.rel = "noopener noreferrer"; a.dataset.telaCheia = new URL("produtos/" + p.maquete, document.baseURI).href;
+      a.href = a.dataset.telaCheia + "#tema=" + tema();
+      fora.append(a, el("span", "mp-secao-texto", "Abre a maquete sozinha, numa aba nova, ocupando a tela inteira."));
+      mesa.append(fora);
+    }
     const aviso = el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo a maquete…");
     mesa.append(aviso);
     alvo.append(mesa);
@@ -148,8 +160,11 @@
     PRODUTOS.forEach((p) => { if (p.chave !== chave) desmontar(p.chave); });
     if (porChave[chave]) desenhar(chave);
   });
+  // Trocar só o #tema não recarrega a moldura: as maquetes que têm tema (AI Chat e Orquestrator) escutam a troca e
+  // mudam na hora, sem perder o que estiver aberto. O link de tela cheia leva o tema atual.
   new MutationObserver(() => {
     document.querySelectorAll(".product-frame[data-base]").forEach((moldura) => { const url = moldura.dataset.base + "#tema=" + tema(); if (moldura.src !== url) moldura.src = url; });
+    document.querySelectorAll("a[data-tela-cheia]").forEach((a) => { a.href = a.dataset.telaCheia + "#tema=" + tema(); });
   }).observe(document.documentElement, {attributes: true, attributeFilter: ["data-tema"]});
 
   // ── o painel lateral direito "Produtos" ─────────────────────────────────────────────────────────────────────────
