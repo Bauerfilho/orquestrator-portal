@@ -257,6 +257,11 @@ html[data-surface="grid"] body{background-image:linear-gradient(rgba(151,182,148
 .product-colunas{display:grid;grid-template-columns:minmax(300px,420px) minmax(0,1fr);gap:28px;align-items:start}
 .product-coluna-texto{display:flex;flex-direction:column;gap:14px;min-width:0}
 .product-colunas .product-frame--telefone{height:900px;min-height:900px;max-width:420px}
+/* o telefone flutuante (Med Painel no celular, 23/10/2026): sem mesa, sem borda — o fundo é o do portal */
+.product-frame--flutuante{background:transparent;border:0;border-radius:0;max-width:440px;margin:0 auto;display:block}
+.medpainel-celular{display:flex;flex-direction:column;gap:28px;margin-top:8px;padding-top:28px;border-top:1px solid var(--line)}
+.medpainel-celular-moldura{display:flex;justify-content:center}
+@media(max-width:760px){.product-frame--flutuante{height:860px;min-height:860px}}
 .product-lista{margin:0;padding:0 0 0 18px;color:var(--muted);font-size:14px;line-height:1.6;max-width:84ch}.product-lista li{margin:0 0 7px}.product-lista b{color:var(--ink);font-weight:500}
 .product-passos{list-style:none;margin:0;padding:0;display:grid;gap:10px;max-width:92ch}
 .product-passo{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel)}

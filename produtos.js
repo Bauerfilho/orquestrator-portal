@@ -146,7 +146,10 @@
       maquete: "produto-orquestrator.html", telaCheia: true,
       dica: "No navegador há um Google e um YouTube de mentira: digite youtube.com ou qualquer pesquisa na barra. O mini dock (a pílula dourada no pé) abre chat, navegador e terminal. Para ver com folga, abra em tela cheia.",
       app: null, nota: "Não é o produto final: por enquanto, a maquete."},
-    {chave: "medpainelcelular", rota: "med-painel-celular", titulo: "Med Painel no celular", eyebrow: "Produto · o painel, as notas e o teclado no iPhone", estado: "em construção",
+  ];
+  // O Med Painel no celular (23/10/2026): não é página à parte — é o bloco "No celular" no fim da página do Med Painel
+  // (app.js chama window.financeMedPainelCelular no fim de renderMedPainel). A maquete abre como blob:, flutuante, só quando aparece.
+  const CELULAR = {chave: "medpainelcelular", titulo: "Med Painel no celular", eyebrow: "Produto · o painel, as notas e o teclado no iPhone", estado: "em construção",
       descricao: "O Med Painel no iPhone: o mesmo painel do Mac, o Med Note para as notas do plantão e um teclado que cola os seus textos em qualquer app.",
       ajuda: {oque: "A maquete do Med Painel no iPhone com o núcleo de verdade rodando dentro de um telefone desenhado — o Painel (8 abas), o Med Note (a nota do plantão com /esqueletos e ⇥) e a tela do Teclado —, as fotos do app e do teclado compilados em Swift e fotografados no simulador do iPhone, e o projeto: o que o teclado pode e não pode, os degraus e as decisões pendentes.",
         deonde: "Do núcleo web do Med Painel (o mesmo arquivo que roda no Mac e no iPhone), empacotado num HTML só e aberto com a casca de iPhone simulada; as fotos são do app e do teclado de verdade, no simulador do iPhone 17 (iOS 27), em 22 e 23/10/2026.",
@@ -207,10 +210,9 @@
             {rotulo: "Base do teclado:", texto: "escrito do zero, sem dependência (o KeyboardKit é licença fechada e paga: seria decisão dele)."},
             {rotulo: "Pendentes dele:", texto: "quando pagar a conta Apple; o preço (dentro dos R$ 59,90 ou à parte); o Revisar no iPhone (hoje fica fora: o motor é Java, roda só no Mac); quando fazer o Android."}],
           nota: "Fontes conferidas em 22/10/2026: guias da Apple de extensões de teclado (UITextDocumentProxy, acesso total, memória), segurança da plataforma (caixa sem rede, bloqueio por app e por gestão de aparelhos) e diretrizes da App Store 1.4.1, 3.1.3(b), 4.2, 4.4.1 e 5.1.3; Lei 13.709/2018 (LGPD), art. 5.º, II, e art. 11."}
-      ]},
-  ];
+      ]};
+
   const ORDEM_PAINEL = [{chave: "medpainel", sigla: "MP", nome: "Med Painel", linha: "O painel lateral do médico · plano de venda"},
-    {chave: "medpainelcelular", sigla: "MPi", nome: "Med Painel no celular", linha: "O painel, as notas e o teclado no iPhone · em construção"},
     {chave: "aiswarm", sigla: "AS", nome: "AI Swarm", linha: "A frota de IAs trabalhando, ao vivo"},
     {chave: "aichat", sigla: "AC", nome: "AI Chat", linha: "As IAs conversando numa sala só"},
     {chave: "obstetrica", sigla: "OB", nome: "Calculadora obstétrica", linha: "IG e DPP pela DUM e pelo ultrassom"},
@@ -299,9 +301,9 @@
     if (s.nota) sec.append(paragrafos(s.nota, "product-nota"));
     return sec;
   }
-  async function molduraDe(p, arquivo, telefone, rotulo) {
+  async function molduraDe(p, arquivo, telefone, rotulo, flutuante) {
     const base = await baseDaMaquete(arquivo);
-    const moldura = el("iframe", "product-frame" + (telefone ? " product-frame--telefone" : ""));
+    const moldura = el("iframe", "product-frame" + (telefone ? " product-frame--telefone" : "") + (flutuante ? " product-frame--flutuante" : ""));
     moldura.setAttribute("sandbox", "allow-scripts"); moldura.setAttribute("referrerpolicy", "no-referrer");
     moldura.title = rotulo || (p.titulo + ", maquete"); moldura.dataset.base = base; moldura.src = base + "#tema=" + tema();
     return moldura;
@@ -373,6 +375,57 @@
     }
     alvo.append(modelo);
   }
+  // ── o Med Painel no celular, no fim da página do Med Painel (app.js chama no fim de renderMedPainel) ──────────────
+  // O telefone flutua sobre o fundo do portal (moldura transparente, sem mesa) e só é aberto quando aparece na tela;
+  // ao sair da página, a moldura é desmontada e, ao voltar, abre de novo a partir do blob: guardado.
+  let celularAlvo = null;
+  function montarCelularMaquete() {
+    if (!celularAlvo || !celularAlvo.isConnected || celularAlvo.querySelector("iframe.product-frame")) return;
+    const aviso = celularAlvo.querySelector(".mp-mesa-aviso") || el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo o Med Painel no iPhone…");
+    if (!aviso.isConnected) celularAlvo.append(aviso);
+    molduraDe(CELULAR, CELULAR.maquete, true, "Med Painel no iPhone, maquete", true)
+      .then((moldura) => { if (celularAlvo && celularAlvo.isConnected && !celularAlvo.querySelector("iframe.product-frame")) aviso.replaceWith(moldura); })
+      .catch((erro) => { aviso.textContent = erro && erro.message ? erro.message : "A maquete não veio neste site."; });
+  }
+  function desmontarCelularMaquete() {
+    const moldura = celularAlvo && celularAlvo.querySelector("iframe.product-frame");
+    if (moldura) moldura.replaceWith(el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo o Med Painel no iPhone…"));
+  }
+  window.financeMedPainelCelular = function (alvo) {
+    const antigo = alvo.querySelector("#medpainel-celular");
+    if (antigo) antigo.remove();
+    const bloco = el("div", "medpainel-celular"); bloco.id = "medpainel-celular";
+    const cabeca = secao("No celular", CELULAR.descricao);
+    const pilula = el("span", "product-estado", CELULAR.estado); pilula.dataset.estado = CELULAR.estado;
+    cabeca.append(pilula, paragrafos(CELULAR.texto));
+    bloco.append(cabeca);
+    for (const s of CELULAR.secoes) {
+      if (s.tipo === "maquete") {
+        const mesa = secao("Veja no iPhone", CELULAR.dica);
+        const caixa = el("div", "medpainel-celular-moldura");
+        caixa.append(el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo o Med Painel no iPhone…"));
+        mesa.append(caixa, el("p", "product-nota", CELULAR.statusMaquete + ". " + CELULAR.nota));
+        bloco.append(mesa);
+        celularAlvo = caixa;
+      } else if (s.tipo !== "celular") bloco.append(montaSecao(s));
+    }
+    const modelo = secao("Modelo e caminho");
+    const lista = el("ul", "product-modelo");
+    CELULAR.modelo.forEach((linha) => lista.append(el("li", "", linha)));
+    modelo.append(lista);
+    bloco.append(modelo);
+    alvo.append(bloco);
+    // abre a maquete só quando o telefone entra na tela (a página do Med Painel é longa)
+    if (typeof IntersectionObserver === "function") {
+      const observador = new IntersectionObserver((entradas) => { if (entradas.some((e) => e.isIntersecting)) { observador.disconnect(); montarCelularMaquete(); } }, {rootMargin: "200px"});
+      observador.observe(celularAlvo);
+    } else montarCelularMaquete();
+  };
+  document.addEventListener("financeiro:rota", (evento) => {
+    const chave = evento.detail && evento.detail.pagina;
+    if (chave === "medpainel") { if (celularAlvo && celularAlvo.isConnected) montarCelularMaquete(); } else desmontarCelularMaquete();
+  });
+
   // Só o produto aberto fica com a maquete viva: ao sair da página, a moldura é desmontada (o AI Swarm e o AI Chat
   // repetem o enxame em laço e gastariam CPU escondidos); ao voltar, redesenha a partir do blob: já guardado.
   function desmontar(chave) {
