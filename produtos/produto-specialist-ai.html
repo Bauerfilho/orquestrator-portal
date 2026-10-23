@@ -205,8 +205,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     var v = cid ? conversas.filter(function(x){ return x.id === cid; })[0] : null;
     if (!v){ var q = agoraMenos(0); v = {id: ++seqConv, criada: q, atualizada: q, titulo: texto.slice(0, 80), estado: {}, mensagens: []}; conversas.push(v); }
     v.mensagens.push({id: ++seqMsg, quando: new Date().toISOString(), papel: 'voce', texto: texto, tema: null, cartinha: null, numeros_fora: [], docs_fora: [], tempo: null, cola: null});
-    var R = escolhe(texto), enc = new TextEncoder(), fila = [], fechado = false;
+    var R = escolhe(texto), enc = new TextEncoder(), fila = [], inicio = Date.now(), primeiraPalavra = null;
     function ev(obj, atraso){ fila.push([obj, atraso || 0]); }
+    function marca(obj){ var t = (Date.now() - inicio) / 1000; if (obj.tipo === 'resposta' && primeiraPalavra == null) primeiraPalavra = Math.round(t * 10) / 10; if (obj.tipo === 'fim'){ obj.tempo = Math.round(t * 10) / 10; obj.primeiro = primeiraPalavra == null ? obj.tempo : primeiraPalavra; if (m) m.tempo = obj.tempo; } return obj; }
     if (R){
       var T = D.temas[R.tema] || {titulo: 'Especialista', escopo: ''};
       ev({tipo: 'inicio', conversa: v.id}, 50);
@@ -232,7 +233,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
       (function proximo(){
         if (!fila.length){ v.mensagens.push(m); v.atualizada = new Date().toISOString(); if (!v.titulo) v.titulo = texto.slice(0, 80); ctl.close(); return; }
         var par = fila.shift();
-        setTimeout(function(){ ctl.enqueue(enc.encode('data: ' + JSON.stringify(par[0]) + '\n\n')); proximo(); }, par[1]);
+        setTimeout(function(){ ctl.enqueue(enc.encode('data: ' + JSON.stringify(marca(par[0])) + '\n\n')); proximo(); }, par[1]);
       })();
     }});
     return Promise.resolve(new Response(stream, {status: 200, headers: {'Content-Type': 'text/event-stream'}}));
