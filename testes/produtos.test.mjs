@@ -24,7 +24,7 @@ function registrar() {
 
 test('produtos.js registra os produtos em grupos conhecidos, com rota, título e ajuda inteira', () => {
   const fila = registrar();
-  assert.deepEqual(fila.map(p => p.chave), ['aiswarm', 'aichat', 'obstetrica', 'rcog', 'specialist', 'orquestrator', 'medpainelcelular']);
+  assert.deepEqual(fila.map(p => p.chave), ['aiswarm', 'aichat', 'obstetrica', 'rcog', 'specialist', 'orquestrator']);
   for (const p of fila) {
     assert.ok(GRUPOS.includes(p.grupo), p.chave + ': grupo ' + p.grupo);
     assert.match(p.rota, /^[a-z][a-z0-9-]{1,39}$/);
@@ -64,9 +64,12 @@ test('o Specialist AI: as fotos da página existem em produtos/ e a maquete é s
   assert.match(maquete, /respostas reais do app|resposta real/i, 'a maquete tem de dizer que as respostas são reais');
 });
 
-test('o Med Painel no celular: o núcleo real com a casca de iPhone simulada, as fotos do app e os desenhos do teclado', () => {
+test('o Med Painel no celular: bloco no fim da página do Med Painel (não é página à parte), o núcleo real com a casca de iPhone simulada, as fotos do app e do teclado', () => {
   const js = ler('produtos.js');
-  const bloco = js.slice(js.indexOf('chave: "medpainelcelular"'));
+  assert.doesNotMatch(js, /rota: "med-painel-celular"/, 'o celular não é mais página à parte: vive na página do Med Painel');
+  assert.match(js, /window\.financeMedPainelCelular = function/, 'o bloco entra pelo gancho que o app.js chama no fim de renderMedPainel');
+  assert.match(ler('app.js'), /window\.financeMedPainelCelular\(target\)/, 'o app.js tem de chamar o gancho');
+  const bloco = js.slice(js.indexOf('const CELULAR = {'));
   const fotos = [...bloco.matchAll(/src: "(med-painel-celular\/[^"]+\.jpg)"/g)].map(m => m[1]);
   assert.ok(fotos.length >= 6, 'faltam fotos: ' + fotos.length);
   for (const foto of fotos) assert.ok(existsSync(join(raiz, 'produtos', foto)), foto + ' não está em produtos/');
@@ -75,7 +78,9 @@ test('o Med Painel no celular: o núcleo real com a casca de iPhone simulada, as
   assert.match(maquete, /med-painel-arquivo-unico/, 'o núcleo tem de estar empacotado num arquivo único');
   assert.match(maquete, /registrarFace/, 'o núcleo empacotado tem de ter as faces (Note e Teclado)');
   assert.doesNotMatch(maquete, /Paesano|paesano/, 'nada de terceiro no núcleo publicado');
-  assert.match(js, /chave: "medpainelcelular"[\s\S]*?maquete: "produto-med-painel-celular\.html", telefone: true/);
+  assert.match(js, /const CELULAR = \{[\s\S]*?maquete: "produto-med-painel-celular\.html", telefone: true/);
+  assert.match(maquete, /background:transparent/, 'o telefone flutua sobre o fundo do portal: a página da maquete é transparente');
+  assert.match(maquete, /addEventListener\(\x27hashchange\x27/, 'as legendas seguem o tema do portal (#tema=)');
 });
 
 test('o Orquestrator tem maquete e o link de tela cheia', () => {

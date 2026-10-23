@@ -2066,6 +2066,8 @@
     }
     target.append(mesa);
   }
+  // O Med Painel no celular (23/10/2026, pedido do Criador): o bloco vive em produtos.js e entra no fim desta página.
+  if (typeof window.financeMedPainelCelular === "function") { try { window.financeMedPainelCelular(target); } catch (error) { console.error(error); } }
   }
   function renderMedPainel(block) {
     mpUltimoBloco = block;
