@@ -24,7 +24,7 @@ function registrar() {
 
 test('produtos.js registra os produtos em grupos conhecidos, com rota, título e ajuda inteira', () => {
   const fila = registrar();
-  assert.deepEqual(fila.map(p => p.chave), ['aiswarm', 'aichat', 'obstetrica', 'rcog', 'specialist', 'orquestrator']);
+  assert.deepEqual(fila.map(p => p.chave), ['aiswarm', 'aichat', 'obstetrica', 'rcog', 'specialist', 'orquestrator', 'medpainelcelular']);
   for (const p of fila) {
     assert.ok(GRUPOS.includes(p.grupo), p.chave + ': grupo ' + p.grupo);
     assert.match(p.rota, /^[a-z][a-z0-9-]{1,39}$/);
@@ -36,7 +36,7 @@ test('produtos.js registra os produtos em grupos conhecidos, com rota, título e
 test('as maquetes existem em produtos/, como arquivo único, sem rede nem srcdoc', () => {
   const js = ler('produtos.js');
   const arquivos = [...js.matchAll(/maquete: "([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(arquivos, ['produto-ai-swarm.html', 'produto-ai-chat.html', 'produto-calc-obstetrica.html', 'produto-rcog-tev.html', 'produto-specialist-ai.html', 'produto-specialist-ai-celular.html', 'produto-orquestrator.html']);
+  assert.deepEqual(arquivos, ['produto-ai-swarm.html', 'produto-ai-chat.html', 'produto-calc-obstetrica.html', 'produto-rcog-tev.html', 'produto-specialist-ai.html', 'produto-specialist-ai-celular.html', 'produto-orquestrator.html', 'produto-med-painel-celular.html']);
   for (const arquivo of arquivos) {
     const caminho = join(raiz, 'produtos', arquivo);
     assert.ok(existsSync(caminho), arquivo + ' não está em produtos/');
@@ -62,6 +62,20 @@ test('o Specialist AI: as fotos da página existem em produtos/ e a maquete é s
   const maquete = readFileSync(join(raiz, 'produtos', 'produto-specialist-ai.html'), 'utf8');
   assert.doesNotMatch(maquete, /tema=claro|prefers-color-scheme: light/, 'a maquete do Specialist AI é só escura (decisão dele)');
   assert.match(maquete, /respostas reais do app|resposta real/i, 'a maquete tem de dizer que as respostas são reais');
+});
+
+test('o Med Painel no celular: o núcleo real com a casca de iPhone simulada, as fotos do app e os desenhos do teclado', () => {
+  const js = ler('produtos.js');
+  const bloco = js.slice(js.indexOf('chave: "medpainelcelular"'));
+  const fotos = [...bloco.matchAll(/src: "(med-painel-celular\/[^"]+\.jpg)"/g)].map(m => m[1]);
+  assert.ok(fotos.length >= 6, 'faltam fotos: ' + fotos.length);
+  for (const foto of fotos) assert.ok(existsSync(join(raiz, 'produtos', foto)), foto + ' não está em produtos/');
+  const maquete = readFileSync(join(raiz, 'produtos', 'produto-med-painel-celular.html'), 'utf8');
+  assert.match(maquete, /plataforma: 'iphone'/, 'a casca simulada tem de se apresentar como iPhone (é o que liga as faces)');
+  assert.match(maquete, /med-painel-arquivo-unico/, 'o núcleo tem de estar empacotado num arquivo único');
+  assert.match(maquete, /registrarFace/, 'o núcleo empacotado tem de ter as faces (Note e Teclado)');
+  assert.doesNotMatch(maquete, /nome-de-terceiro|nome-de-terceiro/, 'nada de terceiro no núcleo publicado');
+  assert.match(js, /chave: "medpainelcelular"[\s\S]*?maquete: "produto-med-painel-celular\.html", telefone: true/);
 });
 
 test('o Orquestrator tem maquete e o link de tela cheia', () => {
