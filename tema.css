@@ -146,3 +146,11 @@ html[data-tema=escuro] .theme-toggle .tema-lua{display:none}
 :root[data-tema=claro] .products-drawer{background:rgba(250,249,245,.92);border-left-color:var(--line);box-shadow:-24px 0 90px rgba(21,33,26,.18);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
 :root[data-tema=claro] .products-drawer::backdrop{background:rgba(21,33,26,.28);backdrop-filter:blur(5px)}
 :root[data-tema=claro] .product-mark{border-color:rgba(150,120,40,.3);background:linear-gradient(150deg,#b89d5520,#b89d5506)}
+
+/* Produtos (22/10): as seções ricas no tema claro. */
+:root[data-tema=claro] .product-numero,:root[data-tema=claro] .product-foto,:root[data-tema=claro] .product-passo{background:rgba(255,255,255,.72);border-color:rgba(21,33,26,.12)}
+:root[data-tema=claro] .product-numero-valor{color:#8a6a1e}
+:root[data-tema=claro] .product-passo-estado{color:#8a6a1e;border-color:rgba(138,106,30,.4)}
+:root[data-tema=claro] .product-passo-estado[data-estado="feito"]{color:#2f7a4f;border-color:rgba(47,122,79,.45)}
+:root[data-tema=claro] .product-passo-estado[data-estado="depois"]{color:var(--faint);border-color:var(--line)}
+:root[data-tema=claro] .product-tabela caption{color:#8a6a1e}

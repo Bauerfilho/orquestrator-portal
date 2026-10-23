@@ -45,6 +45,96 @@
       modelo: ["No iPhone: pagamento único pela Apple (R$ 5,90), decisão de 11/10/2026, com anúncios para quem não compra.", "A página publicada hoje continua aberta."],
       maquete: "produto-rcog-tev.html", telefone: true, dica: "A lista de fatores rola dentro do telefone.",
       app: {url: "https://bauerfilho.github.io/score-tev-rcog/", rotulo: "Abrir a calculadora funcionando"}},
+    {chave: "specialist", rota: "specialist-ai", titulo: "Specialist AI", eyebrow: "Produto · a especialista de bolso", estado: "em construção",
+      descricao: "Especialistas pequenas que respondem lendo a biblioteca oficial brasileira — com a fonte, a página e as figuras do manual.",
+      ajuda: {oque: "A maquete do Specialist AI (tela escura) com três respostas reais do app, a versão no iPhone e o projeto: como ficam as respostas e as figuras, a velocidade das IAs pequenas, o celular, os planos, de onde vêm as fontes e a previsão de custos e ganhos.",
+        deonde: "Da tela real do app, do histórico real de outubro de 2026 (364 respostas com o tempo medido) e da biblioteca de 47 fontes oficiais; as figuras vêm do Manual de Gestação de Alto Risco (Ministério da Saúde, 2022).",
+        naoe: "Não é o produto final: a maquete responde só às três perguntas preparadas, e preço, plano e ganhos são hipóteses para conversar, não decisão."},
+      texto: "Uma especialista que cabe no bolso. IAs pequenas — 2 e 4 bilhões de parâmetros — que rodam na sua própria máquina, sem mandar nada para fora, e respondem como um colega de serviço: lendo a biblioteca oficial brasileira, citando a fonte e a página e trazendo as figuras do próprio manual. A pergunta vai para a especialista certa (são 19, de obstetrícia e ginecologia), ela abre só a gaveta que interessa, ficha os trechos literais, escreve e confere cada frase com a fonte. O que a fonte não traz, ela diz que não traz.",
+      modelo: ["Em construção: o app roda no Mac do Criador; a maquete mostra a tela real com três respostas reais de outubro de 2026.",
+        "Modelo de venda ainda não decidido: a seção de custos e ganhos traz as hipóteses para a conversa.", "Só no modo escuro, por decisão do Criador."],
+      maquete: "produto-specialist-ai.html", telaCheia: true, statusMaquete: "Maquete escura · três respostas reais do app · nenhuma operação real",
+      dica: "Toque numa conversa à esquerda, ou escreva uma das três perguntas preparadas — descolamento prematuro de placenta · placenta prévia · gravidez ectópica com metotrexato — e veja a resposta chegar em streaming, com as figuras da fonte. Clique no chip 📚 para ler o que ela leu.",
+      app: null, nota: "Não é o produto final: por enquanto, a maquete e o projeto.",
+      secoes: [
+        {titulo: "Em números", numeros: [
+          {valor: "47", rotulo: "fontes oficiais na biblioteca", nota: "Ministério da Saúde, FEBRASGO, INCA, OMS/OPAS, ISUOG, AMB e RS · 30 delas de 2024–2026"},
+          {valor: "19", rotulo: "especialistas, uma por tema", nota: "10 de obstetrícia e 9 de ginecologia; o roteador acerta o tema em 82% das perguntas (95% entre as duas primeiras)"},
+          {valor: "882", rotulo: "figuras recortadas das fontes", nota: "quadros, tabelas e fluxogramas, cada um com legenda e página, anexados à resposta"},
+          {valor: "10 s", rotulo: "resposta da 2B no Mac", nota: "mediana de 18 respostas; no modo do app, com conferência frase a frase, 43 s (298 respostas)"}]},
+        {tipo: "maquete"},
+        {titulo: "Como ficam as respostas e as figuras", texto: "Fotos tiradas da própria maquete, com respostas reais do app gravadas em 9 e 10 de outubro de 2026.",
+          fotos: [
+            {src: "specialist-ai/resposta-inicio.jpg", legenda: {rotulo: "A resposta inteira.", texto: "Uma doença vem no molde: fisiopatologia → sintomas → diagnóstico (com o passo a passo) → tratamento (geral, clínico, cirúrgico) → acompanhamento → controle → complicações. Tabela, lista e fluxograma são desenhados pela tela."}},
+            {src: "specialist-ai/resposta.jpg", legenda: {rotulo: "Debaixo da resposta, as figuras.", texto: "Quadros e fluxogramas recortados do manual, com legenda e página; toque amplia. Os chips dizem quem respondeu, o tema e a fonte."}},
+            {src: "specialist-ai/figuras.jpg", legenda: {rotulo: "Os chips.", texto: "📑 trechos literais da fonte, conferidos por código · ✔ cada frase conferida com a fonte · 📚 fonte, capítulo e página — o ponto fica âmbar quando a resposta traz um número que não está na fonte."}},
+            {src: "specialist-ai/cola.jpg", legenda: {rotulo: "O que ela leu.", texto: "Um toque no chip 📚 abre o texto literal que a IA recebeu antes de responder: o manual, o capítulo, a página. Sem caixa preta."}},
+            {src: "specialist-ai/streaming.jpg", legenda: {rotulo: "Enquanto responde.", texto: "O roteador escolhe a especialista e diz a confiança; a fonte é fichada; a resposta chega em streaming e, no fim, passa pela conferência."}}],
+          lista: [
+            {rotulo: "Quando a fonte não traz, ela diz.", texto: "Em vez de inventar um número, uma dose ou um prazo, a resposta escreve “a fonte não traz” — e o rodapé lista qualquer número que apareça fora da fonte."},
+            {rotulo: "Continuação curta fica com a mesma especialista.", texto: "“E a conduta?” segue na conversa, com os últimos turnos como contexto."},
+            {rotulo: "Sem microfone e sem “não sou médico”.", texto: "Decisões do Criador: a tela é de trabalho, para quem já sabe o que está perguntando."}]},
+        {tipo: "celular", titulo: "No celular", maquete: "produto-specialist-ai-celular.html",
+          texto: ["O sentido das IAs pequenas é caber num aparelho pequeno. A tela já é a do celular: a conversa ocupa a tela inteira, as figuras ficam em duas colunas, os cartões por dia entram pelo menu ☰, o “o que ela leu” abre inteiro.",
+            "Hoje o app roda no Mac e o iPhone entra como cliente, pela rede da casa (Tailscale ou Wi-Fi), com senha de link: a mesma tela, o mesmo histórico. É assim que ele é usado na maternidade."],
+          lista: [
+            {rotulo: "O passo seguinte é a 2B dentro do iPhone", texto: "(MLX Swift, no chip do próprio aparelho): sem rede, sem custo por resposta, a biblioteca junto. O peso que cabe: o modelo 2B em 4 bits ocupa 1,6 GB em disco; a biblioteca recortada, com texto e as 882 figuras, 279 MB."},
+            {rotulo: "A medida que ainda falta:", texto: "a velocidade no aparelho. No Mac, a 2B responde em cerca de 10 s; no iPhone será medida quando rodar lá — nada aqui é promessa."},
+            {rotulo: "O que já é certo no celular:", texto: "nenhum dado sai do aparelho e a resposta não depende de assinatura de IA de terceiros."}]},
+        {titulo: "A velocidade das IAs pequenas", texto: "Medido no histórico real do app em outubro de 2026 — 364 respostas, num Mac com Apple Silicon. “Pequena” aqui é 2 ou 4 bilhões de parâmetros, em 4 bits: a 2B ocupa 1,6 GB em disco e a 4B, 2,9 GB; as 16 especialistas com o roteador cabem em 2,3 GB de memória e carregam em 2,4 s.",
+          tabela: {cabecalho: ["Quem responde", "Respostas medidas", "Tempo (mediana)", "Metade das respostas entre", "Tamanho da resposta"],
+            linhas: [["2B sozinha — uma especialista, sem conferência", "18", "9,8 s", "4,6 e 10,8 s", "~1.700 caracteres"],
+              ["2B escrevendo + 4B conferindo frase a frase — o modo do app", "298", "43 s", "26 e 81 s", "~4.200 caracteres"],
+              ["4B leitora — lê a cola inteira: rascunho → conferência → revisão", "36", "52 s", "10 e 114 s", "~4.800 caracteres"]]},
+          lista: [
+            {rotulo: "De onde vem a velocidade:", texto: "o modelo é pequeno, roda no aparelho e lê só a gaveta pedida — não a fonte inteira."},
+            {rotulo: "O preço da pequena:", texto: "a 2B lê bem até ~3,5 mil tokens de cola de uma vez; acima disso encurta ou repete. Por isso a casca corta a fonte por seção e tópico e manda só o pedido. A 4B pura leu uma cola de 8 mil tokens e escreveu 8 mil caracteres em 73 s, sem repetir."},
+            {rotulo: "Resposta bem feita vale mais que rápida", texto: "(regra do Criador): o modo do app gasta 43 s porque confere cada frase com a fonte antes de entregar."}]},
+        {titulo: "A ideia e os planos", texto: ["A ideia cabe numa frase da Carta de Ensino da casa: fato na fonte, método na IA. A IA pequena não decora medicina — ela aprende o ofício de achar a gaveta certa, ler, citar e dizer “não consta” quando não há. O conhecimento fica na estante: fontes oficiais, recortadas e organizadas. Medimos o contrário também: treinar fatos no peso tirava o que a base já sabia.",
+            "A estante cresce área por área até a Professora alcançar toda a informação de medicina necessária para ensinar um aluno — e o aluno, aqui, é também o Criador, no internato."],
+          passos: [
+            {estado: "feito", rotulo: "Biblioteca de 47 fontes oficiais", texto: "recortada por seção e tópico, com índice doença → especialista, sinônimos e abreviações (DPP, HPP, DMG, PE, RPMO, SUA, SOP…), e 882 figuras recortadas."},
+            {estado: "feito", rotulo: "Roteador de 19 temas", texto: "(top-1 82%, top-2 95%), chips de fonte com página, fichamento literal conferido por código e conferência frase a frase (rascunho → auditoria → revisão)."},
+            {estado: "feito", rotulo: "App no Mac e tela no iPhone pela rede", texto: "com histórico por dia, busca e “o que ela leu”."},
+            {estado: "agora", rotulo: "O bulário do Med Painel vira a camada de remédios", texto: "da mesma estante: 1.111 famílias de medicamentos com bula profissional (22/10/2026), com a fonte embaixo de cada gaveta — trabalhar no Med Painel é trabalhar no Specialist AI."},
+            {estado: "depois", rotulo: "Pesquisa inteligente", texto: "tudo em texto simples (.md), uma busca só, com as doenças em cima e os medicamentos embaixo; a IA pede a gaveta (“losartana#posologia”) em vez de ler o arquivo inteiro."},
+            {estado: "depois", rotulo: "Papéis para as 2B", texto: "roteadora → buscadora (arquivos primeiro, web depois) → leitora confere a cobertura → professora escreve → anexadora de figuras; modos leve (2B), médio (4B) e intenso."},
+            {estado: "depois", rotulo: "A 2B dentro do iPhone", texto: "(MLX Swift), sem rede e sem custo por resposta."},
+            {estado: "depois", rotulo: "Mais áreas na estante", texto: "obstetrícia e ginecologia agora; pediatria em seguida; depois as demais — sempre fontes oficiais brasileiras atuais, cada frase com a fonte embaixo."}],
+          nota: "O nome “ultra” está guardado: volta quando houver uma especialista de verdade — palavras do Criador."},
+        {titulo: "Confiabilidade: de onde vem cada frase", texto: "Nenhuma frase sai da memória do modelo. A biblioteca é feita só de fontes oficiais e gratuitas, baixadas dos sites dos próprios órgãos; cada uma é recortada por seção e guardada em gavetas — o mesmo esquema de organização do bulário do Med Painel — e cada gaveta carrega a fonte e a página.",
+          tabela: {cabecalho: ["Órgão", "Fontes", "Anos", "Exemplos"],
+            linhas: [["Ministério da Saúde", "9", "2012–2025", "Manual de Gestação de Alto Risco (2022); PCDT de IST (2022) e de transmissão vertical (2022); Caderno de Atenção Básica 32, pré-natal (2012); Saúde das Mulheres (2016); Parto normal (2017); implante de etonogestrel (manual e nota técnica 419, 2025); nota técnica 626, mamografia (2025)"],
+              ["FEBRASGO / Femina", "30", "2020–2026", "protocolos: sangramento uterino anormal (2026), SOP (2025), hemorragia pós-parto (2020 e 2025), prolapso (2025 e 2026), endometriose (2020 e 2026), sífilis na gravidez (2024), imunizações na gravidez (2025), toxoplasmose (2026), embolia amniótica (2026)…"],
+              ["INCA", "3", "2015–2025", "rastreamento do câncer do colo do útero (2016 e 2025) e de mama (2015)"],
+              ["OMS / OPAS", "2", "2018–2025", "hemorragia pós-parto (OMS 2025, em português) e hemorragia obstétrica (OPAS 2018)"],
+              ["ISUOG · AMB · RS", "3", "2020–2024", "ultrassom de 11–14 semanas (ISUOG 2023); ultrassom do 1.º trimestre (AMB 2020); pré-natal na atenção primária (RS 2024)"]]},
+          lista: [
+            {rotulo: "A mais nova primeiro.", texto: "Documento com mais de cinco anos só entra com prova de que segue vigente (“2017 é pré-histórico”). A resposta cita o documento por nome e ano — nunca número de norma de memória."},
+            {rotulo: "Nada pirata.", texto: "O Tratado da FEBRASGO, que é pago, só entra com exemplar legítimo; as cópias “grátis” da web ficaram de fora."},
+            {rotulo: "As gavetas.", texto: "Para doenças: conceito, fisiopatologia, quadro clínico, diagnóstico, tratamento, acompanhamento, complicações, prevenção. Para remédios, no bulário do Med Painel: apresentação, mecanismo, indicações, posologia, cuidados, interações, efeitos, meia-vida, gestação, contraindicações — e o que a bula não traz vem de fonte confiável, só o que falta, com a fonte embaixo."},
+            {rotulo: "Conferência em três camadas.", texto: "📑 os trechos que a IA usa são conferidos por código contra a fonte; ✔ cada frase da resposta passa pela conferência (o que a fonte não sustenta é removido e o chip conta os ajustes); 🟡 número fora da fonte acende o ponto âmbar e aparece no rodapé."},
+            {rotulo: "Sem caixa preta.", texto: "“O que ela leu” abre o texto literal da fonte; e o histórico guarda, em cada resposta, a cola inteira, a cartinha usada e os números fora da fonte — nunca se apaga."}],
+          nota: "As figuras e os trechos desta maquete vêm do Manual de Gestação de Alto Risco — Ministério da Saúde, Brasília, 2022 — licença Creative Commons BY-NC-SA 4.0 (“é permitida a reprodução parcial ou total desta obra, desde que citada a fonte”)."},
+        {titulo: "Previsão de custos e possibilidade de ganhos", texto: "Os custos abaixo foram medidos ou são públicos; os ganhos são cenários, não previsão de vendas. Preço, plano e canal são decisão do Criador.",
+          tabela: {legenda: "Custos — o que já medimos e o que é público",
+            cabecalho: ["Item", "Quanto", "De onde vem o número"],
+            linhas: [["Uma resposta no app", "R$ 0 de API", "roda no Mac ou no celular; nenhuma chamada a serviço de fora (só energia)"],
+              ["Uma rodada de treino na nuvem (A100)", "≈ US$ 5", "medido em 08/10/2026: US$ 4,86"],
+              ["Uma noite de treino com 24 versões", "US$ 9,46", "medido em 07–08/10/2026"],
+              ["Material de treino escrito por IA grande (Kimi K3)", "≈ US$ 0,14 por tarefa", "medido em 09/10/2026 nos registros das autoras"],
+              ["Biblioteca", "R$ 0 de licença", "fontes oficiais gratuitas; o custo é a curadoria (horas) — o recorte é por código"],
+              ["Vender no iPhone", "US$ 99/ano + 15% por venda", "Apple Developer Program; taxa do Small Business Program (até US$ 1 milhão/ano)"],
+              ["Servir a biblioteca para o app baixar", "≈ R$ 0–50/mês", "arquivos estáticos (GitHub Pages ou CDN) — estimativa"]]},
+          tabela2: {legenda: "Cenários de ganho — hipóteses a R$ 59,90/mês, já descontados os 15% da Apple",
+            cabecalho: ["Assinantes", "Receita bruta/mês", "Líquido da loja/mês", "Custo marginal"],
+            linhas: [["100", "R$ 5.990", "R$ 5.092", "≈ R$ 0 (roda no aparelho)"], ["1.000", "R$ 59.900", "R$ 50.915", "≈ R$ 0"], ["10.000", "R$ 599.000", "R$ 509.150", "≈ R$ 0"]]},
+          lista: [
+            {rotulo: "Por que R$ 59,90:", texto: "é o que o líder (Whitebook Premium) cobra por mês; a regra da casa é não cobrar menos que o líder — e, antes, entregar algo à altura. Plano de estudante, anual ou por turma é decisão a tomar."},
+            {rotulo: "Onde está o custo de verdade:", texto: "fazer a estante crescer e conferir — horas de curadoria e noites de treino de menos de US$ 10. A margem por assinante fica quase inteira, porque a resposta roda no aparelho."},
+            {rotulo: "Caminhos possíveis:", texto: "assinatura individual (residentes, internos, estudantes); plano para turmas e faculdades; pacote com o Med Painel, que já divide a estante."}],
+          nota: "Fonte do preço do líder: lp.whitebook.com.br/premium, conferido em 17/10/2026 (R$ 59,90/mês no site). A taxa de 15% vale para quem está no Small Business Program da Apple; fora dele, 30%."}
+      ]},
     {chave: "orquestrator", rota: "orquestrator", titulo: "Orquestrator", eyebrow: "Produto · o app da casa", estado: "em construção",
       descricao: "O app que reúne as IAs numa mesa só: conversa, enxame, navegadores, terminais e a central de comunicação.",
       ajuda: {oque: "A maquete do app Orquestrator: a sala das IAs, o enxame, o navegador, o terminal, o mini dock e a COMUNICATION, com dados fictícios.",
@@ -62,6 +152,7 @@
     {chave: "aichat", sigla: "AC", nome: "AI Chat", linha: "As IAs conversando numa sala só"},
     {chave: "obstetrica", sigla: "OB", nome: "Calculadora obstétrica", linha: "IG e DPP pela DUM e pelo ultrassom"},
     {chave: "rcog", sigla: "TEV", nome: "Calculadora RCOG", linha: "Risco de TEV na gestação e no puerpério"},
+    {chave: "specialist", sigla: "SA", nome: "Specialist AI", linha: "A especialista de bolso · em construção"},
     {chave: "orquestrator", sigla: "OR", nome: "Orquestrator", linha: "O app da casa · em construção"}];
   const porChave = Object.fromEntries(PRODUTOS.map((p) => [p.chave, p]));
   const el = (tag, cls, texto) => { const node = document.createElement(tag); if (cls) node.className = cls; if (texto !== undefined) node.textContent = texto; return node; };
@@ -95,6 +186,91 @@
     if (descricao) s.append(el("p", "mp-secao-texto", descricao));
     return s;
   }
+  // ── as seções ricas da página de produto (o Specialist AI foi o primeiro): números, fotos, celular ao lado do texto,
+  //    tabelas, planos com estado e notas — tudo construído por DOM, texto por textContent ───────────────────────────
+  function paragrafos(texto, cls) { const frag = document.createDocumentFragment(); (Array.isArray(texto) ? texto : [texto]).filter(Boolean).forEach((t) => frag.append(el("p", cls || "mp-secao-texto", t))); return frag; }
+  function forte(no, item) { // {rotulo, texto} vira "<b>rotulo</b> texto"; string vira texto
+    if (typeof item === "string") { no.textContent = item; return no; }
+    if (item.rotulo) { no.append(el("b", "", item.rotulo), document.createTextNode(item.texto ? " " + item.texto : "")); } else no.textContent = item.texto || "";
+    return no;
+  }
+  function listaDe(itens) { const ul = el("ul", "product-lista"); itens.forEach((i) => ul.append(forte(el("li"), i))); return ul; }
+  function numerosDe(itens) {
+    const grade = el("div", "product-numeros");
+    itens.forEach((n) => { const c = el("div", "product-numero"); c.append(el("p", "product-numero-valor", n.valor), el("p", "product-numero-rotulo", n.rotulo)); if (n.nota) c.append(el("p", "product-numero-nota", n.nota)); grade.append(c); });
+    return grade;
+  }
+  function tabelaDe(t) {
+    const caixa = el("div", "table-scroll product-tabela"), tabela = el("table"), cabeca = el("thead"), tr = el("tr");
+    t.cabecalho.forEach((h) => tr.append(el("th", "", h))); cabeca.append(tr); tabela.append(cabeca);
+    const corpo = el("tbody");
+    t.linhas.forEach((linha) => { const r = el("tr"); linha.forEach((c) => r.append(el("td", "", c))); corpo.append(r); });
+    tabela.append(corpo); if (t.legenda) { const cap = el("caption", "", t.legenda); tabela.prepend(cap); }
+    caixa.append(tabela); return caixa;
+  }
+  function fotosDe(itens) {
+    const grade = el("div", "product-fotos");
+    itens.forEach((f) => {
+      const fig = el("figure", "product-foto"), a = el("a"), img = el("img");
+      a.href = new URL("produtos/" + f.src, document.baseURI).href; a.target = "_blank"; a.rel = "noopener noreferrer"; a.title = "Abrir a foto em tamanho cheio";
+      img.src = a.href; img.alt = f.alt || f.legenda; img.loading = "lazy"; img.decoding = "async";
+      a.append(img); fig.append(a); fig.append(forte(el("figcaption"), f.legenda)); grade.append(fig);
+    });
+    return grade;
+  }
+  function passosDe(itens) {
+    const ol = el("ol", "product-passos");
+    itens.forEach((p) => { const li = el("li", "product-passo"); const e = el("span", "product-passo-estado", p.estado); e.dataset.estado = p.estado; li.append(e, forte(el("p"), p)); ol.append(li); });
+    return ol;
+  }
+  function montaSecao(s) {
+    const sec = secao(s.titulo, null);
+    if (s.texto) sec.append(paragrafos(s.texto));
+    if (s.numeros) sec.append(numerosDe(s.numeros));
+    if (s.fotos) sec.append(fotosDe(s.fotos));
+    if (s.tabela) sec.append(tabelaDe(s.tabela));
+    if (s.lista) sec.append(listaDe(s.lista));
+    if (s.passos) sec.append(passosDe(s.passos));
+    if (s.tabela2) sec.append(tabelaDe(s.tabela2));
+    if (s.texto2) sec.append(paragrafos(s.texto2));
+    if (s.nota) sec.append(paragrafos(s.nota, "product-nota"));
+    return sec;
+  }
+  async function molduraDe(p, arquivo, telefone, rotulo) {
+    const base = await baseDaMaquete(arquivo);
+    const moldura = el("iframe", "product-frame" + (telefone ? " product-frame--telefone" : ""));
+    moldura.setAttribute("sandbox", "allow-scripts"); moldura.setAttribute("referrerpolicy", "no-referrer");
+    moldura.title = rotulo || (p.titulo + ", maquete"); moldura.dataset.base = base; moldura.src = base + "#tema=" + tema();
+    return moldura;
+  }
+  async function montaMaquete(p) {
+    const mesa = secao("Veja a maquete", p.dica || "Funciona aqui dentro, numa moldura isolada, com dados fictícios.");
+    if (p.telaCheia) {
+      // a maquete sozinha, numa aba nova, ocupando a tela inteira (o arquivo é o mesmo de produtos/, com o tema do portal)
+      const fora = el("p", "product-actions");
+      const a = el("a", "button button-primary", "Ver em tela cheia ↗");
+      a.target = "_blank"; a.rel = "noopener noreferrer"; a.dataset.telaCheia = new URL("produtos/" + p.maquete, document.baseURI).href;
+      a.href = a.dataset.telaCheia + "#tema=" + tema();
+      fora.append(a, el("span", "mp-secao-texto", "Abre a maquete sozinha, numa aba nova, ocupando a tela inteira."));
+      mesa.append(fora);
+    }
+    const aviso = el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo a maquete…");
+    mesa.append(aviso);
+    try { aviso.replaceWith(await molduraDe(p, p.maquete, p.telefone)); }
+    catch (erro) { aviso.textContent = erro && erro.message ? erro.message : "A maquete não veio neste site."; }
+    return mesa;
+  }
+  async function montaCelular(p, s) {
+    const sec = secao(s.titulo, null), colunas = el("div", "product-colunas"), lado = el("div", "product-coluna-texto");
+    if (s.texto) lado.append(paragrafos(s.texto));
+    if (s.lista) lado.append(listaDe(s.lista));
+    if (s.nota) lado.append(paragrafos(s.nota, "product-nota"));
+    const aviso = el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo a maquete no telefone…");
+    colunas.append(aviso, lado); sec.append(colunas);
+    try { aviso.replaceWith(await molduraDe(p, s.maquete, true, p.titulo + " no iPhone, maquete")); }
+    catch (erro) { aviso.textContent = erro && erro.message ? erro.message : "A maquete não veio neste site."; }
+    return sec;
+  }
   async function desenhar(chave) {
     const p = porChave[chave], alvo = document.getElementById(chave + "-content");
     if (!p || !alvo || alvo.dataset.montado === "1") return;
@@ -103,7 +279,7 @@
     const cabecalho = alvo.parentElement && alvo.parentElement.querySelector(".section-heading");
     if (cabecalho && !cabecalho.querySelector(".source-status")) {
       const estado = el("div", "source-status");
-      estado.append(el("p", "", p.maquete ? "Maquete com dados fictícios · nenhuma operação real" : "Sem maquete ainda"));
+      estado.append(el("p", "", p.maquete ? (p.statusMaquete || "Maquete com dados fictícios · nenhuma operação real") : "Sem maquete ainda"));
       cabecalho.append(estado);
     }
     const sobre = secao("O que é", p.texto);
@@ -121,31 +297,18 @@
     const lista = el("ul", "product-modelo");
     p.modelo.forEach((linha) => lista.append(el("li", "", linha)));
     modelo.append(pilula, lista);
-    alvo.append(modelo);
-    if (!p.maquete) return;
-    const mesa = secao("Veja a maquete", p.dica || "Funciona aqui dentro, numa moldura isolada, com dados fictícios.");
-    if (p.telaCheia) {
-      // a maquete sozinha, numa aba nova, ocupando a tela inteira (o arquivo é o mesmo de produtos/, com o tema do portal)
-      const fora = el("p", "product-actions");
-      const a = el("a", "button button-primary", "Ver em tela cheia ↗");
-      a.target = "_blank"; a.rel = "noopener noreferrer"; a.dataset.telaCheia = new URL("produtos/" + p.maquete, document.baseURI).href;
-      a.href = a.dataset.telaCheia + "#tema=" + tema();
-      fora.append(a, el("span", "mp-secao-texto", "Abre a maquete sozinha, numa aba nova, ocupando a tela inteira."));
-      mesa.append(fora);
+    if (!p.secoes) {
+      alvo.append(modelo);
+      if (p.maquete) alvo.append(await montaMaquete(p));
+      return;
     }
-    const aviso = el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo a maquete…");
-    mesa.append(aviso);
-    alvo.append(mesa);
-    try {
-      const base = await baseDaMaquete(p.maquete);
-      const moldura = el("iframe", "product-frame" + (p.telefone ? " product-frame--telefone" : ""));
-      moldura.setAttribute("sandbox", "allow-scripts");
-      moldura.setAttribute("referrerpolicy", "no-referrer");
-      moldura.title = p.titulo + ", maquete";
-      moldura.dataset.base = base;
-      moldura.src = base + "#tema=" + tema();
-      aviso.replaceWith(moldura);
-    } catch (erro) { aviso.textContent = erro && erro.message ? erro.message : "A maquete não veio neste site."; }
+    // página rica: as seções na ordem declarada (a maquete e o celular entram onde o produto pede); o modelo fecha
+    for (const s of p.secoes) {
+      if (s.tipo === "maquete") alvo.append(await montaMaquete(p));
+      else if (s.tipo === "celular") alvo.append(await montaCelular(p, s));
+      else alvo.append(montaSecao(s));
+    }
+    alvo.append(modelo);
   }
   // Só o produto aberto fica com a maquete viva: ao sair da página, a moldura é desmontada (o AI Swarm e o AI Chat
   // repetem o enxame em laço e gastariam CPU escondidos); ao voltar, redesenha a partir do blob: já guardado.

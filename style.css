@@ -243,3 +243,26 @@ html[data-surface="grid"] body{background-image:linear-gradient(rgba(151,182,148
 .product-frame{display:block;width:100%;height:min(860px,calc(100vh - 120px));min-height:640px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}.product-frame--telefone{height:900px;min-height:900px}
 @media(max-width:480px){.products-button-text{display:none}.products-button{padding:7px 9px}.products-button-glyph{font-size:16px}}
 @media(max-width:760px){.products-button{padding:7px 10px}.product-frame{min-height:560px;border-radius:14px}.product-frame--telefone{height:880px;min-height:880px}}
+
+/* Produtos: as seções ricas da página de produto (22/10/2026, Specialist AI): números, fotos, celular ao lado do texto, tabelas, planos com estado, notas. */
+.product-numeros{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.product-numero{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:16px 18px;min-width:0}
+.product-numero-valor{margin:0;font-family:var(--serif);font-size:32px;font-weight:500;color:var(--gold-light);line-height:1.05;font-variant-numeric:tabular-nums}
+.product-numero-rotulo{margin:7px 0 0;font-size:13.5px;color:var(--ink);font-weight:500;line-height:1.35}
+.product-numero-nota{margin:5px 0 0;font-size:12px;color:var(--muted);line-height:1.5}
+.product-fotos{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.product-foto{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);display:flex;flex-direction:column}
+.product-foto a{display:block;background:#0b0b0d}.product-foto img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:top}
+.product-foto figcaption{padding:11px 14px 13px;font-size:12.5px;color:var(--muted);line-height:1.5}.product-foto figcaption b{color:var(--ink);font-weight:500}
+.product-colunas{display:grid;grid-template-columns:minmax(300px,420px) minmax(0,1fr);gap:28px;align-items:start}
+.product-coluna-texto{display:flex;flex-direction:column;gap:14px;min-width:0}
+.product-colunas .product-frame--telefone{height:900px;min-height:900px;max-width:420px}
+.product-lista{margin:0;padding:0 0 0 18px;color:var(--muted);font-size:14px;line-height:1.6;max-width:84ch}.product-lista li{margin:0 0 7px}.product-lista b{color:var(--ink);font-weight:500}
+.product-passos{list-style:none;margin:0;padding:0;display:grid;gap:10px;max-width:92ch}
+.product-passo{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel)}
+.product-passo-estado{font-size:10px;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:4px 9px;border:1px solid rgba(213,182,95,.4);color:var(--gold-light);white-space:nowrap;margin-top:3px}
+.product-passo-estado[data-estado="feito"]{color:#7fd1a0;border-color:rgba(127,209,160,.45)}.product-passo-estado[data-estado="depois"]{color:var(--faint);border-color:var(--line)}
+.product-passo p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}.product-passo b{color:var(--ink);font-weight:500}
+.product-tabela{max-width:100%}.product-tabela table{font-size:12.5px}.product-tabela td,.product-tabela th{padding:11px 14px}.product-tabela caption{padding:12px 14px;font-size:12.5px;color:var(--gold-light)}
+.product-nota{font-size:12px;color:var(--faint);line-height:1.55;max-width:92ch;margin:0}
+@media(max-width:860px){.product-colunas{grid-template-columns:1fr}.product-numero-valor{font-size:26px}}
