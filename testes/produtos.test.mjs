@@ -24,7 +24,7 @@ function registrar() {
 
 test('produtos.js registra os produtos em grupos conhecidos, com rota, título e ajuda inteira', () => {
   const fila = registrar();
-  assert.deepEqual(fila.map(p => p.chave), ['aiswarm', 'aichat', 'obstetrica', 'rcog', 'orquestrator']);
+  assert.deepEqual(fila.map(p => p.chave), ['aiswarm', 'aichat', 'obstetrica', 'rcog', 'specialist', 'orquestrator']);
   for (const p of fila) {
     assert.ok(GRUPOS.includes(p.grupo), p.chave + ': grupo ' + p.grupo);
     assert.match(p.rota, /^[a-z][a-z0-9-]{1,39}$/);
@@ -36,7 +36,7 @@ test('produtos.js registra os produtos em grupos conhecidos, com rota, título e
 test('as maquetes existem em produtos/, como arquivo único, sem rede nem srcdoc', () => {
   const js = ler('produtos.js');
   const arquivos = [...js.matchAll(/maquete: "([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(arquivos, ['produto-ai-swarm.html', 'produto-ai-chat.html', 'produto-calc-obstetrica.html', 'produto-rcog-tev.html', 'produto-orquestrator.html']);
+  assert.deepEqual(arquivos, ['produto-ai-swarm.html', 'produto-ai-chat.html', 'produto-calc-obstetrica.html', 'produto-rcog-tev.html', 'produto-specialist-ai.html', 'produto-specialist-ai-celular.html', 'produto-orquestrator.html']);
   for (const arquivo of arquivos) {
     const caminho = join(raiz, 'produtos', arquivo);
     assert.ok(existsSync(caminho), arquivo + ' não está em produtos/');
@@ -52,6 +52,16 @@ test('as maquetes com tema trocam ao vivo: o portal só muda o #tema da moldura,
     const html = readFileSync(join(raiz, 'produtos', arquivo), 'utf8');
     assert.match(html, /addEventListener\('hashchange'/, arquivo + ': não escuta a troca de #tema');
   }
+});
+
+test('o Specialist AI: as fotos da página existem em produtos/ e a maquete é só escura', () => {
+  const js = ler('produtos.js');
+  const fotos = [...js.matchAll(/src: "(specialist-ai\/[^"]+\.jpg)"/g)].map(m => m[1]);
+  assert.ok(fotos.length >= 5, 'faltam fotos: ' + fotos.length);
+  for (const foto of fotos) assert.ok(existsSync(join(raiz, 'produtos', foto)), foto + ' não está em produtos/');
+  const maquete = readFileSync(join(raiz, 'produtos', 'produto-specialist-ai.html'), 'utf8');
+  assert.doesNotMatch(maquete, /tema=claro|prefers-color-scheme: light/, 'a maquete do Specialist AI é só escura (decisão dele)');
+  assert.match(maquete, /respostas reais do app|resposta real/i, 'a maquete tem de dizer que as respostas são reais');
 });
 
 test('o Orquestrator tem maquete e o link de tela cheia', () => {
