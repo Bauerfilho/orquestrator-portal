@@ -29,6 +29,14 @@ maquetes do Laboratório (`galeria/` e `apps/`), que são públicas e só têm d
 | `servidor/` | O servidor do diário (função Netlify com Blobs). Como publicar: `servidor/LEIA.md`. |
 | `docs/` | `PLANO-PORTAL.md` (o plano aprovado), `PLANO-FASES-2-3.md` (as fases 2 e 3 fatiadas), `PORTAS.md` (como plugar outro armazenamento no diário) e `CHECKLIST.md` (o que foi feito e o que falta). |
 
+## O Med Painel não fica no portal (27/10/2026)
+
+O portal é um site público: tudo o que não está no pacote cifrado pode ser baixado por quem tiver o endereço. A maquete
+"Med Painel no iPhone" levava o núcleo do app e as 2.496 bulas em texto aberto, e por isso saiu, junto com a mesa de
+teste e o empacotador (`ferramentas/maquete-med-painel`). As cópias estão em `~/Projetos/_backups/portal-medpainel-20261027`.
+O teste `o Med Painel não está publicado no portal` falha se algum deles voltar. Para mostrar o Med Painel de novo aqui,
+só com uma forma protegida (decisão do Bauer).
+
 ## Laboratório: maquetes e tela cheia
 
 As sócias entram com a senha e abrem o **Laboratório**. Ali está o catálogo; cada maquete abre no stand, com os três

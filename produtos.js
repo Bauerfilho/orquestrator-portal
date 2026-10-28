@@ -147,71 +147,6 @@
       dica: "No navegador há um Google e um YouTube de mentira: digite youtube.com ou qualquer pesquisa na barra. O mini dock (a pílula dourada no pé) abre chat, navegador e terminal. Para ver com folga, abra em tela cheia.",
       app: null, nota: "Não é o produto final: por enquanto, a maquete."},
   ];
-  // O Med Painel no celular (23/10/2026): não é página à parte — é o bloco "No celular" no fim da página do Med Painel
-  // (app.js chama window.financeMedPainelCelular no fim de renderMedPainel). A maquete abre como blob:, flutuante, só quando aparece.
-  const CELULAR = {chave: "medpainelcelular", titulo: "Med Painel no celular", eyebrow: "Produto · o painel, as notas e o teclado no iPhone", estado: "em construção",
-      descricao: "O Med Painel no iPhone: o mesmo painel do Mac, o Med Note para as notas do plantão e um teclado que cola os seus textos em qualquer app.",
-      ajuda: {oque: "A maquete do Med Painel no iPhone com o núcleo de verdade rodando dentro de um telefone desenhado — o Painel (9 abas), o Med Note (a nota do plantão com /esqueletos e ⇥) e a tela do Teclado —, as fotos do app e do teclado compilados em Swift e fotografados no simulador do iPhone, e o projeto: o que o teclado pode e não pode, os degraus e as decisões pendentes.",
-        deonde: "Do núcleo web do Med Painel (o mesmo arquivo que roda no Mac e no iPhone), empacotado num HTML só e aberto com a casca de iPhone simulada (reempacotado em 24/10/2026 a partir do app instalado: o novo desenho, a Obstetrícia com o pré-natal e a Puericultura); as fotos são do app e do teclado de verdade, no simulador do iPhone 17 (iOS 27), em 22 e 23/10/2026.",
-        naoe: "Não é o produto final nem está na App Store: o teclado não roda numa página web (só nas fotos), o Copiar da maquete não sai da moldura, as fichas somem ao recarregar, e nada aqui é conduta clínica — os seis modelos de fábrica são rascunhos até o conteúdo ser decidido."},
-      texto: ["Um app, duas faces e um teclado. A face Painel é o Med Painel do Mac em largura de celular: Bulário, Anamnese, Documentos, Guias, Obstetrícia (com o pré-natal), Puericultura, Frases, CID e Revisar, com a busca única. A face Med Note é a nota do plantão com cara de bloco de notas: “/” abre os esqueletos (/soap, /evolucao, /pos-curetagem…), ⇥ aceita e pula de campo em campo, e “Pronta” guarda a nota como /leito-01, válida até o fim do plantão e de uso único — as regras clínicas que o Criador fixou no Mac. O teclado, o terceiro pedaço, mora dentro do app: teclado do Brasil com a tecla “/” e a tecla ⇥ em ouro; em qualquer app, /leito-01 acende a sombra com a hora e a primeira linha da ficha, e ⇥ apaga o comando e cola o texto. Tab é o Colar, como no Mac.",
-        "Tudo o que é clínico mora no núcleo web, um só para as três cascas (Mac, iPhone, teclado). Fichas e notas ficam só no aparelho, fora do iCloud e do backup; o teclado não tem rede por construção."],
-      modelo: ["Um app, duas faces (Painel e Med Note) e o teclado dentro dele — a proposta de 22/10/2026, em execução.", "Preço: hipótese de ficar dentro da assinatura do Med Painel (R$ 59,90/mês); decisão do Criador pendente.", "Conta Apple Developer paga ainda não contratada: é o pré-requisito do App Group (as fichas dentro do teclado), do TestFlight e da loja.", "Em construção."],
-      maquete: "produto-med-painel-celular.html", telefone: true, statusMaquete: "Maquete com o núcleo real · casca de iPhone simulada · nenhuma operação real",
-      dica: "Toque em Note, escreva e digite / para um esqueleto (/soap, /evolucao…): ⇥ aceita e pula de campo em campo; “Pronta” guarda a nota como /leito-01 — a primeira pergunta o início e o fim do plantão. Em Teclado, a tela de ativação. No Painel, as 9 abas do Mac (a faixa rola até Obstetrícia e Puericultura): busque amoxicilina.",
-      app: null, nota: "Não é o produto final: a maquete roda o núcleo real; o teclado, de verdade, só nas fotos do simulador.",
-      secoes: [
-        {titulo: "Em números", numeros: [
-          {valor: "1", rotulo: "núcleo, 3 cascas", nota: "o mesmo arquivo web no Mac, no iPhone e, em parte, no teclado (os 6 modelos de fábrica viajam dentro dele)"},
-          {valor: "9", rotulo: "abas em 390 pontos", nota: "o painel do Mac tem 384 pt de largura: é largura de celular por natureza; zero erro de console no WebKit e no Chromium"},
-          {valor: "6", rotulo: "esqueletos de fábrica no teclado", nota: "funcionam sem “acesso total”; os seus modelos e as fichas do plantão entram com ele"},
-          {valor: "0", rotulo: "chamadas de rede no teclado", nota: "por construção: nenhuma no código; rótulo de privacidade “dados não coletados”"}]},
-        {tipo: "maquete"},
-        {titulo: "O app no simulador do iPhone", texto: "Fotos reais do app compilado em Swift (casca de iPhone) rodando no simulador do iPhone 17, iOS 27, em 23/10/2026, antes do novo desenho de 24/10: aqui ainda são 8 abas e a aba se chama Gestante; a maquete acima já mostra o app de 24/10.",
-          fotos: [
-            {src: "med-painel-celular/app-painel.jpg", legenda: {rotulo: "A face Painel.", texto: "O núcleo de verdade em tela cheia, vidro fosco, as 8 abas de 23/10, a busca única e a barra Painel · Note · Teclado no pé. O rodapé diz “dados só neste iPhone”; o Colar vira Copiar."}},
-            {src: "med-painel-celular/app-note.jpg", legenda: {rotulo: "A face Med Note.", texto: "A nota do plantão: “/” abre os esqueletos, ⇥ aceita e pula de campo, “Pronta como /leito-01” guarda a ficha. Sem plantão aberto, a primeira ficha pergunta início e fim."}},
-            {src: "med-painel-celular/app-teclado.jpg", legenda: {rotulo: "A face Teclado.", texto: "Os três passos para ativar, a conversa franca sobre o “acesso total” e os ajustes que o teclado lê: fichas no teclado, sombra, colar sem o Tab."}}]},
-        {titulo: "O teclado de verdade, digitando no campo de outro app", texto: "Fotos da prova pelo caminho real, no simulador do iPhone 17 em 23/10/2026: o teclado Med Painel foi adicionado pelos Ajustes (Geral › Teclado › Teclados › Adicionar Novo Teclado) e um teste de interface tocou tecla a tecla num campo de texto de um app de bancada neutro, que faz as vezes do app do hospital; o texto foi lido de volta do campo e conferido letra por letra.",
-          fotos: [
-            {src: "med-painel-celular/teclado-sombra.jpg", legenda: {rotulo: "A sombra.", texto: "Digitado /soap, a tira acende “SOAP · /soap — ⇥ cola; depois pula de campo em campo”, com a pílula ⇥ cola e o esc. A tecla ⇥ em ouro, o “/” ao lado do 123, o ç no lugar certo; o globo e o microfone embaixo são do sistema."}},
-            {src: "med-painel-celular/teclado-campo-1.jpg", legenda: {rotulo: "⇥ apagou o comando e colou até o primeiro campo.", texto: "O campo mostra “S: ” e a tira diz “Campo 1 de 3 · S — Subjetivo”: o médico escreve e segue com ⇥."}},
-            {src: "med-painel-celular/teclado-campo-2.jpg", legenda: {rotulo: "Campo 2 de 3.", texto: "O exame físico padrão (O) e a PA já saíram preenchidos, como no modelo de fábrica; o cursor parou em “A: ”, com “⇥ próximo” e “colar tudo” na tira."}},
-            {src: "med-painel-celular/teclado-sugestao.jpg", legenda: {rotulo: "A sugestão.", texto: "Digitado “/ev”, o chip /evolucao aparece na tira; um toque completa o comando e a sombra mostra “Evolução de enfermaria”. O esc desliga a sombra sem apagar nada."}}]},
-        {titulo: "O teclado, no desenho da proposta", texto: "Os desenhos de 22/10/2026 que o teclado em Swift seguiu.",
-          fotos: [
-            {src: "med-painel-celular/desenho-teclado-sombra.jpg", legenda: {rotulo: "A sombra em qualquer app.", texto: "No app do hospital, no WhatsApp ou nas Notas: “/leito-01” acende a tira com a hora e a primeira linha da ficha. ⇥ apaga o comando e cola o texto inteiro."}},
-            {src: "med-painel-celular/desenho-teclado-campos.jpg", legenda: {rotulo: "Os campos do esqueleto.", texto: "Depois de colar o /soap, ⇥ segue de campo em campo; o exame físico padrão já vem preenchido, como no modelo de fábrica do Mac."}},
-            {src: "med-painel-celular/desenho-ativar.jpg", legenda: {rotulo: "Ativar o teclado.", texto: "Os três passos e a conversa franca: a Apple exige que o teclado funcione sem o “acesso total”, e o nosso funciona; as fichas do plantão só entram com ele ligado."}}]},
-        {titulo: "O teclado no iPhone: o que dá e o que não dá", texto: "Conferido nos guias da Apple (extensões de teclado, segurança da plataforma e diretrizes da App Store) em 22/10/2026.",
-          tabela: {cabecalho: ["Precisa", "Dá?", "Como"],
-            linhas: [["Digitar em WhatsApp, Notas, Safari e no app do hospital", "Sim", "em todo campo de texto comum"],
-              ["Campo de senha e teclado de telefone", "Não", "o iOS troca pelo teclado da Apple ali e devolve o nosso depois"],
-              ["App que recusa teclados de terceiros (bancos, apps de saúde, gestão do hospital)", "Não há o que fazer", "medir no app do prontuário antes de prometer; o Med Note sempre tem Copiar"],
-              ["Ler o /comando antes do cursor e trocar pelo texto, campo a campo", "Sim", "feito: motor com 9 testes; os campos com padrão já saem preenchidos"],
-              ["Ditar pelo microfone", "Não", "o globo volta ao teclado da Apple para ditar"],
-              ["Os seus modelos e as fichas do plantão dentro do teclado", "Só com “acesso total”", "sem ele, os 6 modelos de fábrica; o teclado não tem rede por construção"],
-              ["Fichas na nuvem", "Nunca", "diretriz 5.1.3(ii) da App Store e LGPD (dado de saúde é sensível): só no aparelho, fora do backup"]]}},
-        {titulo: "Os degraus", texto: "Um por vez, cada um com portão binário. O que está feito foi provado por teste automático e fotografado no simulador; o que falta diz o que exige.",
-          passos: [
-            {estado: "feito", rotulo: "O núcleo em largura de iPhone.", texto: "A tela é o painel, a barra de faces no pé, Colar vira Copiar, textos do iPhone: 58 checagens em Chromium e WebKit a 390 × 844."},
-            {estado: "feito", rotulo: "Med Note.", texto: "A nota do plantão sobre o mesmo motor da aba Anamnese: /esqueletos, ⇥ campo a campo, Pronta → /leito-01, plantão, uso único; a ficha aparece nas duas faces."},
-            {estado: "feito", rotulo: "A casca de iPhone, em Swift.", texto: "O núcleo em tela cheia, a ponte, os dados em arquivos protegidos fora do backup, a folha com AirPrint e PDF, a tranca por Face ID, o contêiner compartilhado para o teclado. Compila e abre no simulador; fotografada."},
-            {estado: "agora", rotulo: "O teclado (degrau 0).", texto: "Teclado do Brasil com “/” e ⇥, sombra, sugestões, acentos por toque longo, os 6 modelos de fábrica dentro dele, campo a campo, uso único das fichas. O motor tem 9 testes verdes e a prova de digitação tecla a tecla num campo de outro app passou no simulador (23/10/2026). O portão do degrau ainda pede o iPhone de verdade: instalar pelo cabo (time gratuito, 7 dias) e medir em Notas, WhatsApp, Safari e no app do prontuário."},
-            {estado: "depois", rotulo: "Degrau 1 completo: App Group e TestFlight.", texto: "Exige a conta Apple Developer paga (US$ 99/ano): é ela que deixa as fichas do plantão chegarem ao teclado e o app chegar a outros iPhones."},
-            {estado: "depois", rotulo: "Degrau 2: o teclado inteiro.", texto: "Autocorreção com o léxico médico, deslizar, memória nos aparelhos mais antigos, medição no app do prontuário do hospital."},
-            {estado: "depois", rotulo: "Degrau 3: a loja.", texto: "Ícone, textos, política de privacidade, assinatura (compra no app), revisão da Apple."},
-            {estado: "depois", rotulo: "Android.", texto: "Lá o teclado é mais livre; o núcleo web é o mesmo."}]},
-        {titulo: "O que foi decidido para executar (tudo reversível) e o que é do Criador", lista: [
-            {rotulo: "Um app, duas faces e o teclado dentro dele:", texto: "dois apps dariam duas compras, dois ícones e duas revisões da Apple sem ganho para o médico."},
-            {rotulo: "Nomes:", texto: "Med Painel (o app), Med Note (a face de notas, nome do Criador), “Med Painel” na lista de teclados do iPhone."},
-            {rotulo: "Comando da ficha:", texto: "/leito-NN, a regra do Mac — nunca nome de paciente, porque o comando aparece escrito no app de destino antes de virar texto."},
-            {rotulo: "Validade:", texto: "a regra do plantão do Mac (uso único, fim do plantão, dono único do leito, véspera): o modo mais restritivo até o Criador decidir."},
-            {rotulo: "Base do teclado:", texto: "escrito do zero, sem dependência (o KeyboardKit é licença fechada e paga: seria decisão dele)."},
-            {rotulo: "Pendentes dele:", texto: "quando pagar a conta Apple; o preço (dentro dos R$ 59,90 ou à parte); o Revisar no iPhone (hoje fica fora: o motor é Java, roda só no Mac); quando fazer o Android."}],
-          nota: "Fontes conferidas em 22/10/2026: guias da Apple de extensões de teclado (UITextDocumentProxy, acesso total, memória), segurança da plataforma (caixa sem rede, bloqueio por app e por gestão de aparelhos) e diretrizes da App Store 1.4.1, 3.1.3(b), 4.2, 4.4.1 e 5.1.3; Lei 13.709/2018 (LGPD), art. 5.º, II, e art. 11."}
-      ]};
-
   const ORDEM_PAINEL = [{chave: "medpainel", sigla: "MP", nome: "Med Painel", linha: "O painel lateral do médico · plano de venda"},
     {chave: "aiswarm", sigla: "AS", nome: "AI Swarm", linha: "A frota de IAs trabalhando, ao vivo"},
     {chave: "aichat", sigla: "AC", nome: "AI Chat", linha: "As IAs conversando numa sala só"},
@@ -376,56 +311,17 @@
     }
     alvo.append(modelo);
   }
-  // ── o Med Painel no celular, no fim da página do Med Painel (app.js chama no fim de renderMedPainel) ──────────────
-  // O telefone flutua sobre o fundo do portal (moldura transparente, sem mesa) e só é aberto quando aparece na tela;
-  // ao sair da página, a moldura é desmontada e, ao voltar, abre de novo a partir do blob: guardado.
-  let celularAlvo = null;
-  function montarCelularMaquete() {
-    if (!celularAlvo || !celularAlvo.isConnected || celularAlvo.querySelector("iframe.product-frame")) return;
-    const aviso = celularAlvo.querySelector(".mp-mesa-aviso") || el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo o Med Painel no iPhone…");
-    if (!aviso.isConnected) celularAlvo.append(aviso);
-    molduraDe(CELULAR, CELULAR.maquete, true, "Med Painel no iPhone, maquete", true)
-      .then((moldura) => { if (celularAlvo && celularAlvo.isConnected && !celularAlvo.querySelector("iframe.product-frame")) aviso.replaceWith(moldura); })
-      .catch((erro) => { aviso.textContent = erro && erro.message ? erro.message : "A maquete não veio neste site."; });
-  }
-  function desmontarCelularMaquete() {
-    const moldura = celularAlvo && celularAlvo.querySelector("iframe.product-frame");
-    if (moldura) moldura.replaceWith(el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo o Med Painel no iPhone…"));
-  }
+  // ── o Med Painel no celular (27/10/2026, o Bauer: "tirar do portal") ──────────────────────────────────────────────
+  // A maquete abria o núcleo do app e as bulas em texto aberto, num site público. Saiu do portal com a mesa de teste
+  // (cópias em ~/Projetos/_backups/portal-medpainel-20261027); fica só esta nota. O app.js segue chamando o gancho no
+  // fim de renderMedPainel.
   window.financeMedPainelCelular = function (alvo) {
     const antigo = alvo.querySelector("#medpainel-celular");
     if (antigo) antigo.remove();
     const bloco = el("div", "medpainel-celular"); bloco.id = "medpainel-celular";
-    const cabeca = secao("No celular", CELULAR.descricao);
-    const pilula = el("span", "product-estado", CELULAR.estado); pilula.dataset.estado = CELULAR.estado;
-    cabeca.append(pilula, paragrafos(CELULAR.texto));
-    bloco.append(cabeca);
-    for (const s of CELULAR.secoes) {
-      if (s.tipo === "maquete") {
-        const mesa = secao("Veja no iPhone", CELULAR.dica);
-        const caixa = el("div", "medpainel-celular-moldura");
-        caixa.append(el("p", "mp-secao-texto mp-mesa-aviso", "Abrindo o Med Painel no iPhone…"));
-        mesa.append(caixa, el("p", "product-nota", CELULAR.statusMaquete + ". " + CELULAR.nota));
-        bloco.append(mesa);
-        celularAlvo = caixa;
-      } else if (s.tipo !== "celular") bloco.append(montaSecao(s));
-    }
-    const modelo = secao("Modelo e caminho");
-    const lista = el("ul", "product-modelo");
-    CELULAR.modelo.forEach((linha) => lista.append(el("li", "", linha)));
-    modelo.append(lista);
-    bloco.append(modelo);
+    bloco.append(secao("No celular", "A maquete do Med Painel saiu do portal em 27/10/2026, para proteger o conteúdo do app: o núcleo e as bulas ficavam abertos para quem tivesse o endereço. Ela volta quando houver uma forma protegida de mostrar."));
     alvo.append(bloco);
-    // abre a maquete só quando o telefone entra na tela (a página do Med Painel é longa)
-    if (typeof IntersectionObserver === "function") {
-      const observador = new IntersectionObserver((entradas) => { if (entradas.some((e) => e.isIntersecting)) { observador.disconnect(); montarCelularMaquete(); } }, {rootMargin: "200px"});
-      observador.observe(celularAlvo);
-    } else montarCelularMaquete();
   };
-  document.addEventListener("financeiro:rota", (evento) => {
-    const chave = evento.detail && evento.detail.pagina;
-    if (chave === "medpainel") { if (celularAlvo && celularAlvo.isConnected) montarCelularMaquete(); } else desmontarCelularMaquete();
-  });
 
   // Só o produto aberto fica com a maquete viva: ao sair da página, a moldura é desmontada (o AI Swarm e o AI Chat
   // repetem o enxame em laço e gastariam CPU escondidos); ao voltar, redesenha a partir do blob: já guardado.
