@@ -1,1 +1,62 @@
-/* assinaturas.css: estilos da página da rotina, preenchidos na fatia que desenha assinaturas.js (vazio até lá). */
+/* assinaturas.css: Assinaturas e Vender primeiro (fatia F2-5). O topo da página (Nova assinatura e as regras), as ações
+   de cada cartão, a pílula "a confirmar" (contorno tracejado, sem vermelho), a autoria ("Alterado por Ana em 17/10"),
+   a nota de cadeado dos controles desligados (§6.7 .lock-note: 14px, sem vermelho, porque não é erro), as folhas do
+   assinaturas.js e a barra "3 de 4 passos" de Vender primeiro. Letra mínima de 12px; cores dos tokens dos dois temas. */
+
+/* topo: Nova assinatura + contagem + as três regras */
+.as-topo{display:flex;flex-direction:column;gap:12px;padding:18px 20px;margin:0 0 22px;border:1px solid var(--line);border-radius:14px;background:var(--lv-tinta-suave,transparent)}
+.as-topo-linha{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.as-contagem{font-size:13px;color:var(--muted)}
+.as-regras{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.as-regras li{font-size:13px;line-height:1.5;color:var(--muted);padding-left:16px;position:relative}
+.as-regras li::before{content:"";position:absolute;left:3px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--gold)}
+
+/* nota de cadeado: o controle existe, está desligado e diz por quê */
+.lock-note{display:flex;align-items:flex-start;gap:8px;margin:0 0 14px;padding:10px 12px;border:1px dashed var(--line-strong,var(--line));border-radius:10px;font-size:13px;line-height:1.5;color:var(--muted)}
+.as-topo .lock-note{margin:0}
+.lock-icon{flex:none;width:14px;height:14px;margin-top:2px;fill:none;stroke:currentColor;stroke-width:1.4}
+
+/* cartão de assinatura: selos, autoria, ações */
+.plan-badges{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px}
+.pilula-confirmar{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;border:1px dashed currentColor;font-size:12px;font-weight:600;white-space:nowrap;color:var(--gold-light)}
+.plan-math{color:var(--muted)}
+.plan-autoria,.plan-paid,.plan-archived,.plan-archive-reason{font-size:12px;color:var(--muted)}
+.plan-paid{color:var(--ink)}
+.plan-card.inactive .plan-amount{color:var(--muted)}
+.plan-amount.is-none{color:var(--faint)}
+.plan-management{flex-direction:column;align-items:stretch}
+.plan-actions{display:flex;flex-wrap:wrap;gap:8px}
+.plan-actions .button{min-height:44px}
+.plan-actions .button:disabled{opacity:.55;cursor:not-allowed}
+.plan-action-note{margin:0;font-size:12px;line-height:1.5;color:var(--muted)}
+/* Editar (app.js planForm): o dia do vencimento (mensal) ou a próxima data (os outros períodos), um de cada vez */
+.plan-edit-grid .field[hidden]{display:none}
+
+/* folhas (assinaturas.js) */
+.as-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 14px}
+.as-grade .lv-campo[hidden]{display:none}
+.as-valor-moeda{display:flex;gap:8px;align-items:stretch;min-width:0}
+.as-valor-moeda .lv-dinheiro{flex:1;min-width:0}
+.as-valor-moeda select{flex:none;width:auto;max-width:8em}
+.as-grade .as-largo{grid-column:1/-1}
+/* o corpo da folha (.lv-folha-corpo>p, livro.css) põe todo parágrafo em 14px cinza: aqui cada um tem o seu papel */
+.lv-folha-corpo>p.as-conta{font-size:14px;color:var(--ink);margin:6px 0 4px}
+.lv-folha-corpo>p.as-destaque{font:400 19px/1.4 var(--serif);color:var(--ink);margin:0 0 14px}
+.lv-folha-corpo>p.as-nota{font-size:13px;line-height:1.55;color:var(--muted);margin:10px 0 0}
+.as-ficha{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;margin:0;font-size:14px}
+.as-ficha dt{color:var(--muted)}
+.as-ficha dd{margin:0;overflow-wrap:anywhere}
+.as-aviso{margin-top:12px}
+
+/* Vender primeiro: a barra por produto e quem marcou cada passo */
+.product-progress{margin:0 0 6px}
+.product-progress-label{font-size:12px;color:var(--muted);margin:0 0 16px}
+.step-autoria{display:block;font-size:12px;color:var(--muted);margin:3px 0 0 28px}
+
+@media(max-width:620px){
+  .as-topo{padding:16px}
+  .as-grade{grid-template-columns:1fr}
+  .as-ficha{grid-template-columns:1fr;gap:2px}
+  .as-ficha dd{margin-bottom:8px}
+  .plan-actions .button{flex:1 1 auto}
+}

@@ -446,13 +446,13 @@
     target.append(identity);
     const hero = element("div", "overview-hero");
     const own = element("div");
-    own.append(element("p", "eyebrow", "SEU EQUIVALENTE MENSAL"), headingWithSource("A sua parte por mês", block.source, "Rateio dos planos confirmados pela sua participação cadastrada. Nada aqui é cobrança nova.", "sua-parte"));
+    own.append(element("p", "eyebrow", "SÓ AS ASSINATURAS"), headingWithSource("Sua parte nas assinaturas", block.source, "O equivalente mensal das assinaturas confirmadas, dividido pela sua participação cadastrada, cada moeda à parte. Nada aqui é cobrança nova.", "sua-parte"));
     renderMoneyStack(own, summary.personal_fixed_monthly, "sua-parte");
-    own.append(element("p", "hero-footnote", "Rateio dos compromissos confirmados pela participação cadastrada. O equivalente mensal não é uma nova cobrança."));
+    own.append(element("p", "hero-footnote", "Cada moeda à parte, sem converter. A sua parte no gasto do mês, em reais, está no topo da página."));
     const company = element("div", "hero-comparison");
-    company.append(element("p", "eyebrow", "TOTAL DA EMPRESA"), headingWithSource("Compromissos mensais", block.source, "Soma das assinaturas ativas com dados completos, moeda por moeda.", "total-empresa"));
+    company.append(element("p", "eyebrow", "SÓ AS ASSINATURAS"), headingWithSource("Assinaturas da empresa", block.source, "Soma do equivalente mensal das assinaturas ativas com dados completos, moeda por moeda.", "total-empresa"));
     renderMoneyStack(company, summary.fixed_monthly, "total-empresa");
-    company.append(element("p", "hero-footnote", "Assinaturas ativas com dados completos. Valores em moedas diferentes não são somados."));
+    company.append(element("p", "hero-footnote", "Cada moeda à parte, sem converter. O gasto do mês inteiro, em reais, está no topo da página."));
     hero.append(own, company);
     target.append(hero);
     const billing = block.billing || {};
@@ -484,7 +484,89 @@
     target.append(list);
   }
 
+  // ── Assinaturas e Vender primeiro pelo diário (F2-5): controles honestos, liberados ação por ação ────────────────────
+  // host().pode(acao, alvo) diz se dá para gravar agora (diário gravando ou em treino) e, se não, por quê. Um host sem
+  // pode() (o AI Cask nativo) segue o readOnly antigo. Confirmar, Marcar como paga, Encerrar e Nova assinatura abrem as
+  // folhas do assinaturas.js (window.financeAssinaturas); Editar, Reativar e as caixinhas vão pela ponte (financeRequest),
+  // pelo id e pela versão que a sócia viu.
+  function podeFazer(acao, alvo) {
+    const atual = host();
+    if (typeof atual.pode === "function") {
+      try {
+        const resposta = atual.pode(acao, alvo);
+        return resposta && resposta.ok === true ? {ok: true, treino: resposta.treino === true} : {ok: false, motivo: text(resposta && resposta.motivo ? resposta.motivo : "Não dá para gravar agora.")};
+      } catch (_) { return {ok: false, motivo: "Não foi possível conferir se dá para gravar agora."}; }
+    }
+    return atual.readOnly === true ? {ok: false, motivo: "Esta versão não grava assinaturas nem passos."} : {ok: true, treino: false};
+  }
+  // nota de cadeado (14px, sem vermelho: não é erro), com o motivo por extenso
+  function lockNote(motivo) {
+    const note = element("p", "lock-note");
+    const ns = "http://www.w3.org/2000/svg";
+    const icon = document.createElementNS(ns, "svg");
+    [["viewBox", "0 0 14 14"], ["width", "14"], ["height", "14"], ["aria-hidden", "true"], ["class", "lock-icon"]].forEach(([k, v]) => icon.setAttribute(k, v));
+    const body = document.createElementNS(ns, "rect");
+    [["x", "2.5"], ["y", "6"], ["width", "9"], ["height", "7"], ["rx", "1.5"]].forEach(([k, v]) => body.setAttribute(k, v));
+    const arc = document.createElementNS(ns, "path");
+    arc.setAttribute("d", "M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6");
+    icon.append(body, arc);
+    note.append(icon, element("span", "", motivo));
+    return note;
+  }
+  function dayMonth(value) {
+    if (!value) return "";
+    const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? value + "T12:00:00" : value);
+    return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat("pt-BR", {day: "2-digit", month: "2-digit"}).format(date) : "";
+  }
+  function cycleLabel(cycle) {
+    const date = new Date(cycle + "-15T12:00:00");
+    return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat("pt-BR", {month: "long", year: "numeric"}).format(date) : text(cycle);
+  }
+  // "Criado por Ana em 17/10 · confirmado por Beatriz em 18/10" ou "Alterado por Ana em 17/10" (só com dado do diário)
+  function planAuthorship(plan) {
+    const parts = [];
+    const add = (verb, who, when) => parts.push((parts.length ? verb : verb.charAt(0).toUpperCase() + verb.slice(1)) + " por " + who + (when ? " em " + dayMonth(when) : ""));
+    const confirmer = plan.confirmed === true && plan.confirmed_by_nome ? plan.confirmed_by_nome : "";
+    if (plan.created_by_nome) add("criado", plan.created_by_nome, plan.created_at);
+    if (plan.changed_by_nome && plan.changed_at !== plan.created_at && !(confirmer && plan.changed_at === plan.confirmed_at)) add("alterado", plan.changed_by_nome, plan.changed_at);
+    if (confirmer) add("confirmado", confirmer, plan.confirmed_at);
+    return parts.join(" · ");
+  }
+  // "Anual de US$ 99,00 ÷ 12 = US$ 8,25 por mês." (o equivalente mensal vem do domínio, em centavos)
+  const periodMath = {anual: "÷ 12", ano: "÷ 12", yearly: "÷ 12", semestral: "÷ 6", trimestral: "÷ 3", semanal: "× 52 ÷ 12", quinzenal: "× 26 ÷ 12"};
+  function monthlyExplanation(plan) {
+    const op = periodMath[normalized(plan.periodo).replace(/_/g, "")];
+    if (!op || typeof plan.monthly_amount !== "number" || typeof plan.valor !== "number") return "";
+    const label = String(plan.periodo || "").trim();
+    return label.charAt(0).toUpperCase() + label.slice(1) + " de " + money(plan.valor, plan.moeda) + " " + op + " = " + money(plan.monthly_amount, plan.moeda) + " por mês.";
+  }
+  function callSubscriptions(name, plan) {
+    const api = window.financeAssinaturas;
+    if (!api || typeof api[name] !== "function") { message("dashboard-error", "Um instante: o portal ainda está carregando."); return; }
+    message("dashboard-error", "");
+    api[name](plan.id);
+  }
+  // os períodos que o razão aceita para confirmar (EQUIVALENTE do razao.js); fora deles ("por venda") não há valor fixo
+  const fixedPeriods = ["mensal", "mes", "monthly", "anual", "ano", "yearly", "trimestral", "semestral", "semanal", "quinzenal"];
+  const periodKey = (value) => normalized(value).replace(/[^a-z]/g, "");
+  const monthlyPeriod = (value) => ["mensal", "mes", "monthly"].includes(periodKey(value));
+  async function setSubscription(plan, block, active) {
+    if (mutationBusy) return;
+    mutationBusy = true;
+    // reativar uma encerrada ou desfazer um encerramento marcado para o futuro: a mesma ação (reactivate_plan)
+    const undo = active && subscriptionState(plan) !== "inactive";
+    try {
+      await window.financeRequest("set_subscription", {index: plan.index, id: plan.id, version: plan.version || 1, active, expected_revision: block.source && block.source.revision});
+      announce(undo ? "Encerramento desfeito: a assinatura continua ativa." : active ? "Assinatura reativada no portal. O serviço externo não foi alterado." : "Assinatura encerrada no portal. Cancele também no site do serviço.");
+      await loadSnapshot(true);
+    } catch (failure) {
+      if (["stale_source", "stale_plan"].includes(failure.code)) await loadSnapshot(true);
+      message("dashboard-error", failure.message);
+    } finally { mutationBusy = false; }
+  }
+
   function renderSubscriptions(block, user) {
+    pendingRender.subscriptions = false;
     renderSource(byId("subscriptions-source"), block.source);
     const target = byId("subscriptions-content");
     clear(target);
@@ -504,50 +586,86 @@
         linkedBenefits.get(id).push(entry);
       } else orphanBenefits.push(entry);
     });
+    // com o diário (pode() na ponte): Confirmar, Marcar como paga e a folha de Encerrar; sem ele, só Editar e o estado
+    const journal = typeof host().pode === "function";
+    const general = podeFazer("edit_plan");
     const list = element("div", "plans-list");
     plans.forEach((plan) => {
-      const card = element("article", "plan-card" + (plan.due_soon ? " due-soon" : "") + (plan.overdue ? " overdue" : "") + (!plan.confirmed ? " unconfirmed" : ""));
+      const state = subscriptionState(plan);
+      const inactive = state === "inactive";
+      const card = element("article", "plan-card" + (plan.due_soon ? " due-soon" : "") + (plan.overdue ? " overdue" : "") + (!plan.confirmed ? " unconfirmed" : "") + (inactive ? " inactive" : ""));
       card.dataset.planIndex = String(plan.index);
+      card.dataset.planId = String(plan.id || "");
       const top = element("div", "plan-top");
       const heading = element("div"); heading.append(element("h3", "plan-title", plan.servico || "Serviço não informado"), element("p", "plan-name", plan.plano || "Plano não informado"));
-      top.append(heading, stateBadge(plan));
+      const badges = element("div", "plan-badges");
+      badges.append(stateBadge(plan));
+      // a confirmar (quatro olhos nos dados da fatura): contorno tracejado, sem vermelho
+      if (!plan.confirmed && !inactive && state !== "unconfirmed") badges.append(element("span", "pilula-confirmar", "a confirmar"));
+      top.append(heading, badges);
       const amounts = element("div", "amount-pair");
       const company = element("div"); company.append(element("span", "amount-pair-label", "Custo da assinatura"), element("div", "plan-amount", money(plan.valor, plan.moeda)), element("p", "monthly-note", "Cobrança da empresa · " + (plan.periodo || "Período não informado")));
-      const personal = element("div"); personal.append(element("span", "amount-pair-label", "Sua parte nesta cobrança"), element("div", "plan-amount personal-amount", personalMoney(plan.personal_amount, plan.moeda)));
-      if (plan.personal_monthly_amount !== undefined && plan.personal_monthly_amount !== null) personal.append(element("p", "monthly-note", "Equivalente mensal: " + money(plan.personal_monthly_amount, plan.moeda)));
+      const explanation = monthlyExplanation(plan);
+      if (explanation) company.append(element("p", "monthly-note plan-math", explanation));
+      const personal = element("div");
+      if (inactive) personal.append(element("span", "amount-pair-label", "Sua parte"), element("div", "plan-amount personal-amount is-none", "—"), element("p", "monthly-note", "Encerrada: sem cobrança, sem parte."));
+      else {
+        personal.append(element("span", "amount-pair-label", "Sua parte nesta cobrança"), element("div", "plan-amount personal-amount", personalMoney(plan.personal_amount, plan.moeda)));
+        if (plan.personal_monthly_amount !== undefined && plan.personal_monthly_amount !== null) personal.append(element("p", "monthly-note", "Equivalente mensal: " + money(plan.personal_monthly_amount, plan.moeda)));
+      }
       amounts.append(company, personal);
       const bottom = element("div", "plan-bottom");
       const details = element("div", "plan-details");
-      if (Number.isInteger(plan.monthly_day) && plan.monthly_day >= 1 && plan.monthly_day <= 31) details.append(element("span", "plan-monthly-day", "Vencimento mensal: dia " + plan.monthly_day));
-      details.append(element("span", "plan-next-date", (plan.schedule_derived === true ? "Próxima data prevista: " : "Próxima data: ") + dateLabel(plan.proxima_data)));
-      if (typeof plan.schedule_issue === "string" && plan.schedule_issue.trim()) details.append(element("span", "plan-schedule-issue", plan.schedule_issue));
-      details.append(element("span", "badge" + (plan.overdue ? " badge-danger" : plan.due_soon ? " badge-gold" : ""), "Cobrança: " + paymentLabel(plan)));
-      // controles honestos: na versão só de leitura, nada de formulário que depois recusa; o pagamento vira lançamento
-      if (host().readOnly === true && window.financeLivro) bottom.append(details, button("Lançar pagamento", "button-quiet", () => window.financeLivro.abrirLancar({descricao: [plan.servico, plan.plano].filter(Boolean).join(" · "), planoId: plan.id})));
-      else bottom.append(details, button("Editar cobrança", "button-quiet", () => {
-        editingPlan = plan.index; renderSubscriptions(block, user);
+      if (inactive) {
+        details.append(element("span", "plan-archived", plan.archived_since ? "Encerrada desde " + dateLabel(plan.archived_since) + (plan.archived_by_nome ? " · por " + plan.archived_by_nome : "") : "Encerrada"));
+        if (plan.archive_reason) details.append(element("span", "plan-archive-reason", "Motivo: " + plan.archive_reason));
+      } else {
+        if (Number.isInteger(plan.monthly_day) && plan.monthly_day >= 1 && plan.monthly_day <= 31) details.append(element("span", "plan-monthly-day", "Vencimento mensal: dia " + plan.monthly_day));
+        details.append(element("span", "plan-next-date", (plan.schedule_derived === true ? "Próxima data prevista: " : "Próxima data: ") + dateLabel(plan.proxima_data)));
+        if (typeof plan.schedule_issue === "string" && plan.schedule_issue.trim()) details.append(element("span", "plan-schedule-issue", plan.schedule_issue));
+        details.append(element("span", "badge" + (plan.overdue ? " badge-danger" : plan.due_soon ? " badge-gold" : ""), "Cobrança: " + paymentLabel(plan)));
+        if (plan.payment_status === "paid" && plan.paid_cycle) details.append(element("span", "plan-paid", "Paga · ciclo de " + cycleLabel(plan.paid_cycle)));
+        if (plan.archived_since) details.append(element("span", "plan-archived", "Encerra em " + dateLabel(plan.archived_since) + (plan.archived_by_nome ? " · por " + plan.archived_by_nome : "") + (plan.archive_reason ? ": " + plan.archive_reason : "")));
+      }
+      const authorship = planAuthorship(plan);
+      if (authorship) details.append(element("span", "plan-autoria", authorship));
+      bottom.append(details);
+      // ações: cada uma pergunta à ponte se pode; desligada, mostra o motivo (nunca um formulário que depois recusa)
+      const actions = element("div", "plan-actions");
+      const notes = [];
+      const action = (label, className, name, handler, permission = general) => {
+        const node = button(label, className, handler);
+        node.dataset.planAction = name;
+        if (!permission.ok) {
+          node.disabled = true; node.title = permission.motivo;
+          if (general.ok && !notes.includes(permission.motivo)) notes.push(permission.motivo);   // sem gravação, o aviso fica no topo da página
+        }
+        actions.append(node);
+        return node;
+      };
+      // cobrança sem período fixo ("por venda"): não há o que confirmar com a fatura, então no lugar do botão vai a nota
+      const variable = Boolean(String(plan.periodo || "").trim()) && !fixedPeriods.includes(periodKey(plan.periodo));
+      if (journal && !plan.confirmed && !inactive && variable) notes.push("Cobrança " + String(plan.periodo).trim() + ": sem valor fixo, não entra no previsto.");
+      else if (journal && !plan.confirmed && !inactive) action("Confirmar", "button-primary", "confirmar", () => callSubscriptions("confirmar", plan), podeFazer("confirm_plan", plan.id));
+      const payable = journal && !inactive && !(plan.payment_status === "paid" && plan.paid_cycle);
+      if (payable) {
+        const pay = action("Marcar como paga", "button-outline", "pagar", () => callSubscriptions("pagar", plan), podeFazer("record_payment"));
+        // "Cobrança: Paga" que veio do pacote (sem gasto ligado no diário): o botão não duplica, mas diz quando usar
+        if (!pay.disabled && plan.payment_status === "paid") {
+          const when = block.source && block.source.updated_at ? dayMonth(block.source.updated_at) : "";
+          notes.push("Paga segundo o pacote" + (when ? " de " + when : "") + ": marque só se o gasto ainda não está em Lançamentos.");
+        }
+      }
+      action("Editar", "button-quiet", "editar", () => {
+        editingPlan = plan.id; renderSubscriptions(block, user);
         const field = byId("plan-value-" + plan.index); if (field) field.focus();
-      }));
-      const management = element("div", "plan-management");
-      const label = element("label", "subscription-control", "Estado no painel");
-      const selector = element("select"); selector.setAttribute("aria-label", "Estado da assinatura " + text(plan.servico)); selector.dataset.subscriptionIndex = String(plan.index); selector.id = "subscription-state-" + plan.index;
-      [["unconfirmed", "A confirmar"], ["active", "Ativa"], ["inactive", "Inativa"]].forEach(([value, caption]) => { const option = element("option", "", caption); option.value = value; option.disabled = value === "unconfirmed"; selector.append(option); });
-      selector.value = subscriptionState(plan);
-      if (host().readOnly === true) { selector.disabled = true; label.title = "Na versão online o estado da assinatura muda pela aba Finanças do AI Cask."; }
-      label.append(selector); management.append(label);
-      selector.addEventListener("change", async () => {
-        if (mutationBusy) { selector.value = subscriptionState(plan); return; }
-        mutationBusy = true; selector.disabled = true;
-        try {
-          await window.financeRequest("set_subscription", {index: plan.index, active: selector.value === "active", expected_revision: block.source && block.source.revision});
-          announce("Estado registrado no painel. O serviço externo não foi alterado.");
-          await loadSnapshot(true);
-        } catch (failure) {
-          selector.value = subscriptionState(plan);
-          if (failure.code === "stale_source") await loadSnapshot(true);
-          message("dashboard-error", failure.message);
-        } finally { mutationBusy = false; selector.disabled = false; }
       });
+      // encerrada: Reativar; encerramento marcado para uma data futura (ainda ativa): Desfazer o encerramento
+      if (inactive || plan.archived_since) action(inactive ? "Reativar" : "Desfazer o encerramento", "button-quiet", "reativar", () => setSubscription(plan, block, true), podeFazer("reactivate_plan"));
+      else action("Encerrar", "button-quiet", "encerrar", () => (journal ? callSubscriptions("encerrar", plan) : setSubscription(plan, block, false)), podeFazer("archive_plan"));
+      const management = element("div", "plan-management");
+      management.append(actions);
+      notes.forEach((note) => management.append(element("p", "plan-action-note", note)));
       card.append(top, amounts, bottom, management);
       const attached = linkedBenefits.get(String(plan.id)) || [];
       if (attached.length) {
@@ -556,7 +674,7 @@
         attached.forEach((entry) => section.append(benefitCard(entry, block)));
         card.append(section);
       }
-      if (editingPlan === plan.index) card.append(planForm(plan, block.source && block.source.revision));
+      if (editingPlan === plan.id) card.append(planForm(plan, block.source && block.source.revision));
       list.append(card);
     });
     if (plans.length) target.append(list);
@@ -584,19 +702,65 @@
     return {holder, input};
   }
 
+  function selectField(label, id, options, value) {
+    const holder = element("div", "field");
+    const caption = element("label", "", label);
+    caption.htmlFor = id;
+    const select = element("select");
+    select.id = id;
+    options.forEach(([optionValue, optionLabel]) => { const option = element("option", "", optionLabel); option.value = optionValue; select.append(option); });
+    select.value = value;
+    holder.append(caption, select);
+    return {holder, input: select};
+  }
+  // as moedas e os períodos que o razão aceita (MOEDAS e EQUIVALENTE do razao.js), nos rótulos da folha Nova assinatura
+  const planCoins = [["BRL", "Real (BRL)"], ["USD", "Dólar (USD)"], ["EUR", "Euro (EUR)"]];
+  const planPeriods = [["mensal", "Mensal"], ["trimestral", "Trimestral"], ["semestral", "Semestral"], ["anual", "Anual"]];
+
+  // Editar: valor, moeda, período, dia do vencimento (mensal) ou próxima data (os outros) e a anotação de status, enviados
+  // pelo id e pela versão que a sócia viu (edit_plan no diário). Só vai o que ela mudou; nenhum campo é obrigatório.
+  // Host antigo (sem pode(): o AI Cask nativo, que aplica o applyMutation do domain.js): só valor, próxima data e status,
+  // os três que ele aceita, para o formulário nunca mandar o que vai ser recusado.
   function planForm(plan, sourceRevision) {
+    const legacy = typeof host().pode !== "function";
     const form = element("form", "plan-edit-form");
     form.dataset.planForm = String(plan.index);
-    form.append(element("p", "edit-explanation", "Altere os dados confirmados deste plano. A moeda e o período permanecem os do arquivo."));
+    form.dataset.planId = String(plan.id || "");
+    form.append(element("p", "edit-explanation", legacy ? "Mudar o valor tira a confirmação: outra sócia confere de novo com a fatura. A moeda e o período continuam os mesmos." : "Mudar valor, moeda ou período tira a confirmação: outra sócia confere de novo com a fatura."));
     const grid = element("div", "plan-edit-grid");
-    const amount = inputField("Valor (" + text(plan.moeda || "moeda não informada") + ")", "plan-value-" + plan.index, "text", plan.valor_texto || (plan.valor === null ? "" : plan.valor));
+    // o valor de hoje à moda brasileira (34,90): é o que a ponte lê com centavosBR se a sócia mudar
+    const digits = Number.isInteger(plan.minor_unit_digits) ? plan.minor_unit_digits : 2;
+    const initialValue = typeof plan.valor === "number" && Number.isFinite(plan.valor) ? plan.valor.toFixed(digits).replace(".", ",") : "";
+    const amount = inputField(legacy ? "Valor (" + text(plan.moeda || "moeda não informada") + ")" : "Valor", "plan-value-" + plan.index, "text", initialValue);
     amount.input.inputMode = "decimal";
     amount.input.maxLength = 80;
+    amount.input.placeholder = "Ex.: 34,90";
+    // moeda ou período fora da lista (moeda não informada, "por venda") fica como está até a sócia escolher outro
+    const initialCoin = planCoins.some(([coin]) => coin === plan.moeda) ? plan.moeda : "";
+    const coin = selectField("Moeda", "plan-coin-" + plan.index, initialCoin ? planCoins : [["", "Não informada"], ...planCoins], initialCoin);
+    const rawPeriod = String(plan.periodo || "").trim();
+    const initialPeriod = planPeriods.find(([key]) => key === periodKey(rawPeriod)) ? periodKey(rawPeriod) : rawPeriod;
+    const period = selectField("Período", "plan-period-" + plan.index, planPeriods.some(([key]) => key === initialPeriod) ? planPeriods : [[rawPeriod, rawPeriod || "Não informado"], ...planPeriods], initialPeriod);
+    const initialDay = Number.isInteger(plan.monthly_day) ? String(plan.monthly_day) : "";
+    const day = inputField("Dia do vencimento (1 a 31)", "plan-day-" + plan.index, "number", initialDay);
+    Object.assign(day.input, {min: "1", max: "31", step: "1", inputMode: "numeric", placeholder: "Ex.: 12"});
+    // a próxima data guardada: a que o domínio calcula pelo dia (schedule_derived) não está gravada no plano
+    const storedDate = plan.schedule_derived === true && !legacy ? "" : plan.proxima_data || "";
     const due = inputField("Próxima data", "plan-date-" + plan.index, "date", plan.proxima_data || "");
-    const status = inputField("Status", "plan-status-" + plan.index, "text", plan.status || "");
-    status.input.required = true;
+    // mensal: o vencimento é o dia do mês; os outros períodos: a próxima data (como na folha Nova assinatura)
+    const schedule = () => {
+      const monthly = !legacy && monthlyPeriod(period.input.value);
+      day.holder.hidden = !monthly; day.input.disabled = !monthly;
+      due.holder.hidden = monthly; due.input.disabled = monthly;
+    };
+    period.input.addEventListener("change", schedule);
+    schedule();
+    const status = inputField("Anotação de status", "plan-status-" + plan.index, "text", plan.status || "");
+    status.input.placeholder = "Ex.: nota de outubro conferida (opcional)";
     status.input.maxLength = 240;
-    grid.append(amount.holder, due.holder, status.holder);
+    if (legacy && plan.status) status.input.required = true;   // o applyMutation recusa status vazio: avisa antes de enviar
+    if (legacy) grid.append(amount.holder, due.holder, status.holder);
+    else grid.append(amount.holder, coin.holder, period.holder, day.holder, due.holder, status.holder);
     const error = element("p", "form-error");
     error.setAttribute("role", "alert");
     error.hidden = true;
@@ -613,23 +777,37 @@
       event.preventDefault();
       if (!form.reportValidity() || mutationBusy) return;
       const values = {};
-      if (amount.input.value !== String(plan.valor_texto || (plan.valor === null ? "" : plan.valor))) values.valor = amount.input.value;
-      if (due.input.value !== (plan.proxima_data || "")) values.proxima_data = due.input.value;
+      if (amount.input.value.trim() !== initialValue) {
+        if (!amount.input.value.trim()) { error.textContent = "Informe o valor da cobrança (ex.: 34,90)."; error.hidden = false; amount.input.focus(); return; }
+        values.valor = amount.input.value;
+      }
+      if (!legacy && coin.input.value !== initialCoin) values.moeda = coin.input.value;
+      if (!legacy && period.input.value !== initialPeriod) values.periodo = period.input.value;
+      if (!legacy && monthlyPeriod(period.input.value)) {
+        const dayValue = day.input.value.trim();
+        if (dayValue !== initialDay) {
+          values.dia = dayValue;
+          if (storedDate) values.proxima_data = "";   // a próxima data passa a sair do dia novo
+        }
+      } else {
+        if (due.input.value !== storedDate) values.proxima_data = due.input.value;
+        if (!legacy && initialDay && monthlyPeriod(rawPeriod)) values.dia = "";   // deixou de ser mensal: o dia do mês não vale mais
+      }
       if (status.input.value !== (plan.status || "")) values.status = status.input.value;
       if (!Object.keys(values).length) { editingPlan = null; renderSubscriptions(currentSnapshot.blocks.user, currentSnapshot.user); return; }
       mutationBusy = true;
       save.disabled = true;
       error.hidden = true;
       try {
-        await window.financeRequest("edit_plan", {index: plan.index, values, expected_revision: sourceRevision});
+        await window.financeRequest("edit_plan", {index: plan.index, id: plan.id, version: plan.version || 1, values, expected_revision: sourceRevision});
         editingPlan = null;
-        announce("Plano atualizado no arquivo local.");
+        announce("Assinatura alterada.");
         await loadSnapshot(true);
       } catch (failure) {
         if (failure.code === "stale_source" || failure.code === "stale_plan") {
           editingPlan = null;
           await loadSnapshot(true);
-          message("dashboard-error", "O arquivo de planos mudou. O painel foi atualizado; confira os dados antes de editar novamente.");
+          message("dashboard-error", text(failure.message) + " O painel foi atualizado; confira os dados antes de editar de novo.");
         } else {
           error.textContent = text(failure.message);
           error.hidden = false;
@@ -639,21 +817,33 @@
     return form;
   }
 
+  // Vender primeiro: todos os produtos (o corte em 3 acabou), a barra "3 de 4 passos" e quem marcou cada passo.
   function renderSelling(block) {
+    pendingRender.selling = false;
     renderSource(byId("sell-source"), block.source);
     const target = byId("sell-content");
     clear(target);
-    const products = array(block.products).slice(0, 3);
+    const products = array(block.products);
     if (!products.length) {
       if (array(block.rows).length) target.append(table(block.columns, block.rows, "Produtos a vender primeiro"));
       else empty(target, block.source && block.source.exists ? "Nenhuma prioridade com próximos passos foi entregue." : "sem entrega ainda");
       return;
     }
+    const permission = podeFazer("toggle_step");
+    if (!permission.ok) target.append(lockNote(permission.motivo));
     const grid = element("div", "products-grid");
     products.forEach((product, index) => {
       const card = element("article", "product-card");
-      card.append(element("div", "product-order", String(index + 1).padStart(2, "0")), element("h3", "", product.name || product.nome || "Produto"));
+      const name = product.name || product.nome || "Produto";
+      card.append(element("div", "product-order", String(index + 1).padStart(2, "0")), element("h3", "", name));
       const steps = array(product.steps);
+      const done = steps.filter((step) => step.checked).length;
+      if (steps.length) {
+        const bar = element("progress", "budget-progress product-progress");
+        bar.max = steps.length; bar.value = done;
+        bar.setAttribute("aria-label", done + " de " + steps.length + " passos de " + text(name));
+        card.append(bar, element("p", "product-progress-label", done + " de " + steps.length + " passos"));
+      }
       const list = element("ul", "steps");
       steps.forEach((step) => {
         const item = element("li");
@@ -662,10 +852,12 @@
         checkbox.type = "checkbox";
         checkbox.checked = step.checked === true;
         checkbox.dataset.stepIndex = String(step.index);
-        if (host().readOnly === true) { checkbox.disabled = true; label.title = "Na versão online os passos se marcam pela aba Finanças do AI Cask."; }
+        checkbox.dataset.stepId = String(step.id || "");
+        if (!permission.ok) { checkbox.disabled = true; label.title = permission.motivo; }
         const copy = element("span", "", step.text);
         label.append(checkbox, copy);
         item.append(label);
+        if (step.checked && step.checked_by_nome) item.append(element("span", "step-autoria", "marcado por " + step.checked_by_nome + (step.checked_at ? " em " + dayMonth(step.checked_at) : "")));
         list.append(item);
         checkbox.addEventListener("change", async () => {
           if (mutationBusy) { checkbox.checked = !checkbox.checked; return; }
@@ -673,20 +865,20 @@
           checkbox.disabled = true;
           mutationBusy = true;
           try {
-            await window.financeRequest("toggle_step", {index: step.index, checked, expected_revision: block.source && block.source.revision});
-            announce(checked ? "Passo marcado e salvo." : "Marcação removida e salva.");
+            await window.financeRequest("toggle_step", {index: step.index, id: step.id, version: step.version || 1, checked, expected_revision: block.source && block.source.revision});
+            announce(checked ? "Passo marcado." : "Marcação removida.");
             await loadSnapshot(true);
           } catch (failure) {
             checkbox.checked = !checked;
             if (failure.code === "stale_source" || failure.code === "stale_step") {
               await loadSnapshot(true);
-              message("dashboard-error", "A lista de prioridades mudou. O painel foi atualizado; confira o passo antes de marcar novamente.");
+              message("dashboard-error", text(failure.message) + " O painel foi atualizado; confira o passo antes de marcar de novo.");
             } else message("dashboard-error", failure.message);
-          } finally { mutationBusy = false; checkbox.disabled = false; }
+          } finally { mutationBusy = false; checkbox.disabled = !podeFazer("toggle_step").ok; }
         });
       });
       if (!steps.length) empty(card, "Próximos passos ainda não entregues.");
-      card.append(list, element("p", "completion", steps.filter((step) => step.checked).length + " de " + steps.length + " passos concluídos"));
+      card.append(list);
       grid.append(card);
     });
     target.append(grid);
@@ -2640,8 +2832,9 @@
     const focusedId = document.activeElement && document.activeElement.id;
     const blocks = snapshot.blocks;
     renderOverview(blocks.user || {}, snapshot.user || {});
-    if (editingPlan === null) renderSubscriptions(blocks.user || {}, snapshot.user || {});
-    renderSelling(blocks.sell_first || {});
+    // com folha ou formulário aberto, Assinaturas e Vender primeiro esperam: desenham ao fechar (flushPendingRender)
+    if (subscriptionsBusy()) pendingRender.subscriptions = true; else renderSubscriptions(blocks.user || {}, snapshot.user || {});
+    if (sellingBusy()) pendingRender.selling = true; else renderSelling(blocks.sell_first || {});
     renderInventory(blocks.inventory || {}, blocks.atlas || snapshot.atlas);
     renderCash(blocks.cash || {});
     renderProjection(blocks.projection || {});
@@ -2942,9 +3135,29 @@
     nativeVisible = visible === true;
     if (nativeVisible && authenticated && !mustChangePassword && !mutationBusy) loadSnapshot();
   };
+  // O ciclo de 2 s: relê o snapshot (o pacote + o diário) e nunca redesenha Assinaturas nem Vender primeiro com uma folha
+  // ou o formulário de edição aberto (§3.7): o que mudou nesse meio-tempo se desenha quando ela fecha.
+  const pendingRender = {subscriptions: false, selling: false};
+  function sheetOpen() {
+    const livro = window.financeLivro;
+    try { return Boolean(livro && typeof livro.folhaAberta === "function" && livro.folhaAberta()); } catch (_) { return false; }
+  }
+  function subscriptionsBusy() { return editingPlan !== null || sheetOpen(); }
+  function sellingBusy() { return sheetOpen(); }
+  function flushPendingRender() {
+    if (!authenticated || !currentSnapshot || !currentSnapshot.blocks) return;
+    const blocks = currentSnapshot.blocks;
+    if (pendingRender.subscriptions && !subscriptionsBusy()) renderSubscriptions(blocks.user || {}, currentSnapshot.user || {});
+    if (pendingRender.selling && !sellingBusy()) renderSelling(blocks.sell_first || {});
+  }
   setInterval(() => {
     if (authenticated && !mustChangePassword && !mutationBusy && nativeVisible) loadSnapshot();
+    flushPendingRender();
   }, 2000);
+  // depois de cada gravação (a ponte e as folhas avisam com "financeiro:diario") e quando o diário abre, relê já
+  document.addEventListener("financeiro:diario", () => { if (authenticated && !mustChangePassword) loadSnapshot(true); });
+  // ao fechar uma folha (o evento close não sobe, mas passa pela captura), desenha o que ficou esperando
+  document.addEventListener("close", () => setTimeout(flushPendingRender, 0), true);
 
   applyHostLabels();
   registrosNaFila.splice(0).forEach((definicao) => {
