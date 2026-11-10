@@ -414,7 +414,7 @@ body{background:var(--pg-papel)}
         <li>Vários diários<small>Um para o trabalho, um de viagem, um do bebê.</small></li>
       </ul>
       <div class="pg-planos" role="group" aria-label="Como pagar">
-        <button type="button" class="pg-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Por ano<small>R$ 6,66 por mês, 33% a menos</small></span><b class="pg-opcao-n pg-num">R$ 79,90</b></button>
+        <button type="button" class="pg-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Por ano<small>R$ 6,66 por mês, 32% a menos</small></span><b class="pg-opcao-n pg-num">R$ 79,90</b></button>
         <button type="button" class="pg-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Por mês<small>sem fidelidade</small></span><b class="pg-opcao-n pg-num">R$ 9,90</b></button>
         <button type="button" class="pg-opcao" data-acao="plano" data-id="sempre" aria-pressed="false"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Para sempre<small>uma vez só, sem renovar</small></span><b class="pg-opcao-n pg-num">R$ 249</b></button>
       </div>
@@ -579,7 +579,7 @@ body{background:var(--pg-papel)}
   function mare(nivel, ativo, acao) {
     var s = svg("svg", {viewBox: "0 0 26 26", "aria-hidden": "true"}), id = "pg-m" + nivel + (acao === "humor" ? "e" : acao === "filtro" ? "f" : "h");
     var corte = svg("clipPath", {id: id});
-    corte.appendChild(svg("rect", {x: 0, y: 26 - (nivel - 1) * 6.5 - (nivel === 1 ? 0 : 0), width: 26, height: 26}));
+    corte.appendChild(svg("rect", {x: 0, y: 26 - (nivel - 1) * 6.5, width: 26, height: 26}));
     s.appendChild(corte);
     s.appendChild(svg("circle", {"class": "pg-agua", cx: 13, cy: 13, r: 10.2, "clip-path": "url(#" + id + ")"}));
     s.appendChild(svg("circle", {"class": "pg-aro", cx: 13, cy: 13, r: 10.2}));

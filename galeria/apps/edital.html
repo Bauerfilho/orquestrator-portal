@@ -15,17 +15,17 @@
   "ordem": 28,
   "resumo": "O planejador de quem estuda para concurso ou residência trabalhando. Destrincha o edital em tópicos, monta os blocos de cada dia, agenda as revisões de 1, 7 e 30 dias e, quando a vida atrasa o cronograma, redistribui o que ficou para trás em um toque, à vista, sem empilhar culpa.",
   "proposta": "Pago",
-  "modelo_negocio": "Assinatura de R$ 29,90 por mês ou R$ 239 por ano (33% a menos), com 7 dias de teste para usar tudo. Paga o candidato, que já gasta muito mais com cursinho e material: o que se vende é o plano que não desmorona (replanejar sem limite, revisão espaçada automática e vários editais no mesmo calendário).",
+  "modelo_negocio": "O plano de uma prova, com o cronômetro, é grátis. O Edital Completo custa R$ 29,90 por mês ou R$ 239 por ano (33% a menos), com 7 dias de teste para usar tudo. Paga o candidato, que já gasta muito mais com cursinho e material: o que se vende é o plano que não desmorona (replanejar sem limite, revisão espaçada automática e várias provas, cada uma com o seu plano).",
   "referencias": [
     {"nome": "Anki", "modelo": "open source"},
     {"nome": "Notion", "modelo": "freemium"},
     {"nome": "Estudei", "modelo": "freemium"}
   ],
-  "direcao": "A mesa de quem estuda a sério. Marca fictícia: Edital. Papel branco e tinta azul-marinho, que escreve e também carimba as ações principais; o azul de caneta fica para o que é agora (o bloco da vez, o dia de hoje) e para o que se toca no meio do texto; o amarelo de marca-texto nunca é fundo de botão: é o traço que passa atrás do que importa (o título, a cobertura, o bloco que mudou de dia), e o vermelho de correção só aparece no que atrasou. As caixas são desenhadas a traço, sem sombra, e toda lista é uma folha de caderno, com margem à esquerda para a hora, a sigla e a marcação. A assinatura é o traço de marca-texto e o gesto de replanejar: os blocos atrasados saem da pilha e vão, um a um, para os dias que têm folga. No celular são três abas (Hoje, Edital, Revisões); em tela ampla vira mesa: a prova-alvo e a navegação à esquerda, a seção ao centro e o contexto à direita (os últimos sete dias, os próximos sete ou o desempenho).",
+  "direcao": "A mesa de quem estuda a sério. Marca fictícia: Edital. Papel branco e tinta azul-marinho, que escreve e também carimba as ações principais; o azul de caneta fica para o que é agora (o bloco da vez, o dia de hoje) e para o que se toca no meio do texto; o amarelo de marca-texto nunca é fundo de botão: é o traço que passa atrás do que importa (o título, a cobertura, o bloco que mudou de dia), e o vermelho de correção marca o que atrasou, o erro e o maior risco, e desenha a margem do caderno. As caixas do conteúdo são desenhadas a traço, sem sombra (só as folhas e os avisos flutuantes levam sombra), e toda lista é uma folha de caderno, com margem à esquerda para a hora, a sigla e a marcação. A assinatura é o traço de marca-texto e o gesto de replanejar: os blocos atrasados saem da pilha e vão, um a um, para os dias que têm folga. No celular são três abas (Hoje, Edital, Revisões); em tela ampla vira mesa: a prova-alvo e a navegação à esquerda, a seção ao centro e o contexto à direita (os últimos sete dias, os próximos sete ou o desempenho).",
   "estados": [
     {
       "nome": "Hoje",
-      "descricao": "O plano do dia em blocos por matéria, com a hora e a duração de cada um. O bloco da vez mostra o cronômetro de tempo líquido, que conta de verdade: dá para pausar, retomar e concluir, e o tópico entra sozinho nas revisões; bloco sem um minuto contado não se conclui, se pula, e vai para os atrasados. Junto vêm os dias que faltam para a prova, as horas dos últimos sete dias contra a meta, somando ao vivo, e o aviso do que ficou para trás."
+      "descricao": "O plano do dia em blocos por matéria, com a hora e a duração de cada um. O bloco da vez mostra o cronômetro de tempo líquido, que conta de verdade: dá para pausar, retomar e concluir, e o tópico entra sozinho nas revisões; bloco sem um minuto contado não se conclui, se pula, e vai para os atrasados (se o tópico já estava estudado, sai do plano). Junto vêm os dias que faltam para a prova, as horas dos últimos sete dias contra a meta, somando ao vivo, e o aviso do que ficou para trás."
     },
     {
       "nome": "Edital",
@@ -47,7 +47,7 @@
     {"nome": "Azul-noite (escuro)", "hex": "#0c1322"},
     {"nome": "Âmbar de marca-texto (escuro)", "hex": "#e2b54a"}
   ],
-  "tipografia": "Sans do sistema (SF Pro no iPhone e no Mac) com pesos firmes: título de seção em 40 px, peso 800 e tracking de -0,035 em; corpo de 17 px; metadados de 13 px. Tudo o que é tempo vai em monoespaçada do sistema (SF Mono), com números tabulares: o cronômetro em 52 px, as horas dos blocos, os dias para a prova e as siglas das matérias.",
+  "tipografia": "Sans do sistema (SF Pro no iPhone e no Mac) com pesos firmes: título de seção em 40 px, peso 800 e tracking de -0,035 em; corpo de 17 px; metadados de 13 px. Os números de tempo em destaque vão em monoespaçada do sistema (SF Mono), tabulares: o cronômetro em 52 px, as horas dos blocos, os dias para a prova e as siglas das matérias.",
   "componentes": [
     "Título com traço de marca-texto",
     "Ficha do bloco da vez com cronômetro",
@@ -65,11 +65,11 @@
     "Folha de prova-alvo e folha de planos"
   ],
   "replicar": [
-    "Modelo de dados: Prova (nome, data, meta semanal), Materia (peso), Topico (situação de 0 a 3), Bloco (tópico, dia, minutos planejados, minutos líquidos, feito) e Revisao (tópico, intervalo de 1, 7 ou 30 dias, vence em, resultado). Cobertura, risco, atrasados e constância são sempre derivados; nunca guarde esses números.",
-    "Regras que pegam: bloco não feito cujo dia passou vira atrasado, não some, e bloco com menos de um minuto contado não se conclui: pula-se, e ele também vai para os atrasados; replanejar ordena os atrasados pelo peso da matéria e põe cada um no dia de menor carga em minutos (repetir a matéria no mesmo dia pesa como uma hora e meia a mais), sem mexer no que já foi feito nem no bloco em curso; acertar sobe o intervalo (1, 7, 30, dominado) e errar volta para 1; o cronômetro guarda o instante em que começou, e não um contador, para sobreviver ao app em segundo plano.",
+    "Modelo de dados: Prova (nome, data, meta semanal), Matéria (peso), Tópico (situação de 0 a 3), Bloco (tópico, dia, minutos planejados, minutos líquidos, feito) e Revisão (tópico, intervalo de 1, 7 ou 30 dias, vence em, resultado). Cobertura, risco, atrasados e constância são sempre derivados; nunca guarde esses números.",
+    "Regras que pegam: bloco não feito cujo dia passou vira atrasado, não some, e bloco com menos de um minuto contado não se conclui: pula-se, e ele também vai para os atrasados, salvo se o tópico já estava estudado; replanejar ordena os atrasados pelo peso da matéria e põe cada um no dia de menor carga em minutos (repetir a matéria no mesmo dia pesa como uma hora e meia a mais), sem mexer no que já foi feito nem no bloco em curso; acertar sobe o intervalo (1, 7, 30, dominado) e errar volta para 1; o cronômetro guarda o instante em que começou, e não um contador, para sobreviver ao app em segundo plano.",
     "Pilha sugerida para iPhone: SwiftUI com SwiftData; ActivityKit para o cronômetro na Tela Bloqueada e na Dynamic Island; notificações locais para o bloco da vez e as revisões do dia; WidgetKit com o plano de hoje; CloudKit privado para sincronizar iPhone, iPad e Mac.",
     "Integrações: importar o edital em PDF e destrinchar em tópicos (com conferência da pessoa antes de valer), o calendário do sistema para reservar os horários de estudo, e exportar o plano em PDF e CSV.",
-    "Corte do primeiro lançamento: uma prova, tópicos digitados ou colados, plano do dia, cronômetro, replanejar e revisões de 1, 7 e 30 dias. Ficam para depois: importação de PDF, vários editais, estatística por banca e estudo em grupo."
+    "Corte do primeiro lançamento: uma prova, tópicos digitados ou colados, plano do dia, cronômetro, replanejar e revisões de 1, 7 e 30 dias. Ficam para depois: importação de PDF, vários editais, estatística por banca e estudo em grupo. A maquete mostra a visão completa: o que fica para depois já aparece nas folhas."
   ]
 }
 </script>
@@ -199,7 +199,7 @@ body.stand-recolhida .stand-pilula{display:inline-flex}
    Tese visual: papel branco e tinta azul-marinho, que também carimba as ações principais; azul de caneta para o que é
    agora e para o que se toca no meio do texto; caixas desenhadas a traço, sem
    sombra; toda lista é folha de caderno, com margem à esquerda para a hora, a sigla e a marcação; tempo em
-   monoespaçada. O amarelo de marca-texto nunca é fundo de botão: é o traço atrás do que importa. Vermelho só no atraso.
+   monoespaçada. O amarelo de marca-texto nunca é fundo de botão: é o traço atrás do que importa. Vermelho no atraso, no erro e no maior risco.
    Tese de interação: seco e exato como riscar um item. Toque responde em 120 ms; telas, folhas e blocos que mudam de
    dia levam 300 ms numa curva sem quique; saídas em 200 ms. O relógio só troca o dígito: nada pulsa, nada pisca. */
 :root{
@@ -622,7 +622,7 @@ body{background:var(--ed-papel)}
       <ul class="ed-leva">
         <li class="ed-leva-i"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-certo"/></svg><span class="ed-leva-t">Replanejar sem limite<span class="ed-leva-s">Atrasou? O plano se refaz em um toque, quantas vezes precisar.</span></span></li>
         <li class="ed-leva-i"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-certo"/></svg><span class="ed-leva-t">Revisões de 1, 7 e 30 dias<span class="ed-leva-s">Agendadas sozinhas a cada bloco concluído.</span></span></li>
-        <li class="ed-leva-i"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-certo"/></svg><span class="ed-leva-t">Vários editais no mesmo calendário<span class="ed-leva-s">Concurso e residência sem um atropelar o outro.</span></span></li>
+        <li class="ed-leva-i"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-certo"/></svg><span class="ed-leva-t">Várias provas, cada uma com o seu plano<span class="ed-leva-s">Concurso e residência lado a lado, sem misturar.</span></span></li>
       </ul>
       <div class="ed-opcoes" role="group" aria-label="Plano">
         <button type="button" class="ed-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><i class="ed-opcao-m" aria-hidden="true"></i><span class="ed-opcao-t">Anual<span class="ed-etq">33% a menos</span><span class="ed-opcao-s">equivale a R$ 19,92 por mês</span></span><b class="ed-opcao-n ed-mono">R$ 239</b></button>

@@ -13,19 +13,19 @@
   "tipo": "App celular",
   "tela": "celular",
   "ordem": 22,
-  "resumo": "Fale; a nota chega escrita, organizada e resumida. Um gravador que transcreve no próprio aparelho, separa quem falou, resume em tópicos e tira as decisões e as tarefas combinadas, para quem vive em reunião, aula e atendimento. O argumento que fecha a venda é a privacidade: o áudio não sai do iPhone.",
+  "resumo": "Fale, e a nota chega escrita, organizada e resumida. Um gravador que transcreve no próprio aparelho, separa quem falou, resume em tópicos e tira as decisões e as tarefas combinadas, para quem vive em reunião, aula e ligação. O argumento que fecha a venda é a privacidade: o áudio não sai do iPhone.",
   "proposta": "Pago",
-  "modelo_negocio": "Assinatura de R$ 24,90 por mês ou R$ 199 por ano, com 7 dias grátis para usar tudo. Sem assinar, o app grava e toca; a transcrição, o resumo e a busca ficam no plano. Paga quem economiza uma hora de ata por dia.",
+  "modelo_negocio": "Assinatura de R$ 24,90 por mês ou R$ 199 por ano, com 7 dias grátis para usar tudo. Sem assinar, o app grava e toca; a transcrição, o resumo e a busca ficam no plano. Paga quem economiza uma hora de ata por dia. Na maquete, tudo aparece liberado, como nos 7 dias grátis.",
   "referencias": [
     {"nome": "Otter", "modelo": "freemium"},
     {"nome": "AudioPen", "modelo": "pago"},
     {"nome": "Whisper", "modelo": "open source"}
   ],
-  "direcao": "Tinta e papel. Marca fictícia: Dito. Quase monocromático: branco-osso, preto-tinta e cinzas quentes; o único vermelho é o de gravar: o ponto que pisca enquanto a gravação corre e o botão de começar. O que foi dito aparece em serifa do sistema, para se ler como página de livro; os controles ficam em sans, discretos. A assinatura é a onda de voz em barras finas (viva enquanto grava, parada e navegável depois) e a palavra corrente acesa durante a reprodução. No celular são três telas (gravar, a nota, a biblioteca); em tela ampla, a biblioteca fica à esquerda, a nota no centro e o resumo com as tarefas à direita; enquanto grava, a coluna da direita mostra as frases chegando, e na biblioteca ela vira a prévia da nota escolhida. O tema escuro é o estúdio à noite: carvão e texto marfim.",
+  "direcao": "Tinta e papel. Marca fictícia: Dito. Quase monocromático: branco-osso, preto-tinta e cinzas quentes; o único vermelho é o de gravar: o ponto aceso enquanto a gravação corre e o botão de começar. O que foi dito aparece em serifa do sistema, para se ler como página de livro; os controles ficam em sans, discretos. A assinatura é a onda de voz em barras finas (viva enquanto grava, parada e navegável depois) e a palavra corrente acesa durante a reprodução. No celular são três telas (gravar, a nota, a biblioteca); em tela ampla, a biblioteca fica à esquerda, a nota no centro e o resumo com as tarefas à direita; enquanto grava, a coluna da direita mostra as frases chegando, e na biblioteca ela vira a prévia da nota escolhida. O tema escuro é o estúdio à noite: carvão e texto marfim.",
   "estados": [
     {
       "nome": "Gravar",
-      "descricao": "A gravação em curso: o tempo grande, a onda viva, quem está falando e a última frase já transcrita aparecendo embaixo. Um toque marca um momento, o botão do meio pausa e retoma, e terminar mostra um breve transcrevendo antes de abrir a nota pronta, com o que foi dito até ali, os momentos marcados e as tarefas que saíram da conversa. O selo lembra que a transcrição acontece neste aparelho."
+      "descricao": "A gravação em curso: o tempo grande, a onda viva, quem está falando e a última frase já transcrita aparecendo embaixo. Um toque marca um momento, o botão do meio pausa e retoma, e terminar mostra por um instante que a nota está sendo escrita e então abre a nota pronta, com o que foi dito até ali, os momentos marcados e as tarefas que saíram da conversa. O selo lembra que a transcrição acontece neste aparelho."
     },
     {
       "nome": "Nota",
@@ -46,7 +46,7 @@
     {"nome": "Carvão (noite)", "hex": "#161412"},
     {"nome": "Marfim (noite)", "hex": "#efe9dc"}
   ],
-  "tipografia": "O que foi dito em serifa do sistema (New York), 18 px com entrelinha de 1,6, como página de livro; títulos em serifa de 28 a 38 px, peso 600. Controles, nomes e horários em sans do sistema; o tempo da gravação em 68 px, peso 300, com algarismos tabulares.",
+  "tipografia": "O que foi dito em serifa do sistema (New York), 18 px com entrelinha de 1,6, como página de livro; títulos em serifa de 26 a 38 px, peso 600. Controles, nomes e horários em sans do sistema; o tempo da gravação em 68 px, peso 300, com algarismos tabulares.",
   "componentes": [
     "Tempo da gravação em algarismos grandes",
     "Onda de voz viva em barras finas",
@@ -64,7 +64,7 @@
     "Folha de planos"
   ],
   "replicar": [
-    "Modelo de dados: Nota (título, início, duração, pasta), Pessoa (rótulo, nome dado), Fala (pessoa, início, palavras com o tempo de cada uma), Momento (instante marcado), e Resumo, Decisao e Tarefa (texto, responsável, prazo, feita) derivados da transcrição e editáveis. O áudio fica em arquivo local; a nota só guarda o caminho.",
+    "Modelo de dados: Nota (título, início, duração, pasta), Pessoa (rótulo, nome dado), Fala (pessoa, início, palavras com o tempo de cada uma), Momento (instante marcado), e Resumo, Decisão e Tarefa (texto, responsável, prazo, feita) derivados da transcrição e editáveis. O áudio fica em arquivo local; a nota só guarda o caminho.",
     "Regras que pegam: a transcrição roda no aparelho e a nota já nasce utilizável enquanto o resumo termina; trocar o nome de uma pessoa vale para a nota inteira, inclusive nas tarefas; tocar numa palavra leva o áudio para o tempo dela; momento marcado durante a gravação vira âncora na onda e na fala; apagar a nota apaga o áudio.",
     "Pilha sugerida para iPhone: SwiftUI com SwiftData; AVAudioEngine para gravar e medir a onda; transcrição e separação de vozes com modelo embarcado via Core ML, sem rede; resumo com modelo de linguagem também embarcado; ActivityKit para a gravação na Tela Bloqueada; busca com índice local de texto.",
     "Integrações: exportar em texto, Markdown e PDF; mandar as tarefas para os Lembretes; atalhos do sistema para começar a gravar; importar um áudio já gravado para transcrever.",
@@ -607,7 +607,7 @@ body{background:var(--dt-osso)}
   </g>
   <path d="M170 20v140" stroke="#191714" stroke-opacity=".14"/>
   <text x="184" y="40" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="10" font-weight="700" fill="#191714">Marina</text>
-  <text x="224" y="40" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="9" fill="#8d877d">00:04</text>
+  <text x="224" y="40" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="9" fill="#706c64">00:04</text>
   <rect x="184" y="52" width="46" height="7" rx="3.5" fill="#191714" opacity=".8"/><rect x="236" y="49" width="34" height="13" rx="3" fill="#191714"/><rect x="276" y="52" width="24" height="7" rx="3.5" fill="#8d877d" opacity=".7"/>
   <rect x="184" y="70" width="70" height="7" rx="3.5" fill="#8d877d" opacity=".7"/><rect x="260" y="70" width="38" height="7" rx="3.5" fill="#8d877d" opacity=".7"/>
   <rect x="184" y="88" width="58" height="7" rx="3.5" fill="#8d877d" opacity=".7"/>
@@ -681,17 +681,17 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
       falas: [["m", "Bom, o objetivo de hoje é fechar o cronograma do site da Casa Aroeira. A cliente quer no ar antes da feira, que abre no sábado da semana que vem."],
         ["c", "Do meu lado, o layout da página inicial está pronto. Faltam a página de produto e o carrinho, que dependem das fotos."],
         ["h", "As fotos novas chegam quando? Sem elas eu não fecho o tamanho das imagens no código."],
-        ["m", "A fotógrafa prometeu para quinta. Se atrasar, a gente usa as antigas e troca depois."],
-        ["c", "Então eu entrego produto e carrinho na segunda. Só preciso que a cliente aprove a paleta até sexta."],
-        ["h", "Com o layout na segunda, eu subo a versão de teste na quarta. O pagamento é o que mais me preocupa: a conta da loja ainda não foi aprovada."],
-        ["m", "Deixa que eu cobro a cliente hoje sobre a conta. Decidido, então: teste na quarta, revisão na sexta e publicação na quinta da semana que vem, dois dias antes da feira."],
+        ["m", "A fotógrafa prometeu para amanhã. Se atrasar, a gente usa as antigas e troca depois."],
+        ["c", "Então eu entrego produto e carrinho na segunda. Só preciso que a cliente aprove a paleta antes disso."],
+        ["h", "Com o layout na segunda, eu subo a versão de teste na terça. O pagamento é o que mais me preocupa: a conta da loja ainda não foi aprovada."],
+        ["m", "Deixa que eu cobro a cliente hoje sobre a conta. Decidido, então: teste na terça, revisão na quarta e publicação na quinta da semana que vem, dois dias antes da feira."],
         ["p", "E o texto das páginas? Eu consigo revisar tudo até terça, se alguém me mandar o arquivo hoje."],
         ["m", "Mando agora, assim que a gente sair daqui."]],
-      curto: ["O site da Casa Aroeira entra no ar na quinta da semana que vem, dois dias antes da feira.", "Layout de produto e carrinho na segunda; versão de teste na quarta.", "Dois riscos: as fotos novas, prometidas para quinta, e a conta de pagamento, ainda sem aprovação."],
+      curto: ["O site da Casa Aroeira entra no ar na quinta da semana que vem, dois dias antes da feira.", "Layout de produto e carrinho na segunda; versão de teste na terça.", "Dois riscos: as fotos novas, prometidas para amanhã, e a conta de pagamento, ainda sem aprovação."],
       longo: ["O site da Casa Aroeira entra no ar na quinta da semana que vem, dois dias antes da feira.", "A página inicial está pronta; produto e carrinho dependem das fotos e ficam para segunda.", "Se as fotos novas atrasarem, o site sai com as antigas e elas são trocadas depois.",
-        "A cliente precisa aprovar a paleta até sexta.", "Versão de teste na quarta e revisão geral na sexta.", "A conta de pagamento da loja ainda não foi aprovada: é o maior risco do prazo.", "Os textos das páginas serão revisados até terça."],
-      decisoes: ["Publicar na quinta da semana que vem, com teste na quarta e revisão na sexta.", "Sem fotos novas até quinta, seguir com as antigas."],
-      tarefas: [["Cobrar a cliente sobre a conta de pagamento", "m", "hoje"], ["Entregar as páginas de produto e carrinho", "c", "segunda"], ["Subir a versão de teste", "h", "quarta"], ["Revisar os textos das páginas", "p", "terça"], ["Mandar o arquivo dos textos", "m", "hoje"]]},
+        "A cliente precisa aprovar a paleta antes da entrega de segunda.", "Versão de teste na terça e revisão geral na quarta.", "A conta de pagamento da loja ainda não foi aprovada: é o maior risco do prazo.", "Os textos das páginas serão revisados até terça."],
+      decisoes: ["Publicar na quinta da semana que vem, com teste na terça e revisão na quarta.", "Sem fotos novas até amanhã, seguir com as antigas."],
+      tarefas: [["Cobrar a cliente sobre a conta de pagamento", "m", "hoje"], ["Entregar as páginas de produto e carrinho", "c", "segunda"], ["Subir a versão de teste", "h", "terça"], ["Revisar os textos das páginas", "p", "terça"], ["Mandar o arquivo dos textos", "m", "hoje"]]},
     {id: "aula", titulo: "Aula 7: tipografia para telas", pasta: "Curso", util: 1, hora: "19:10", durTxt: "52 min", pessoas: {a: "Professora Lia"}, marcos: [1],
       falas: [["a", "Corpo de texto em tela pede entrelinha mais aberta do que no papel."], ["a", "A regra das fotos de capa é simples: nunca texto em cima de rosto."], ["a", "Para a semana que vem, cada um traz três pares de fontes e explica a escolha."]],
       curto: ["Entrelinha em tela é mais aberta do que no papel.", "Exercício: três pares de fontes para a próxima aula."], longo: [], decisoes: [], tarefas: [["Escolher três pares de fontes e justificar", "=Você", "próxima aula"]]},
@@ -706,7 +706,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
       curto: ["Menos projetos, mais história em cada um.", "Página de sobre mais curta, na primeira pessoa."], longo: [], decisoes: [], tarefas: []}
   ];
   var PASTAS = ["Todas", "Estúdio", "Curso", "Fornecedores", "Pessoal"];
-  function duracaoTxt(ms) { var seg = Math.round(ms / 1000); return seg < 60 ? seg + " s" : Math.floor(seg / 60) + " min " + d2(seg % 60) + " s"; }
+  function duracaoTxt(ms) { var seg = Math.floor(ms / 1000); return seg < 60 ? seg + " s" : Math.floor(seg / 60) + " min " + d2(seg % 60) + " s"; }
   // cada nota ganha o tempo de cada palavra (a reprodução anda pelo relógio) e a sua onda parada. "ate" é a duração gravada, quando se sabe
   function preparar(n, k, ate) {
     var t = 400, i, j;
@@ -1126,7 +1126,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     }
     else if (acao === "primeiro-achado") { var achado = $(".dt-trans mark"); if (achado) { toc.seguir = false; achado.scrollIntoView({block: "center", behavior: calmo ? "auto" : "smooth"}); } }
     else if (acao === "buscar-nota") { ui.buscando = !ui.buscando; if (!ui.buscando) ui.buscaNota = ""; desenhar(); if (ui.buscando) $("#dt-busca-nota").focus({preventScroll: true}); }
-    else if (acao === "compartilhar") avisar("Maquete: aqui abriria a folha de compartilhar, com texto e PDF.");
+    else if (acao === "compartilhar") avisar("Maquete: aqui abriria a folha de compartilhar, com texto, Markdown e PDF.");
     else if (acao === "resumo") { ui.resumo = id; desenhar(); }
     else if (acao === "tarefa") { var i = +b.getAttribute("data-i"); n.feitas[i] = !n.feitas[i]; desenhar(); }
     else if (acao === "pessoa") folhaPessoa(id);

@@ -1,7 +1,7 @@
 {
   "name": "Tempero",
   "short_name": "Tempero",
-  "description": "Suas receitas limpas e à prova de mão suja. Guarda a receita de qualquer lugar sem anúncio nem história de vida, cozinha junto com você (um passo por vez, em letra grande, com cronômetro em cada passo e porções que recalculam as quantidades) e monta a lista de compras da semana por corredor do mercado.",
+  "description": "Suas receitas limpas e à prova de mão suja. Guarda a receita de qualquer lugar sem anúncio nem história de vida, cozinha junto com você (um passo por vez, em letra grande, com cronômetro nos passos que pedem tempo e porções que recalculam as quantidades) e monta a lista de compras da semana por corredor do mercado.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",

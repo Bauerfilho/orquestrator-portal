@@ -15,7 +15,7 @@
   "ordem": 24,
   "resumo": "Um diário que cabe em cinco minutos: uma página por dia, com uma pergunta para destravar, e a devolução certa na hora certa: o que você escreveu neste mesmo dia há um, dois e cinco anos. Para quem quer escrever e nunca mantém, e para quem não quer esquecer o ano que viveu.",
   "proposta": "Pago",
-  "modelo_negocio": "Assinatura de R$ 9,90 por mês ou R$ 79,90 por ano, ou vitalício por R$ 249, com 14 dias para usar tudo. Paga quem já tem meses de páginas guardadas: o que se vende é a cópia cifrada, vários diários e o livro do ano pronto para imprimir.",
+  "modelo_negocio": "Escrever é grátis: o diário de uma página por dia não cobra nada. A Página Completa custa R$ 9,90 por mês, R$ 79,90 por ano ou R$ 249 uma vez só, para sempre, com 14 dias para experimentar. Paga quem já tem meses de páginas guardadas: o que se vende é a cópia cifrada, vários diários e o livro do ano pronto para imprimir.",
   "referencias": [
     {"nome": "Day One", "modelo": "freemium"},
     {"nome": "Journey", "modelo": "freemium"},
@@ -33,7 +33,7 @@
     },
     {
       "nome": "Reler",
-      "descricao": "O ano num calendário de pontos de tinta (cada ponto é uma página; o de hoje é bordô), com páginas, sequência e palavras somadas. Passar o dedo pelos pontos espia cada dia, e um toque abre a página; a busca encontra a palavra dentro do que foi escrito, o humor acende os dias iguais, e o Livro do ano mostra a capa e quantas páginas ele já tem."
+      "descricao": "O ano num calendário de pontos de tinta (cada ponto é uma página; o de hoje é bordô), com páginas, sequência e palavras somadas. Passar o dedo pelos pontos espia cada dia, e o botão Abrir leva à página; a busca encontra a palavra dentro do que foi escrito, o humor acende os dias iguais, e o Livro do ano mostra a capa e quantas páginas ele já tem."
     }
   ],
   "paleta": [
@@ -46,7 +46,7 @@
     {"nome": "Carvão quente (noite)", "hex": "#1b1714"},
     {"nome": "Bordô claro (noite)", "hex": "#dd8090"}
   ],
-  "tipografia": "Serifa do sistema em tudo (New York no iPhone e no Mac; Iowan e Palatino como reserva). Dia do mês em 84 px, peso 500 e tracking de -0,03 em; texto da página em 19 px com entrelinha de 1,65; datas e rótulos em versalete com espaçamento de 0,14 em; números do contador tabulares.",
+  "tipografia": "Serifa do sistema em tudo (New York no iPhone e no Mac; Iowan e Palatino como reserva). Dia do mês em 84 px, peso 500 e tracking de -0,03 em; texto da página em 19 px com entrelinha de 1,65; datas e rótulos em versalete com espaçamento de 0,12 a 0,16 em; números do contador tabulares.",
   "componentes": [
     "Data grande com a fita do marcador",
     "Pergunta do dia que se troca",
@@ -64,11 +64,11 @@
     "Folha de planos"
   ],
   "replicar": [
-    "Modelo de dados: Diario (nome), Pagina (dia civil único por diário, texto, humor de 1 a 5, lugar e tempo opcionais, criada em, editada em) e Pergunta (texto, última vez usada). Sequência, total de palavras e o calendário são sempre derivados das páginas; nunca guarde esses números.",
+    "Modelo de dados: Diário (nome), Página (dia civil único por diário, texto, humor de 1 a 5, lugar e tempo opcionais, criada em, editada em) e Pergunta (texto, última vez usada). Sequência, total de palavras e o calendário são sempre derivados das páginas; nunca guarde esses números.",
     "Regras que pegam: o dia é o dia civil do aparelho quando a página nasce (viajar de fuso não cria nem apaga dia); uma página por dia por diário, e editar depois não muda a data; página vazia não conta para a sequência; \"Neste dia\" compara dia e mês, e 29 de fevereiro aparece em 28 nos anos comuns.",
     "Pilha sugerida para iPhone: SwiftUI com SwiftData no aparelho e CloudKit privado para a cópia cifrada; TextKit para o editor; notificação local na hora escolhida para escrever; bloqueio por Face ID com LocalAuthentication; tempo e lugar por WeatherKit e CoreLocation, só com permissão.",
     "Integrações: importar de outros diários por arquivo (JSON e texto), exportar tudo em texto simples a qualquer momento, e o livro do ano em PDF com capa, pronto para gráfica sob demanda.",
-    "Corte do primeiro lançamento: um diário, texto puro, pergunta do dia, humor, Neste dia, calendário do ano e busca. Ficam para depois: fotos, vários diários, livro impresso, áudio e compartilhamento."
+    "Corte do primeiro lançamento: um diário, texto puro, pergunta do dia, humor, Neste dia, calendário do ano e busca. Ficam para depois: fotos, vários diários, livro impresso, áudio e compartilhamento. A maquete mostra o produto completo: o que fica para depois já aparece na folha de planos."
   ]
 }
 </script>
@@ -586,7 +586,7 @@ body{background:var(--pg-papel)}
         <li>Vários diários<small>Um para o trabalho, um de viagem, um do bebê.</small></li>
       </ul>
       <div class="pg-planos" role="group" aria-label="Como pagar">
-        <button type="button" class="pg-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Por ano<small>R$ 6,66 por mês, 33% a menos</small></span><b class="pg-opcao-n pg-num">R$ 79,90</b></button>
+        <button type="button" class="pg-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Por ano<small>R$ 6,66 por mês, 32% a menos</small></span><b class="pg-opcao-n pg-num">R$ 79,90</b></button>
         <button type="button" class="pg-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Por mês<small>sem fidelidade</small></span><b class="pg-opcao-n pg-num">R$ 9,90</b></button>
         <button type="button" class="pg-opcao" data-acao="plano" data-id="sempre" aria-pressed="false"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Para sempre<small>uma vez só, sem renovar</small></span><b class="pg-opcao-n pg-num">R$ 249</b></button>
       </div>
@@ -772,7 +772,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   function mare(nivel, ativo, acao) {
     var s = svg("svg", {viewBox: "0 0 26 26", "aria-hidden": "true"}), id = "pg-m" + nivel + (acao === "humor" ? "e" : acao === "filtro" ? "f" : "h");
     var corte = svg("clipPath", {id: id});
-    corte.appendChild(svg("rect", {x: 0, y: 26 - (nivel - 1) * 6.5 - (nivel === 1 ? 0 : 0), width: 26, height: 26}));
+    corte.appendChild(svg("rect", {x: 0, y: 26 - (nivel - 1) * 6.5, width: 26, height: 26}));
     s.appendChild(corte);
     s.appendChild(svg("circle", {"class": "pg-agua", cx: 13, cy: 13, r: 10.2, "clip-path": "url(#" + id + ")"}));
     s.appendChild(svg("circle", {"class": "pg-aro", cx: 13, cy: 13, r: 10.2}));

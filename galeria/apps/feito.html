@@ -13,7 +13,7 @@
   "tipo": "App celular",
   "tela": "celular",
   "ordem": 20,
-  "resumo": "Tarefas pessoais para quem anda com a cabeça cheia: você escreve do jeito que fala (\"buscar o terno sexta 18h #casa\"), o Feito entende a data, a hora e o projeto, e devolve cada coisa no dia certo, com o dia de hoje numa lista curta e a noite separada do resto.",
+  "resumo": "Tarefas pessoais para quem anda com a cabeça cheia: você escreve do jeito que fala (\"buscar o terno sexta 18h #casa\"), o Feito entende a data, a hora e a área, e devolve cada coisa no dia certo, com o dia de hoje numa lista curta e a noite separada do resto.",
   "proposta": "Pago",
   "modelo_negocio": "Compra única de R$ 59,90 no iPhone (R$ 119,90 com iPad e Mac), sem assinatura e sem conta: 14 dias para usar tudo e, depois, só leitura até comprar. Quem paga é a pessoa que já desistiu de apps de tarefas que cobram todo mês.",
   "referencias": [
@@ -21,7 +21,7 @@
     {"nome": "Todoist", "modelo": "freemium"},
     {"nome": "Super Productivity", "modelo": "open source", "licenca": "MIT"}
   ],
-  "direcao": "Claro e silencioso, na linguagem do iPhone. Marca fictícia: Feito. Fundo gelo quase branco, tinta azul-noite e um único azul-cobalto que só aparece onde há ação: o botão de nova tarefa, o círculo que se fecha ao concluir e a aba em que você está. Títulos grandes e apertados na fonte do sistema, listas agrupadas em cartões de 22 px sem borda, barra de abas flutuante de vidro e folhas que sobem de baixo. A assinatura visual é a faixa índigo de \"Esta noite\", que divide o dia em dois, e o anel do cabeçalho, que se completa conforme as tarefas saem. No celular é uma coluna com a barra de vidro; em tela ampla vira três colunas, como num Mac: listas e projetos, a lista do dia e o detalhe da tarefa.",
+  "direcao": "Claro e silencioso, na linguagem do iPhone. Marca fictícia: Feito. Fundo gelo quase branco, tinta azul-noite e um único azul-cobalto, reservado para ação e progresso: o botão de nova tarefa, o círculo que se fecha ao concluir, a aba em que você está e o anel do dia. Títulos grandes e apertados na fonte do sistema, listas agrupadas em cartões de 22 px sem borda, barra de abas flutuante de vidro e folhas que sobem de baixo. A assinatura visual é a faixa índigo de \"Esta noite\", que divide o dia em dois, e o anel do cabeçalho, que se completa conforme as tarefas saem. No celular é uma coluna com a barra de vidro; em tela ampla vira três colunas, como num Mac: listas e projetos, a lista do dia e o detalhe da tarefa.",
   "estados": [
     {
       "nome": "Hoje",
@@ -29,7 +29,7 @@
     },
     {
       "nome": "Entrada rápida",
-      "descricao": "A folha de captura: você digita em português comum e o Feito marca ao vivo o que entendeu (quando, hora, prazo, projeto, repetição). Os atalhos completam a frase, Enter adiciona, e a tarefa aparece na lista certa, já destacada."
+      "descricao": "A folha de captura: você digita em português comum e o Feito marca ao vivo o que entendeu (quando, hora, prazo, área ou projeto, repetição). Os atalhos completam a frase, Enter adiciona, e a tarefa aparece na lista certa, já destacada."
     },
     {
       "nome": "Planejar",
@@ -47,7 +47,7 @@
     {"nome": "Âmbar de prazo", "hex": "#a85f05"},
     {"nome": "Vermelho de atraso", "hex": "#c9302f"}
   ],
-  "tipografia": "Fonte do sistema (San Francisco no iPhone e no Mac). Título de tela em 800 a 34 px com entrelinha justa e tracking de -0,035 em; texto de tarefa em 17 px, o corpo padrão do iOS; metadados em 13 px; números do anel e das datas na variante arredondada, sempre tabulares.",
+  "tipografia": "Fonte do sistema (San Francisco no iPhone e no Mac). Título de tela em 800 a 34 px com entrelinha justa e tracking de -0,035 em; texto de tarefa em 17 px, o corpo padrão do iOS; metadados em 13 px; números do anel e das datas na variante arredondada; os do anel, tabulares.",
   "componentes": [
     "Título grande que recolhe na barra de vidro ao rolar",
     "Anel de progresso do dia",
@@ -66,7 +66,7 @@
   ],
   "replicar": [
     "Modelo de dados: Tarefa (título, notas, quando: data ou nulo, parte do dia: dia ou noite, hora opcional, prazo opcional, repetição, concluída em), Subtarefa (texto, feita), Projeto (nome, área) e Área (nome, cor). Hoje, Em breve e Entrada são consultas sobre a data, nunca listas guardadas: tarefa sem data é Entrada, com data até hoje é Hoje.",
-    "A leitura da frase é local, por regras, sem servidor: dia da semana, \"amanhã\", \"dia 20\", \"20/11\", hora (\"18h\", \"9h30\"), prazo (\"até sexta\"), repetição (\"toda semana\") e projeto (\"#casa\"). Mostre sempre o que foi entendido antes de salvar e deixe desfazer cada marca: regra que erra calada custa a confiança.",
+    "A leitura da frase é local, por regras, sem servidor: dia da semana, \"amanhã\", \"dia 20\", \"20/11\", hora (\"18h\", \"9h30\"), prazo (\"até sexta\"), repetição (\"toda semana\") e área ou projeto (\"#casa\"). Mostre sempre o que foi entendido antes de salvar e deixe desfazer cada marca: regra que erra calada custa a confiança.",
     "Pilha sugerida: SwiftUI com SwiftData no aparelho e sincronização por CloudKit (sem conta própria); lembretes por notificação local; atalho de captura pela Tela Bloqueada e pelo botão de Ação. O Mac e o iPad reaproveitam o mesmo modelo com a navegação em três colunas.",
     "Regras que pegam: concluir uma tarefa que repete cria a próxima ocorrência e mantém o histórico; atrasada continua em Hoje até ser decidida (fazer, adiar ou apagar); \"Esta noite\" é só uma parte do dia, não outra data; desfazer vale para concluir, mover e apagar.",
     "Corte do primeiro lançamento: Hoje, Entrada, Em breve, projetos simples, entrada rápida e compra única. Ficam para depois: tarefas compartilhadas, calendário embutido, etiquetas, anexos e widgets."
@@ -628,7 +628,7 @@ body{background:var(--f-fundo)}
       </div>
       <ul class="f-vantagens">
         <li><svg class="f-ic" aria-hidden="true"><use href="#f-i-infinito"/></svg><span>Tarefas, projetos e áreas sem limite<small>O teste de 14 dias já vem com tudo liberado.</small></span></li>
-        <li><svg class="f-ic" aria-hidden="true"><use href="#f-i-frase"/></svg><span>Entrada rápida que entende português<small>Data, hora, prazo, repetição e projeto, direto da frase.</small></span></li>
+        <li><svg class="f-ic" aria-hidden="true"><use href="#f-i-frase"/></svg><span>Entrada rápida que entende português<small>Data, hora, prazo, repetição e área, direto da frase.</small></span></li>
         <li><svg class="f-ic" aria-hidden="true"><use href="#f-i-nuvem"/></svg><span>Suas tarefas no iCloud<small>Sem criar conta: usa a que já está no aparelho.</small></span></li>
       </ul>
       <div class="f-folha-pe"><button type="button" class="f-btn f-btn-pri f-btn-largo" data-acao="comprar">Comprar por R$ 59,90</button></div>
@@ -734,7 +734,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     T("Separar os documentos do imposto de renda", {noite: true, area: "casa", projeto: "imposto"}),
     T("Ler 20 páginas do livro do clube", {noite: true, area: "pessoal", repetir: "todo dia"}),
     T("Regar as plantas da varanda", {feita: true, area: "casa", repetir: "a cada 3 dias"}),
-    T("Responder o e-mail da contadora", {feita: true, area: "trabalho"}),
+    T("Responder ao e-mail da contadora", {feita: true, area: "trabalho"}),
     T("Trocar o plano de internet", {dia: null}),
     T("Ver preço de passagem para Salvador", {dia: null, area: "pessoal"}),
     T("Perguntar ao síndico sobre a vaga de visitantes", {dia: null, area: "casa"}),

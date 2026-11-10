@@ -21,7 +21,7 @@
     {"nome": "Hevy", "modelo": "freemium"},
     {"nome": "wger", "modelo": "open source"}
   ],
-  "direcao": "Ferro e giz. Marca fictícia: Carga. Grafite quase preto e branco de giz, com um verde-lima elétrico que só aparece em ação e em conquista (o botão de concluir, o anel de descanso, o selo de recorde, o ponto de hoje no gráfico). Os números mandam: carga e repetições na variante arredondada e pesada da fonte do sistema, em tamanho de placar e sempre tabulares; cantos firmes, chapas lisas, nenhuma decoração. A assinatura é o placar da carga com os passos de ajuste dos dois lados, que vira o anel de descanso assim que a série é concluída. No celular é uma tela por vez (a ficha, a série, a evolução); em tela ampla as três ficam lado a lado, como uma bancada: a ficha do treino, a série ativa e a evolução do exercício. O tema claro é a academia de manhã: concreto claro, tinta grafite e a lima escurecida para manter o contraste.",
+  "direcao": "Ferro e giz. Marca fictícia: Carga. Grafite quase preto e branco de giz, com um verde-lima elétrico reservado para a marca, a ação e a conquista (o botão de concluir, o anel de descanso, o selo de recorde, o ponto de hoje no gráfico). Os números mandam: carga e repetições na variante arredondada e pesada da fonte do sistema, em tamanho de placar e sempre tabulares; cantos firmes, chapas lisas, nenhuma decoração. A assinatura é o placar da carga com os passos de ajuste dos dois lados, que vira o anel de descanso assim que a série é concluída. No celular é uma tela por vez (a ficha, a série, a evolução); em tela ampla as três ficam lado a lado, como uma bancada: a ficha do treino, a série ativa e a evolução do exercício. O tema claro é a academia de manhã: concreto claro, tinta grafite e a lima escurecida para manter o contraste.",
   "estados": [
     {
       "nome": "Treino de hoje",
@@ -29,7 +29,7 @@
     },
     {
       "nome": "Série",
-      "descricao": "O exercício em andamento com a carga e as repetições enormes, ajuste em passos de 2,5 kg e de uma repetição, e Igual à última para repetir o treino anterior. Concluir a série marca a linha e vira o placar no anel de descanso, que conta de verdade (com +30 s e Pular); se a série bate o recorde, o selo aparece. Dá para trocar de exercício, desfazer a série marcada por engano e terminar o treino vendo volume, duração e recordes, para guardar ou descartar."
+      "descricao": "O exercício em andamento com a carga e as repetições enormes, ajuste no passo de carga do exercício (2,5 kg no supino) e de uma repetição, e Igual à última para repetir o treino anterior. Concluir a série marca a linha e vira o placar no anel de descanso, que conta de verdade (com +30 s e Pular); se a série bate o recorde, o selo aparece. Dá para trocar de exercício, desfazer a série marcada por engano e terminar o treino vendo volume, duração e recordes, para guardar ou descartar."
     },
     {
       "nome": "Evolução",
@@ -46,13 +46,13 @@
     {"nome": "Tinta grafite (manhã)", "hex": "#161816"},
     {"nome": "Lima escura (manhã)", "hex": "#3d6200"}
   ],
-  "tipografia": "Variante arredondada e pesada da fonte do sistema (SF Pro Rounded) nos números e nos títulos: a carga em até 104 px, peso 900, tracking de -0,04 em, sempre tabular; as repetições em 64 px. Texto corrido em sans do sistema, 16 e 17 px; rótulos em caixa alta de 11,5 px com espaçamento de 0,1 em.",
+  "tipografia": "Variante arredondada e pesada da fonte do sistema (SF Pro Rounded) nos números e nos títulos: a carga em até 104 px, peso 900, espaçamento de -0,04 em, sempre tabular; as repetições em 64 px. Texto corrido em sans do sistema, 16 e 17 px; rótulos em caixa alta de 11,5 px com espaçamento de 0,1 em.",
   "componentes": [
     "Ficha do treino com as séries de cada exercício",
     "Semana com os treinos A, B e C",
     "Botão de começar na zona do polegar",
     "Placar da carga com passos de ajuste",
-    "Passo a passo de repetições",
+    "Ajuste de repetições de uma em uma",
     "Marcadores de série com selo de recorde",
     "Igual à última",
     "Anel de descanso com +30 s e Pular",
@@ -64,11 +64,11 @@
     "Resumo do treino e folha de planos"
   ],
   "replicar": [
-    "Modelo de dados: Exercicio (nome, passo de carga), Ficha (nome, itens com séries e faixa de repetições), Sessao (ficha, início, fim) e Serie (sessão, exercício, carga, repetições, ordem). Volume, carga máxima estimada, recordes e frequência são sempre derivados das séries; nunca guarde esses números.",
+    "Modelo de dados: Exercício (nome, passo de carga), Ficha (nome, itens com séries e faixa de repetições), Sessão (ficha, início, fim) e Série (sessão, exercício, carga, repetições, ordem). Volume, carga máxima estimada, recordes e frequência são sempre derivados das séries; nunca guarde esses números.",
     "Regras que pegam: a carga máxima é estimada (carga vezes 1 mais repetições sobre 30) e sempre leva esse rótulo; recorde é a maior estimativa do exercício até aquela série, então a segunda série do dia pode bater a primeira; o descanso guarda a hora em que termina, e não um contador, para sobreviver ao app em segundo plano; desfazer uma série devolve o placar e cancela o descanso que ela abriu.",
     "Pilha sugerida para iPhone: SwiftUI com SwiftData; ActivityKit para o descanso na Tela Bloqueada e na Dynamic Island; app de Apple Watch com o mesmo placar; Swift Charts para a evolução; HealthKit só para gravar o treino, com permissão.",
     "Integrações: importar histórico em CSV de outros apps de treino, exportar tudo em CSV a qualquer momento, e compartilhar a ficha por link.",
-    "Corte do primeiro lançamento: três fichas, registro de série com descanso, recordes e o gráfico de carga máxima estimada. Ficam para depois: superséries, cargas por lado, relógio, fichas compartilhadas e planos de progressão."
+    "Corte do primeiro lançamento: três fichas, registro de série com descanso, recordes e o gráfico de carga máxima estimada. Ficam para depois: superséries, cargas por lado, o app de relógio, o compartilhamento de fichas e planos de progressão."
   ]
 }
 </script>
@@ -602,10 +602,10 @@ body{background:var(--cg-fundo)}
   <path d="M30 147l5 5 9-10" fill="none" stroke="#f3f5ef" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="54" cy="130" r="7" fill="#c4f23a" stroke="#121413" stroke-width="2"/>
   <rect x="60" y="130" width="34" height="34" rx="7" fill="none" stroke="#f3f5ef" stroke-width="2.4"/>
-  <rect x="100" y="130" width="34" height="34" rx="7" fill="none" stroke="#f3f5ef" stroke-opacity=".28" stroke-width="1.5"/>
-  <rect x="146" y="130" width="154" height="34" rx="8" fill="#c4f23a"/>
-  <path d="M198 147l5 5 9-10" fill="none" stroke="#121413" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="220" y="143" width="52" height="8" rx="4" fill="#121413"/>
+  <rect x="100" y="130" width="34" height="34" rx="7" fill="none" stroke="#f3f5ef" stroke-opacity=".28" stroke-width="1.5"/><rect x="140" y="130" width="34" height="34" rx="7" fill="none" stroke="#f3f5ef" stroke-opacity=".28" stroke-width="1.5"/>
+  <rect x="186" y="130" width="114" height="34" rx="8" fill="#c4f23a"/>
+  <path d="M206 147l5 5 9-10" fill="none" stroke="#121413" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="228" y="143" width="52" height="8" rx="4" fill="#121413"/>
 </svg>
 </template>
 <!-- stand:captura:inicio -->
@@ -651,19 +651,18 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
 
   // ── datas ──
   var agora = new Date(), HOJE = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-  var LETRA = ["D", "S", "T", "Q", "Q", "S", "S"], DIA3 = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  var DIA3 = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
   var MES3 = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
-  var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
   function em(n) { var d = new Date(HOJE); d.setDate(d.getDate() + n); return d; }
   function curta(d) { return d.getDate() + " " + MES3[d.getMonth()]; }
 
   // ── dados fictícios: três fichas de quem treina há um ano ──
-  // exercício: [nome, passo de carga em kg, ganho da carga máxima estimada em 12 semanas]
+  // exercício: [nome, passo de carga em kg]
   var EX = {
-    supino: ["Supino reto", 2.5, 9], inclinado: ["Supino inclinado", 2, 4], crucifixo: ["Crucifixo na máquina", 2.5, 8],
-    desenvolvimento: ["Desenvolvimento", 2.5, 6], polia: ["Tríceps na polia", 2.5, 5], testa: ["Tríceps testa", 2.5, 3],
-    puxada: ["Puxada alta", 2.5, 7], remada: ["Remada curvada", 2.5, 8], baixa: ["Remada baixa", 2.5, 7], rosca: ["Rosca direta", 2.5, 4], martelo: ["Rosca martelo", 2, 3],
-    agachamento: ["Agachamento", 5, 14], legpress: ["Leg press", 10, 30], terra: ["Levantamento terra", 5, 15], extensora: ["Cadeira extensora", 2.5, 8], flexora: ["Mesa flexora", 2.5, 6]
+    supino: ["Supino reto", 2.5], inclinado: ["Supino inclinado", 2], crucifixo: ["Crucifixo na máquina", 2.5],
+    desenvolvimento: ["Desenvolvimento", 2.5], polia: ["Tríceps na polia", 2.5], testa: ["Tríceps testa", 2.5],
+    puxada: ["Puxada alta", 2.5], remada: ["Remada curvada", 2.5], baixa: ["Remada baixa", 2.5], rosca: ["Rosca direta", 2.5], martelo: ["Rosca martelo", 2],
+    agachamento: ["Agachamento", 5], legpress: ["Leg press", 10], terra: ["Levantamento terra", 5], extensora: ["Cadeira extensora", 2.5], flexora: ["Mesa flexora", 2.5]
   };
   // item da ficha: [exercício, séries, faixa de repetições, carga da última vez, repetições da última vez]
   var FICHAS = [
@@ -893,7 +892,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     function px(i) { return L + (R - L) * i / (n - 1); }
     function py(x) { return B - (B - T) * (x - min) / (max - min); }
     var sv = svg("svg", {viewBox: "0 0 " + W + " " + A, role: "img", "aria-label": "Carga máxima estimada de " + EX[id][0] + " nas últimas doze sessões: de " + kg(v[0]) + " para " + kg(todosV[todosV.length - 1]) + " quilos"}), d = "", i;
-    var caixa = h("div", {"class": "cg-graf"}, sv), eixo = h("div", {"class": "cg-eixo cg-g-x", "aria-hidden": "true"}, [h("span", {text: "12 semanas atrás"}), h("span", {text: hoje ? "hoje" : "semana passada"})]);
+    var caixa = h("div", {"class": "cg-graf"}, sv), eixo = h("div", {"class": "cg-eixo cg-g-x", "aria-hidden": "true"}, [h("span", {text: "12 semanas atrás"}), h("span", {text: hoje ? "hoje" : "última sessão"})]);
     [min, (min + max) / 2, max].forEach(function (x) {
       sv.appendChild(svg("path", {"class": "cg-g-grade", d: "M" + L + " " + py(x).toFixed(1) + "H" + R}));
       // os rótulos são texto de verdade, por cima do desenho: o gráfico estica com a coluna e a letra continua de letra

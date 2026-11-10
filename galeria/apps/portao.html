@@ -15,13 +15,13 @@
   "ordem": 21,
   "resumo": "Acompanha os seus voos ao vivo e avisa do atraso antes do painel do aeroporto: ele olha o avião que vem fazer o seu voo e, se esse avião saiu tarde, você fica sabendo na hora. Para quem voa a trabalho toda semana e para quem busca gente no aeroporto.",
   "proposta": "Pago",
-  "modelo_negocio": "Assinatura Portão Antecipado de R$ 14,90 por mês ou R$ 99,90 por ano, com 7 dias grátis; para quem viaja pouco, um passe de viagem de R$ 9,90 que vale 7 dias e não renova. Quem paga é o viajante frequente, e o que se vende é uma coisa só: o aviso antes de todo mundo. Os valores são hipótese.",
+  "modelo_negocio": "Assinatura Portão Antecipado de R$ 14,90 por mês ou R$ 99,90 por ano, com 7 dias grátis na primeira vez; para quem viaja pouco e não quer assinar, um passe de viagem de R$ 9,90 que vale 7 dias e não renova. Quem paga é o viajante frequente, e o que se vende é uma coisa só: o aviso antes de todo mundo. Na maquete, esse aviso aparece ligado, como nos 7 dias grátis. Os valores são hipótese.",
   "referencias": [
     {"nome": "Flighty", "modelo": "pago"},
     {"nome": "Flightradar24", "modelo": "freemium"},
     {"nome": "OpenSky Network", "modelo": "dados abertos de aviação"}
   ],
-  "direcao": "Noite de aeroporto, na linguagem do iPhone. Marca fictícia: Portão. O fundo é um marinho quase preto e há um único âmbar de painel de embarque, que só acende o que está vivo naquele instante: a contagem regressiva, o horário que mudou e o avião no arco; todo o resto é tinta fria e cinza de pista. Códigos de aeroporto e horários vão em monoespaçada do sistema, grandes e tabulares, e o texto corrido em sans discreta; no tema claro o mesmo desenho vira a manhã do voo, com céu acinzentado, bilhete de papel branco, tinta marinho e âmbar escurecido para leitura. A assinatura é o cartão de embarque com o picote e os recortes de bilhete, a contagem em células de painel e o arco da rota com o avião andando pelo relógio. No celular é uma coluna com a barra de três abas embaixo; em tela ampla vira três colunas, como num Mac: a lista de voos, o voo ao vivo com o arco grande e, à direita, a linha do tempo e os avisos, e o cartão de embarque deita, com o canhoto ao lado.",
+  "direcao": "Noite de aeroporto, na linguagem do iPhone. Marca fictícia: Portão. No tema escuro, que é a cara do produto, o fundo é um marinho quase preto e o acento é um âmbar de painel de embarque, que acende o que está vivo naquele instante (a contagem regressiva, o horário que mudou, o avião no arco) e marca os destaques do Passaporte; todo o resto é tinta fria e cinza de pista. Códigos de aeroporto e horários vão em monoespaçada do sistema, grandes e tabulares, e o texto corrido em sans discreta; no tema claro o mesmo desenho vira a manhã do voo, com céu acinzentado, bilhete de papel branco, tinta marinho e âmbar escurecido para leitura. A assinatura é o cartão de embarque com o picote e os recortes de bilhete, a contagem em células de painel e o arco da rota com o avião andando pelo relógio. No celular é uma coluna com a barra de três abas embaixo; em tela ampla vira três colunas, como num Mac: a lista de voos, o voo ao vivo com o arco grande e, à direita, a linha do tempo e os avisos, e o cartão de embarque deita, com o canhoto ao lado.",
   "estados": [
     {
       "nome": "Meus voos",
@@ -29,7 +29,7 @@
     },
     {
       "nome": "Voo ao vivo",
-      "descricao": "O dia do voo: o arco da rota com o avião na posição que o relógio manda, incluindo o trecho do avião que vem de Brasília fazer o seu voo; a previsão de +25 min antes de a companhia admitir; a conexão em risco com a alternativa para guardar; e o tempo no destino. A linha do tempo (check-in, embarque, decolagem, pouso, esteira) abre etapa por etapa, e o seletor troca para o voo de quem você vai buscar."
+      "descricao": "O dia do voo: o arco da rota com o avião na posição que o relógio manda, incluindo o trecho do avião que vem de Brasília fazer o seu voo; a previsão de +25 min antes de a companhia admitir; a conexão em risco com a alternativa para guardar; e o tempo no destino. A linha do tempo (check-in, embarque, decolagem, pouso e, no fim, a conexão ou a esteira) abre etapa por etapa, e o seletor troca para o voo de quem você vai buscar."
     },
     {
       "nome": "Passaporte",
@@ -46,7 +46,7 @@
     {"nome": "Marinho de tinta (claro)", "hex": "#0c1a36"},
     {"nome": "Âmbar de leitura (claro)", "hex": "#8f4f00"}
   ],
-  "tipografia": "Duas vozes, as duas do sistema. Monoespaçada (SF Mono no iPhone e no Mac) para tudo o que é dado de painel, em 700 e sempre tabular: código de aeroporto a 40 px, células da contagem a 30 px, horários a 17 px e rótulos em caixa alta de 11 px com tracking de 0,1 em. Sans (San Francisco) para o resto: título de tela em 700 a 32 px com tracking de -0,03 em, corpo em 17 px e metadados em 13 px.",
+  "tipografia": "Duas vozes, as duas do sistema. Monoespaçada (SF Mono no iPhone e no Mac) para tudo o que é dado de painel, sempre tabular, em 700 nos dados grandes e 600 nos rótulos e nas horas pequenas: código de aeroporto a 40 px, células da contagem a 30 px, horários a 17 px e rótulos em caixa alta de 11 px com tracking de 0,1 em. Sans (San Francisco) para o resto: título de tela em 700 a 32 px com tracking de -0,03 em, corpo em 17 px e metadados em 13 px.",
   "componentes": [
     "Cartão de embarque com picote e recortes",
     "Contagem regressiva em células de painel",
@@ -756,7 +756,7 @@ body{background:var(--pt-fundo)}
         <h2 id="pt-t-planos">Portão Antecipado</h2>
         <button type="button" class="pt-fechar" data-acao="fechar-folha" aria-label="Fechar"><span class="pt-fechar-face"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-fechar"/></svg></span></button>
       </div>
-      <p class="pt-plano-frase">Saiba do atraso antes do painel do aeroporto. São 7 dias grátis para usar tudo.</p>
+      <p class="pt-plano-frase">Saiba do atraso antes do painel do aeroporto. Na primeira vez, são 7 dias grátis para usar tudo.</p>
       <div class="pt-opcoes" role="radiogroup" aria-label="Como pagar">
         <button type="button" class="pt-opcao" role="radio" aria-checked="true" data-acao="plano" data-plano="mensal"><span class="pt-opcao-marca" aria-hidden="true"></span><span class="pt-opcao-nome">Mensal<small>Cancela quando quiser</small></span><span class="pt-opcao-preco">R$ 14,90<small>por mês</small></span></button>
         <button type="button" class="pt-opcao" role="radio" aria-checked="false" data-acao="plano" data-plano="anual"><span class="pt-opcao-marca" aria-hidden="true"></span><span class="pt-opcao-nome">Anual<small>Sai a R$ 8,33 por mês</small></span><span class="pt-opcao-preco">R$ 99,90<small>por ano</small></span></button>
@@ -886,16 +886,20 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     GYN: {cidade: "Goiânia", x: 69, y: 124, rx: -9, ry: 4, anc: "end"},
     BSB: {cidade: "Brasília", x: 92, y: 114, rx: 8, ry: -6, anc: "start"},
     CGH: {cidade: "São Paulo", x: 110, y: 200, rx: 0, ry: 18, anc: "middle"},
-    SDU: {cidade: "Rio de Janeiro", x: 167, y: 192, rx: 9, ry: 4, anc: "start"},
+    SDU: {cidade: "Rio de Janeiro", art: "o", x: 167, y: 192, rx: 9, ry: 4, anc: "start"},
     CNF: {cidade: "Belo Horizonte", x: 154, y: 157, rx: 9, ry: 4, anc: "start"},
     SSA: {cidade: "Salvador", x: 246, y: 84, rx: 9, ry: 4, anc: "start"},
-    REC: {cidade: "Recife", x: 301, y: 34, rx: -9, ry: 4, anc: "end"},
+    REC: {cidade: "Recife", art: "o", x: 301, y: 34, rx: -9, ry: 4, anc: "end"},
     POA: {cidade: "Porto Alegre", x: 37, y: 268, rx: 9, ry: 4, anc: "start"}
   };
   // distância (km) e tempo de voo (min) de cada par, nos dois sentidos
   var ROTAS = {"GYN-CGH": [812, 95], "GYN-BSB": [174, 40], "GYN-SDU": [938, 105], "CGH-POA": [836, 100], "GYN-CNF": [666, 80],
     "GYN-SSA": [1228, 135], "SSA-REC": [648, 75], "CGH-SDU": [366, 60], "GYN-REC": [1872, 165], "CNF-SDU": [342, 55]};
   function rota(a, b) { return ROTAS[a + "-" + b] || ROTAS[b + "-" + a] || [900, 100]; }
+  // a cidade com a preposição certa: "do Rio de Janeiro", "no Recife", "para o Rio de Janeiro"; as outras não levam artigo
+  function deC(k) { var c = AERO[k]; return (c.art ? "d" + c.art + " " : "de ") + c.cidade; }
+  function emC(k) { var c = AERO[k]; return (c.art ? "n" + c.art + " " : "em ") + c.cidade; }
+  function paraC(k) { var c = AERO[k]; return (c.art ? "para " + c.art + " " : "para ") + c.cidade; }
   var CATALOGO = [["GYN", "CGH"], ["SDU", "GYN"], ["GYN", "BSB"], ["CGH", "POA"], ["GYN", "CNF"], ["SSA", "GYN"], ["GYN", "REC"], ["CNF", "SDU"]];
   var ANO0 = new Date(Date.now() + MADRUGADA).getFullYear();
   var ANOS = [
@@ -910,7 +914,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   var voos = [
     // o voo de hoje: o avião que vai fazê-lo saiu 25 min atrasado de Brasília e ainda está no ar
     V({tipo: "meu", cia: "ZC", num: "1482", de: "GYN", para: "CGH", checkin: G - 320 * M, eProg: G + 15 * M, dProg: G + 45 * M, aProg: G + 140 * M, atraso: 25,
-      portao: "4", portaoEra: "2", assento: "14C", grupo: "B", esteira: "5", quem: "Caio", avisar: false,
+      portao: "4", portaoEra: "2", assento: "14C", grupo: "B", esteira: "", quem: "Caio", avisar: false,
       vindo: {num: "ZC 1479", de: "BSB", saiu: G - 15 * M, pousa: G + 25 * M, solo: 45},
       conexao: {num: "ZC 1806", para: "SDU", parte: G + 190 * M, minimo: 40, alt: {num: "ZC 1812", parte: G + 275 * M, lugares: 9}, guardada: false},
       tempo: ["chuva", "São Paulo na sua chegada: 18°, garoa fina"],
@@ -1005,7 +1009,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
       halo.style.display = voando ? "" : "none";
       // a legenda do arco diz onde está o avião que importa agora; longe do voo, só a duração
       var txt = f.nome === "vindo" ? "seu avião a " + Math.max(1, Math.round(rota(v.vindo.de, v.de)[0] * (1 - f.frac))) + " km" : f.nome === "solo" ? (v.vindo ? "avião em solo" : "no horário")
-        : voando ? "faltam " + milhar(Math.max(1, r[0] * (1 - frac))) + " km" : f.nome === "chegou" ? "pousou" : duracao(r[1]) + " · direto";
+        : voando ? (Math.round(r[0] * (1 - frac)) <= 1 ? "falta 1 km" : "faltam " + milhar(r[0] * (1 - frac)) + " km") : f.nome === "chegou" ? "pousou" : duracao(r[1]) + " · direto";
       if (legenda.textContent !== txt) legenda.textContent = txt;
       legenda.toggleAttribute("data-quente", f.nome === "vindo" || voando);
     });
@@ -1015,18 +1019,18 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   // a faixa da situação: o que está acontecendo e por quê
   function previsao(v, f) {
     var icone = "check", titulo = "No horário", texto, quente = false, pouso = hm(prev(v, "aProg"));
-    if (f.nome === "chegou") { icone = "mala"; titulo = "Pousou às " + pouso; texto = v.esteira ? "As malas saem na esteira " + v.esteira + "." : "A esteira ainda não saiu."; }
+    if (f.nome === "chegou") { icone = "mala"; titulo = "Pousou às " + pouso; texto = v.conexao ? "A conexão " + v.conexao.num + " sai às " + hm(v.conexao.parte) + "." : v.esteira ? "As malas saem na esteira " + v.esteira + "." : "A esteira ainda não saiu."; }
     else if (v.tipo === "buscar") {
       if (v.atraso < 0) titulo = "Adiantado " + (-v.atraso) + " min"; else if (v.atraso > 0) { titulo = "Atraso previsto: +" + v.atraso + " min"; quente = true; icone = "antes"; }
       texto = v.quem + " pousa às " + pouso + (v.esteira ? ", esteira " + v.esteira + "." : ".") + " O programado era " + hm(v.aProg) + ".";
     } else if (v.atraso > 0 && f.nome === "voo") {
       icone = "antes"; quente = true; titulo = "No ar, com " + v.atraso + " min de atraso";
-      texto = "O pouso em " + AERO[v.para].cidade + " deve ser às " + pouso + "; o programado era " + hm(v.aProg) + ".";
+      texto = "O pouso " + emC(v.para) + " deve ser às " + pouso + "; o programado era " + hm(v.aProg) + ".";
     } else if (v.atraso > 0) {
       icone = "antes"; quente = true; titulo = "Atraso previsto: +" + v.atraso + " min";
-      if (f.nome === "vindo") texto = "O avião do seu voo saiu tarde de " + AERO[v.vindo.de].cidade + ". O painel ainda diz no horário.";
+      if (f.nome === "vindo") texto = "O avião do seu voo saiu tarde " + deC(v.vindo.de) + ". O painel ainda diz no horário.";
       else texto = "O avião do seu voo pousou atrasado. A decolagem deve ser às " + hm(prev(v, "dProg")) + ".";
-    } else if (f.nome === "voo") { titulo = "No ar, no horário"; texto = "O pouso em " + AERO[v.para].cidade + " está previsto para as " + pouso + "."; }
+    } else if (f.nome === "voo") { titulo = "No ar, no horário"; texto = "O pouso " + emC(v.para) + " está previsto para as " + pouso + "."; }
     else if (f.nome === "longe") texto = "Ainda longe: o acompanhamento ao vivo começa 24 horas antes da decolagem.";
     else texto = v.vindo ? "O avião do seu voo já está em solo e nada mudou até agora." : "Nada mudou até agora. O avião do seu voo aparece aqui umas 3 horas antes da decolagem.";
     return h("div", {"class": "pt-previsao", "data-quente": quente}, [ic(icone), h("strong", {text: titulo}), h("p", {text: texto})]);
@@ -1073,7 +1077,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   function fatos(v) {
     var nome = fase(v, agora()).nome;
     if (v.tipo === "buscar") return h("dl", {"class": "pt-fatos"}, [fato("Esteira", v.esteira || "—"), fato("Vem de", v.de), fato("Pouso", hm(prev(v, "aProg"))), fato("Malas", "12 min")]);
-    if (nome === "voo" || nome === "chegou") return h("dl", {"class": "pt-fatos"}, [fato("Assento", v.assento || "—"), fato("Esteira", v.esteira || "—"), fato("Pouso", hm(prev(v, "aProg"))), fato("Malas", "12 min")]);
+    if (nome === "voo" || nome === "chegou") return h("dl", {"class": "pt-fatos"}, [fato("Assento", v.assento || "—"), v.conexao ? fato("Conexão", v.conexao.num) : fato("Esteira", v.esteira || "—"), fato("Pouso", hm(prev(v, "aProg"))), v.conexao ? fato("Sai às", hm(v.conexao.parte)) : fato("Malas", "12 min")]);
     return h("dl", {"class": "pt-fatos"}, [fato("Portão", v.portao || "—", v.portaoEra ? "era " + v.portaoEra : null), fato("Assento", v.assento || "—"), fato("Grupo", v.grupo || "—"), fato("Fecha", hm(prev(v, "dProg") - 15 * M))]);
   }
   function passe(v) {
@@ -1087,7 +1091,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
       previsao(v, f)]);
     var b = h("div", {"class": "pt-passe-b"}, [contagem(v), fatos(v),
       h("button", {type: "button", "class": "pt-btn pt-btn-pri pt-btn-largo", "data-acao": "aovivo", "data-k": "aovivo"}, ["Acompanhar ao vivo", ic("seta")])]);
-    return h("article", {"class": "pt-passe", "data-entra": ui.entra === "foco", "aria-label": "Cartão de embarque: " + rotuloVoo(v) + ", de " + AERO[v.de].cidade + " para " + AERO[v.para].cidade},
+    return h("article", {"class": "pt-passe", "data-entra": ui.entra === "foco", "aria-label": "Cartão de embarque: " + rotuloVoo(v) + ", " + deC(v.de) + " " + paraC(v.para)},
       [a, h("div", {"class": "pt-picote", "aria-hidden": "true"}), b]);
   }
 
@@ -1114,7 +1118,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   }
   function interruptor(v, onde) {
     var meu = v.tipo === "meu";
-    var pequeno = meu ? (v.avisar ? v.quem + " recebe o pouso e a esteira" : "Ninguém recebe as mudanças deste voo") : (v.avisar ? "Você recebe o pouso e a esteira" : "Sem avisos para este voo");
+    var pequeno = meu ? (v.avisar ? v.quem + (v.conexao ? " recebe o pouso e a conexão" : " recebe o pouso e a esteira") : "Ninguém recebe as mudanças deste voo") : (v.avisar ? "Você recebe o pouso e a esteira" : "Sem avisos para este voo");
     return h("div", {"class": "pt-grupo"}, h("button", {type: "button", "class": "pt-chave", role: "switch", "aria-checked": String(!!v.avisar), "data-acao": "avisar", "data-id": v.id, "data-k": "chave-" + onde}, [
       ic("sino", "pt-chave-ic"), h("span", {"class": "pt-chave-texto"}, [meu ? "Avisar quem vai me buscar" : "Me avisar quando " + v.quem + " pousar", h("small", {text: pequeno})]),
       h("span", {"class": "pt-chave-trilho", "aria-hidden": "true"})]));
@@ -1156,11 +1160,11 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   // o céu: até três trechos no mesmo desenho (o avião que vem, o seu voo, a conexão) e o avião onde o relógio manda
   function fatosVivos(v, t) {
     var f = fase(v, t), d = prev(v, "dProg"), a = prev(v, "aProg");
-    if (f.nome === "longe") { var n = diasAte(d), antes = diasAte(d - 24 * H); return [["Faltam", n === 1 ? "1 dia" : n + " dias"], ["Decola às", hm(d)], [antes > 1 ? "Ao vivo em" : "Ao vivo", antes < 1 ? "hoje" : antes === 1 ? "amanhã" : antes + " dias"]]; }
+    if (f.nome === "longe") { var n = diasAte(d), antes = diasAte(d - 24 * H); return [[n === 1 ? "Falta" : "Faltam", n === 1 ? "1 dia" : n + " dias"], ["Decola às", hm(d)], [antes > 1 ? "Ao vivo em" : "Ao vivo", antes < 1 ? "hoje" : antes === 1 ? "amanhã" : antes + " dias"]]; }
     if (f.nome === "vindo") return [["Seu avião", "a " + Math.max(1, Math.round(rota(v.vindo.de, v.de)[0] * (1 - f.frac))) + " km"], ["Pousa em", falta(v.vindo.pousa - t)], ["Decola às", hm(d), v.atraso > 0]];
     if (f.nome === "solo") return [["Seu avião", v.vindo ? "em solo" : "a definir"], ["Embarque", hm(prev(v, "eProg"))], ["Decola em", falta(d - t), v.atraso > 0]];
-    if (f.nome === "voo") return [["Faltam", milhar(Math.max(1, rota(v.de, v.para)[0] * (1 - f.frac))) + " km"], ["Pousa em", falta(a - t)], ["Esteira", v.esteira || "a definir"]];
-    return [["Pousou", hm(a)], ["Esteira", v.esteira || "a definir"], ["Malas", "12 min"]];
+    if (f.nome === "voo") { var km = Math.max(1, Math.round(rota(v.de, v.para)[0] * (1 - f.frac))); return [[km === 1 ? "Falta" : "Faltam", milhar(km) + " km"], ["Pousa em", falta(a - t)], v.conexao ? ["Conexão", hm(v.conexao.parte)] : ["Esteira", v.esteira || "a definir"]]; }
+    return v.conexao ? [["Pousou", hm(a)], ["Conexão", v.conexao.num], ["Sai às", hm(v.conexao.parte)]] : [["Pousou", hm(a)], ["Esteira", v.esteira || "a definir"], ["Malas", "12 min"]];
   }
   var NOME_FASE = {longe: "ainda longe", vindo: "avião a caminho", solo: "avião em solo", voo: "no ar", chegou: "pousou"};
   function ceu(v) {
@@ -1169,7 +1173,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     partes.push({tipo: "seu", peso: 1 - (v.vindo ? .22 : 0) - (v.conexao ? .22 : 0)});
     if (v.conexao) partes.push({tipo: "conexao", peso: .22});
     if (partes.length === 1) { x = 46; larg = 248; }
-    var g = s("svg", {"class": "pt-arco", viewBox: "0 0 340 150", role: "img", "aria-label": "Arco da rota de " + AERO[v.de].cidade + " para " + AERO[v.para].cidade + ", com a posição do avião"});
+    var g = s("svg", {"class": "pt-arco", viewBox: "0 0 340 150", role: "img", "aria-label": "Arco da rota " + deC(v.de) + " " + paraC(v.para) + ", com a posição do avião"});
     g.appendChild(s("path", {"class": "pt-a-chao", d: "M10 " + Y + "H330"}));
     partes.forEach(function (p) {
       p.arco = arcoDe(x, x + larg * p.peso, Y, 76); x += larg * p.peso; ultimo = p;
@@ -1219,23 +1223,23 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
       var noAr = f.nome === "voo", pousou = f.nome === "solo";
       return h("section", {"class": "pt-cartao", "data-quente": true}, [
         h("h3", {"class": "pt-cartao-t"}, [ic("antes"), noAr ? "No ar, com " + v.atraso + " min de atraso" : "Atraso previsto: +" + v.atraso + " min"]),
-        h("p", {"class": "pt-cartao-p", text: noAr ? "Decolou de " + AERO[v.de].cidade + " às " + hm(d) + ", " + v.atraso + " min depois do programado. O pouso em " + AERO[v.para].cidade + " deve ser às " + hm(a) + "."
-          : "O avião que fará o seu voo (" + v.vindo.num + ") saiu atrasado de " + AERO[v.vindo.de].cidade + " e " + (pousou ? "pousou" : "pousa") + " em " + AERO[v.de].cidade + " às " + hm(v.vindo.pousa) + ". Com " + v.vindo.solo + " min de solo, a decolagem passa para as " + hm(d) + "."}),
+        h("p", {"class": "pt-cartao-p", text: noAr ? "Decolou " + deC(v.de) + " às " + hm(d) + ", " + v.atraso + " min depois do programado. O pouso " + emC(v.para) + " deve ser às " + hm(a) + "."
+          : "O avião que fará o seu voo (" + v.vindo.num + ") saiu atrasado " + deC(v.vindo.de) + " e " + (pousou ? "pousou" : "pousa") + " " + emC(v.de) + " às " + hm(v.vindo.pousa) + ". Com " + v.vindo.solo + " min de solo, a decolagem passa para as " + hm(d) + "."}),
         h("dl", {"class": "pt-dupla"}, noAr ? [dupla("Pouso no painel", hm(v.aProg)), dupla("O Portão prevê", hm(a), true)] : [dupla("Painel do aeroporto", hm(v.dProg)), dupla("O Portão prevê", hm(d), true)])]);
     }
     var titulo = "No horário", texto = v.vindo ? "O avião do seu voo já está em solo e nada mudou até agora." : "Nada mudou até agora. O avião do seu voo aparece aqui umas 3 horas antes da decolagem.", icone = "check";
-    if (f.nome === "chegou") { icone = "mala"; titulo = "Pousou às " + hm(a); texto = v.esteira ? "As malas saem na esteira " + v.esteira + ", uns 12 min depois do pouso." : "A esteira ainda não saiu."; }
+    if (f.nome === "chegou") { icone = "mala"; titulo = "Pousou às " + hm(a); texto = v.conexao ? "A mala despachada segue direto. A conexão " + v.conexao.num + " sai às " + hm(v.conexao.parte) + "." : v.esteira ? "As malas saem na esteira " + v.esteira + ", uns 12 min depois do pouso." : "A esteira ainda não saiu."; }
     else if (f.nome === "longe") { titulo = "Ainda longe"; icone = "antes"; texto = "O acompanhamento ao vivo começa 24 horas antes da decolagem. Até lá, o Portão só avisa se o horário mudar."; }
     else if (v.tipo === "buscar") {
       titulo = v.atraso < 0 ? "Adiantado " + (-v.atraso) + " min" : "No horário";
-      texto = v.quem + " decolou de " + AERO[v.de].cidade + " às " + hm(d) + ". O pouso está previsto para as " + hm(a) + "; o programado era " + hm(v.aProg) + ".";
+      texto = v.quem + " decolou " + deC(v.de) + " às " + hm(d) + ". O pouso está previsto para as " + hm(a) + "; o programado era " + hm(v.aProg) + ".";
     }
     return h("section", {"class": "pt-cartao"}, [h("h3", {"class": "pt-cartao-t"}, [ic(icone), titulo]), h("p", {"class": "pt-cartao-p", text: texto})]);
   }
   function conexao(v) {
     var c = v.conexao, t = agora(), sobra = Math.round((c.parte - prev(v, "aProg")) / M), risco = sobra < c.minimo, pousou = t >= prev(v, "aProg"), partiu = t >= c.parte;
     var texto = partiu ? (risco ? "O " + c.num + " das " + hm(c.parte) + " saiu sem você: sobraram " + sobra + " min, e o mínimo ali é " + c.minimo + " min. Siga no " + c.alt.num + " das " + hm(c.alt.parte) + "." : "Você seguiu no " + c.num + " das " + hm(c.parte) + ".")
-      : (pousou ? "Sobraram " : "Com o atraso previsto sobram ") + sobra + " min em " + AERO[v.para].cidade + " para pegar o " + c.num + " das " + hm(c.parte) + ". Para trocar de avião ali, o mínimo é " + c.minimo + " min.";
+      : (pousou ? "Sobraram " : "Com o atraso previsto sobram ") + sobra + " min " + emC(v.para) + " para pegar o " + c.num + " das " + hm(c.parte) + ". Para trocar de avião ali, o mínimo é " + c.minimo + " min.";
     return h("section", {"class": "pt-cartao", "data-quente": risco}, [
       h("h3", {"class": "pt-cartao-t"}, [ic("troca"), partiu ? (risco ? "Conexão perdida" : "Conexão feita") : risco ? "Conexão em risco" : "Conexão tranquila", h("span", {"class": "pt-mono", text: v.para + " → " + c.para})]),
       h("p", {"class": "pt-cartao-p", text: texto}),
@@ -1248,20 +1252,21 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     return h("p", {"class": "pt-tempo"}, v.tempo ? [ic(v.tempo[0] || ceu), v.tempo[1]] : [ic("sol"), prev(v, "dProg") - agora() > 2 * DIA ? "O tempo no destino aparece dois dias antes do voo." : "A previsão do destino ainda não chegou para este voo."]);
   }
   function textoDaEtapa(v, i, longe) {
-    var e = prev(v, "eProg"), d = prev(v, "dProg"), a = prev(v, "aProg"), busca = v.tipo === "buscar", de = AERO[v.de].cidade, para = AERO[v.para].cidade;
+    var e = prev(v, "eProg"), d = prev(v, "dProg"), a = prev(v, "aProg"), busca = v.tipo === "buscar", deOrig = deC(v.de), emOrig = emC(v.de), emDest = emC(v.para);
     if (i === 0 && v.adicionado) return agora() >= v.checkin ? "O check-in já está aberto na companhia. Quando estiver feito, o assento confirmado aparece aqui." : "O check-in abre 48 horas antes do voo. O Portão lembra você na hora.";
-    if (i === 0) return longe ? "O check-in abre 48 horas antes do voo. O Portão lembra você na hora." : busca ? v.quem + " fez o check-in em " + de + " às " + hm(v.checkin) + "." : "Feito pelo app às " + hm(v.checkin) + ". Assento " + v.assento + ", uma mala despachada.";
+    if (i === 0) return longe ? "O check-in abre 48 horas antes do voo. O Portão lembra você na hora." : busca ? v.quem + " fez o check-in " + emOrig + " às " + hm(v.checkin) + "." : "Feito pelo app às " + hm(v.checkin) + ". Assento " + v.assento + ", uma mala despachada.";
     if (i === 1) {
       if (longe) return "O portão costuma sair duas horas antes. Quando sair, ele aparece aqui e no cartão de embarque.";
-      if (busca) return "Embarcou em " + de + " pelo portão " + v.portao + ".";
+      if (busca) return "Embarcou " + emOrig + " pelo portão " + v.portao + ".";
       return "Portão " + v.portao + (v.portaoEra ? ", que era o " + v.portaoEra + " até pouco tempo atrás" : "") + ". " + (v.atraso > 0 ? "A companhia ainda chama para as " + hm(v.eProg) + "; pela previsão, o embarque começa às " + hm(e) + "." : "O embarque fecha 15 min antes da decolagem.");
     }
     if (i === 2) {
-      if (busca) return "Decolou de " + de + " às " + hm(d) + (v.atraso < 0 ? ", " + (-v.atraso) + " min antes do horário." : ".");
+      if (busca) return "Decolou " + deOrig + " às " + hm(d) + (v.atraso < 0 ? ", " + (-v.atraso) + " min antes do horário." : ".");
       if (v.atraso > 0 && v.vindo) return "Programada para as " + hm(v.dProg) + ". O avião do seu voo pousa às " + hm(v.vindo.pousa) + " e precisa de " + v.vindo.solo + " min de solo: a decolagem deve ser às " + hm(d) + ".";
-      return "Programada para as " + hm(v.dProg) + ", de " + de + ". Voo direto de " + duracao(rota(v.de, v.para)[1]) + ".";
+      return "Programada para as " + hm(v.dProg) + ", " + deOrig + ". Voo direto de " + duracao(rota(v.de, v.para)[1]) + ".";
     }
-    if (i === 3) return v.atraso !== 0 && !longe ? "Previsto para as " + hm(a) + " em " + para + "; o programado era " + hm(v.aProg) + "." : "Programado para as " + hm(v.aProg) + " em " + para + ".";
+    if (i === 3) return v.atraso !== 0 && !longe ? "Previsto para as " + hm(a) + " " + emDest + "; o programado era " + hm(v.aProg) + "." : "Programado para as " + hm(v.aProg) + " " + emDest + ".";
+    if (v.conexao) return "O " + v.conexao.num + " " + paraC(v.conexao.para) + " sai às " + hm(v.conexao.parte) + ". A mala despachada segue direto.";
     return v.esteira ? "Esteira " + v.esteira + ". As malas costumam sair 12 min depois do pouso." : "A esteira sai perto do pouso. Quando sair, ela aparece aqui.";
   }
   function etapas(v) {
@@ -1271,7 +1276,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
       ["Embarque", v.portao ? "Portão " + v.portao + (v.grupo ? " · grupo " + v.grupo : "") : "Portão a definir", v.eProg, prev(v, "eProg")],
       ["Decolagem", AERO[v.de].cidade, v.dProg, prev(v, "dProg")],
       ["Pouso", AERO[v.para].cidade, v.aProg, a],
-      ["Esteira", v.esteira ? "Esteira " + v.esteira : "A definir", null, a + 12 * M]
+      v.conexao ? ["Conexão", v.conexao.num + " · " + AERO[v.conexao.para].cidade, null, v.conexao.parte] : ["Esteira", v.esteira ? "Esteira " + v.esteira : "A definir", null, a + 12 * M]
     ];
     return h("ol", {"class": "pt-grupo"}, lista.map(function (x, i) {
       var feita = t >= x[3] && !(i === 0 && v.adicionado), fs = feita ? "feita" : (!longe && !achou ? "agora" : "depois"), aberta = ui.etapa === i;   // voo adicionado agora não tem check-in feito
@@ -1356,7 +1361,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     c.appendChild(h("section", {"class": "pt-carta", "aria-label": "Carta de rotas"}, [
       h("div", {"class": "pt-carta-topo"}, [h("span", {"class": "pt-rotulo", text: "Carta de rotas"}), h("span", {"class": "pt-rotulo", text: r.voos.length + " rotas"})]),
       carta(r),
-      h("p", {"class": "pt-carta-nota"}, ["A rota mais voada: ", h("b", {text: r.topo[0] + " ⇄ " + r.topo[1]}), ", " + r.topo[2] + " vezes. Esquema das suas rotas, sem escala."])]));
+      h("p", {"class": "pt-carta-nota"}, ["A rota mais voada: ", h("b", {text: r.topo[0] + " ⇄ " + r.topo[1]}), ", " + r.topo[2] + " vezes. Esquema das suas rotas, fora de escala."])]));
     var enfeite = s("svg", {"class": "pt-selo-arcos", viewBox: "0 0 190 120", "aria-hidden": "true"}, [
       s("path", {d: "M6 112Q70 -30 184 60", fill: "none", stroke: "#e8edf7", "stroke-width": 1.2, "stroke-dasharray": ".1 5", "stroke-linecap": "round"}),
       s("path", {d: "M40 116Q110 10 186 96", fill: "none", stroke: "#ffbb3d", "stroke-width": 1.6, "stroke-linecap": "round"}),
@@ -1372,7 +1377,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     d.appendChild(sec("Aeroportos mais visitados", h("ul", {"class": "pt-grupo"}, podio.map(function (x, i) {
       return h("li", {"class": "pt-pod", "data-quente": i === 0}, [h("span", {"class": "pt-pod-iata", text: x[0]}),
         h("span", {"class": "pt-pod-barra", "aria-hidden": "true"}, h("i", {style: "width:" + Math.round(x[1] / podio[0][1] * 100) + "%"})),
-        h("span", {"class": "pt-pod-n", text: x[1] + (x[1] === 1 ? " passagem" : " passagens")})]);
+        h("span", {"class": "pt-pod-n", text: x[1] + (x[1] === 1 ? " visita" : " visitas")})]);
     }))));
   }
 
@@ -1478,7 +1483,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     var limpo = String(texto).toUpperCase().replace(/[\s.\-]/g, ""), m = /^([A-Z]{2})(\d{3,4})$/.exec(limpo);
     if (!limpo) return {dica: "Digite a companhia e o número, como estão no cartão de embarque. Esta maquete conhece três companhias fictícias: ZC, QA e XV."};
     if (!m) return {dica: /^[A-Z]{1,2}\d{0,2}$/.test(limpo) ? "Continue: duas letras da companhia e três ou quatro números." : "O código tem duas letras e três ou quatro números, como ZC 1533."};
-    if (!CIAS[m[1]]) return {dica: "Não conheço a companhia " + m[1] + ". Nesta maquete voam a Cerrado (ZC), a Quartzo (QA) e a Vésper (XV)."};
+    if (!CIAS[m[1]]) return {dica: "O Portão não conhece a companhia " + m[1] + ". Nesta maquete voam a Cerrado (ZC), a Quartzo (QA) e a Vésper (XV)."};
     var n = +m[2], par = CATALOGO[(n + m[1].charCodeAt(0)) % CATALOGO.length], parte = noDia(dia, 6 + (n * 7) % 16, [0, 10, 25, 40, 55][n % 5]);
     if (parte < agora() + 90 * M) parte = Math.ceil((agora() + 3 * H) / (5 * M)) * 5 * M;
     if (voos.some(function (v) { return v.cia === m[1] && v.num === m[2] && diasAte(v.dProg) === diasAte(parte); })) return {dica: "O " + m[1] + " " + m[2] + " deste dia já está nos seus voos."};
@@ -1488,9 +1493,9 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   function mostrarAchado() {
     var r = reconhecer($("#pt-codigo").value, ui.dia), alvo = limpar($(".pt-achado")), v = r.voo;
     if (v) alvo.appendChild(h("div", {"class": "pt-achado-cartao"}, [
-      h("p", {"class": "pt-rotulo", text: "Achei · " + rotuloVoo(v)}),
+      h("p", {"class": "pt-rotulo", text: "Encontrado · " + rotuloVoo(v)}),
       h("p", {"class": "pt-achado-rota"}, [v.de, ic("vai"), v.para, h("small", {text: hm(v.dProg) + " – " + hm(v.aProg)})]),
-      h("p", {"class": "pt-achado-sub", text: AERO[v.de].cidade + " para " + AERO[v.para].cidade + ", " + dataCurta(v.dProg) + " · " + duracao(rota(v.de, v.para)[1]) + " de voo"})]));
+      h("p", {"class": "pt-achado-sub", text: AERO[v.de].cidade + " " + paraC(v.para) + ", " + dataCurta(v.dProg) + " · " + duracao(rota(v.de, v.para)[1]) + " de voo"})]));
     else alvo.appendChild(h("p", {"class": "pt-achado-dica", text: r.dica}));
     $('[data-acao="incluir"]').disabled = !v;
     return r;

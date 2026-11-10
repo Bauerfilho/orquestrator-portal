@@ -21,7 +21,7 @@
 <style id="app-estilo">
 /* ===== Combinado · tokens =====
    Tese visual: papelaria fina. A interface é a mesa (cinza-esverdeado, sans, discreta); o documento é o papel
-   (creme, serifa, números tabulares, timbre). Verde-petróleo de carimbo só no que está resolvido, âmbar no que espera,
+   (creme, serifa, números tabulares, timbre). Verde-petróleo de carimbo no que está resolvido e na ação principal, âmbar no que espera,
    vermelho no que venceu. No escuro a mesa escurece e o papel continua papel, em pergaminho.
    Tese de interação: preciso e sem cerimônia, como destacar a folha do bloco. Toque responde em 120 ms; telas e folhas
    em 300 ms, sem quique; saídas em 200 ms. Uma única coisa tem peso: o carimbo, que bate no papel em 280 ms. */
@@ -482,7 +482,7 @@ body{background:var(--cb-mesa)}
       ev: [["enviado", longa(em(-9)) + ", 10:15", 9.6], ["aberto", longa(em(-9)) + ", 11:02 · aberto 1 vez", 9.5], ["aceito", longa(em(-8)) + ", 08:47", 8.6], ["pago", longa(em(-6)) + ", 15:20", 6.4]]},
     {n: 13, cliente: "Rafael Nunes", titulo: "Ensaio individual", sit: "enviado", env: 10, criado: 10, validade: 7, vence: -3, cond: 1, desc: {modo: "pct", v: 0}, itens: [["Ensaio individual, 1 h", 1, 65000]],
       ev: [["enviado", longa(em(-10)) + ", 19:12", 10.2], ["aberto", longa(em(-9)) + ", 08:30 · aberto 1 vez", 9.7]]},
-    {n: 12, cliente: "Estúdio Jatobá", titulo: "Retratos da equipe", sit: "pago", env: 14, criado: 14, validade: 7, vence: -7, cond: 1, desc: {modo: "valor", v: 0}, itens: [["Retratos corporativos", 8, 11000], ["Tratamento de imagens", 8, 1250]],
+    {n: 12, cliente: "Estúdio Jatobá", titulo: "Retratos da equipe", sit: "pago", env: 14, criado: 14, validade: 7, vence: -7, cond: 1, desc: {modo: "valor", v: 0}, itens: [["Retratos corporativos", 8, 11000], ["Tratamento de imagens", 8, 1200]],
       ev: [["enviado", longa(em(-14)) + ", 17:30", 14.3], ["aberto", longa(em(-14)) + ", 17:41 · aberto 4 vezes", 14.3], ["aceito", longa(em(-13)) + ", 09:05", 13.6], ["pago", longa(em(-10)) + ", 12:10", 10.5]]}
   ];
   // a cota grátis: três documentos enviados a cada ciclo de 30 dias; o ciclo desta conta começou há três dias
@@ -846,7 +846,7 @@ body{background:var(--cb-mesa)}
     else if (acao === "renovar") mudar("Orçamento renovado por 7 dias.", s, function () { s.vence = 7; s.ev.push(evento("enviado", "agora, de novo")); });
     else if (acao === "lembrar") { s.lembrar = !s.lembrar; desenhar(); }
     else if (acao === "copiar-pix") avisar("Código Pix copiado (demonstração).");
-    else if (acao === "reenviar") avisar("Mensagem reenviada para " + s.cliente.split(" ")[0] + " (demonstração).");
+    else if (acao === "reenviar") avisar("Mensagem reenviada para " + s.cliente + " (demonstração).");
     else if (acao === "recibo") avisar("Recibo simples enviado (demonstração).");
     else if (acao === "planos") abrirPlanos(false);
     else if (acao === "plano") { ui.plano = id; pintarPlanos(); }

@@ -15,13 +15,13 @@
   "ordem": 29,
   "resumo": "Durma na hora e acorde com calma. Um horário de sono que dá para cumprir: o app avisa a hora de começar a desacelerar, conduz uma rotina curta antes de deitar (baixar a luz, um minuto de respiração, uma linha de diário) e desperta aos poucos, sem susto. Para quem dorme tarde rolando o celular e acorda no tranco.",
   "proposta": "Pago",
-  "modelo_negocio": "Assinatura de R$ 12,90 por mês ou R$ 89,90 por ano (42% a menos), com 7 dias grátis para usar tudo. Paga quem quer rotina, não gráfico: o que se vende é a desaceleração guiada, o despertar gradual e o retrato da semana.",
+  "modelo_negocio": "Assinatura de R$ 12,90 por mês ou R$ 89,90 por ano (41% a menos), com 7 dias grátis para usar tudo. Paga quem quer rotina, não gráfico: o que se vende é a desaceleração guiada, o despertar gradual e o retrato da semana.",
   "referencias": [
     {"nome": "Sleep Cycle", "modelo": "freemium"},
     {"nome": "Pillow", "modelo": "freemium"},
     {"nome": "Rise", "modelo": "pago"}
   ],
-  "direcao": "O céu logo depois do pôr do sol. Marca fictícia: Noite. Índigo profundo que vai a ameixa, estrelas mínimas e a lua em creme; os horários em algarismos finos e grandes, na variante arredondada da fonte do sistema. Tudo em luz baixa, com contraste suave e legível. A assinatura é o mostrador circular do sono, com as duas alças e o arco preenchido entre deitar e acordar, e o círculo que respira na hora de desacelerar. No celular é uma tela por vez; em tela ampla, a rotina fica à esquerda, o mostrador no centro e a semana à direita. O tema claro é o amanhecer: pêssego muito claro passando a azul-pálido, com tinta índigo; ao desacelerar, a tela anoitece nos dois temas e escurece mais a cada passo.",
+  "direcao": "O céu logo depois do pôr do sol. Marca fictícia: Noite. Índigo profundo que vai a ameixa, estrelas mínimas e a lua em creme; os horários em algarismos finos e grandes, na variante arredondada da fonte do sistema. Tudo em luz baixa, com contraste suave e legível. A peça central é o mostrador circular do sono, no padrão que o iPhone tornou conhecido (duas alças e o arco preenchido entre deitar e acordar); a assinatura própria é o céu que anoitece e o círculo que respira na hora de desacelerar. No celular é uma tela por vez; em tela ampla, a rotina fica à esquerda, o mostrador no centro e a semana à direita. O tema claro é o amanhecer: pêssego muito claro passando a azul-pálido, com tinta índigo; ao desacelerar, a tela anoitece nos dois temas e escurece mais a cada passo.",
   "estados": [
     {
       "nome": "Esta noite",
@@ -38,7 +38,7 @@
   ],
   "paleta": [
     {"nome": "Índigo profundo", "hex": "#141033"},
-    {"nome": "Creme de lua", "hex": "#f1ead9"},
+    {"nome": "Creme da tinta (texto no escuro)", "hex": "#f1ead9"},
     {"nome": "Lilás do arco", "hex": "#8f83e8"},
     {"nome": "Ameixa", "hex": "#2c1a3c"},
     {"nome": "Rosa do poente", "hex": "#d98fc0"},
@@ -47,7 +47,7 @@
     {"nome": "Azul-pálido (amanhecer)", "hex": "#dfe9f7"},
     {"nome": "Tinta índigo (amanhecer)", "hex": "#231c52"}
   ],
-  "tipografia": "Variante arredondada da fonte do sistema (SF Pro Rounded). Horários em algarismos finos e grandes: a duração no centro do mostrador em 46 px, peso 300; deitar e acordar em 30 px. Texto em 16 e 17 px, peso 400 e 600; rótulos em 12 px com espaçamento de 0,08 em. Números sempre tabulares.",
+  "tipografia": "Variante arredondada da fonte do sistema (SF Pro Rounded). Horários em algarismos finos e grandes: a duração no centro do mostrador em 46 px, peso 300; deitar e acordar em 30 px. Texto em 16 e 17 px, peso 400 e 600; rótulos em 12 px com espaçamento de 0,08 em. Números de destaque em algarismos tabulares.",
   "componentes": [
     "Mostrador de 24 horas com duas alças",
     "Arco do sono com a duração no centro",
@@ -65,11 +65,11 @@
     "Folha de planos com anual e mensal"
   ],
   "replicar": [
-    "Modelo de dados: Horario (deitar, acordar, dias da semana, antecedência da desaceleração), Despertar (som, se é gradual), Rotina (passos em ordem) e Noite (data, o horário combinado que valia nela, as duas respostas da manhã, a linha de diário). A hora em que a pessoa deitou sai da resposta (na hora, um pouco depois, bem depois), nunca de uma medida; regularidade, média, o que faltou para a meta e a sequência são sempre derivados das noites.",
+    "Modelo de dados: Horário (deitar, acordar, dias da semana, antecedência da desaceleração), Despertar (som, se é gradual), Rotina (passos em ordem) e Noite (data, o horário combinado que valia nela, as duas respostas da manhã, a linha de diário). A hora em que a pessoa deitou sai da resposta (na hora, um pouco depois, bem depois), nunca de uma medida; regularidade, média, o que faltou para a meta e a sequência são sempre derivados das noites.",
     "Regras que pegam: o app não mede sono, só horários combinados e respostas, e diz isso; a noite pertence ao dia em que começa, mesmo terminando no dia seguinte; mudar o horário vale da próxima noite em diante e não reescreve as passadas; noite livre não tem aviso, despertar nem barra na semana, e desligar a noite não apaga o que já foi respondido; regular é deitar a até 30 minutos da meta; a respiração é só um ritmo guiado, sem promessa nenhuma.",
     "Pilha sugerida para iPhone: SwiftUI com SwiftData; notificações locais para o aviso de desacelerar; AlarmKit para o despertar tocar mesmo no silencioso; ActivityKit para a contagem na Tela Bloqueada; brilho e Foco pela integração com Atalhos. Sem HealthKit no primeiro lançamento: o app guarda só horários e respostas.",
     "Integrações: ligar o Foco Sono do sistema junto com a rotina, acender uma luminária compatível com HomeKit no despertar gradual, e exportar as noites em CSV.",
-    "Corte do primeiro lançamento: o mostrador, o aviso de desacelerar, a rotina com respiração, o despertar e a semana. Ficam para depois: sons próprios, luz gradual com HomeKit, relógio e rotinas diferentes por dia."
+    "Corte do primeiro lançamento: o mostrador, o aviso de desacelerar, a rotina com respiração, o despertar e a semana. Ficam para depois: sons enviados pela pessoa, luz gradual com HomeKit, o app de relógio e rotinas diferentes por dia."
   ]
 }
 </script>
@@ -555,7 +555,7 @@ body{background:var(--nt-ceu1)}
         <li class="nt-leva-i">O retrato da semana<span class="nt-leva-s">Regularidade, média e o que faltou para a sua meta, sem gráfico demais.</span></li>
       </ul>
       <div class="nt-escolhas" role="group" aria-label="Plano depois do teste">
-        <button type="button" class="nt-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><span class="nt-opcao-r">Anual<span class="nt-opcao-e">42% a menos</span></span><b class="nt-opcao-n nt-num">R$ 89,90</b><span class="nt-opcao-s">R$ 7,49 por mês</span></button>
+        <button type="button" class="nt-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><span class="nt-opcao-r">Anual<span class="nt-opcao-e">41% a menos</span></span><b class="nt-opcao-n nt-num">R$ 89,90</b><span class="nt-opcao-s">R$ 7,49 por mês</span></button>
         <button type="button" class="nt-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><span class="nt-opcao-r">Mensal</span><b class="nt-opcao-n nt-num">R$ 12,90</b><span class="nt-opcao-s">sem fidelidade</span></button>
       </div>
       <div class="nt-folha-pe"><button type="button" class="nt-btn nt-btn-cheio nt-largo" data-acao="comprar">Começar os 7 dias grátis</button></div>
@@ -568,7 +568,7 @@ body{background:var(--nt-ceu1)}
   </div>
 </main>
 <template id="maquete-miniatura">
-<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura da Noite: o mostrador circular do sono, com o arco entre deitar e acordar e a duração no centro, sobre o céu índigo">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura do Noite: o mostrador circular do sono, com o arco entre deitar e acordar e a duração no centro, sobre o céu índigo">
   <defs><linearGradient id="nt-m-ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141033"/><stop offset="1" stop-color="#2c1a3c"/></linearGradient><linearGradient id="nt-m-arco" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8f83e8"/><stop offset="1" stop-color="#d98fc0"/></linearGradient></defs>
   <rect width="320" height="180" fill="url(#nt-m-ceu)"/>
   <circle cx="34" cy="24" r="1.2" fill="#fff"/><circle cx="286" cy="34" r="1" fill="#fff"/><circle cx="252" cy="14" r="1.2" fill="#fff"/><circle cx="60" cy="150" r="1" fill="#fff"/><circle cx="296" cy="128" r="1" fill="#fff"/>
@@ -786,7 +786,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     var raiz = limpar($(".nt-hoje")), pad = h("div", {"class": "nt-pad nt-centro-in"});
     pad.appendChild(h("span", {"class": "nt-rot", text: "Quinta-feira · agora são " + hora(AGORA)}));
     pad.appendChild(h("div", {"class": "nt-cab"}, [h("h1", {"class": "nt-h1", tabindex: "-1", text: "Esta noite"}), h("button", {type: "button", "class": "nt-plano", "data-acao": "planos", "data-foco": "plano", text: "7 dias grátis"})]));
-    pad.appendChild(h("p", {"class": "nt-sub", text: "Durma na hora, acorde com calma."}));
+    pad.appendChild(h("p", {"class": "nt-sub", text: "Durma na hora e acorde com calma."}));
     pad.appendChild(h("div", {"class": "nt-dial"}, [mostrador(), h("div", {"class": "nt-dial-meio", "aria-hidden": "true"}, [h("b", {"class": "nt-dur nt-num"}), h("span", {"class": "nt-dur-s", text: "por noite"}),
       h("span", {"class": "nt-dica", hidden: ui.mexeu, text: "arraste a lua ou o sol"})])]));
     pad.appendChild(h("div", {"class": "nt-horas"}, [cartaoHora("deitar"), cartaoHora("acordar")]));

@@ -382,7 +382,7 @@ body{background:var(--nt-ceu1)}
         <li class="nt-leva-i">O retrato da semana<span class="nt-leva-s">Regularidade, média e o que faltou para a sua meta, sem gráfico demais.</span></li>
       </ul>
       <div class="nt-escolhas" role="group" aria-label="Plano depois do teste">
-        <button type="button" class="nt-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><span class="nt-opcao-r">Anual<span class="nt-opcao-e">42% a menos</span></span><b class="nt-opcao-n nt-num">R$ 89,90</b><span class="nt-opcao-s">R$ 7,49 por mês</span></button>
+        <button type="button" class="nt-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><span class="nt-opcao-r">Anual<span class="nt-opcao-e">41% a menos</span></span><b class="nt-opcao-n nt-num">R$ 89,90</b><span class="nt-opcao-s">R$ 7,49 por mês</span></button>
         <button type="button" class="nt-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><span class="nt-opcao-r">Mensal</span><b class="nt-opcao-n nt-num">R$ 12,90</b><span class="nt-opcao-s">sem fidelidade</span></button>
       </div>
       <div class="nt-folha-pe"><button type="button" class="nt-btn nt-btn-cheio nt-largo" data-acao="comprar">Começar os 7 dias grátis</button></div>
@@ -593,7 +593,7 @@ body{background:var(--nt-ceu1)}
     var raiz = limpar($(".nt-hoje")), pad = h("div", {"class": "nt-pad nt-centro-in"});
     pad.appendChild(h("span", {"class": "nt-rot", text: "Quinta-feira · agora são " + hora(AGORA)}));
     pad.appendChild(h("div", {"class": "nt-cab"}, [h("h1", {"class": "nt-h1", tabindex: "-1", text: "Esta noite"}), h("button", {type: "button", "class": "nt-plano", "data-acao": "planos", "data-foco": "plano", text: "7 dias grátis"})]));
-    pad.appendChild(h("p", {"class": "nt-sub", text: "Durma na hora, acorde com calma."}));
+    pad.appendChild(h("p", {"class": "nt-sub", text: "Durma na hora e acorde com calma."}));
     pad.appendChild(h("div", {"class": "nt-dial"}, [mostrador(), h("div", {"class": "nt-dial-meio", "aria-hidden": "true"}, [h("b", {"class": "nt-dur nt-num"}), h("span", {"class": "nt-dur-s", text: "por noite"}),
       h("span", {"class": "nt-dica", hidden: ui.mexeu, text: "arraste a lua ou o sol"})])]));
     pad.appendChild(h("div", {"class": "nt-horas"}, [cartaoHora("deitar"), cartaoHora("acordar")]));

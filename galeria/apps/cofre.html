@@ -15,13 +15,13 @@
   "ordem": 27,
   "resumo": "Uma senha mestra; o resto, o Cofre lembra. Senhas, códigos de verificação, cartões e notas num cofre guardado no aparelho, que só abre com você, gera senhas fortes e avisa quais estão fracas ou repetidas. Para quem usa a mesma senha em tudo e já ficou do lado de fora de uma conta.",
   "proposta": "Pago",
-  "modelo_negocio": "Assinatura de R$ 9,90 por mês no plano individual ou R$ 16,90 por mês no plano família, para seis pessoas, com 14 dias para usar tudo. Paga quem já perdeu uma conta: o que se vende é tranquilidade (itens sem limite em todos os aparelhos, a auditoria de senhas e o cofre partilhado da família).",
+  "modelo_negocio": "Assinatura de R$ 9,90 por mês no plano individual ou R$ 16,90 por mês no plano família, para seis pessoas, com 14 dias para usar tudo; depois do teste, sem assinar, o cofre abre só para leitura, e nada do que foi guardado fica preso. Paga quem já perdeu uma conta: o que se vende é o Cofre Completo, isto é, tranquilidade (itens sem limite em todos os aparelhos, a auditoria de senhas e o cofre compartilhado da família).",
   "referencias": [
     {"nome": "1Password", "modelo": "pago"},
     {"nome": "Bitwarden", "modelo": "open source"},
     {"nome": "KeePassXC", "modelo": "open source"}
   ],
-  "direcao": "Cofre de banco antigo com precisão de relógio. Marca fictícia: Cofre. Titânio claro e cinzas quentes, texto em grafite, e um dourado-latão reservado para o que é chave e segurança: o mostrador, o anel dos códigos, o botão de destrancar, a senha forte. Tudo o que é segredo vem em monoespaçada do sistema, separado em grupos; as superfícies são chapas lisas de borda finíssima. A assinatura é o mostrador do cofre, que gira e abre no desbloqueio, e os códigos de seis dígitos correndo com o anel de trinta segundos. No celular é uma lista que abre o item; em tela ampla são as três colunas clássicas: categorias, itens e o item aberto. O tema escuro é o interior do cofre: preto fosco e o latão mais vivo.",
+  "direcao": "Cofre de banco antigo com precisão de relógio. Marca fictícia: Cofre. Titânio claro e cinzas quentes, texto em grafite, e um dourado-latão como único destaque, que marca o que é chave e segurança (o mostrador, o anel dos códigos, o botão de destrancar, a senha forte) e a ação principal. Tudo o que é segredo vem em monoespaçada do sistema, separado em grupos; as superfícies são chapas lisas de borda finíssima. A assinatura é o mostrador do cofre, que gira e abre no desbloqueio, e os códigos de seis dígitos correndo com o anel de trinta segundos. No celular é uma lista que abre o item; em tela ampla são as três colunas clássicas: categorias, itens e o item aberto. O tema escuro é o interior do cofre: preto fosco e o latão mais vivo.",
   "estados": [
     {
       "nome": "Cofre",
@@ -46,7 +46,7 @@
     {"nome": "Preto fosco (noite)", "hex": "#0f0f0e"},
     {"nome": "Latão vivo (noite)", "hex": "#dbb45c"}
   ],
-  "tipografia": "Sans do sistema para nomes e rótulos, 15 a 17 px, com títulos em 30 e 32 px, peso 700 e tracking de -0,03 em. Segredos, usuários e códigos em monoespaçada do sistema (SF Mono): os códigos de verificação em 26 px, tabulares e partidos em dois grupos de três; senhas em 17 px, partidas de quatro em quatro quando reveladas.",
+  "tipografia": "Sans do sistema: nomes e valores de 15 a 17 px, rótulos em caixa alta de 12 e 13 px e títulos em 26, 30 e 32 px, peso 700, com tracking de -0,025 a -0,03 em. Segredos, usuários e códigos em monoespaçada do sistema (SF Mono): os códigos de verificação em 26 px, tabulares e partidos em dois grupos de três; senhas em 17 px (21 no gerador), partidas de quatro em quatro quando reveladas; frases de palavras ficam inteiras.",
   "componentes": [
     "Mostrador do cofre que gira e abre",
     "Destrancar com o rosto ou com a senha mestra",
@@ -68,7 +68,7 @@
     "Regras que pegam: o conteúdo só existe decifrado em memória enquanto o cofre está aberto, e tranca sozinho por tempo parado ou ao sair do app; copiar um segredo agenda a limpeza da área de transferência em 30 s; a senha gerada nunca aparece em registro nem em aviso; repetida é a mesma senha em dois itens, comparada dentro do aparelho; trocar a senha guarda a anterior no histórico do item.",
     "Pilha sugerida para iPhone: SwiftUI; itens cifrados com CryptoKit, com a chave guardada no Secure Enclave e liberada por Face ID (LocalAuthentication); os códigos de verificação seguem o padrão TOTP; preenchimento automático pela extensão de credenciais do sistema (AuthenticationServices); cópia entre aparelhos com CloudKit, já cifrada.",
     "Integrações: importar de outros gerenciadores por arquivo CSV, exportar tudo a qualquer momento, ler o código QR de verificação pela câmera e preencher senha em apps e sites pelo teclado do sistema.",
-    "Corte do primeiro lançamento: logins, gerador, códigos de verificação, tranca por rosto, a auditoria de fracas e repetidas e o cofre partilhado da família, que sustenta o plano de R$ 16,90. Ficam para depois: anexos, chaves de acesso e o aviso de senha vazada."
+    "Corte do primeiro lançamento: logins, cartões e notas seguras, gerador, códigos de verificação, tranca por rosto, a auditoria de fracas e repetidas e o cofre compartilhado da família, que sustenta o plano de R$ 16,90. Ficam para depois: anexos, chaves de acesso e o aviso de senha vazada."
   ]
 }
 </script>
@@ -199,7 +199,7 @@ body.stand-recolhida .stand-pilula{display:inline-flex}
    latão reservado ao que é chave e segurança (o mostrador, o anel dos códigos, destrancar, a senha forte). Todo segredo
    em monoespaçada, em grupos; chapas lisas de borda finíssima. No escuro, o interior do cofre: preto fosco, latão vivo.
    Tese de interação: exato e contido, como um mecanismo. Toque responde em 110 ms; folhas e telas em 280 ms, sem quique;
-   saídas em 180 ms. Só o mostrador tem cerimônia: gira 440 ms e a porta abre em 260 ms. O anel anda por passos. */
+   saídas em 180 ms. Só o mostrador tem cerimônia: gira 440 ms e a porta abre em 280 ms. O anel anda por passos. */
 :root{
   --cf-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
   --cf-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
@@ -544,7 +544,7 @@ body{background:var(--cf-fundo)}
       <ul class="cf-leva">
         <li class="cf-leva-i">Itens sem limite, em todos os aparelhos<span class="cf-leva-s">O mesmo cofre no iPhone, no iPad e no Mac.</span></li>
         <li class="cf-leva-i">Auditoria de senhas<span class="cf-leva-s">Fracas e repetidas, com o porquê e o conserto a um toque.</span></li>
-        <li class="cf-leva-i">Cofre da família<span class="cf-leva-s">Partilhe a senha do streaming sem mandar por mensagem. No plano família.</span></li>
+        <li class="cf-leva-i">Cofre da família<span class="cf-leva-s">Compartilhe a senha do streaming sem mandar por mensagem. No plano família.</span></li>
       </ul>
       <div class="cf-folha-pe"><button type="button" class="cf-btn cf-btn-latao cf-largo" data-acao="comprar">Começar os 14 dias</button></div>
       <p class="cf-depois">Depois dos 14 dias, R$ 9,90 por mês.</p>
@@ -606,7 +606,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   function pl(n, um, muitos) { return n + " " + (n === 1 ? um : muitos); }
   function semAcento(s) { return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
 
-  // ── dados fictícios: serviços, usuários e senhas inventados; nenhuma marca real ──
+  // ── dados fictícios: serviços, usuários e senhas inventados ──
   var ITENS = [
     {id: "correio", tipo: "login", nome: "Correio Sabiá", sub: "marina.duarte", cor: "#345a8a", mono: "CS", fav: true, cod: 7, usuario: "marina.duarte@sabia.exemplo", senha: "sol2019", mudou: "há 3 anos"},
     {id: "banco", tipo: "login", nome: "Banco Jequitibá", sub: "marina.duarte", cor: "#2f5d50", mono: "BJ", fav: true, cod: 13, usuario: "marina.duarte", senha: "Vt7#kQ2m!xL9", mudou: "há 2 meses"},
@@ -643,7 +643,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
   function auditados() { return logins().filter(function (x) { return forca(x.senha).n === 1 || repeteEm(x).length > 0; }); }   // cada item uma vez, mesmo fraco e repetido
   // segredo à vista sai em grupos de quatro (só na tela: o valor guardado e copiado continua inteiro); frase de palavras já vem em grupos
   function emGrupos(s) {
-    if (s.split("-").length >= 3 || /\s/.test(s) || s.length < 7) return s;
+    if (ehFrase(s) || /\s/.test(s) || s.length < 7) return s;
     var caixa = h("span", {"class": "cf-grupos"}), i;
     for (i = 0; i < s.length; i += 4) caixa.appendChild(h("span", {text: s.slice(i, i + 4)}));
     return caixa;
@@ -822,7 +822,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
       if (it.anterior) campos.appendChild(campo("Senha anterior", ui.revelado[it.id + ":ant"] ? it.anterior : oculto(it.anterior), {mono: true, revelar: it.id + ":ant", aberto: !!ui.revelado[it.id + ":ant"]}));
       pad.appendChild(campos);
       var rep = repeteEm(it);
-      if (rep.length) pad.appendChild(h("div", {"class": "cf-repete"}, [h("b", {text: "Esta senha se repete"}), " em " + pl(rep.length, "outro item", "outros itens") + ". Se uma conta vazar, as outras abrem junto.",
+      if (rep.length) pad.appendChild(h("div", {"class": "cf-repete"}, [h("b", {text: "Esta senha se repete"}), " em " + pl(rep.length, "outro item", "outros itens") + ". Se uma conta vazar, toda conta com esta senha abre junto.",
         h("div", {"class": "cf-repete-l"}, rep.map(function (x) { return h("button", {type: "button", "class": "cf-ficha", "data-acao": "abrir", "data-id": x.id, text: x.nome}); }))]));
       pad.appendChild(h("div", {"class": "cf-acoes"}, h("button", {type: "button", "class": "cf-btn " + (forca(it.senha).n < 3 || rep.length ? "cf-btn-latao" : "cf-btn-fio") + " cf-largo", "data-acao": "gerador", "data-id": it.id, "data-foco": "trocar"}, [ic("gerador"), "Trocar por uma senha gerada"])));
     } else if (it.tipo === "cartao") {

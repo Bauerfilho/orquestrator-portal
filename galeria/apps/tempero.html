@@ -13,7 +13,7 @@
   "tipo": "App celular",
   "tela": "celular",
   "ordem": 26,
-  "resumo": "Suas receitas limpas e à prova de mão suja. Guarda a receita de qualquer lugar sem anúncio nem história de vida, cozinha junto com você (um passo por vez, em letra grande, com cronômetro em cada passo e porções que recalculam as quantidades) e monta a lista de compras da semana por corredor do mercado.",
+  "resumo": "Suas receitas limpas e à prova de mão suja. Guarda a receita de qualquer lugar sem anúncio nem história de vida, cozinha junto com você (um passo por vez, em letra grande, com cronômetro nos passos que pedem tempo e porções que recalculam as quantidades) e monta a lista de compras da semana por corredor do mercado.",
   "proposta": "Pago",
   "modelo_negocio": "Compra única de R$ 39,90 no iPhone, ou R$ 69,90 com iPad e Mac, sem assinatura; as 20 primeiras receitas são grátis. Paga quem cozinha toda semana e já cansou de procurar a receita no meio de print, link e caderno.",
   "referencias": [
@@ -33,7 +33,7 @@
     },
     {
       "nome": "Compras",
-      "descricao": "A lista da semana, gerada das receitas escolhidas e agrupada por corredor do mercado, somando o que se repete mesmo em medidas diferentes. Um toque risca, outro desrisca; limpar os riscados tem desfazer, e o que foi comprado volta à lista se a semana passar a pedir mais. O que normalmente já existe em casa (sal, óleo, azeite) fica separado, e tirar uma receita da semana refaz a lista na hora."
+      "descricao": "A lista da semana, gerada das receitas escolhidas e agrupada por corredor do mercado, somando o que se repete mesmo em medidas diferentes. Um toque risca, outro tira o risco; limpar os riscados tem desfazer, e o que foi comprado volta à lista se a semana passar a pedir mais. O que normalmente já existe em casa (sal, óleo, azeite) fica separado, e tirar uma receita da semana refaz a lista na hora."
     }
   ],
   "paleta": [
@@ -46,7 +46,7 @@
     {"nome": "Chocolate-escuro (noite)", "hex": "#201713"},
     {"nome": "Tomate claro (noite)", "hex": "#f2805f"}
   ],
-  "tipografia": "Títulos em serifa do sistema (New York), peso 700 e tracking de -0,02 em: 38 px na biblioteca, 30 px na receita (40 na tela ampla); o passo do modo cozinha em serifa de 25 a 33 px (até 44 na tela ampla), com o número do passo em 64 px. Corpo e controles em sans do sistema, 16 e 17 px; quantidades em negrito, com frações de cozinha (¼, ⅓, ½, 1 ½); cronômetro em algarismos tabulares de 44 px.",
+  "tipografia": "Títulos em serifa do sistema (New York), peso 700 e tracking de -0,02 a -0,025 em: 38 px na biblioteca, 30 px na receita (40 na tela ampla); o passo do modo cozinha em serifa de 25 a 33 px (até 44 na tela ampla), com o número do passo em 64 px. Corpo e controles em sans do sistema, 16 e 16,5 px; quantidades em negrito, com frações de cozinha (¼, ⅓, ½, 1 ½); cronômetro em algarismos tabulares de 44 px.",
   "componentes": [
     "Prato desenhado de cima para cada receita",
     "Busca por nome ou por ingrediente",
@@ -64,7 +64,7 @@
     "Folha de compra única com duas opções"
   ],
   "replicar": [
-    "Modelo de dados: Receita (nome, porções de base, tempo, coleções), Ingrediente (quantidade, unidade, nome, corredor, se costuma haver em casa), Passo (texto, minutos de cronômetro opcionais), Semana (receitas escolhidas e porções) e ItemDeCompra (derivado, com o estado de riscado). A lista de compras é sempre calculada das receitas da semana; só o riscado é guardado.",
+    "Modelo de dados: Receita (nome, porções de base, tempo, coleções), Ingrediente (quantidade, unidade, nome, corredor, se costuma haver em casa), Passo (texto, minutos de cronômetro opcionais), Semana (receitas escolhidas e porções) e ItemDeCompra (derivado, com o estado de riscado). A lista de compras é sempre calculada das receitas da semana; só se guardam o riscado, a quantidade já comprada do que foi limpo e o que falta do que costuma haver em casa.",
     "Regras que pegam: escalar é multiplicar pela razão de porções e arredondar como cozinheiro (gramas e mililitros de 5 em 5 ou de 10 em 10; xícaras em quartos e terços, colheres em meios; medida pequena demais desce de xícara para colher e de colher para pitada); o mesmo produto vira uma linha só na lista, com xícaras e colheres convertidas para mililitros; o cronômetro guarda a hora em que termina, não um contador, e dois passos podem contar ao mesmo tempo; tirar uma receita da semana não apaga o que já foi riscado nas outras.",
     "Pilha sugerida para iPhone: SwiftUI com SwiftData e CloudKit privado para sincronizar com iPad e Mac; extensão de compartilhamento para guardar receita a partir do navegador; ActivityKit para o cronômetro na Tela Bloqueada; tela sempre acesa no modo cozinha; lembretes do sistema para exportar a lista.",
     "Integrações: importar receita por link lendo os dados estruturados da página (schema de receita), colar texto solto e separar ingredientes de passos, exportar em PDF e em texto, e mandar a lista para os Lembretes.",

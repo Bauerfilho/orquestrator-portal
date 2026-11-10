@@ -1,7 +1,7 @@
 {
   "name": "Dito",
   "short_name": "Dito",
-  "description": "Fale; a nota chega escrita, organizada e resumida. Um gravador que transcreve no próprio aparelho, separa quem falou, resume em tópicos e tira as decisões e as tarefas combinadas, para quem vive em reunião, aula e atendimento. O argumento que fecha a venda é a privacidade: o áudio não sai do iPhone.",
+  "description": "Fale, e a nota chega escrita, organizada e resumida. Um gravador que transcreve no próprio aparelho, separa quem falou, resume em tópicos e tira as decisões e as tarefas combinadas, para quem vive em reunião, aula e ligação. O argumento que fecha a venda é a privacidade: o áudio não sai do iPhone.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",

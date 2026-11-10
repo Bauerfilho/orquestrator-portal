@@ -1,7 +1,7 @@
 {
   "name": "Feito",
   "short_name": "Feito",
-  "description": "Tarefas pessoais para quem anda com a cabeça cheia: você escreve do jeito que fala (\"buscar o terno sexta 18h #casa\"), o Feito entende a data, a hora e o projeto, e devolve cada coisa no dia certo, com o dia de hoje numa lista curta e a noite separada do resto.",
+  "description": "Tarefas pessoais para quem anda com a cabeça cheia: você escreve do jeito que fala (\"buscar o terno sexta 18h #casa\"), o Feito entende a data, a hora e a área, e devolve cada coisa no dia certo, com o dia de hoje numa lista curta e a noite separada do resto.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",

@@ -15,13 +15,13 @@
   "ordem": 23,
   "resumo": "O bloco de orçamento do autônomo: a proposta bonita fica pronta em um minuto, e o aceite, a cobrança por Pix e o recibo acontecem no mesmo lugar, tudo no celular. Para a fotógrafa, o eletricista, a designer e o professor particular, que fecham serviço pela conversa e perdem dinheiro por não formalizar.",
   "proposta": "Pago",
-  "modelo_negocio": "Assinatura de R$ 19,90 por mês ou R$ 189 por ano; três documentos por mês são grátis. Paga o autônomo que fecha mais de três serviços por mês: um orçamento aceito paga o ano. O que se vende são documentos sem limite, o registro de quando o cliente abriu e o recibo que sai sozinho quando o pagamento entra.",
+  "modelo_negocio": "Assinatura de R$ 19,90 por mês ou R$ 189 por ano; três documentos por mês são grátis. Paga o autônomo que fecha mais de três serviços por mês: um orçamento aceito paga o ano. O que se vende são documentos sem limite, o registro de quando o cliente abriu e o recibo que sai sozinho quando o pagamento entra. Na maquete, a conta grátis já mostra o registro de abertura e o recibo, para demonstrar.",
   "referencias": [
     {"nome": "InvoicePlane", "modelo": "open source"},
     {"nome": "Conta Azul", "modelo": "pago"},
     {"nome": "Invoice Simple", "modelo": "pago"}
   ],
-  "direcao": "Papelaria fina. Marca fictícia: Combinado. A interface é a mesa (um cinza-esverdeado claro, em sans, discreta) e o documento é o papel: creme, em serifa, com números tabulares e o timbre de quem presta o serviço. O verde-petróleo é a tinta de carimbo e só marca o que está resolvido; o âmbar marca o que espera resposta; o vermelho, o que venceu. A assinatura é o carimbo (ACEITO, PAGO) que bate no papel, e o próprio papel, que se compõe enquanto o orçamento é preenchido. No celular, o papel vem em cima e os controles embaixo; em tela ampla, vira mesa de trabalho: a lista de documentos, o editor e o papel ao lado, em tamanho de leitura. No tema escuro a mesa escurece e o papel continua papel, em tom de pergaminho.",
+  "direcao": "Papelaria fina. Marca fictícia: Combinado. A interface é a mesa (um cinza-esverdeado claro, em sans, discreta) e o documento é o papel: creme, em serifa, com números tabulares e o timbre de quem presta o serviço. O verde-petróleo é a tinta de carimbo: marca o que está resolvido e a ação principal; o âmbar marca o que espera resposta; o vermelho, o que venceu. A assinatura é o carimbo (ACEITO, PAGO) que bate no papel, e o próprio papel, que se compõe enquanto o orçamento é preenchido. No celular, o papel vem em cima e os controles embaixo; em tela ampla, vira mesa de trabalho: a lista de documentos, o editor e o papel ao lado, em tamanho de leitura. No tema escuro a mesa escurece e o papel continua papel, em tom de pergaminho.",
   "estados": [
     {
       "nome": "Painel",
@@ -46,7 +46,7 @@
     {"nome": "Grafite quente (noite)", "hex": "#151918"},
     {"nome": "Pergaminho (noite)", "hex": "#e9dfc8"}
   ],
-  "tipografia": "Interface em sans do sistema, 15 a 17 px, com os números do painel em 20 e 25 px, peso 700, e o valor da cobrança em 30 px, peso 800, sempre em algarismos tabulares. O documento em serifa do sistema (New York): timbre em 22 px, itens em 14 px com valores tabulares alinhados à direita, total em 24 px. O carimbo em serifa de caixa alta, espaçada, dentro de moldura dupla e levemente torto.",
+  "tipografia": "Interface em sans do sistema: texto corrido de 15 a 17 px, apoio de 11 a 14 px, os números do painel em 20 e 25 px, peso 700, e o valor da cobrança em 30 px, peso 800, sempre em algarismos tabulares. O documento em serifa do sistema (New York): timbre em 22 px, itens em 14 px com valores tabulares alinhados à direita, total em 24 px. O carimbo em serifa de caixa alta, espaçada, dentro de moldura dupla e levemente torto.",
   "componentes": [
     "Três números do mês",
     "Lista de documentos com situação",
@@ -196,7 +196,7 @@ body.stand-recolhida .stand-pilula{display:inline-flex}
 <style id="app-estilo">
 /* ===== Combinado · tokens =====
    Tese visual: papelaria fina. A interface é a mesa (cinza-esverdeado, sans, discreta); o documento é o papel
-   (creme, serifa, números tabulares, timbre). Verde-petróleo de carimbo só no que está resolvido, âmbar no que espera,
+   (creme, serifa, números tabulares, timbre). Verde-petróleo de carimbo no que está resolvido e na ação principal, âmbar no que espera,
    vermelho no que venceu. No escuro a mesa escurece e o papel continua papel, em pergaminho.
    Tese de interação: preciso e sem cerimônia, como destacar a folha do bloco. Toque responde em 120 ms; telas e folhas
    em 300 ms, sem quique; saídas em 200 ms. Uma única coisa tem peso: o carimbo, que bate no papel em 280 ms. */
@@ -682,7 +682,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
       ev: [["enviado", longa(em(-9)) + ", 10:15", 9.6], ["aberto", longa(em(-9)) + ", 11:02 · aberto 1 vez", 9.5], ["aceito", longa(em(-8)) + ", 08:47", 8.6], ["pago", longa(em(-6)) + ", 15:20", 6.4]]},
     {n: 13, cliente: "Rafael Nunes", titulo: "Ensaio individual", sit: "enviado", env: 10, criado: 10, validade: 7, vence: -3, cond: 1, desc: {modo: "pct", v: 0}, itens: [["Ensaio individual, 1 h", 1, 65000]],
       ev: [["enviado", longa(em(-10)) + ", 19:12", 10.2], ["aberto", longa(em(-9)) + ", 08:30 · aberto 1 vez", 9.7]]},
-    {n: 12, cliente: "Estúdio Jatobá", titulo: "Retratos da equipe", sit: "pago", env: 14, criado: 14, validade: 7, vence: -7, cond: 1, desc: {modo: "valor", v: 0}, itens: [["Retratos corporativos", 8, 11000], ["Tratamento de imagens", 8, 1250]],
+    {n: 12, cliente: "Estúdio Jatobá", titulo: "Retratos da equipe", sit: "pago", env: 14, criado: 14, validade: 7, vence: -7, cond: 1, desc: {modo: "valor", v: 0}, itens: [["Retratos corporativos", 8, 11000], ["Tratamento de imagens", 8, 1200]],
       ev: [["enviado", longa(em(-14)) + ", 17:30", 14.3], ["aberto", longa(em(-14)) + ", 17:41 · aberto 4 vezes", 14.3], ["aceito", longa(em(-13)) + ", 09:05", 13.6], ["pago", longa(em(-10)) + ", 12:10", 10.5]]}
   ];
   // a cota grátis: três documentos enviados a cada ciclo de 30 dias; o ciclo desta conta começou há três dias
@@ -1046,7 +1046,7 @@ window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
     else if (acao === "renovar") mudar("Orçamento renovado por 7 dias.", s, function () { s.vence = 7; s.ev.push(evento("enviado", "agora, de novo")); });
     else if (acao === "lembrar") { s.lembrar = !s.lembrar; desenhar(); }
     else if (acao === "copiar-pix") avisar("Código Pix copiado (demonstração).");
-    else if (acao === "reenviar") avisar("Mensagem reenviada para " + s.cliente.split(" ")[0] + " (demonstração).");
+    else if (acao === "reenviar") avisar("Mensagem reenviada para " + s.cliente + " (demonstração).");
     else if (acao === "recibo") avisar("Recibo simples enviado (demonstração).");
     else if (acao === "planos") abrirPlanos(false);
     else if (acao === "plano") { ui.plano = id; pintarPlanos(); }

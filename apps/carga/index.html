@@ -450,19 +450,18 @@ body{background:var(--cg-fundo)}
 
   // ── datas ──
   var agora = new Date(), HOJE = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-  var LETRA = ["D", "S", "T", "Q", "Q", "S", "S"], DIA3 = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  var DIA3 = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
   var MES3 = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
-  var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
   function em(n) { var d = new Date(HOJE); d.setDate(d.getDate() + n); return d; }
   function curta(d) { return d.getDate() + " " + MES3[d.getMonth()]; }
 
   // ── dados fictícios: três fichas de quem treina há um ano ──
-  // exercício: [nome, passo de carga em kg, ganho da carga máxima estimada em 12 semanas]
+  // exercício: [nome, passo de carga em kg]
   var EX = {
-    supino: ["Supino reto", 2.5, 9], inclinado: ["Supino inclinado", 2, 4], crucifixo: ["Crucifixo na máquina", 2.5, 8],
-    desenvolvimento: ["Desenvolvimento", 2.5, 6], polia: ["Tríceps na polia", 2.5, 5], testa: ["Tríceps testa", 2.5, 3],
-    puxada: ["Puxada alta", 2.5, 7], remada: ["Remada curvada", 2.5, 8], baixa: ["Remada baixa", 2.5, 7], rosca: ["Rosca direta", 2.5, 4], martelo: ["Rosca martelo", 2, 3],
-    agachamento: ["Agachamento", 5, 14], legpress: ["Leg press", 10, 30], terra: ["Levantamento terra", 5, 15], extensora: ["Cadeira extensora", 2.5, 8], flexora: ["Mesa flexora", 2.5, 6]
+    supino: ["Supino reto", 2.5], inclinado: ["Supino inclinado", 2], crucifixo: ["Crucifixo na máquina", 2.5],
+    desenvolvimento: ["Desenvolvimento", 2.5], polia: ["Tríceps na polia", 2.5], testa: ["Tríceps testa", 2.5],
+    puxada: ["Puxada alta", 2.5], remada: ["Remada curvada", 2.5], baixa: ["Remada baixa", 2.5], rosca: ["Rosca direta", 2.5], martelo: ["Rosca martelo", 2],
+    agachamento: ["Agachamento", 5], legpress: ["Leg press", 10], terra: ["Levantamento terra", 5], extensora: ["Cadeira extensora", 2.5], flexora: ["Mesa flexora", 2.5]
   };
   // item da ficha: [exercício, séries, faixa de repetições, carga da última vez, repetições da última vez]
   var FICHAS = [
@@ -692,7 +691,7 @@ body{background:var(--cg-fundo)}
     function px(i) { return L + (R - L) * i / (n - 1); }
     function py(x) { return B - (B - T) * (x - min) / (max - min); }
     var sv = svg("svg", {viewBox: "0 0 " + W + " " + A, role: "img", "aria-label": "Carga máxima estimada de " + EX[id][0] + " nas últimas doze sessões: de " + kg(v[0]) + " para " + kg(todosV[todosV.length - 1]) + " quilos"}), d = "", i;
-    var caixa = h("div", {"class": "cg-graf"}, sv), eixo = h("div", {"class": "cg-eixo cg-g-x", "aria-hidden": "true"}, [h("span", {text: "12 semanas atrás"}), h("span", {text: hoje ? "hoje" : "semana passada"})]);
+    var caixa = h("div", {"class": "cg-graf"}, sv), eixo = h("div", {"class": "cg-eixo cg-g-x", "aria-hidden": "true"}, [h("span", {text: "12 semanas atrás"}), h("span", {text: hoje ? "hoje" : "última sessão"})]);
     [min, (min + max) / 2, max].forEach(function (x) {
       sv.appendChild(svg("path", {"class": "cg-g-grade", d: "M" + L + " " + py(x).toFixed(1) + "H" + R}));
       // os rótulos são texto de verdade, por cima do desenho: o gráfico estica com a coluna e a letra continua de letra

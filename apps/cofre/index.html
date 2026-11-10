@@ -24,7 +24,7 @@
    latão reservado ao que é chave e segurança (o mostrador, o anel dos códigos, destrancar, a senha forte). Todo segredo
    em monoespaçada, em grupos; chapas lisas de borda finíssima. No escuro, o interior do cofre: preto fosco, latão vivo.
    Tese de interação: exato e contido, como um mecanismo. Toque responde em 110 ms; folhas e telas em 280 ms, sem quique;
-   saídas em 180 ms. Só o mostrador tem cerimônia: gira 440 ms e a porta abre em 260 ms. O anel anda por passos. */
+   saídas em 180 ms. Só o mostrador tem cerimônia: gira 440 ms e a porta abre em 280 ms. O anel anda por passos. */
 :root{
   --cf-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
   --cf-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
@@ -372,7 +372,7 @@ body{background:var(--cf-fundo)}
       <ul class="cf-leva">
         <li class="cf-leva-i">Itens sem limite, em todos os aparelhos<span class="cf-leva-s">O mesmo cofre no iPhone, no iPad e no Mac.</span></li>
         <li class="cf-leva-i">Auditoria de senhas<span class="cf-leva-s">Fracas e repetidas, com o porquê e o conserto a um toque.</span></li>
-        <li class="cf-leva-i">Cofre da família<span class="cf-leva-s">Partilhe a senha do streaming sem mandar por mensagem. No plano família.</span></li>
+        <li class="cf-leva-i">Cofre da família<span class="cf-leva-s">Compartilhe a senha do streaming sem mandar por mensagem. No plano família.</span></li>
       </ul>
       <div class="cf-folha-pe"><button type="button" class="cf-btn cf-btn-latao cf-largo" data-acao="comprar">Começar os 14 dias</button></div>
       <p class="cf-depois">Depois dos 14 dias, R$ 9,90 por mês.</p>
@@ -411,7 +411,7 @@ body{background:var(--cf-fundo)}
   function pl(n, um, muitos) { return n + " " + (n === 1 ? um : muitos); }
   function semAcento(s) { return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
 
-  // ── dados fictícios: serviços, usuários e senhas inventados; nenhuma marca real ──
+  // ── dados fictícios: serviços, usuários e senhas inventados ──
   var ITENS = [
     {id: "correio", tipo: "login", nome: "Correio Sabiá", sub: "marina.duarte", cor: "#345a8a", mono: "CS", fav: true, cod: 7, usuario: "marina.duarte@sabia.exemplo", senha: "sol2019", mudou: "há 3 anos"},
     {id: "banco", tipo: "login", nome: "Banco Jequitibá", sub: "marina.duarte", cor: "#2f5d50", mono: "BJ", fav: true, cod: 13, usuario: "marina.duarte", senha: "Vt7#kQ2m!xL9", mudou: "há 2 meses"},
@@ -448,7 +448,7 @@ body{background:var(--cf-fundo)}
   function auditados() { return logins().filter(function (x) { return forca(x.senha).n === 1 || repeteEm(x).length > 0; }); }   // cada item uma vez, mesmo fraco e repetido
   // segredo à vista sai em grupos de quatro (só na tela: o valor guardado e copiado continua inteiro); frase de palavras já vem em grupos
   function emGrupos(s) {
-    if (s.split("-").length >= 3 || /\s/.test(s) || s.length < 7) return s;
+    if (ehFrase(s) || /\s/.test(s) || s.length < 7) return s;
     var caixa = h("span", {"class": "cf-grupos"}), i;
     for (i = 0; i < s.length; i += 4) caixa.appendChild(h("span", {text: s.slice(i, i + 4)}));
     return caixa;
@@ -627,7 +627,7 @@ body{background:var(--cf-fundo)}
       if (it.anterior) campos.appendChild(campo("Senha anterior", ui.revelado[it.id + ":ant"] ? it.anterior : oculto(it.anterior), {mono: true, revelar: it.id + ":ant", aberto: !!ui.revelado[it.id + ":ant"]}));
       pad.appendChild(campos);
       var rep = repeteEm(it);
-      if (rep.length) pad.appendChild(h("div", {"class": "cf-repete"}, [h("b", {text: "Esta senha se repete"}), " em " + pl(rep.length, "outro item", "outros itens") + ". Se uma conta vazar, as outras abrem junto.",
+      if (rep.length) pad.appendChild(h("div", {"class": "cf-repete"}, [h("b", {text: "Esta senha se repete"}), " em " + pl(rep.length, "outro item", "outros itens") + ". Se uma conta vazar, toda conta com esta senha abre junto.",
         h("div", {"class": "cf-repete-l"}, rep.map(function (x) { return h("button", {type: "button", "class": "cf-ficha", "data-acao": "abrir", "data-id": x.id, text: x.nome}); }))]));
       pad.appendChild(h("div", {"class": "cf-acoes"}, h("button", {type: "button", "class": "cf-btn " + (forca(it.senha).n < 3 || rep.length ? "cf-btn-latao" : "cf-btn-fio") + " cf-largo", "data-acao": "gerador", "data-id": it.id, "data-foco": "trocar"}, [ic("gerador"), "Trocar por uma senha gerada"])));
     } else if (it.tipo === "cartao") {
