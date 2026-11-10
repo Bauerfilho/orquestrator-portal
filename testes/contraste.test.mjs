@@ -149,5 +149,5 @@ test('o index.html liga as 6 folhas novas, o rotina.js e os contêineres das tel
   for (const id of ['acerto-resumo', 'assinaturas-topo', 'sociedade-acerto', 'caixa-calculado', 'fechamento-content']) assert.match(html, new RegExp(`id="${id}"`));
   const ordem = (a, b) => assert.ok(html.indexOf(`id="${a}"`) < html.indexOf(`id="${b}"`), `${a} vem antes de ${b}`);
   ordem('livro-resumo', 'acerto-resumo'); ordem('assinaturas-topo', 'subscriptions-content'); ordem('society-content', 'sociedade-acerto'); ordem('livro-content', 'fechamento-content');
-  assert.match(html, /<details class="registro-importado" open><summary>Registro importado do pacote de 18\/10<\/summary><div id="cash-content"><\/div><\/details>/);
+  assert.match(html, /<details class="registro-importado" open><summary data-host-text="imported">Registro importado do pacote de 18\/10<\/summary><div id="cash-content"><\/div><\/details>/);
 });

@@ -70,8 +70,8 @@
   // O host (AI Cask, PWA ou portal) se apresenta em window.financeHost antes deste script; sem ele, vale o modo local.
   const host = () => (window.financeHost && typeof window.financeHost === "object") ? window.financeHost : {};
   const hostLabels = {
-    local: {indicator: "Arquivos locais", reading: "Arquivos locais", footer: "Dados da empresa · leitura local", drawer: "Leitura local", record: "Arquivo local"},
-    portal: {indicator: "Dados compartilhados", reading: "Dados compartilhados", footer: "Dados da empresa · versão online", drawer: "Acesso privado", record: "Registro compartilhado"}
+    local: {indicator: "Arquivos locais", reading: "Arquivos locais", footer: "Dados da empresa · leitura local", drawer: "Leitura local", record: "Arquivo local", imported: "Registros locais da empresa"},
+    portal: {indicator: "Dados compartilhados", reading: "Dados compartilhados", footer: "Dados da empresa · versão online", drawer: "Acesso privado", record: "Registro compartilhado", imported: "Registro importado do pacote de 18/10"}
   };
   function hostLabel(key) { return (host().kind === "portal" ? hostLabels.portal : hostLabels.local)[key] || ""; }
   function applyHostLabels() {
@@ -2441,9 +2441,11 @@
   }
 
   // ── o mapa: a gaveta montada pelo registro, as rotas por hash e as páginas registradas em tempo de execução ─────────
-  // Visível: a página está no registro e, se pede uma capacidade do host (requer: "galeria"), o host a liga.
+  // Visível: a página está no registro e, se pede uma capacidade do host (requer), o host a traz: ligada (galeria: true)
+  // ou como objeto (livro: o diário das sócias, que o portal tem e a aba Finanças do AI Cask ainda não).
   function entradaDe(key) { return registro.find((entrada) => entrada.chave === key) || null; }
-  function paginaVisivel(entrada) { return Boolean(entrada) && (!entrada.requer || host()[entrada.requer] === true); }
+  function capacidade(nome) { const valor = host()[nome]; return valor === true || (valor !== null && typeof valor === "object"); }
+  function paginaVisivel(entrada) { return Boolean(entrada) && (!entrada.requer || capacidade(entrada.requer)); }
   // Um rótulo por grupo (Dinheiro · Planejar · Empresa · Ajuda) e os botões na ordem do registro, numerados pela ordem
   // visível (01, 02…). Os cliques chegam por delegação (data-navigate), então remontar não exige religar nada.
   function montarGaveta() {

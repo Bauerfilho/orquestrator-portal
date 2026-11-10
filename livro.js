@@ -72,9 +72,14 @@ function desenharFaixaGlobal(D) {
   alvo.replaceChildren(...(fx ? [fx] : []));
 }
 function desenharModo() {
-  const d = livroHost() && livroHost().diario ? livroHost().diario() : null;
+  const h = livroHost();
+  const d = h && h.diario ? h.diario() : null;
   const alvo = $('lv-modo');
   if (!alvo) return;
+  // host sem diário (a aba Finanças do AI Cask): não há modo a dizer; somem o rótulo e o "·" que o antecede
+  const antes = alvo.previousElementSibling, separador = antes && antes.classList.contains('read-state-separator') ? antes : null;
+  alvo.hidden = !h; if (separador) separador.hidden = !h;
+  if (!h) { alvo.replaceChildren(); return; }
   const [tom, texto] = MODOS[modo(d)] || MODOS.abrindo;
   alvo.replaceChildren();
   alvo.className = 'lv-modo is-' + tom;
