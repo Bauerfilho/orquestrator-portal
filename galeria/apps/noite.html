@@ -1,0 +1,1468 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noite · Maquete</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "noite",
+  "nome": "Noite",
+  "colecao": "referencia",
+  "tipo": "App celular",
+  "tela": "celular",
+  "ordem": 29,
+  "resumo": "Durma na hora e acorde com calma. Um horário de sono que dá para cumprir: o app avisa a hora de começar a desacelerar, conduz uma rotina curta antes de deitar (baixar a luz, um minuto de respiração, uma linha de diário) e desperta aos poucos, sem susto. Para quem dorme tarde rolando o celular e acorda no tranco.",
+  "proposta": "Pago",
+  "modelo_negocio": "Assinatura de R$ 12,90 por mês ou R$ 89,90 por ano (42% a menos), com 7 dias grátis para usar tudo. Paga quem quer rotina, não gráfico: o que se vende é a desaceleração guiada, o despertar gradual e o retrato da semana.",
+  "referencias": [
+    {"nome": "Sleep Cycle", "modelo": "freemium"},
+    {"nome": "Pillow", "modelo": "freemium"},
+    {"nome": "Rise", "modelo": "pago"}
+  ],
+  "direcao": "O céu logo depois do pôr do sol. Marca fictícia: Noite. Índigo profundo que vai a ameixa, estrelas mínimas e a lua em creme; os horários em algarismos finos e grandes, na variante arredondada da fonte do sistema. Tudo em luz baixa, com contraste suave e legível. A assinatura é o mostrador circular do sono, com as duas alças e o arco preenchido entre deitar e acordar, e o círculo que respira na hora de desacelerar. No celular é uma tela por vez; em tela ampla, a rotina fica à esquerda, o mostrador no centro e a semana à direita. O tema claro é o amanhecer: pêssego muito claro passando a azul-pálido, com tinta índigo; ao desacelerar, a tela anoitece nos dois temas e escurece mais a cada passo.",
+  "estados": [
+    {
+      "nome": "Esta noite",
+      "descricao": "O mostrador de 24 horas com a hora de deitar e a de acordar: arrastar as alças (ou usar as setas do teclado) muda os horários e a duração na hora. Embaixo, quanto falta para começar a desacelerar, os dias da semana em que o horário vale e o despertar escolhido, que se troca numa lista."
+    },
+    {
+      "nome": "Desacelerar",
+      "descricao": "A rotina de antes de deitar, um passo por vez: baixar a luz, um minuto de respiração guiada com o círculo que respira (inspira em 4, solta em 6, contando os ciclos) e uma linha de diário. A tela escurece a cada passo, e Boa noite arma o despertar, que se desarma ali mesmo."
+    },
+    {
+      "nome": "Manhã",
+      "descricao": "O amanhecer: duas perguntas rápidas sobre a noite e a semana em barras de horário, com a faixa da meta ao fundo. Responder atualiza a noite de ontem, a regularidade, a média e a sequência. Nada é medido: o app só conhece os horários que a pessoa combinou e o que ela responde, e noite livre fica sem barra."
+    }
+  ],
+  "paleta": [
+    {"nome": "Índigo profundo", "hex": "#141033"},
+    {"nome": "Creme de lua", "hex": "#f1ead9"},
+    {"nome": "Lilás do arco", "hex": "#8f83e8"},
+    {"nome": "Ameixa", "hex": "#2c1a3c"},
+    {"nome": "Rosa do poente", "hex": "#d98fc0"},
+    {"nome": "Coral da alvorada", "hex": "#d9532f"},
+    {"nome": "Pêssego (amanhecer)", "hex": "#fde9dc"},
+    {"nome": "Azul-pálido (amanhecer)", "hex": "#dfe9f7"},
+    {"nome": "Tinta índigo (amanhecer)", "hex": "#231c52"}
+  ],
+  "tipografia": "Variante arredondada da fonte do sistema (SF Pro Rounded). Horários em algarismos finos e grandes: a duração no centro do mostrador em 46 px, peso 300; deitar e acordar em 30 px. Texto em 16 e 17 px, peso 400 e 600; rótulos em 12 px com espaçamento de 0,08 em. Números sempre tabulares.",
+  "componentes": [
+    "Mostrador de 24 horas com duas alças",
+    "Arco do sono com a duração no centro",
+    "Aviso de quanto falta para desacelerar",
+    "Dias da semana que ligam e desligam",
+    "Despertar com lista de sons",
+    "Rotina de desaceleração em passos",
+    "Tela que escurece a cada passo",
+    "Círculo que respira, com contagem de ciclos",
+    "Uma linha de diário",
+    "Boa noite, que arma e desarma o despertar",
+    "Duas perguntas da manhã",
+    "Semana em barras de horário com a meta",
+    "Regularidade, média e sequência",
+    "Folha de planos com anual e mensal"
+  ],
+  "replicar": [
+    "Modelo de dados: Horario (deitar, acordar, dias da semana, antecedência da desaceleração), Despertar (som, se é gradual), Rotina (passos em ordem) e Noite (data, o horário combinado que valia nela, as duas respostas da manhã, a linha de diário). A hora em que a pessoa deitou sai da resposta (na hora, um pouco depois, bem depois), nunca de uma medida; regularidade, média, o que faltou para a meta e a sequência são sempre derivados das noites.",
+    "Regras que pegam: o app não mede sono, só horários combinados e respostas, e diz isso; a noite pertence ao dia em que começa, mesmo terminando no dia seguinte; mudar o horário vale da próxima noite em diante e não reescreve as passadas; noite livre não tem aviso, despertar nem barra na semana, e desligar a noite não apaga o que já foi respondido; regular é deitar a até 30 minutos da meta; a respiração é só um ritmo guiado, sem promessa nenhuma.",
+    "Pilha sugerida para iPhone: SwiftUI com SwiftData; notificações locais para o aviso de desacelerar; AlarmKit para o despertar tocar mesmo no silencioso; ActivityKit para a contagem na Tela Bloqueada; brilho e Foco pela integração com Atalhos. Sem HealthKit no primeiro lançamento: o app guarda só horários e respostas.",
+    "Integrações: ligar o Foco Sono do sistema junto com a rotina, acender uma luminária compatível com HomeKit no despertar gradual, e exportar as noites em CSV.",
+    "Corte do primeiro lançamento: o mostrador, o aviso de desacelerar, a rotina com respiração, o despertar e a semana. Ficam para depois: sons próprios, luz gradual com HomeKit, relógio e rotinas diferentes por dia."
+  ]
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+/* ===== Noite · tokens =====
+   Tese visual: o céu logo depois do pôr do sol. Índigo profundo que vai a ameixa, estrelas mínimas, a lua em creme;
+   horários em algarismos finos e grandes, arredondados; cartões de vidro fosco, sem borda dura; luz baixa e legível.
+   O claro é o amanhecer (pêssego a azul-pálido, tinta índigo). Ao desacelerar, a tela anoitece nos dois temas.
+   Tese de interação: lento e sem aresta, como a luz baixando. Toque responde em 140 ms; telas e folhas em 340 ms;
+   saídas em 220 ms. Só o círculo respira sozinho (4 segundos para inspirar, 6 para soltar), e só enquanto está à vista. */
+:root{
+  --nt-redonda:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --nt-ceu1:#fde9dc;--nt-ceu2:#dfe9f7;--nt-tinta:#231c52;--nt-suave:#544e80;
+  --nt-vidro:rgba(255,255,255,.58);--nt-vidro2:rgba(255,255,255,.82);--nt-fio:rgba(35,28,82,.13);--nt-fio2:rgba(35,28,82,.28);
+  --nt-acao:#3d348b;--nt-sobre-acao:#fdf6ee;--nt-arco1:#4a3fb5;--nt-arco2:#d9532f;--nt-trilho:rgba(35,28,82,.12);--nt-lua:#3d348b;--nt-meta:rgba(74,63,181,.14);
+  --nt-barra:rgba(253,243,236,.9);--nt-veu:rgba(35,28,82,.38);--nt-estrelas:0;
+  --nt-sombra:0 1px 2px rgba(35,28,82,.06),0 22px 46px -24px rgba(35,28,82,.4);
+  --nt-rapido:.14s;--nt-sai:.22s;--nt-vira:.34s;--nt-mola:cubic-bezier(.2,.8,.2,1);--nt-some:cubic-bezier(.4,0,1,1);
+  color-scheme:light;
+}
+:root[data-tema=escuro],:root #app[data-vista=desacelerar]{
+  --nt-ceu1:#141033;--nt-ceu2:#2c1a3c;--nt-tinta:#f1ead9;--nt-suave:#b9b2cf;
+  --nt-vidro:rgba(255,255,255,.07);--nt-vidro2:rgba(255,255,255,.12);--nt-fio:rgba(241,234,217,.12);--nt-fio2:rgba(241,234,217,.26);
+  --nt-acao:#f1ead9;--nt-sobre-acao:#1c1640;--nt-arco1:#8f83e8;--nt-arco2:#d98fc0;--nt-trilho:rgba(241,234,217,.1);--nt-lua:#f3e3b0;--nt-meta:rgba(143,131,232,.2);
+  --nt-barra:rgba(26,19,58,.9);--nt-veu:rgba(6,4,18,.62);--nt-estrelas:1;
+  --nt-sombra:0 1px 2px rgba(0,0,0,.4),0 22px 46px -24px rgba(0,0,0,.9);
+}
+:root[data-tema=escuro]{color-scheme:dark}
+:root:not([data-tema=escuro]) #app[data-vista=desacelerar]{--nt-ceu1:#3a2f6e;--nt-ceu2:#503567;--nt-suave:#cbc5dd;--nt-barra:rgba(58,47,110,.9)}
+:root[data-tema=escuro] #app[data-vista=manha]{--nt-ceu1:#1d1640;--nt-ceu2:#4c2a4f;--nt-barra:rgba(40,26,66,.9);--nt-estrelas:.3}
+html,body{margin:0}
+body{background:var(--nt-ceu1)}
+
+/* ===== base: a casca tem a altura da tela; quem rola são as colunas de dentro ===== */
+#app{container:app / inline-size;position:relative;height:100vh;height:calc(100dvh - var(--stand-barra,0px));overflow:hidden;
+  background:linear-gradient(to bottom,var(--nt-ceu1),var(--nt-ceu2));color:var(--nt-tinta);font:400 16px/1.45 var(--nt-redonda);-webkit-font-smoothing:antialiased}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app button,#app input{font:inherit;color:inherit;letter-spacing:inherit}
+#app button{cursor:pointer;border:0;background:none;padding:0;margin:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app svg{display:block;flex:none}
+#app :focus-visible{outline:2.5px solid var(--nt-tinta);outline-offset:3px;border-radius:10px}
+#app .nt-so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .nt-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app .nt-num{font-variant-numeric:tabular-nums}
+#app .nt-rot{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--nt-suave)}
+#app .nt-casca{position:relative;height:100%;overflow:hidden;overflow:clip;display:flex;flex-direction:column}
+/* estrelas mínimas (só de noite) e o escurecer de cada passo da rotina */
+#app .nt-casca::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:var(--nt-estrelas);
+  background-image:radial-gradient(1.2px 1.2px at 12% 9%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 31% 22%,#fff 50%,transparent 52%),radial-gradient(1.4px 1.4px at 58% 7%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 77% 17%,#fff 50%,transparent 52%),radial-gradient(1.2px 1.2px at 91% 31%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 6% 41%,#fff 50%,transparent 52%),radial-gradient(1px 1px at 46% 36%,#fff 50%,transparent 52%),radial-gradient(1.2px 1.2px at 84% 52%,#fff 50%,transparent 52%)}
+#app .nt-casca::after{content:"";position:absolute;inset:0;pointer-events:none;background:#07051a;opacity:0;transition:opacity .5s ease}
+#app[data-vista=desacelerar][data-passo="1"] .nt-casca::after{opacity:.16}
+#app[data-vista=desacelerar][data-passo="2"] .nt-casca::after{opacity:.3}
+#app[data-vista=desacelerar][data-passo="3"] .nt-casca::after{opacity:.44}
+#app[data-vista=desacelerar][data-passo="3"][data-armado] .nt-casca::after{opacity:.58}
+#app .nt-corpo,#app .nt-abas,#app .nt-topo{position:relative;z-index:1}
+
+/* ===== barra de cima (tela ampla) e abas de baixo (celular) ===== */
+#app .nt-topo{display:none;align-items:center;gap:22px;flex:none;height:62px;padding:0 28px}
+#app .nt-marca{display:flex;align-items:center;gap:9px;font-size:22px;font-weight:600;letter-spacing:-.02em}
+#app .nt-marca .nt-ic{width:20px;height:20px;color:var(--nt-lua);fill:currentColor;stroke:none}
+#app .nt-seg{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--nt-vidro)}
+#app .nt-seg-b{min-height:36px;padding:0 16px;border-radius:999px;font-size:14.5px;font-weight:600;color:var(--nt-suave);transition:background-color var(--nt-rapido)}
+#app .nt-seg-b[aria-current=page]{background:var(--nt-vidro2);color:var(--nt-tinta)}
+#app .nt-plano{position:relative;flex:none;margin-left:auto;min-height:32px;padding:0 13px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--nt-fio2);font-size:13px;font-weight:600;white-space:nowrap}
+#app .nt-plano::after{content:"";position:absolute;inset:-7px -4px}
+#app .nt-abas{position:absolute;left:14px;right:14px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:5px;border-radius:999px;background:var(--nt-barra);box-shadow:var(--nt-sombra),inset 0 0 0 1px var(--nt-fio);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+#app .nt-aba{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--nt-suave);transition:background-color var(--nt-rapido),color var(--nt-rapido)}
+#app .nt-aba .nt-ic{width:19px;height:19px}
+#app .nt-aba[aria-current=page]{background:var(--nt-vidro2);color:var(--nt-tinta)}
+
+/* ===== corpo ===== */
+#app .nt-corpo{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:84px}
+#app .nt-rotina,#app .nt-centro,#app .nt-semana{display:none;min-width:0}
+#app[data-vista=noite] .nt-centro,#app[data-vista=desacelerar] .nt-centro,#app[data-vista=manha] .nt-centro,#app[data-vista=manha] .nt-semana{display:block}
+#app .nt-hoje,#app .nt-palco,#app .nt-manha{display:none}
+#app[data-vista=noite] .nt-hoje,#app[data-vista=desacelerar] .nt-palco,#app[data-vista=manha] .nt-manha{display:block;animation:nt-entra var(--nt-vira) var(--nt-mola)}
+@keyframes nt-entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#app .nt-pad{padding:16px 20px 0}
+#app .nt-centro .nt-pad>.nt-rot{display:block;margin-bottom:2px}
+#app .nt-cab{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#app .nt-h1{font-size:30px;font-weight:600;line-height:1.1;letter-spacing:-.025em}
+#app .nt-sub{margin-top:4px;font-size:15px;color:var(--nt-suave)}
+#app .nt-cartao{margin-top:12px;padding:15px 16px;border-radius:22px;background:var(--nt-vidro);box-shadow:inset 0 0 0 1px var(--nt-fio)}
+#app .nt-cartao-t{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+#app .nt-cartao-t h2{font-size:16.5px;font-weight:600;letter-spacing:-.01em}
+#app .nt-cartao-lado{font-size:13px;color:var(--nt-suave);white-space:nowrap}
+
+/* ===== o mostrador do sono ===== */
+#app .nt-dial{position:relative;width:min(318px,82cqi);aspect-ratio:1;margin:8px auto 0}
+#app .nt-dial svg{width:100%;height:100%;overflow:visible}
+#app .nt-d-trilho{fill:none;stroke:var(--nt-trilho);stroke-width:34}
+#app .nt-d-arco{fill:none;stroke:url(#nt-g-arco);stroke-width:34;stroke-linecap:round}
+#app .nt-g-a{stop-color:var(--nt-arco1)}
+#app .nt-g-b{stop-color:var(--nt-arco2)}
+#app .nt-d-antes{fill:none;stroke:var(--nt-arco1);stroke-width:34;opacity:.28}
+#app .nt-d-tique{stroke:var(--nt-fio2);stroke-width:1.5;stroke-linecap:round}
+#app .nt-d-hora{fill:var(--nt-suave);font:600 11px var(--nt-redonda);text-anchor:middle;dominant-baseline:central}
+#app .nt-alca{cursor:grab;outline:none;touch-action:none}
+#app .nt-alca[data-pega]{cursor:grabbing}
+#app .nt-alca-toque{fill:transparent}
+#app .nt-alca-c{fill:var(--nt-vidro2);stroke:var(--nt-tinta);stroke-width:2}
+#app .nt-alca .nt-alca-i{fill:none;stroke:var(--nt-tinta);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#app .nt-alca:focus-visible .nt-alca-c{stroke-width:4}
+#app .nt-dial-meio{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:2px;pointer-events:none;text-align:center}
+#app .nt-dur{font-size:46px;font-weight:300;line-height:1;letter-spacing:-.03em}
+#app .nt-dur-s{font-size:13.5px;color:var(--nt-suave)}
+#app .nt-dica{margin-top:5px;font-size:12px;color:var(--nt-suave)}
+#app .nt-horas{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+#app .nt-hora{padding:12px 14px;border-radius:20px;background:var(--nt-vidro);box-shadow:inset 0 0 0 1px var(--nt-fio)}
+#app .nt-hora-r{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--nt-suave)}
+#app .nt-hora-r .nt-ic{width:15px;height:15px}
+#app .nt-hora-v{display:block;margin-top:3px;font-size:30px;font-weight:300;line-height:1.1;letter-spacing:-.03em}
+#app .nt-aviso-d{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:14px 16px;border-radius:22px;background:var(--nt-vidro);box-shadow:inset 0 0 0 1px var(--nt-fio);font-size:15px;line-height:1.35;transition:background-color var(--nt-rapido)}
+#app .nt-aviso-d-t{flex:1;min-width:0}
+#app .nt-aviso-d-t b{display:block;font-size:17px;font-weight:600}
+#app .nt-seta{width:16px;height:16px;color:var(--nt-suave)}
+#app .nt-dias{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+#app .nt-dia{position:relative;display:grid;place-items:center;min-height:44px;border-radius:14px;box-shadow:inset 0 0 0 1px var(--nt-fio2);font-size:14px;font-weight:600;color:var(--nt-suave);transition:background-color var(--nt-rapido),color var(--nt-rapido)}
+#app .nt-dia::after{content:"";position:absolute;inset:0 -3px}
+#app .nt-dia[aria-pressed=true]{background:var(--nt-acao);box-shadow:none;color:var(--nt-sobre-acao)}
+#app .nt-linha{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;font-size:16px}
+#app .nt-linha-t{flex:1;min-width:0}
+#app .nt-linha-s{display:block;font-size:13px;color:var(--nt-suave)}
+#app .nt-chave{position:relative;flex:none;width:48px;height:29px;border-radius:15px;background:var(--nt-fio2);transition:background-color var(--nt-sai)}
+#app .nt-chave::after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:transform var(--nt-sai) var(--nt-mola)}
+#app [aria-pressed=true]>.nt-chave{background:var(--nt-arco1)}
+#app [aria-pressed=true]>.nt-chave::after{transform:translateX(19px)}
+
+/* ===== desacelerar: a rotina e o círculo que respira ===== */
+#app .nt-pontos{display:flex;gap:6px;margin-top:14px}
+#app .nt-ponto{flex:1;height:4px;border-radius:2px;background:var(--nt-fio2)}
+#app .nt-ponto[data-feito]{background:var(--nt-lua)}
+#app .nt-etapa{margin-top:18px;padding:22px 20px;border-radius:28px;background:var(--nt-vidro);box-shadow:inset 0 0 0 1px var(--nt-fio);text-align:center}
+#app .nt-etapa[data-novo]{animation:nt-entra var(--nt-vira) var(--nt-mola)}
+#app .nt-etapa-n{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--nt-suave)}
+#app .nt-etapa-t{margin-top:6px;font-size:26px;font-weight:600;line-height:1.15;letter-spacing:-.02em}
+#app .nt-etapa-s{margin-top:8px;font-size:15.5px;line-height:1.45;color:var(--nt-suave)}
+#app .nt-folego{position:relative;width:min(210px,56cqi);aspect-ratio:1;margin:22px auto 8px;display:grid;place-items:center}
+#app .nt-folego-aro{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--nt-fio2)}
+#app .nt-folego-c{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--nt-arco2),var(--nt-arco1));opacity:.9;transform:scale(.56)}
+#app .nt-folego-t{position:relative;display:grid;justify-items:center;gap:1px;color:#1c1640}
+#app .nt-folego-p{font-size:19px;font-weight:600}
+#app .nt-folego-s{min-height:19px;font-size:13px;font-weight:600}
+#app .nt-ciclos{font-size:14px;color:var(--nt-suave)}
+#app .nt-lampada{display:grid;place-items:center;width:92px;height:92px;margin:20px auto 6px;border-radius:50%;background:var(--nt-vidro2);color:var(--nt-lua)}
+#app .nt-lampada .nt-ic{width:40px;height:40px}
+#app .nt-campo{width:100%;height:52px;margin-top:18px;padding:0 16px;border:0;border-radius:16px;background:var(--nt-vidro2);box-shadow:inset 0 0 0 1px var(--nt-fio);font-size:17px;text-align:center}
+#app .nt-campo::placeholder{color:var(--nt-suave)}
+#app .nt-campo:focus{outline:0;box-shadow:inset 0 0 0 2px var(--nt-tinta)}
+#app .nt-nav{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;margin-top:16px}
+#app .nt-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 18px;border-radius:999px;font-size:16.5px;font-weight:600;white-space:nowrap;transition:transform var(--nt-rapido),background-color var(--nt-rapido)}
+#app .nt-btn:active{transform:scale(.97)}
+#app .nt-btn .nt-ic{width:19px;height:19px}
+#app .nt-btn-cheio{background:var(--nt-acao);color:var(--nt-sobre-acao)}
+#app .nt-btn-fio{box-shadow:inset 0 0 0 1px var(--nt-fio2)}
+#app .nt-btn[disabled]{opacity:.35;cursor:default}
+#app .nt-largo{display:flex;width:100%}
+#app .nt-passos{margin-top:8px}
+#app .nt-passo{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:6px 0;border-bottom:1px solid var(--nt-fio);font-size:16px;transition:background-color var(--nt-rapido)}
+#app .nt-passo:last-child{border-bottom:0}
+#app .nt-passo-n{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--nt-fio2);font-size:14px;font-weight:600;color:var(--nt-suave)}
+#app .nt-passo-n .nt-ic{width:15px;height:15px;stroke-width:2.6}
+#app .nt-passo[data-feito] .nt-passo-n{background:var(--nt-lua);box-shadow:none;color:var(--nt-ceu1)}
+#app .nt-passo[aria-current=step]{font-weight:600}
+#app .nt-passo[aria-current=step] .nt-passo-n{box-shadow:inset 0 0 0 2px var(--nt-tinta);color:var(--nt-tinta)}
+#app .nt-passo-t{flex:1;min-width:0}
+#app .nt-passo-s{display:block;font-size:13px;font-weight:400;color:var(--nt-suave)}
+
+/* ===== manhã e a semana ===== */
+#app .nt-pergunta{margin-top:14px}
+#app .nt-pergunta-t{font-size:17px;font-weight:600}
+#app .nt-opcoes{display:flex;gap:8px;margin-top:9px}
+#app .nt-op{display:grid;place-items:center;flex:1 1 auto;min-height:50px;padding:4px 10px;border-radius:16px;box-shadow:inset 0 0 0 1px var(--nt-fio2);font-size:13.5px;font-weight:600;line-height:1.2;text-align:center;white-space:nowrap;transition:background-color var(--nt-rapido),color var(--nt-rapido)}
+#app .nt-op[aria-pressed=true]{background:var(--nt-acao);box-shadow:none;color:var(--nt-sobre-acao)}
+#app .nt-noites{position:relative;margin-top:4px}
+#app .nt-noite{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:10px;min-height:30px;font-size:12.5px;font-weight:600;color:var(--nt-suave)}
+#app .nt-faixa{position:relative;height:16px;border-radius:8px;background:var(--nt-trilho)}
+#app .nt-faixa-m{position:absolute;top:-7px;bottom:-7px;background:var(--nt-meta)}
+#app .nt-faixa-b{position:absolute;top:0;bottom:0;border-radius:8px;background:linear-gradient(to right,var(--nt-arco1),var(--nt-arco2))}
+#app .nt-noite[data-pendente] .nt-faixa-b{background:none;box-shadow:inset 0 0 0 1.5px var(--nt-fio2);border-radius:8px}
+#app .nt-eixo{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;margin-top:6px;font-size:11.5px;color:var(--nt-suave)}
+#app .nt-eixo-h{display:flex;justify-content:space-between}
+#app .nt-fatos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+#app .nt-fato{padding:12px 14px;border-radius:18px;background:var(--nt-vidro);box-shadow:inset 0 0 0 1px var(--nt-fio)}
+#app .nt-fato-v{display:block;font-size:26px;font-weight:300;line-height:1.05;letter-spacing:-.03em}
+#app .nt-fato-r{display:block;margin-top:4px;font-size:12.5px;line-height:1.3;color:var(--nt-suave)}
+#app .nt-nota{margin-top:10px;font-size:13px;line-height:1.45;color:var(--nt-suave)}
+#app .nt-fim{height:22px}
+#app .nt-h2{margin-top:2px;font-size:22px;font-weight:600;line-height:1.15;letter-spacing:-.02em}
+#app .nt-linha+.nt-linha{border-top:1px solid var(--nt-fio)}
+#app .nt-linha>.nt-ic{color:var(--nt-suave)}
+#app .nt-respirar{margin-top:14px;min-height:48px}
+#app .nt-citacao{margin-top:12px;font-size:16px;font-style:italic;line-height:1.4;overflow-wrap:anywhere}
+#app .nt-aurora{position:relative;height:168px;margin-top:14px;overflow:hidden;border-radius:26px;background:linear-gradient(to top,color-mix(in srgb,var(--nt-arco2) 36%,transparent),transparent 80%),var(--nt-vidro);box-shadow:inset 0 0 0 1px var(--nt-fio);text-align:center}
+#app .nt-aurora-sol{position:absolute;left:50%;bottom:-76px;width:132px;height:132px;margin-left:-66px;border-radius:50%;background:radial-gradient(circle at 50% 28%,#ffe9c2,var(--nt-arco2))}
+#app .nt-aurora[data-novo] .nt-aurora-sol{animation:nt-nasce .9s var(--nt-mola) both}
+@keyframes nt-nasce{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}}
+#app .nt-aurora-h{position:relative;display:block;padding-top:18px;font-size:44px;font-weight:300;line-height:1;letter-spacing:-.03em}
+#app .nt-aurora-s{position:relative;display:block;margin-top:6px;padding:0 16px;font-size:14px;color:var(--nt-suave)}
+#app .nt-registro{margin-top:14px;padding-top:12px;border-top:1px solid var(--nt-fio);font-size:14.5px;line-height:1.4}
+#app .nt-registro b{font-weight:600}
+#app .nt-noite[data-hoje]{color:var(--nt-tinta)}
+#app .nt-faixa-l{position:absolute;left:10px;top:0;bottom:0;display:flex;align-items:center;font-size:10.5px;font-weight:600;letter-spacing:.04em;color:var(--nt-suave)}
+
+/* ===== véu, folhas e aviso ===== */
+#app .nt-veu{position:absolute;inset:0;z-index:20;background:var(--nt-veu);opacity:0;pointer-events:none;transition:opacity var(--nt-sai)}
+#app[data-folha] .nt-veu{opacity:1;pointer-events:auto}
+#app .nt-folha{position:absolute;left:0;right:0;bottom:0;z-index:21;max-height:90%;overflow-y:auto;overscroll-behavior:contain;padding:10px 20px calc(22px + env(safe-area-inset-bottom));
+  background:linear-gradient(to bottom,var(--nt-ceu1),var(--nt-ceu2) 55%);border-radius:28px 28px 0 0;box-shadow:var(--nt-sombra),inset 0 1px 0 var(--nt-fio2);transform:translateY(105%);visibility:hidden;transition:transform var(--nt-sai) var(--nt-some),visibility 0s var(--nt-sai)}
+#app[data-folha=som] .nt-folha[data-folha=som],#app[data-folha=planos] .nt-folha[data-folha=planos]{transform:none;visibility:visible;transition:transform var(--nt-vira) var(--nt-mola),visibility 0s}
+#app .nt-puxador{width:38px;height:4px;margin:0 auto 14px;border-radius:99px;background:var(--nt-fio2)}
+#app .nt-folha-topo{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+#app .nt-folha-t{flex:1;min-width:0}
+#app .nt-folha-t h2{margin-top:2px;font-size:27px;font-weight:600;line-height:1.1;letter-spacing:-.025em}
+#app .nt-fechar{position:relative;display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;background:var(--nt-vidro2)}
+#app .nt-fechar::after{content:"";position:absolute;inset:-5px}
+#app .nt-fechar .nt-ic{width:15px;height:15px;stroke-width:2.3}
+#app .nt-som{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;border-bottom:1px solid var(--nt-fio);font-size:16.5px;transition:background-color var(--nt-rapido)}
+#app .nt-som-t{flex:1;min-width:0}
+#app .nt-som-s{display:block;font-size:13px;color:var(--nt-suave)}
+#app .nt-som-c{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--nt-fio2);color:transparent}
+#app .nt-som-c .nt-ic{width:15px;height:15px;stroke-width:2.6}
+#app .nt-som[aria-pressed=true] .nt-som-c{background:var(--nt-acao);box-shadow:none;color:var(--nt-sobre-acao)}
+#app .nt-folha-s{margin:-4px 0 12px;font-size:16px;color:var(--nt-suave)}
+#app .nt-leva{margin:6px 0 14px;border-top:1px solid var(--nt-fio)}
+#app .nt-escolhas{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#app .nt-opcao{display:grid;align-content:start;gap:1px;padding:12px 14px;border-radius:20px;background:var(--nt-vidro);box-shadow:inset 0 0 0 1px var(--nt-fio);transition:background-color var(--nt-rapido),box-shadow var(--nt-rapido)}
+#app .nt-opcao[aria-pressed=true]{background:var(--nt-vidro2);box-shadow:inset 0 0 0 2px var(--nt-tinta)}
+#app .nt-opcao-r{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:13px;font-weight:600;color:var(--nt-suave)}
+#app .nt-opcao-e{padding:2px 7px;border-radius:999px;background:var(--nt-acao);color:var(--nt-sobre-acao);font-size:11px;font-weight:600;white-space:nowrap}
+#app .nt-opcao-n{font-size:25px;font-weight:300;line-height:1.15;letter-spacing:-.03em;white-space:nowrap}
+#app .nt-opcao-s{font-size:12.5px;line-height:1.3;color:var(--nt-suave)}
+#app .nt-folha{--nt-pe:calc(22px + env(safe-area-inset-bottom))}
+#app .nt-folha-pe{position:sticky;bottom:calc(-1*var(--nt-pe));z-index:1;padding:12px 0 var(--nt-pe);margin-bottom:calc(-1*var(--nt-pe));background:linear-gradient(to bottom,transparent,var(--nt-ceu2) 14px)}
+#app .nt-depois{position:relative;z-index:2;font-size:13.5px;color:var(--nt-suave);text-align:center}
+#app .nt-leva-i{padding:12px 0;border-bottom:1px solid var(--nt-fio);font-size:16.5px;font-weight:600;line-height:1.3}
+#app .nt-leva-s{display:block;font-size:14px;font-weight:400;color:var(--nt-suave)}
+#app .nt-fino{position:relative;z-index:2;display:block;width:100%;min-height:48px;font-size:15px;font-weight:600;text-align:center;text-decoration:underline;text-underline-offset:4px}
+#app .nt-miudo{margin-top:6px;font-size:12.5px;line-height:1.4;color:var(--nt-suave);text-align:center}
+#app .nt-aviso{position:absolute;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));z-index:30;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 24px);min-height:46px;padding:0 6px 0 18px;border-radius:999px;background:var(--nt-acao);color:var(--nt-sobre-acao);
+  font-size:14.5px;font-weight:600;line-height:1.3;box-shadow:var(--nt-sombra);opacity:0;transform:translate(-50%,12px);pointer-events:none;transition:opacity var(--nt-sai),transform var(--nt-sai) var(--nt-some)}
+#app .nt-aviso[data-visivel]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition:opacity var(--nt-sai),transform var(--nt-vira) var(--nt-mola)}
+#app .nt-aviso-t{padding:9px 10px 9px 0}
+#app .nt-aviso-b{position:relative;flex:none;min-height:34px;padding:0 13px;border-radius:999px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--nt-sobre-acao) 45%,transparent);font-size:13px;font-weight:700}
+#app .nt-aviso-b::after{content:"";position:absolute;inset:-5px 0}
+#app .nt-aviso .nt-aviso-b[hidden]{display:none}
+
+@media (hover:hover) and (pointer:fine){
+  #app .nt-aviso-d:hover,#app .nt-btn-fio:hover,#app .nt-opcao:hover{background-color:var(--nt-vidro2)}
+  #app .nt-som:hover .nt-som-c,#app .nt-passo:hover .nt-passo-n{box-shadow:inset 0 0 0 2px var(--nt-tinta)}
+  #app .nt-seg-b:hover,#app .nt-aba:hover{color:var(--nt-tinta)}
+}
+
+/* ===== tela média e ampla: a rotina · o mostrador · a semana ===== */
+@container app (min-width:720px){
+  #app .nt-topo{display:flex}
+  #app .nt-casca .nt-abas,#app .nt-centro .nt-plano{display:none}
+  #app .nt-corpo{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:minmax(0,1fr);overflow:hidden;padding-bottom:0}
+  #app .nt-corpo .nt-centro,#app .nt-corpo .nt-semana,#app .nt-corpo .nt-rotina{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:30px}
+  #app .nt-corpo .nt-centro,#app .nt-corpo .nt-semana{display:block}
+  #app .nt-centro-in{max-width:500px;margin:0 auto}
+  #app .nt-semana{padding-right:8px}
+  #app .nt-dial{width:min(340px,100%)}
+  #app .nt-folha{left:50%;right:auto;bottom:auto;top:10%;width:min(460px,calc(100% - 64px));max-height:80%;padding:24px 26px;border-radius:28px;transform:translate(-50%,-10px);opacity:0;
+    transition:transform var(--nt-sai) var(--nt-some),opacity var(--nt-sai),visibility 0s var(--nt-sai)}
+  #app[data-folha=som] .nt-folha[data-folha=som],#app[data-folha=planos] .nt-folha[data-folha=planos]{transform:translate(-50%,0);opacity:1;transition:transform var(--nt-vira) var(--nt-mola),opacity var(--nt-sai),visibility 0s}
+  #app .nt-folha{--nt-pe:24px}
+  #app .nt-puxador{display:none}
+  #app .nt-aviso{bottom:28px}
+}
+@container app (min-width:1120px){
+  #app .nt-corpo{grid-template-columns:330px minmax(0,1fr) 380px}
+  #app .nt-corpo .nt-rotina{display:block;padding-left:8px}
+  #app .nt-so-estreito{display:none}
+}
+@container app (max-width:350px){
+  #app .nt-pad{padding-left:14px;padding-right:14px}
+  #app .nt-h1{font-size:26px}
+  #app .nt-dur{font-size:38px}
+  #app .nt-hora-v{font-size:26px}
+  #app .nt-aba .nt-ic{display:none}
+  #app .nt-op{padding:4px 6px;white-space:normal}
+  #app .nt-dias{gap:4px;margin:0 -6px}
+  #app .nt-dia::after{inset:0 -2px}
+  #app .nt-opcao{padding:12px 10px}
+  #app .nt-opcao-n{font-size:22px}
+  #app .nt-opcao-e{padding:2px 5px;font-size:10.5px}
+}
+/* acabamento da revisão: a alça da folha arrasta com o dedo; clicar dentro da folha mantém o foco nela (o Esc continua valendo);
+   e o botão do aviso fechado não fica no caminho do Tab */
+#app .nt-puxador,#app .nt-folha-topo{touch-action:none}
+#app [role=dialog]{outline:0}
+#app .nt-aviso:not([data-visivel]) button{visibility:hidden;transition:visibility 0s .2s}
+@media (prefers-reduced-motion:reduce){
+  #app .nt-folego-c{transform:scale(.8)}
+  #app *,#app *::before,#app *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1" data-vista="noite" data-passo="0">
+  <svg class="nt-so-leitor" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="nt-g-arco" gradientUnits="userSpaceOnUse" x1="40" y1="60" x2="280" y2="260"><stop class="nt-g-a" offset="0"/><stop class="nt-g-b" offset="1"/></linearGradient>
+      <symbol id="nt-i-lua" viewBox="0 0 24 24"><path d="M19.5 14.2A8 8 0 0 1 9.8 4.5a8 8 0 1 0 9.7 9.7z"/></symbol>
+      <symbol id="nt-i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6L18 18M18 6l-1.4 1.4M7.4 16.6L6 18"/></symbol>
+      <symbol id="nt-i-folha" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-14 0 9-4 14-11 14-1.5 0-3 0-3 0z"/><path d="M5 19c2.5-4 5.5-7 9.5-9.5"/></symbol>
+      <symbol id="nt-i-sino" viewBox="0 0 24 24"><path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 2h-14zM10 20.5a2.2 2.2 0 0 0 4 0"/></symbol>
+      <symbol id="nt-i-luz" viewBox="0 0 24 24"><path d="M9 17.5h6M10 20.5h4M8.2 14.5a5.5 5.5 0 1 1 7.6 0c-.5.5-.8 1.2-.8 2v1H9v-1c0-.8-.3-1.5-.8-2z"/></symbol>
+      <symbol id="nt-i-certo" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="nt-i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="nt-i-seta" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+      <symbol id="nt-i-antes" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></symbol>
+    </defs>
+  </svg>
+  <div class="nt-casca">
+    <header class="nt-topo">
+      <span class="nt-marca"><svg class="nt-ic" aria-hidden="true"><use href="#nt-i-lua"/></svg>Noite</span>
+      <div class="nt-seg" role="group" aria-label="Seções">
+        <button type="button" class="nt-seg-b" data-acao="vista" data-vista="noite">Esta noite</button>
+        <button type="button" class="nt-seg-b" data-acao="vista" data-vista="desacelerar">Desacelerar</button>
+        <button type="button" class="nt-seg-b" data-acao="vista" data-vista="manha">Manhã</button>
+      </div>
+      <button type="button" class="nt-plano" data-acao="planos">7 dias grátis</button>
+    </header>
+    <div class="nt-corpo">
+      <aside class="nt-rotina" aria-label="Rotina de antes de deitar"></aside>
+      <section class="nt-centro">
+        <div class="nt-hoje"></div>
+        <div class="nt-palco" aria-label="Desacelerar"></div>
+        <div class="nt-manha"></div>
+      </section>
+      <aside class="nt-semana" aria-label="A semana"></aside>
+    </div>
+    <nav class="nt-abas" aria-label="Seções">
+      <button type="button" class="nt-aba" data-acao="vista" data-vista="noite"><svg class="nt-ic" aria-hidden="true"><use href="#nt-i-lua"/></svg>Esta noite</button>
+      <button type="button" class="nt-aba" data-acao="vista" data-vista="desacelerar"><svg class="nt-ic" aria-hidden="true"><use href="#nt-i-folha"/></svg>Desacelerar</button>
+      <button type="button" class="nt-aba" data-acao="vista" data-vista="manha"><svg class="nt-ic" aria-hidden="true"><use href="#nt-i-sol"/></svg>Manhã</button>
+    </nav>
+    <div class="nt-veu" data-acao="fechar-folha"></div>
+    <section class="nt-folha" data-folha="som" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="nt-t-som">
+      <div class="nt-puxador" aria-hidden="true"></div>
+      <div class="nt-folha-topo">
+        <div class="nt-folha-t"><span class="nt-rot">Despertar</span><h2 id="nt-t-som">Com que som?</h2></div>
+        <button type="button" class="nt-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="nt-ic" aria-hidden="true"><use href="#nt-i-fechar"/></svg></button>
+      </div>
+      <div class="nt-sons"></div>
+      <p class="nt-miudo">Na maquete nenhum som toca: a lista só troca a escolha.</p>
+    </section>
+    <section class="nt-folha" data-folha="planos" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="nt-t-planos">
+      <div class="nt-puxador" aria-hidden="true"></div>
+      <div class="nt-folha-topo">
+        <div class="nt-folha-t"><span class="nt-rot">7 dias grátis para usar tudo</span><h2 id="nt-t-planos">Noite Completa</h2></div>
+        <button type="button" class="nt-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="nt-ic" aria-hidden="true"><use href="#nt-i-fechar"/></svg></button>
+      </div>
+      <p class="nt-folha-s">Durma na hora e acorde com calma.</p>
+      <ul class="nt-leva">
+        <li class="nt-leva-i">Desacelerar guiado<span class="nt-leva-s">A rotina de antes de deitar, com a respiração e a tela escurecendo a cada passo.</span></li>
+        <li class="nt-leva-i">Despertar gradual<span class="nt-leva-s">O som começa baixo e sobe aos poucos nos 20 minutos antes da hora.</span></li>
+        <li class="nt-leva-i">O retrato da semana<span class="nt-leva-s">Regularidade, média e o que faltou para a sua meta, sem gráfico demais.</span></li>
+      </ul>
+      <div class="nt-escolhas" role="group" aria-label="Plano depois do teste">
+        <button type="button" class="nt-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><span class="nt-opcao-r">Anual<span class="nt-opcao-e">42% a menos</span></span><b class="nt-opcao-n nt-num">R$ 89,90</b><span class="nt-opcao-s">R$ 7,49 por mês</span></button>
+        <button type="button" class="nt-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><span class="nt-opcao-r">Mensal</span><b class="nt-opcao-n nt-num">R$ 12,90</b><span class="nt-opcao-s">sem fidelidade</span></button>
+      </div>
+      <div class="nt-folha-pe"><button type="button" class="nt-btn nt-btn-cheio nt-largo" data-acao="comprar">Começar os 7 dias grátis</button></div>
+      <p class="nt-depois">Depois, R$ 89,90 por ano. Cancele quando quiser.</p>
+      <button type="button" class="nt-fino" data-acao="restaurar">Restaurar compra</button>
+      <p class="nt-miudo">Bem-estar, não saúde: o app não mede sono nem dá orientação médica. Maquete: os valores são hipótese e nada é cobrado aqui.</p>
+    </section>
+    <p class="nt-so-leitor nt-fala" role="status"></p>
+    <div class="nt-aviso" role="status" aria-live="polite"><span class="nt-aviso-t"></span><button type="button" class="nt-aviso-b" data-acao="desfazer">Desfazer</button></div>
+  </div>
+</main>
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura da Noite: o mostrador circular do sono, com o arco entre deitar e acordar e a duração no centro, sobre o céu índigo">
+  <defs><linearGradient id="nt-m-ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141033"/><stop offset="1" stop-color="#2c1a3c"/></linearGradient><linearGradient id="nt-m-arco" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8f83e8"/><stop offset="1" stop-color="#d98fc0"/></linearGradient></defs>
+  <rect width="320" height="180" fill="url(#nt-m-ceu)"/>
+  <circle cx="34" cy="24" r="1.2" fill="#fff"/><circle cx="286" cy="34" r="1" fill="#fff"/><circle cx="252" cy="14" r="1.2" fill="#fff"/><circle cx="60" cy="150" r="1" fill="#fff"/><circle cx="296" cy="128" r="1" fill="#fff"/>
+  <circle cx="160" cy="92" r="62" fill="none" stroke="#f1ead9" stroke-opacity=".1" stroke-width="20"/>
+  <path d="M147.9 31.2A62 62 0 0 1 220.8 104.1" fill="none" stroke="url(#nt-m-arco)" stroke-width="20" stroke-linecap="round"/>
+  <circle cx="147.9" cy="31.2" r="9" fill="#2a2255" stroke="#f1ead9" stroke-width="1.6"/><circle cx="220.8" cy="104.1" r="9" fill="#2a2255" stroke="#f1ead9" stroke-width="1.6"/>
+  <text x="160" y="98" text-anchor="middle" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="27" font-weight="300" fill="#f1ead9" letter-spacing="-1">7 h 30</text>
+  <text x="160" y="114" text-anchor="middle" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="8.5" fill="#b9b2cf">23:15 a 06:45</text>
+  <path d="M40 100a11 11 0 0 1-13.3-13.3 11 11 0 1 0 13.3 13.3z" fill="#f3e3b0"/>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Noite: o app sozinho. Tudo é de mentira e vive só na memória: nenhum som toca, nenhum despertar é armado de verdade e nada sai da tela.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ── ajudantes de DOM: todo texto entra como texto, nunca como HTML ──
+  function h(tag, attrs, filhos) {
+    var n = document.createElement(tag), k;
+    for (k in attrs || {}) {
+      if (attrs[k] == null || attrs[k] === false) continue;
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    [].concat(filhos || []).forEach(function (f) { if (f != null && f !== false) n.appendChild(typeof f === "string" ? document.createTextNode(f) : f); });
+    return n;
+  }
+  function svg(tag, attrs) { var n = document.createElementNS(SVGNS, tag), k; for (k in attrs) n.setAttribute(k, attrs[k]); return n; }
+  function ic(nome, extra) { var s = svg("svg", {"class": "nt-ic" + (extra ? " " + extra : ""), "aria-hidden": "true"}); s.appendChild(svg("use", {href: "#nt-i-" + nome})); return s; }
+  function $(sel, raiz) { return (raiz || app).querySelector(sel); }
+  function todos(sel, raiz) { return Array.prototype.slice.call((raiz || app).querySelectorAll(sel)); }
+  function limpar(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+
+  // ── dados fictícios. A maquete se passa numa quinta-feira à noite; a hora é fixa, não a do relógio ──
+  function hm(horas, min) { return horas * 60 + min; }
+  var NOITE_DE = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
+  var LETRA = ["S", "T", "Q", "Q", "S", "S", "D"];
+  var HOJE = 3, AGORA = hm(21, 48), ANTES = 45;
+  var SONS = [
+    {id: "aurora", nome: "Aurora", sub: "Sinos baixos que vão abrindo"},
+    {id: "mare", nome: "Maré", sub: "Ondas que chegam devagar"},
+    {id: "quintal", nome: "Quintal", sub: "Pássaros de manhã cedo"},
+    {id: "piano", nome: "Piano de sala", sub: "Três notas, repetidas com calma"},
+    {id: "radio", nome: "Rádio baixinho", sub: "Vozes ao longe, sem notícia nenhuma"}
+  ];
+  // o horário combinado: vale da próxima noite em diante e nunca reescreve as noites passadas
+  var hor = {deitar: hm(23, 15), acordar: hm(6, 45), dias: [true, true, true, true, false, false, true], som: "aurora", gradual: true};
+  // o que cada resposta da manhã quer dizer em minutos de atraso: na hora, um pouco depois, bem depois
+  var ATRASO = [0, 25, 70];
+  // as seis noites anteriores, da mais antiga para a mais nova: irregulares no começo, melhorando. Cada uma guarda o horário que valia
+  // nela e as respostas da manhã seguinte. A hora de deitar sai da resposta, nunca de uma medida; noite livre não tem pergunta de horário
+  var PASSADAS = [["Sex", "sexta", null, 1], ["Sáb", "sábado", null, 0], ["Dom", "domingo", 2, 2], ["Seg", "segunda", 2, 1], ["Ter", "terça", 1, 0], ["Qua", "quarta", 0, 0]].map(function (x) {
+    var n = {d: x[0], nome: x[1], livre: x[2] == null, como: x[3]};
+    if (!n.livre) { n.md = hm(23, 15); n.ma = hm(6, 45); n.deitou = n.md + ATRASO[x[2]]; n.acordou = n.ma; }
+    return n;
+  });
+  var PASSOS = [["Baixar a luz", "meio minuto"], ["Respirar", "um minuto, seis ciclos"], ["Uma linha de diário", "o que ficou de bom"], ["Boa noite", ""]];
+  var P1 = ["Na hora", "Um pouco depois", "Bem depois"];
+  var P2 = ["Bem", "Mais ou menos", "Com sono"], ACORDOU = ["bem", "mais ou menos", "com sono"];
+  var ui = {vista: "noite", passo: 0, novo: true, troca: false, armado: false, guarda: 0, mexeu: false, plano: "ano", diario: "", resp: {deitou: null, como: null}, ultimoFoco: null, chaveFoco: null, desfazer: null, relAviso: 0};
+
+  // ── contas de horário ──
+  function d2(n) { return (n < 10 ? "0" : "") + n; }
+  function hora(m) { m = ((Math.round(m) % 1440) + 1440) % 1440; return d2(Math.floor(m / 60)) + ":" + d2(m % 60); }
+  function dur(m) { m = Math.round(m); var horas = Math.floor(m / 60), r = m % 60; return horas ? horas + "\u00a0h" + (r ? "\u00a0" + d2(r) : "") : r + "\u00a0min"; }
+  function duracao() { return (hor.acordar - hor.deitar + 1440) % 1440; }
+  function volta(m) { return (m % 1440 + 1440) % 1440; }
+  // o eixo das barras acompanha as noites da semana: começa na hora cheia anterior à que deitou mais cedo (com uma hora de folga)
+  // e cobre até a que acordou mais tarde, em 12, 16, 20 ou 24 horas. Quem dorme de dia vê a própria noite inteira
+  function eixo(l) {
+    var ref = hor.deitar, ini = 0, fim = 0, zero, span;
+    function pos(m) { return volta(m - ref + 720) - 720; }
+    l.forEach(function (n) {
+      [[n.md, n.ma], [n.deitou, n.acordou]].forEach(function (par) {
+        if (par[0] == null) return;
+        var a = pos(par[0]);
+        ini = Math.min(ini, a); fim = Math.max(fim, a + volta(par[1] - par[0]));
+      });
+    });
+    zero = Math.floor((ref + ini) / 60) * 60 - 60;
+    span = [720, 960, 1200, 1440].filter(function (x) { return x >= ref + fim - zero + 20; })[0] || 1440;
+    return {zero: zero, span: span, x: function (m) { return ref + pos(m) - zero; }};
+  }
+  // o despertar só está armado em noite com horário: desligar a noite não apaga nada, só deixa de valer
+  function armado() { return ui.armado && hor.dias[HOJE]; }
+  function som() { for (var i = 0; i < SONS.length; i++) if (SONS[i].id === hor.som) return SONS[i]; return SONS[0]; }
+  function inicioAviso() { return (hor.deitar - ANTES + 1440) % 1440; }
+  function falta() { var f = (inicioAviso() - AGORA + 1440) % 1440; return f > 720 ? 0 : f; }
+  function fraseLivres() {
+    var l = NOITE_DE.filter(function (x, i) { return !hor.dias[i]; }), t;
+    if (!l.length) return "Todas as noites seguem o horário.";
+    if (l.length === 7) return "Nenhuma noite com horário: o Noite fica em silêncio.";
+    t = l.length < 2 ? l[0] : l.slice(0, -1).join(", ") + " e " + l[l.length - 1];
+    return t.charAt(0).toUpperCase() + t.slice(1) + (l.length === 1 ? " fica livre" : " ficam livres") + ": sem aviso e sem despertar.";
+  }
+
+  // ── a semana: nada é medido. Cada noite é o horário combinado mais o que a pessoa respondeu de manhã ──
+  function noiteDeHoje() {
+    var n = {d: "Qui", nome: "quinta", hoje: true, livre: !hor.dias[HOJE], como: ui.resp.como};
+    if (!n.livre) { n.md = hor.deitar; n.ma = hor.acordar; if (ui.resp.deitou != null) { n.deitou = hor.deitar + ATRASO[ui.resp.deitou]; n.acordou = hor.acordar; } }
+    return n;
+  }
+  function noites() { return PASSADAS.concat([noiteDeHoje()]); }
+  function tempo(n) { return volta(n.acordou - n.deitou); }
+  function naHora(n) { var d = volta(n.deitou - n.md); return Math.min(d, 1440 - d) <= 30; }
+  function resumo() {
+    var l = noites(), com = l.filter(function (n) { return n.deitou != null; }), cont = com.filter(function (n) { return !n.livre; }), manhas = l.filter(function (n) { return n.como != null; }), soma = 0, seq = 0, i;
+    com.forEach(function (n) { soma += tempo(n); });
+    for (i = cont.length - 1; i >= 0 && naHora(cont[i]); i--) seq++;
+    return {contam: cont.length, regulares: cont.filter(naHora).length, media: com.length ? soma / com.length : 0, seq: seq, manhas: manhas.length, boas: manhas.filter(function (n) { return n.como === 0; }).length};
+  }
+
+  function avisar(texto, desfazer) {
+    var a = $(".nt-aviso");
+    $(".nt-aviso-t").textContent = texto;
+    $(".nt-aviso-b").hidden = !desfazer;
+    ui.desfazer = desfazer || null;
+    a.setAttribute("data-visivel", "");
+    clearTimeout(ui.relAviso);
+    ui.relAviso = setTimeout(function () { a.removeAttribute("data-visivel"); ui.desfazer = null; }, 5200);
+  }
+
+  // ── estado 1: o mostrador de 24 horas. Meia-noite fica em cima; o arco vai de deitar a acordar ──
+  var CX = 160, CY = 160, R = 126;
+  function ponto(min, r) { var a = min / 1440 * 2 * Math.PI; return [(CX + r * Math.sin(a)).toFixed(1), (CY - r * Math.cos(a)).toFixed(1)]; }
+  function caminhoArco() { var a = ponto(hor.deitar, R), b = ponto(hor.acordar, R); return "M" + a[0] + " " + a[1] + "A" + R + " " + R + " 0 " + (duracao() > 720 ? 1 : 0) + " 1 " + b[0] + " " + b[1]; }
+  function alca(qual) {
+    var g = svg("g", {"class": "nt-alca", "data-alca": qual, "data-foco": "alca-" + qual, tabindex: "0", role: "slider", "aria-label": qual === "deitar" ? "Hora de deitar" : "Hora de acordar", "aria-valuemin": "0", "aria-valuemax": "1435"});
+    g.appendChild(svg("circle", {"class": "nt-alca-toque", r: 28}));
+    g.appendChild(svg("circle", {"class": "nt-alca-c", r: 14}));
+    g.appendChild(svg("use", {"class": "nt-alca-i", href: "#nt-i-" + (qual === "deitar" ? "lua" : "sol"), x: -8, y: -8, width: 16, height: 16}));
+    return g;
+  }
+  function mostrador() {
+    var s = svg("svg", {viewBox: "0 0 320 320", role: "group", "aria-label": "Horário de sono"}), i, p, q, t;
+    s.appendChild(svg("circle", {"class": "nt-d-trilho", cx: CX, cy: CY, r: R}));
+    for (i = 0; i < 24; i++) { p = ponto(i * 60, i % 6 ? 102 : 98); q = ponto(i * 60, 106); s.appendChild(svg("line", {"class": "nt-d-tique", x1: p[0], y1: p[1], x2: q[0], y2: q[1], "aria-hidden": "true"})); }
+    [0, 6, 12, 18].forEach(function (n) { p = ponto(n * 60, 85); t = svg("text", {"class": "nt-d-hora", x: p[0], y: p[1], "aria-hidden": "true"}); t.textContent = String(n); s.appendChild(t); });
+    s.appendChild(svg("path", {"class": "nt-d-antes"}));
+    s.appendChild(svg("path", {"class": "nt-d-arco"}));
+    s.appendChild(alca("deitar"));
+    s.appendChild(alca("acordar"));
+    return s;
+  }
+  // o sono combinado fica entre 4 e 12 horas: passou do limite, a alça para no limite mais próximo
+  function ajustar(qual, novo) {
+    var outro = qual === "deitar" ? hor.acordar : hor.deitar, d = qual === "deitar" ? (outro - novo + 1440) % 1440 : (novo - outro + 1440) % 1440, limite = 0;
+    if (d > 720 && d <= 1200) limite = 720;
+    else if (d > 1200 || d < 240) limite = 240;
+    if (limite) novo = qual === "deitar" ? (outro - limite + 1440) % 1440 : (outro + limite) % 1440;
+    if (novo === hor[qual]) return;
+    hor[qual] = novo;
+    if (!ui.mexeu) { ui.mexeu = true; var dica = $(".nt-dica"); if (dica) dica.hidden = true; }
+    pintarHorario();
+  }
+  function ligarAlcas() {
+    todos(".nt-alca").forEach(function (g) {
+      var qual = g.getAttribute("data-alca"), pegando = false;
+      var soltar = function () { pegando = false; g.removeAttribute("data-pega"); };
+      g.addEventListener("pointerdown", function (e) {
+        if (e.button) return;
+        pegando = true; g.setPointerCapture(e.pointerId); g.setAttribute("data-pega", "");
+        e.preventDefault(); g.focus({preventScroll: true});
+      });
+      g.addEventListener("pointermove", function (e) {
+        if (!pegando) return;
+        var r = $(".nt-dial svg").getBoundingClientRect(), a = Math.atan2(e.clientX - (r.left + r.width / 2), (r.top + r.height / 2) - e.clientY);
+        ajustar(qual, Math.round((a / (2 * Math.PI) * 1440 + 1440) % 1440 / 5) * 5 % 1440);
+      });
+      g.addEventListener("pointerup", soltar);
+      g.addEventListener("pointercancel", soltar);
+      g.addEventListener("touchstart", function (e) { e.preventDefault(); }, {passive: false});
+      g.addEventListener("keydown", function (e) {
+        var salto = {ArrowRight: 5, ArrowUp: 5, ArrowLeft: -5, ArrowDown: -5, PageUp: 30, PageDown: -30}[e.key];
+        if (!salto) return;
+        e.preventDefault();
+        ajustar(qual, (hor[qual] + salto + 1440) % 1440);
+      });
+    });
+  }
+  // muda o horário sem refazer o mostrador: a alça que está na mão (ou no foco) continua sendo a mesma
+  function pintarHorario(soCentro) {
+    var arco = $(".nt-d-arco"), a = ponto(inicioAviso(), R), b = ponto(hor.deitar, R);
+    if (!arco) return;
+    arco.setAttribute("d", caminhoArco());
+    // o trecho mais claro antes da alça de deitar é o tempo de desacelerar; some nas noites livres
+    $(".nt-d-antes").setAttribute("d", hor.dias[HOJE] ? "M" + a[0] + " " + a[1] + "A" + R + " " + R + " 0 0 1 " + b[0] + " " + b[1] : "");
+    ["deitar", "acordar"].forEach(function (qual) {
+      var g = $('.nt-alca[data-alca="' + qual + '"]'), p = ponto(hor[qual], R);
+      g.setAttribute("transform", "translate(" + p[0] + " " + p[1] + ")");
+      g.setAttribute("aria-valuenow", String(hor[qual]));
+      g.setAttribute("aria-valuetext", hora(hor[qual]) + ", " + dur(duracao()) + " por noite");
+      $('[data-hora="' + qual + '"]').textContent = hora(hor[qual]);
+    });
+    $(".nt-dur").textContent = dur(duracao());
+    desenharResto();
+    if (!soCentro) { desenharSemana(); desenharRotina(); }
+  }
+  function cartaoHora(qual) {
+    return h("div", {"class": "nt-hora"}, [h("span", {"class": "nt-hora-r"}, [ic(qual === "deitar" ? "lua" : "sol"), qual === "deitar" ? "Deitar" : "Acordar"]), h("b", {"class": "nt-hora-v nt-num", "data-hora": qual})]);
+  }
+  function desenharHoje() {
+    var raiz = limpar($(".nt-hoje")), pad = h("div", {"class": "nt-pad nt-centro-in"});
+    pad.appendChild(h("span", {"class": "nt-rot", text: "Quinta-feira · agora são " + hora(AGORA)}));
+    pad.appendChild(h("div", {"class": "nt-cab"}, [h("h1", {"class": "nt-h1", tabindex: "-1", text: "Esta noite"}), h("button", {type: "button", "class": "nt-plano", "data-acao": "planos", "data-foco": "plano", text: "7 dias grátis"})]));
+    pad.appendChild(h("p", {"class": "nt-sub", text: "Durma na hora, acorde com calma."}));
+    pad.appendChild(h("div", {"class": "nt-dial"}, [mostrador(), h("div", {"class": "nt-dial-meio", "aria-hidden": "true"}, [h("b", {"class": "nt-dur nt-num"}), h("span", {"class": "nt-dur-s", text: "por noite"}),
+      h("span", {"class": "nt-dica", hidden: ui.mexeu, text: "arraste a lua ou o sol"})])]));
+    pad.appendChild(h("div", {"class": "nt-horas"}, [cartaoHora("deitar"), cartaoHora("acordar")]));
+    pad.appendChild(h("div", {"class": "nt-resto"}));
+    pad.appendChild(h("div", {"class": "nt-fim"}));
+    raiz.appendChild(pad);
+    ligarAlcas();
+    pintarHorario(true);
+  }
+  // o que vem embaixo do mostrador: o aviso de desacelerar, as noites com horário e o despertar
+  function desenharResto() {
+    var raiz = limpar($(".nt-resto")), f = falta(), temHoje = hor.dias[HOJE], s = som();
+    raiz.appendChild(h("button", {type: "button", "class": "nt-aviso-d", "data-acao": "vista", "data-vista": "desacelerar", "data-foco": "ir-desacelerar"}, [ic("folha"),
+      h("span", {"class": "nt-aviso-d-t"}, !temHoje ? [h("b", {text: "Noite livre"}), "Sem aviso e sem despertar hoje. A rotina continua aqui, se quiser."] :
+        f < 1 ? [h("b", {text: "Hora de desacelerar"}), "O aviso tocou às " + hora(inicioAviso()) + ". A rotina leva uns 5 minutos."] :
+        [h("b", {text: "Desacelerar às " + hora(inicioAviso())}), "Faltam " + dur(f) + ". O aviso chega " + ANTES + " min antes de deitar."]),
+      ic("seta", "nt-seta")]));
+    raiz.appendChild(h("section", {"class": "nt-cartao"}, [
+      h("div", {"class": "nt-cartao-t"}, [h("h2", {text: "Noites com horário"}), h("span", {"class": "nt-cartao-lado nt-num", text: hor.dias.filter(Boolean).length + " de 7"})]),
+      h("div", {"class": "nt-dias", role: "group", "aria-label": "Noites com horário"}, hor.dias.map(function (ligado, i) {
+        return h("button", {type: "button", "class": "nt-dia", "data-acao": "dia", "data-id": String(i), "data-foco": "dia-" + i, "aria-pressed": String(ligado), "aria-label": "Noite de " + NOITE_DE[i], text: LETRA[i]});
+      })),
+      h("p", {"class": "nt-nota", text: fraseLivres()})]));
+    raiz.appendChild(h("section", {"class": "nt-cartao"}, [
+      h("div", {"class": "nt-cartao-t"}, [h("h2", {text: "Despertar"}), h("span", {"class": "nt-cartao-lado", text: temHoje ? "amanhã, sexta" : "amanhã não toca"})]),
+      h("button", {type: "button", "class": "nt-linha", "data-acao": "som", "data-foco": "som"}, [ic("sino"), h("span", {"class": "nt-linha-t"}, [h("span", {"class": "nt-num", text: hora(hor.acordar) + " · " + s.nome}), h("span", {"class": "nt-linha-s", text: s.sub})]), ic("seta", "nt-seta")]),
+      h("button", {type: "button", "class": "nt-linha", "data-acao": "gradual", "data-foco": "gradual", "aria-pressed": String(hor.gradual)}, [ic("sol"), h("span", {"class": "nt-linha-t"}, ["Despertar gradual", h("span", {"class": "nt-linha-s", text: "O som começa baixo e sobe aos poucos, 20 min antes."})]), h("span", {"class": "nt-chave", "aria-hidden": "true"})])]));
+  }
+
+  // ── estado 2: desacelerar. Um passo por vez, e o céu escurece a cada passo ──
+  function listaPassos(prefixo) {
+    return h("div", {"class": "nt-passos"}, PASSOS.map(function (p, i) {
+      var feito = i < ui.passo || (i === 3 && armado());
+      return h("button", {type: "button", "class": "nt-passo", "data-acao": "passo", "data-id": String(i), "data-foco": prefixo + i, "data-feito": feito, "aria-current": ui.vista === "desacelerar" && i === ui.passo ? "step" : null}, [
+        h("span", {"class": "nt-passo-n", "aria-hidden": "true"}, feito ? ic("certo") : i === 3 ? ic("lua") : String(i + 1)),
+        h("span", {"class": "nt-passo-t"}, [p[0], h("span", {"class": "nt-passo-s", text: i < 3 ? p[1] : hor.dias[HOJE] ? "arma o despertar das " + hora(hor.acordar) : "noite livre, sem despertar"})])]);
+    }));
+  }
+  function desenharPalco() {
+    var raiz = limpar($(".nt-palco")), pad = h("div", {"class": "nt-pad nt-centro-in"}), p = ui.passo, temHoje = hor.dias[HOJE], s = som(), arm = armado(), cartao = h("div", {"class": "nt-etapa", "data-novo": ui.troca});
+    var cabeca = function (n, t, sub) { cartao.appendChild(h("p", {"class": "nt-etapa-n", text: n})); cartao.appendChild(h("h2", {"class": "nt-etapa-t", text: t})); cartao.appendChild(h("p", {"class": "nt-etapa-s", text: sub})); };
+    pararFolego();
+    pad.appendChild(h("span", {"class": "nt-rot", text: "Quinta-feira · antes de deitar"}));
+    pad.appendChild(h("div", {"class": "nt-cab"}, h("h1", {"class": "nt-h1", tabindex: "-1", text: "Desacelerar"})));
+    pad.appendChild(h("p", {"class": "nt-sub", text: temHoje ? "Três passos curtos antes de deitar às " + hora(hor.deitar) + "." : "Noite livre. A rotina continua valendo, se quiser."}));
+    pad.appendChild(h("div", {"class": "nt-pontos", "aria-hidden": "true"}, [0, 1, 2].map(function (i) { return h("span", {"class": "nt-ponto", "data-feito": i < p}); })));
+    if (p === 0) {
+      cartao.appendChild(h("div", {"class": "nt-lampada", "aria-hidden": "true"}, ic("luz")));
+      cabeca("Passo 1 de 3", "Baixe a luz", "Apague a luz forte e deixe só um abajur. A tela escurece junto, um pouco a cada passo.");
+    } else if (p === 1) {
+      cabeca("Passo 2 de 3", "Um minuto de respiração", "Inspire em 4, solte em 6. É só um ritmo: acompanhe do seu jeito.");
+      cartao.appendChild(h("div", {"class": "nt-folego"}, [h("span", {"class": "nt-folego-aro"}), h("span", {"class": "nt-folego-c"}), h("span", {"class": "nt-folego-t"}, [h("b", {"class": "nt-folego-p", "aria-live": "polite"}), h("span", {"class": "nt-folego-s nt-num", "aria-hidden": "true"})])]));
+      cartao.appendChild(h("p", {"class": "nt-ciclos nt-num"}));
+      cartao.appendChild(h("button", {type: "button", "class": "nt-btn nt-btn-fio nt-respirar", "data-acao": "respirar", "data-foco": "respirar"}));
+    } else if (p === 2) {
+      cabeca("Passo 3 de 3", "Uma linha de diário", "Só uma. O que ficou de bom hoje?");
+      cartao.appendChild(h("input", {type: "text", "class": "nt-campo", id: "nt-diario", maxlength: "90", placeholder: "Hoje foi bom porque…", "aria-label": "Uma linha de diário", autocomplete: "off", enterkeyhint: "done", value: ui.diario}));
+    } else {
+      cartao.appendChild(h("div", {"class": "nt-lampada", "aria-hidden": "true"}, ic("lua")));
+      cabeca("Para fechar", arm ? "Boa noite" : "Tudo pronto", !temHoje ? "Esta noite está livre: nenhum despertar armado. Durma até quando quiser." :
+        arm ? "Despertar armado para as " + hora(hor.acordar) + ". Deixe o celular longe da cama." :
+        "O despertar das " + hora(hor.acordar) + (hor.gradual ? " sobe aos poucos, com " : " toca com ") + s.nome + ".");
+      if (ui.diario.trim()) cartao.appendChild(h("p", {"class": "nt-citacao", text: "“" + ui.diario.trim() + "”"}));
+    }
+    pad.appendChild(cartao);
+    pad.appendChild(h("div", {"class": "nt-nav"}, [
+      h("button", {type: "button", "class": "nt-btn nt-btn-fio", "data-acao": arm && p === 3 ? "desarmar" : "voltar", "data-foco": "voltar", disabled: p === 0}, arm && p === 3 ? "Desarmar" : [ic("antes"), "Voltar"]),
+      h("button", {type: "button", "class": "nt-btn nt-btn-cheio", "data-acao": "seguir", "data-foco": "seguir", text: p === 0 ? "Já baixei" : p === 1 ? "Próximo" : p === 2 ? (ui.diario.trim() ? "Guardar" : "Pular") : arm || !temHoje ? "Ver a manhã" : "Boa noite"})]));
+    pad.appendChild(h("section", {"class": "nt-cartao nt-so-estreito"}, [h("div", {"class": "nt-cartao-t"}, [h("h2", {text: "A rotina"}), h("span", {"class": "nt-cartao-lado", text: "uns 5 minutos"})]), listaPassos("pe-")]));
+    pad.appendChild(h("div", {"class": "nt-fim"}));
+    raiz.appendChild(pad);
+    pintarFolego();
+  }
+  function desenharRotina() {
+    var raiz = limpar($(".nt-rotina")), pad = h("div", {"class": "nt-pad"});
+    pad.appendChild(h("span", {"class": "nt-rot", text: "Antes de deitar"}));
+    pad.appendChild(h("h2", {"class": "nt-h2", text: "A rotina"}));
+    pad.appendChild(h("p", {"class": "nt-sub", text: hor.dias[HOJE] ? "Começa às " + hora(inicioAviso()) + " e leva uns 5 minutos." : "Noite livre: hoje ela não avisa, mas continua aqui."}));
+    pad.appendChild(h("section", {"class": "nt-cartao"}, listaPassos("ro-")));
+    pad.appendChild(h("p", {"class": "nt-nota", text: "A tela escurece um pouco a cada passo. " + (hor.dias[HOJE] ? "No fim, Boa noite arma o despertar." : "Hoje a noite é livre: Boa noite só fecha a rotina.")}));
+    pad.appendChild(h("div", {"class": "nt-fim"}));
+    raiz.appendChild(pad);
+  }
+
+  // ── o círculo que respira: inspira em 4 segundos, solta em 6, seis ciclos. É só um ritmo guiado ──
+  var INSPIRA = 4000, SOLTA = 6000, CICLOS = 6;
+  var fol = {estado: "parado", ciclos: 0, t0: 0, rel: 0};
+  function respirando() { return fol.estado === "inspira" || fol.estado === "solta"; }
+  function escala(v, ms) {
+    var c = $(".nt-folego-c");
+    if (!c || calmo) return;
+    c.style.transition = "transform " + ms + "ms cubic-bezier(.45,.05,.55,.95)";
+    c.style.transform = "scale(" + v + ")";
+  }
+  function pintarFolego() {
+    var p = $(".nt-folego-p");
+    if (!p) return;
+    var total = fol.estado === "inspira" ? INSPIRA : SOLTA, palavra = fol.estado === "inspira" ? "Inspire" : fol.estado === "solta" ? "Solte" : fol.estado === "feito" ? "Pronto" : fol.ciclos ? "Pausado" : "Respire";
+    if (p.textContent !== palavra) p.textContent = palavra;
+    $(".nt-folego-s").textContent = respirando() ? String(Math.max(1, Math.ceil((total - (performance.now() - fol.t0)) / 1000))) : "";
+    $(".nt-ciclos").textContent = fol.estado === "feito" ? "Seis ciclos: um minuto." : respirando() || fol.ciclos ? "Ciclo " + Math.min(CICLOS, fol.ciclos + 1) + " de " + CICLOS : "Seis ciclos dão um minuto.";
+    $(".nt-respirar").textContent = respirando() ? "Pausar" : fol.estado === "feito" ? "Repetir" : fol.ciclos ? "Continuar" : "Começar";
+  }
+  function fase(nome) { fol.estado = nome; fol.t0 = performance.now(); escala(nome === "inspira" ? 1 : .56, nome === "inspira" ? INSPIRA : SOLTA); pintarFolego(); }
+  function pararFolego(como) {
+    clearInterval(fol.rel); fol.rel = 0;
+    if (respirando() || como) { fol.estado = como || "parado"; escala(.56, 500); }
+    pintarFolego();
+  }
+  function tiqueFolego() {
+    var dt = performance.now() - fol.t0;
+    if (fol.estado === "inspira" && dt >= INSPIRA) fase("solta");
+    else if (fol.estado === "solta" && dt >= SOLTA) { fol.ciclos++; if (fol.ciclos >= CICLOS) pararFolego("feito"); else fase("inspira"); }
+    else pintarFolego();
+  }
+  function comecarFolego() {
+    if (fol.estado === "feito") fol.ciclos = 0;
+    clearInterval(fol.rel);
+    fol.rel = setInterval(tiqueFolego, 200);
+    fase("inspira");
+  }
+
+  // ── estado 3: a manhã. Duas perguntas, e a semana se atualiza ──
+  function pergunta(chave, texto, opcoes) {
+    return h("div", {"class": "nt-pergunta", role: "group", "aria-label": texto}, [h("p", {"class": "nt-pergunta-t", text: texto}),
+      h("div", {"class": "nt-opcoes"}, opcoes.map(function (o, i) { return h("button", {type: "button", "class": "nt-op", "data-acao": "resposta", "data-id": chave + ":" + i, "data-foco": "r-" + chave + i, "aria-pressed": String(ui.resp[chave] === i), text: o}); }))]);
+  }
+  function desenharManha() {
+    var raiz = limpar($(".nt-manha")), pad = h("div", {"class": "nt-pad nt-centro-in"}), temHoje = hor.dias[HOJE], s = som(), n = noiteDeHoje(), q;
+    pad.appendChild(h("span", {"class": "nt-rot", text: "Sexta-feira · de manhã cedo"}));
+    pad.appendChild(h("div", {"class": "nt-cab"}, h("h1", {"class": "nt-h1", tabindex: "-1", text: "Bom dia"})));
+    pad.appendChild(h("p", {"class": "nt-sub", text: (temHoje ? "Duas perguntas rápidas" : "Uma pergunta rápida") + ", e a semana se atualiza."}));
+    pad.appendChild(h("div", {"class": "nt-aurora", "data-novo": ui.novo}, [h("span", {"class": "nt-aurora-sol", "aria-hidden": "true"}),
+      h("b", {"class": "nt-aurora-h nt-num", text: temHoje ? hora(hor.acordar) : "Sem pressa"}),
+      h("span", {"class": "nt-aurora-s", text: !temHoje ? "Noite livre: nenhum despertar tocou." : hor.gradual ? "O despertar subiu aos poucos, com " + s.nome + "." : "O despertar tocou com " + s.nome + "."})]));
+    q = h("section", {"class": "nt-cartao"}, h("div", {"class": "nt-cartao-t"}, [h("h2", {text: "Como foi a noite?"}), h("span", {"class": "nt-cartao-lado", text: temHoje ? "duas perguntas" : "uma pergunta"})]));
+    if (temHoje) q.appendChild(pergunta("deitou", "Você deitou na hora combinada, " + hora(hor.deitar) + "?", P1));
+    q.appendChild(pergunta("como", "Como você acordou?", P2));
+    if (n.deitou != null) q.appendChild(h("p", {"class": "nt-registro"}, [h("b", {text: "Quinta registrada: "}), dur(tempo(n)) + " na cama, " + (naHora(n) ? "dentro do combinado" : "fora do combinado") + (n.como != null ? ". Acordou " + ACORDOU[n.como] + "." : ".")]));
+    else if (n.livre && n.como != null) q.appendChild(h("p", {"class": "nt-registro"}, [h("b", {text: "Quinta registrada: "}), "noite livre. Acordou " + ACORDOU[n.como] + "."]));
+    pad.appendChild(q);
+    pad.appendChild(h("p", {"class": "nt-nota", text: "O Noite não mede o sono: guarda só o horário combinado e o que você responde."}));
+    raiz.appendChild(pad);
+  }
+  function trecho(classe, de, ate, span) {
+    var x = Math.max(0, Math.min(span, de)), y = Math.max(0, Math.min(span, ate)), n = h("span", {"class": classe});
+    n.style.left = (x / span * 100).toFixed(2) + "%";
+    n.style.width = (Math.max(0, y - x) / span * 100).toFixed(2) + "%";
+    return n;
+  }
+  function fato(valor, rotulo) { return h("div", {"class": "nt-fato"}, [h("b", {"class": "nt-fato-v nt-num", text: valor}), h("span", {"class": "nt-fato-r", text: rotulo})]); }
+  function desenharSemana() {
+    var raiz = limpar($(".nt-semana")), pad = h("div", {"class": "nt-pad"}), l = noites(), r = resumo(), meta = duracao(), faltou = Math.round(meta - r.media), ex = eixo(l);
+    var barra = function (classe, de, ate) { var x = ex.x(de); return trecho(classe, x, x + volta(ate - de), ex.span); };
+    var livres = l.filter(function (n) { return n.livre; }).map(function (n) { return n.nome; }), fraseL = livres.length < 2 ? livres[0] || "" : livres.slice(0, -1).join(", ") + " e " + livres[livres.length - 1];
+    if (fraseL) fraseL = " " + fraseL.charAt(0).toUpperCase() + fraseL.slice(1) + (livres.length === 1 ? " é noite livre e não entra" : " são noites livres e não entram") + " na regularidade.";
+    var falado = "Sete noites. " + l.map(function (n) { return n.d + ": " + (n.deitou != null ? hora(n.deitou) + " a " + hora(n.acordou) + (n.livre ? ", noite livre" : naHora(n) ? ", na hora" : ", fora da hora") : n.livre ? "noite livre" : "ainda sem resposta"); }).join("; ") + ".";
+    pad.appendChild(h("span", {"class": "nt-rot", text: "A semana"}));
+    pad.appendChild(h("h2", {"class": "nt-h2", text: "Sete noites"}));
+    pad.appendChild(h("section", {"class": "nt-cartao"}, [
+      h("div", {"class": "nt-cartao-t"}, [h("h2", {text: "Deitar e acordar"}), h("span", {"class": "nt-cartao-lado nt-num", text: "meta " + dur(meta)})]),
+      h("div", {"class": "nt-noites", role: "img", "aria-label": falado}, l.map(function (n) {
+        var faixa = h("span", {"class": "nt-faixa"});
+        if (!n.livre) faixa.appendChild(barra("nt-faixa-m", n.md, n.ma));
+        if (n.livre) faixa.appendChild(h("span", {"class": "nt-faixa-l", text: "noite livre"}));
+        else if (n.deitou != null) faixa.appendChild(barra("nt-faixa-b", n.deitou, n.acordou));
+        else faixa.appendChild(barra("nt-faixa-b", n.md, n.ma));
+        return h("div", {"class": "nt-noite", "data-livre": !!n.livre, "data-pendente": !n.livre && n.deitou == null, "data-hoje": !!n.hoje}, [h("span", {text: n.d}), faixa]);
+      })),
+      h("div", {"class": "nt-eixo", "aria-hidden": "true"}, [h("span"), h("span", {"class": "nt-eixo-h nt-num"}, [0, 1, 2, 3, 4].map(function (i) { return h("span", {text: Math.floor(volta(ex.zero + i * ex.span / 4) / 60) + "h"}); }))])]));
+    pad.appendChild(h("div", {"class": "nt-fatos"}, [
+      fato(r.regulares + " de " + r.contam, r.contam === 1 ? "noite na hora combinada" : "noites na hora combinada"),
+      fato(dur(r.media), "na cama, em média"),
+      faltou > 0 ? fato(dur(faltou), "abaixo da meta de " + dur(meta)) : faltou < 0 ? fato(dur(-faltou), "acima da meta de " + dur(meta)) : fato("Na meta", "a média bateu " + dur(meta)),
+      fato(String(r.seq), r.seq === 1 ? "noite seguida na hora" : "noites seguidas na hora")]));
+    pad.appendChild(h("p", {"class": "nt-nota", text: "Você acordou bem em " + r.boas + " de " + r.manhas + " manhãs. A faixa ao fundo é o horário combinado." + fraseL + " Nada aqui é medido."}));
+    pad.appendChild(h("div", {"class": "nt-fim"}));
+    raiz.appendChild(pad);
+  }
+  function desenharSons() {
+    var raiz = limpar($(".nt-sons"));
+    SONS.forEach(function (s) {
+      raiz.appendChild(h("button", {type: "button", "class": "nt-som", "data-acao": "escolher-som", "data-id": s.id, "data-foco": "som-" + s.id, "aria-pressed": String(hor.som === s.id)}, [h("span", {"class": "nt-som-t"}, [s.nome, h("span", {"class": "nt-som-s", text: s.sub})]), h("span", {"class": "nt-som-c", "aria-hidden": "true"}, ic("certo"))]));
+    });
+  }
+
+  // ── folhas: o som do despertar e os planos ──
+  function pintarPlanos() {
+    todos(".nt-opcao").forEach(function (o) { o.setAttribute("aria-pressed", String(o.getAttribute("data-id") === ui.plano)); });
+    $(".nt-depois").textContent = "Depois, " + (ui.plano === "ano" ? "R$ 89,90 por ano" : "R$ 12,90 por mês") + ". Cancele quando quiser.";
+  }
+  function abrirFolha(qual) {
+    ui.ultimoFoco = document.activeElement; ui.chaveFoco = focoAtual();
+    $(".nt-aviso").removeAttribute("data-visivel"); ui.desfazer = null;
+    pararFolego();
+    app.setAttribute("data-folha", qual);
+    todos(".nt-corpo,.nt-abas,.nt-topo").forEach(function (x) { x.inert = true; });
+    setTimeout(function () { $('.nt-folha[data-folha="' + qual + '"] .nt-fechar').focus({preventScroll: true}); }, calmo ? 0 : 140);
+  }
+  function fecharFolha() {
+    if (!app.hasAttribute("data-folha")) return;
+    app.removeAttribute("data-folha");
+    todos(".nt-corpo,.nt-abas,.nt-topo").forEach(function (x) { x.inert = false; });
+    if (ui.ultimoFoco && ui.ultimoFoco.focus && app.contains(ui.ultimoFoco)) ui.ultimoFoco.focus({preventScroll: true});
+    else focar(ui.chaveFoco);
+  }
+
+  // ── desenhar: refaz as telas guardando onde estava a rolagem e devolvendo o foco a quem o tinha ──
+  function focoAtual() { var f = document.activeElement; return f && app.contains(f) ? f.getAttribute("data-foco") : null; }
+  function focar(chave) {
+    var alvo = chave && todos('[data-foco="' + chave + '"]').filter(function (x) { return x.getClientRects().length && !x.disabled; })[0];
+    if (alvo) alvo.focus({preventScroll: true});
+    return !!alvo;
+  }
+  // o foco se perde quando o controle que o tinha some, fica desabilitado ou sai da tela: aí ele vai para o principal da tela nova
+  function temFoco() { return app.contains(document.activeElement); }
+  function focoPerdido() { var f = document.activeElement; return !f || f === document.body || !app.contains(f) || !f.getClientRects().length || f.disabled; }
+  function focarTitulo() { var t = todos(".nt-h1").filter(function (x) { return x.getClientRects().length; })[0]; if (t) t.focus({preventScroll: true}); }
+  function falar(texto) { $(".nt-fala").textContent = texto; }
+  function redesenhar(fn) { var chave = focoAtual(); fn(); focar(chave); }
+  function desenhar() {
+    var chave = focoAtual(), rolos = todos(".nt-corpo,.nt-centro,.nt-semana,.nt-rotina").map(function (x) { return [x, x.scrollTop]; });
+    app.setAttribute("data-vista", ui.vista);
+    app.setAttribute("data-passo", String(ui.passo));
+    app.toggleAttribute("data-armado", armado());
+    todos(".nt-aba,.nt-seg-b").forEach(function (b) { if (b.getAttribute("data-vista") === ui.vista) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    desenharHoje(); desenharPalco(); desenharManha(); desenharSemana(); desenharRotina(); desenharSons();
+    ui.novo = false; ui.troca = false;
+    rolos.forEach(function (x) { if (x[1]) x[0].scrollTop = x[1]; });
+    focar(chave);
+  }
+  function subir() { todos(".nt-corpo,.nt-centro").forEach(function (x) { x.scrollTop = 0; }); }
+  function irPara(vista) {
+    var tinha = temFoco();
+    if (vista !== ui.vista) { $(".nt-aviso").removeAttribute("data-visivel"); ui.desfazer = null; }
+    ui.vista = vista; ui.novo = true;
+    desenhar();
+    subir();
+    sincronizarEstado();
+    if (tinha && focoPerdido()) focarTitulo();
+  }
+  function irParaPasso(n) {
+    var tinha = temFoco();
+    ui.passo = Math.max(0, Math.min(3, n));
+    if (ui.vista !== "desacelerar") { irPara("desacelerar"); return; }
+    ui.troca = true;
+    desenhar();
+    subir();
+    if (tinha && focoPerdido()) focar("seguir");
+  }
+  // armar não abre aviso: a própria tela vira Boa noite, com o Desarmar no lugar do Voltar. O toque dobrado não pula para a manhã
+  function seguir() {
+    if (performance.now() < ui.guarda) return;
+    if (ui.passo < 3) { irParaPasso(ui.passo + 1); return; }
+    if (hor.dias[HOJE] && !ui.armado) {
+      ui.armado = true; ui.guarda = performance.now() + 600;
+      desenhar();
+      falar("Despertar armado para as " + hora(hor.acordar) + ".");
+      return;
+    }
+    irPara("manha");
+  }
+
+  // ── os três estados do stand: 1 Esta noite · 2 Desacelerar · 3 Manhã ──
+  function estadoDaTela() { return ui.vista === "desacelerar" ? 2 : ui.vista === "manha" ? 3 : 1; }
+  function sincronizarEstado() { var n = String(estadoDaTela()); if (app.getAttribute("data-estado") !== n) app.setAttribute("data-estado", n); }
+  function aplicarEstado(n) {
+    var vista = n === 2 ? "desacelerar" : n === 3 ? "manha" : "noite";
+    if (vista === ui.vista) return;
+    fecharFolha();
+    if (vista === "desacelerar" && ui.passo === 0) ui.passo = 1;   // pelo stand, a rotina abre na respiração, que é a assinatura do app
+    irPara(vista);
+  }
+  app.addEventListener("maquete:estado", function (e) { fecharFolha(); aplicarEstado(e.detail && e.detail.estado); });   // pedido da barra do stand: folha aberta fecha, mesmo no mesmo estado
+  new MutationObserver(function () { aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1); }).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+
+  // ── eventos ──
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-acao]");
+    if (!b || !app.contains(b) || b.disabled) return;
+    var acao = b.getAttribute("data-acao"), id = b.getAttribute("data-id");
+    if (acao === "vista") irPara(b.getAttribute("data-vista"));
+    else if (acao === "dia") { hor.dias[+id] = !hor.dias[+id]; desenhar(); }
+    else if (acao === "som") { desenharSons(); abrirFolha("som"); }
+    else if (acao === "escolher-som") { hor.som = id; redesenhar(function () { desenharSons(); desenharResto(); }); }
+    else if (acao === "gradual") { hor.gradual = !hor.gradual; redesenhar(desenharResto); }
+    else if (acao === "passo") irParaPasso(+id);
+    else if (acao === "voltar") irParaPasso(ui.passo - 1);
+    else if (acao === "seguir") seguir();
+    else if (acao === "desarmar") { ui.armado = false; desenhar(); falar("Despertar desarmado."); }
+    else if (acao === "respirar") { if (respirando()) pararFolego(); else comecarFolego(); }
+    else if (acao === "resposta") {
+      var par = id.split(":"), valor = +par[1], primeira = par[0] === "deitou" && ui.resp.deitou == null;
+      ui.resp[par[0]] = ui.resp[par[0]] === valor ? null : valor;
+      redesenhar(function () { desenharManha(); desenharSemana(); });
+      if (primeira && app.clientWidth < 720) avisar("Quinta entrou na semana, logo abaixo.");
+    }
+    else if (acao === "planos") { pintarPlanos(); abrirFolha("planos"); }
+    else if (acao === "plano") { ui.plano = id; pintarPlanos(); }
+    else if (acao === "fechar-folha") fecharFolha();
+    else if (acao === "comprar") { fecharFolha(); avisar("Maquete: nada foi cobrado."); }
+    else if (acao === "restaurar") { fecharFolha(); avisar("Maquete: não há compra para restaurar."); }
+    else if (acao === "desfazer") {
+      var fn = ui.desfazer; $(".nt-aviso").removeAttribute("data-visivel"); ui.desfazer = null; if (fn) fn();
+      if (document.activeElement === b || focoPerdido()) focar("seguir") || focarTitulo();
+    }
+  });
+  app.addEventListener("input", function (e) {
+    if (e.target.id !== "nt-diario") return;
+    ui.diario = e.target.value;
+    var b = $('[data-foco="seguir"]');
+    if (b) b.textContent = ui.diario.trim() ? "Guardar" : "Pular";
+  });
+  // a folha aberta prende o foco: o Tab dá a volta dentro dela, e o Esc fecha de onde quer que o foco esteja
+  document.addEventListener("keydown", function (e) {
+    var nome = app.getAttribute("data-folha"), folha = nome && app.querySelector('[role="dialog"][data-folha="' + nome + '"]'), itens, a, fora;
+    if (!folha || e.defaultPrevented || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") { fecharFolha(); return; }
+    if (e.key !== "Tab") return;
+    itens = Array.prototype.filter.call(folha.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]'), function (x) { return !x.disabled && x.tabIndex >= 0 && x.offsetParent; });
+    a = document.activeElement; fora = !folha.contains(a) || a === folha;
+    if (!itens.length) { e.preventDefault(); folha.focus({preventScroll: true}); }
+    else if (fora || a === itens[e.shiftKey ? 0 : itens.length - 1]) { e.preventDefault(); itens[e.shiftKey ? itens.length - 1 : 0].focus({preventScroll: true}); }
+  });
+  app.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && app.hasAttribute("data-folha")) { e.stopPropagation(); fecharFolha(); }
+    else if (e.key === "Enter" && e.target.id === "nt-diario") { e.preventDefault(); seguir(); }
+  });
+  document.addEventListener("visibilitychange", function () { if (document.hidden) pararFolego(); });
+  $(".nt-veu").addEventListener("wheel", function (e) { e.preventDefault(); }, {passive: false});
+  $(".nt-veu").addEventListener("touchmove", function (e) { e.preventDefault(); }, {passive: false});
+  // arrastar a folha para baixo pelo topo fecha; soltar antes do limite devolve ao lugar
+  todos(".nt-folha").forEach(function (folha) {
+    var y0 = null, dy = 0;
+    folha.addEventListener("pointerdown", function (e) {
+      if (app.clientWidth >= 720 || !e.target.closest(".nt-puxador,.nt-folha-topo") || e.target.closest("button")) return;
+      y0 = e.clientY; dy = 0; folha.setPointerCapture(e.pointerId); folha.style.transition = "none";
+    });
+    folha.addEventListener("pointermove", function (e) { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); folha.style.transform = "translateY(" + dy + "px)"; });
+    var soltar = function () { if (y0 === null) return; y0 = null; folha.style.transition = ""; folha.style.transform = ""; if (dy > 90) fecharFolha(); };
+    folha.addEventListener("pointerup", soltar);
+    folha.addEventListener("pointercancel", soltar);
+  });
+
+  desenhar();
+  aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1);
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>

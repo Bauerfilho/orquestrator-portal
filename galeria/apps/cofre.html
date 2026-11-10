@@ -1,0 +1,1405 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cofre · Maquete</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "cofre",
+  "nome": "Cofre",
+  "colecao": "referencia",
+  "tipo": "App celular",
+  "tela": "celular",
+  "ordem": 27,
+  "resumo": "Uma senha mestra; o resto, o Cofre lembra. Senhas, códigos de verificação, cartões e notas num cofre guardado no aparelho, que só abre com você, gera senhas fortes e avisa quais estão fracas ou repetidas. Para quem usa a mesma senha em tudo e já ficou do lado de fora de uma conta.",
+  "proposta": "Pago",
+  "modelo_negocio": "Assinatura de R$ 9,90 por mês no plano individual ou R$ 16,90 por mês no plano família, para seis pessoas, com 14 dias para usar tudo. Paga quem já perdeu uma conta: o que se vende é tranquilidade (itens sem limite em todos os aparelhos, a auditoria de senhas e o cofre partilhado da família).",
+  "referencias": [
+    {"nome": "1Password", "modelo": "pago"},
+    {"nome": "Bitwarden", "modelo": "open source"},
+    {"nome": "KeePassXC", "modelo": "open source"}
+  ],
+  "direcao": "Cofre de banco antigo com precisão de relógio. Marca fictícia: Cofre. Titânio claro e cinzas quentes, texto em grafite, e um dourado-latão reservado para o que é chave e segurança: o mostrador, o anel dos códigos, o botão de destrancar, a senha forte. Tudo o que é segredo vem em monoespaçada do sistema, separado em grupos; as superfícies são chapas lisas de borda finíssima. A assinatura é o mostrador do cofre, que gira e abre no desbloqueio, e os códigos de seis dígitos correndo com o anel de trinta segundos. No celular é uma lista que abre o item; em tela ampla são as três colunas clássicas: categorias, itens e o item aberto. O tema escuro é o interior do cofre: preto fosco e o latão mais vivo.",
+  "estados": [
+    {
+      "nome": "Cofre",
+      "descricao": "O cofre aberto: busca, os códigos de verificação correndo com o anel de trinta segundos, os favoritos em azulejos de acesso rápido e os itens por tipo (logins, cartões, notas seguras). O selo da auditoria conta as senhas fracas e as repetidas e abre a lista com o porquê de cada alerta. Tocar num código copia; a barra de baixo abre o gerador e tranca."
+    },
+    {
+      "nome": "Item",
+      "descricao": "Um login aberto: usuário, senha oculta com revelar e copiar, o código de verificação ao vivo, a força da senha e onde mais ela se repete. O gerador monta uma senha nova na hora (comprimento, maiúsculas, números, símbolos ou palavras) com o medidor de força; usar a senha gerada atualiza o item e a auditoria, guarda a anterior no próprio item, e dá para desfazer."
+    },
+    {
+      "nome": "Trancado",
+      "descricao": "A tela de bloqueio: o mostrador fechado e nada do conteúdo à vista. Destrancar com o rosto (uma demonstração) faz o mostrador girar e a porta abrir; a senha mestra é o outro caminho. Trancar de novo leva um toque."
+    }
+  ],
+  "paleta": [
+    {"nome": "Titânio claro", "hex": "#ebe9e4"},
+    {"nome": "Grafite", "hex": "#1d1c1a"},
+    {"nome": "Latão", "hex": "#b8892b"},
+    {"nome": "Chapa", "hex": "#f7f6f2"},
+    {"nome": "Latão escuro (texto)", "hex": "#76560f"},
+    {"nome": "Cinza quente", "hex": "#5b5852"},
+    {"nome": "Preto fosco (noite)", "hex": "#0f0f0e"},
+    {"nome": "Latão vivo (noite)", "hex": "#dbb45c"}
+  ],
+  "tipografia": "Sans do sistema para nomes e rótulos, 15 a 17 px, com títulos em 30 e 32 px, peso 700 e tracking de -0,03 em. Segredos, usuários e códigos em monoespaçada do sistema (SF Mono): os códigos de verificação em 26 px, tabulares e partidos em dois grupos de três; senhas em 17 px, partidas de quatro em quatro quando reveladas.",
+  "componentes": [
+    "Mostrador do cofre que gira e abre",
+    "Destrancar com o rosto ou com a senha mestra",
+    "Busca no cofre",
+    "Códigos de verificação com anel de 30 s",
+    "Selo da auditoria",
+    "Lista por tipo com monogramas",
+    "Campo de segredo com revelar e copiar",
+    "Medidor de força da senha",
+    "Onde a senha se repete",
+    "Gerador de senhas e de frases",
+    "Lista da auditoria com o porquê",
+    "Categorias em coluna (tela ampla)",
+    "Aviso de cópia com limpeza em 30 s",
+    "Folha de planos"
+  ],
+  "replicar": [
+    "Modelo de dados: Cofre (dono, quando tranca sozinho), Item (tipo, título, campos) e Campo (rótulo, valor, se é segredo, se tem código de verificação). Favorito e categoria são atributos do item. Força, repetição e os números da auditoria são sempre derivados dos campos; nunca guarde o alerta.",
+    "Regras que pegam: o conteúdo só existe decifrado em memória enquanto o cofre está aberto, e tranca sozinho por tempo parado ou ao sair do app; copiar um segredo agenda a limpeza da área de transferência em 30 s; a senha gerada nunca aparece em registro nem em aviso; repetida é a mesma senha em dois itens, comparada dentro do aparelho; trocar a senha guarda a anterior no histórico do item.",
+    "Pilha sugerida para iPhone: SwiftUI; itens cifrados com CryptoKit, com a chave guardada no Secure Enclave e liberada por Face ID (LocalAuthentication); os códigos de verificação seguem o padrão TOTP; preenchimento automático pela extensão de credenciais do sistema (AuthenticationServices); cópia entre aparelhos com CloudKit, já cifrada.",
+    "Integrações: importar de outros gerenciadores por arquivo CSV, exportar tudo a qualquer momento, ler o código QR de verificação pela câmera e preencher senha em apps e sites pelo teclado do sistema.",
+    "Corte do primeiro lançamento: logins, gerador, códigos de verificação, tranca por rosto, a auditoria de fracas e repetidas e o cofre partilhado da família, que sustenta o plano de R$ 16,90. Ficam para depois: anexos, chaves de acesso e o aviso de senha vazada."
+  ]
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+/* ===== Cofre · tokens =====
+   Tese visual: cofre de banco antigo com precisão de relógio. Titânio claro e cinzas quentes, texto em grafite e um
+   latão reservado ao que é chave e segurança (o mostrador, o anel dos códigos, destrancar, a senha forte). Todo segredo
+   em monoespaçada, em grupos; chapas lisas de borda finíssima. No escuro, o interior do cofre: preto fosco, latão vivo.
+   Tese de interação: exato e contido, como um mecanismo. Toque responde em 110 ms; folhas e telas em 280 ms, sem quique;
+   saídas em 180 ms. Só o mostrador tem cerimônia: gira 440 ms e a porta abre em 260 ms. O anel anda por passos. */
+:root{
+  --cf-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --cf-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --cf-fundo:#ebe9e4;--cf-chapa:#f7f6f2;--cf-fundo2:#dedbd4;--cf-tinta:#1d1c1a;--cf-suave:#5b5852;--cf-leve:#625e58;
+  --cf-latao:#76560f;--cf-metal:#b8892b;--cf-metal2:#a47823;--cf-sobre-metal:#1d1c1a;--cf-latao-bg:rgba(184,137,43,.14);
+  --cf-erro:#a53629;--cf-erro-bg:rgba(178,58,44,.1);--cf-fio:rgba(29,28,26,.12);--cf-fio2:rgba(29,28,26,.26);
+  --cf-brilho:linear-gradient(160deg,rgba(255,255,255,.75),rgba(255,255,255,0) 46%);
+  --cf-vidro:rgba(235,233,228,.95);--cf-veu:rgba(29,28,26,.44);
+  --cf-sombra:0 1px 2px rgba(29,28,26,.08),0 18px 40px -22px rgba(29,28,26,.5);
+  --cf-rapido:.11s;--cf-sai:.18s;--cf-vira:.28s;--cf-gira:.44s;--cf-mola:cubic-bezier(.2,.8,.2,1);--cf-some:cubic-bezier(.4,0,1,1);
+  color-scheme:light;
+}
+:root[data-tema=escuro]{
+  --cf-fundo:#0f0f0e;--cf-chapa:#1a1917;--cf-fundo2:#262422;--cf-tinta:#eceae4;--cf-suave:#a5a198;--cf-leve:#908d86;
+  --cf-latao:#dbb45c;--cf-metal:#dbb45c;--cf-metal2:#e6c273;--cf-sobre-metal:#0f0f0e;--cf-latao-bg:rgba(219,180,92,.13);
+  --cf-erro:#ff9285;--cf-erro-bg:rgba(255,146,133,.13);--cf-fio:rgba(236,234,228,.11);--cf-fio2:rgba(236,234,228,.24);
+  --cf-brilho:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,0) 46%);
+  --cf-vidro:rgba(15,15,14,.95);--cf-veu:rgba(0,0,0,.66);
+  --cf-sombra:0 1px 2px rgba(0,0,0,.5),0 18px 40px -22px rgba(0,0,0,.95);
+  color-scheme:dark;
+}
+html,body{margin:0}
+body{background:var(--cf-fundo)}
+
+/* ===== base: a casca tem a altura da tela; quem rola são as colunas de dentro ===== */
+#app{container:app / inline-size;position:relative;height:100vh;height:calc(100dvh - var(--stand-barra,0px));overflow:hidden;
+  background:var(--cf-fundo);color:var(--cf-tinta);font:400 16px/1.4 var(--cf-sans);-webkit-font-smoothing:antialiased}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app button,#app input{font:inherit;color:inherit;letter-spacing:inherit}
+#app button{cursor:pointer;border:0;background:none;padding:0;margin:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app svg{display:block;flex:none}
+#app :focus-visible{outline:2.5px solid var(--cf-metal);outline-offset:2px;border-radius:8px}
+#app .cf-so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .cf-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app .cf-mono{font-family:var(--cf-mono);font-variant-numeric:tabular-nums}
+#app .cf-rot{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--cf-suave)}
+#app .cf-casca{position:relative;height:100%;overflow:hidden;overflow:clip;display:flex;flex-direction:column}
+#app .cf-casca[data-trancado] .cf-corpo,#app .cf-casca[data-trancado] .cf-abas{visibility:hidden}
+
+/* ===== corpo e abas ===== */
+#app .cf-corpo{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:64px}
+#app .cf-cats,#app .cf-lista,#app .cf-item{display:none;min-width:0}
+#app[data-vista=cofre] .cf-lista,#app[data-vista=trancado] .cf-lista,#app[data-vista=item] .cf-item{display:block}
+#app[data-vista=cofre] .cf-lista,#app[data-vista=item] .cf-item{animation:cf-entra var(--cf-vira) var(--cf-mola)}
+@keyframes cf-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#app .cf-abas{position:absolute;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:6px 12px calc(6px + env(safe-area-inset-bottom));background:var(--cf-vidro);border-top:1px solid var(--cf-fio);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+#app .cf-aba{display:grid;justify-items:center;align-content:center;gap:2px;min-height:50px;font-size:11.5px;font-weight:700;color:var(--cf-leve);transition:color var(--cf-rapido)}
+#app .cf-aba .cf-ic{width:23px;height:23px}
+#app .cf-aba[aria-current=page]{color:var(--cf-latao)}
+#app .cf-pad{padding:16px 20px 0}
+#app .cf-cab{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#app .cf-h1{font-size:32px;font-weight:700;line-height:1.05;letter-spacing:-.03em}
+#app .cf-h1:focus,#app .cf-item-n:focus{outline:0}
+#app .cf-sub{margin-top:4px;font-size:14.5px;color:var(--cf-suave)}
+#app .cf-plano{position:relative;flex:none;min-height:32px;padding:0 12px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--cf-metal);font-size:13px;font-weight:700;color:var(--cf-latao);white-space:nowrap}
+#app .cf-plano::after{content:"";position:absolute;inset:-7px -4px}
+#app .cf-sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:22px 0 6px}
+#app .cf-sec h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--cf-suave)}
+#app .cf-sec-lado{font-size:13px;color:var(--cf-leve)}
+#app .cf-chapa{border-radius:14px;background:var(--cf-brilho),var(--cf-chapa);box-shadow:inset 0 0 0 1px var(--cf-fio)}
+
+/* a lista: busca, selo da auditoria, códigos correndo, itens */
+#app .cf-busca{position:relative;display:block;margin-top:14px}
+#app .cf-busca .cf-ic{position:absolute;left:13px;top:50%;width:18px;height:18px;margin-top:-9px;color:var(--cf-leve);pointer-events:none}
+#app .cf-campo-c{width:100%;height:46px;padding:0 12px 0 40px;border:0;border-radius:12px;background:var(--cf-chapa);box-shadow:inset 0 0 0 1px var(--cf-fio);font-size:16px}
+#app .cf-campo-c::placeholder{color:var(--cf-leve)}
+#app .cf-campo-c:focus{outline:0;box-shadow:inset 0 0 0 2px var(--cf-metal)}
+#app .cf-selo{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;margin-top:12px;padding:8px 12px 8px 14px;border-radius:14px;background:var(--cf-latao-bg);box-shadow:inset 0 0 0 1px var(--cf-metal);font-size:14.5px;line-height:1.3;transition:background-color var(--cf-rapido)}
+#app .cf-selo .cf-ic{color:var(--cf-latao)}
+#app .cf-selo-t{flex:1;min-width:0}
+#app .cf-selo-t b{display:block;font-size:15.5px}
+#app .cf-seta{width:16px;height:16px;color:var(--cf-leve)}
+#app .cf-codigos{display:flex;gap:10px;margin:0 -20px;padding:2px 20px 4px;overflow-x:auto;scrollbar-width:none}
+#app .cf-codigos::-webkit-scrollbar{display:none}
+#app .cf-cod{flex:none;width:168px;padding:12px 12px 11px;transition:transform var(--cf-rapido)}
+#app .cf-cod:active{transform:scale(.97)}
+#app .cf-cod-t{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--cf-suave)}
+#app .cf-cod-n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .cf-cod-v{display:block;margin-top:8px;font:600 26px/1 var(--cf-mono);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+#app .cf-anel{width:22px;height:22px;transform:rotate(-90deg)}
+#app .cf-anel-f{fill:none;stroke:var(--cf-fio2);stroke-width:3}
+#app .cf-anel-v{fill:none;stroke:var(--cf-metal);stroke-width:3;stroke-linecap:round}
+#app .cf-linhas{overflow:hidden}
+#app .cf-linha{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:9px 12px 9px 12px;border-bottom:1px solid var(--cf-fio);transition:background-color var(--cf-rapido)}
+#app .cf-linha:last-child{border-bottom:0}
+#app .cf-mono-g{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:10px;color:#fff;font:700 14px/1 var(--cf-sans);letter-spacing:.02em}
+#app .cf-linha-t{flex:1;min-width:0}
+#app .cf-linha-n{display:block;font-size:16.5px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .cf-linha-2{display:flex;align-items:center;gap:6px;min-width:0;margin-top:1px}
+#app .cf-linha-s{display:block;min-width:0;font-size:13px;color:var(--cf-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .cf-favs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#app .cf-fav{display:grid;align-content:start;justify-items:start;gap:8px;min-height:96px;padding:12px;transition:transform var(--cf-rapido)}
+#app .cf-fav:active{transform:scale(.97)}
+#app .cf-fav-n{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;font-weight:600;line-height:1.2}
+#app .cf-alerta{flex:none;padding:2px 6px;border-radius:6px;background:var(--cf-erro-bg);color:var(--cf-erro);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+#app .cf-linha[data-aberto]{background:var(--cf-latao-bg)}
+#app .cf-vazio{padding:30px 14px;font-size:15px;line-height:1.45;color:var(--cf-suave);text-align:center}
+#app .cf-vazio b{display:block;margin-bottom:4px;font-size:18px;color:var(--cf-tinta)}
+#app .cf-fim{height:24px}
+
+/* ===== o item aberto ===== */
+#app .cf-volta{display:flex;align-items:center;gap:2px;min-height:44px;margin:0 0 4px -6px;padding:0 8px 0 2px;font-size:15px;font-weight:600;color:var(--cf-latao)}
+#app .cf-item-topo{display:flex;align-items:center;gap:14px}
+#app .cf-item-topo .cf-mono-g{width:56px;height:56px;border-radius:14px;font-size:19px}
+#app .cf-item-n{font-size:26px;font-weight:700;line-height:1.1;letter-spacing:-.025em}
+#app .cf-item-s{margin-top:2px;font-size:14px;color:var(--cf-suave)}
+#app .cf-campos{margin-top:16px}
+#app .cf-c{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 6px;min-height:64px;padding:10px 6px 10px 14px;border-bottom:1px solid var(--cf-fio)}
+#app .cf-c:last-child{border-bottom:0}
+#app .cf-c-r{grid-column:1/-1;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cf-suave)}
+#app .cf-c-v{min-width:0;font-size:17px;line-height:1.35;overflow-wrap:anywhere}
+#app .cf-c-v.cf-mono{font-size:17px}
+#app .cf-grupos span{margin-right:.5em}
+#app .cf-grupos span:last-child{margin-right:0}
+#app .cf-c-a{display:flex}
+#app .cf-ib{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;color:var(--cf-suave);transition:background-color var(--cf-rapido),transform var(--cf-rapido)}
+#app .cf-ib:active{transform:scale(.92)}
+#app .cf-ib .cf-ic{width:20px;height:20px}
+#app .cf-c-cod{display:flex;align-items:center;gap:10px;font:600 26px/1 var(--cf-mono);font-variant-numeric:tabular-nums}
+#app .cf-forca{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:6px;font-size:13.5px;color:var(--cf-suave)}
+#app .cf-forca-b{display:grid;grid-template-columns:repeat(4,22px);gap:3px}
+#app .cf-forca-i{height:5px;border-radius:3px;background:var(--cf-fio2)}
+#app .cf-forca[data-n="1"] .cf-forca-i:nth-child(-n+1){background:var(--cf-erro)}
+#app .cf-forca[data-n="2"] .cf-forca-i:nth-child(-n+2){background:var(--cf-leve)}
+#app .cf-forca[data-n="3"] .cf-forca-i:nth-child(-n+3),#app .cf-forca[data-n="4"] .cf-forca-i{background:var(--cf-metal)}
+#app .cf-forca[data-n="1"] b{color:var(--cf-erro)}
+#app .cf-forca[data-n="3"] b,#app .cf-forca[data-n="4"] b{color:var(--cf-latao)}
+#app .cf-repete{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--cf-erro-bg);font-size:14.5px;line-height:1.4}
+#app .cf-repete b{color:var(--cf-erro)}
+#app .cf-repete-l{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#app .cf-ficha{position:relative;min-height:34px;padding:0 12px;border-radius:999px;background:var(--cf-chapa);box-shadow:inset 0 0 0 1px var(--cf-fio2);font-size:14px;font-weight:600;white-space:nowrap}
+#app .cf-ficha::after{content:"";position:absolute;inset:-6px 0}
+#app .cf-acoes{display:grid;gap:8px;margin-top:14px}
+#app .cf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 18px;border-radius:13px;font-size:16px;font-weight:700;white-space:nowrap;transition:transform var(--cf-rapido),background-color var(--cf-rapido)}
+#app .cf-btn:active{transform:scale(.97)}
+#app .cf-btn .cf-ic{width:19px;height:19px}
+#app .cf-btn-latao{background:var(--cf-metal);color:var(--cf-sobre-metal)}
+#app .cf-btn-fio{box-shadow:inset 0 0 0 1px var(--cf-fio2)}
+#app .cf-largo{display:flex;width:100%}
+#app .cf-nota{margin-top:10px;font-size:13px;line-height:1.45;color:var(--cf-suave)}
+#app .cf-cartao-v{display:grid;grid-template-columns:1fr auto;align-content:space-between;gap:10px;aspect-ratio:1.586;max-width:340px;margin-top:16px;padding:18px 18px 16px;border-radius:16px;color:#f4f1ea;box-shadow:var(--cf-sombra)}
+#app .cf-cartao-chip{grid-column:1/-1;width:40px;height:29px;border-radius:6px;background:linear-gradient(135deg,#e6c273,#b8892b)}
+#app .cf-cartao-n{grid-column:1/-1;font-size:19px;letter-spacing:.06em}
+#app .cf-cartao-t{font-size:12.5px;font-weight:600;letter-spacing:.08em}
+#app .cf-cartao-d{font-size:13px}
+
+/* visão geral (coluna do item quando nada está aberto, em tela ampla) */
+#app .cf-geral-n{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+#app .cf-geral-c{padding:13px 13px 12px}
+#app .cf-geral-v{display:block;font-size:26px;font-weight:700;line-height:1;letter-spacing:-.03em}
+#app .cf-geral-r{display:block;margin-top:5px;font-size:12.5px;color:var(--cf-suave)}
+
+/* ===== a porta: trancado, e o mostrador que gira ===== */
+#app .cf-porta{position:absolute;inset:0;z-index:15;display:grid;place-items:center;padding:20px;background:var(--cf-fundo);opacity:0;visibility:hidden;transition:opacity var(--cf-vira),visibility 0s var(--cf-vira)}
+#app .cf-casca[data-trancado] .cf-porta{opacity:1;visibility:visible;transition:opacity var(--cf-sai),visibility 0s}
+#app .cf-porta-in{width:100%;max-width:340px;text-align:center}
+#app .cf-dial{position:relative;width:min(228px,60cqi);aspect-ratio:1;margin:14px auto 22px}
+#app .cf-dial svg{width:100%;height:100%;overflow:visible}
+#app .cf-dial-roda{transform-origin:100px 100px;transition:transform var(--cf-gira) cubic-bezier(.3,.1,.2,1)}
+#app .cf-dial[data-estado=abrindo] .cf-dial-roda{transform:rotate(250deg)}
+#app .cf-dial[data-estado=lendo] .cf-dial-luz{opacity:1}
+#app .cf-dial-luz{fill:none;stroke:var(--cf-metal);stroke-width:7;opacity:0;transition:opacity var(--cf-sai)}
+#app .cf-d-aro{fill:var(--cf-chapa);stroke:var(--cf-metal);stroke-width:3}
+#app .cf-d-seta{fill:var(--cf-tinta)}
+#app .cf-d-traco{fill:none;stroke:var(--cf-tinta)}
+#app .cf-d-miolo{fill:var(--cf-fundo);stroke:var(--cf-metal);stroke-width:2.5}
+#app .cf-d-raio{fill:none;stroke:var(--cf-metal);stroke-width:8;stroke-linecap:round}
+#app .cf-d-eixo{fill:var(--cf-metal)}
+#app .cf-d-furo{fill:var(--cf-fundo)}
+#app .cf-porta h1{font-size:30px;font-weight:700;letter-spacing:-.03em}
+#app .cf-porta-s{margin:6px 0 22px;font-size:15px;line-height:1.4;color:var(--cf-suave)}
+#app .cf-demo{display:block;margin-top:8px;font-size:12px;color:var(--cf-leve)}
+#app .cf-link{min-height:46px;margin-top:6px;font-size:15px;font-weight:600;color:var(--cf-latao)}
+#app .cf-mestra{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:10px}
+#app .cf-mestra .cf-campo-c{padding-left:14px;height:50px;font-family:var(--cf-mono);-webkit-text-security:disc;letter-spacing:.14em}
+
+/* ===== véu, folhas e aviso ===== */
+#app .cf-veu{position:absolute;inset:0;z-index:20;background:var(--cf-veu);opacity:0;pointer-events:none;transition:opacity var(--cf-sai)}
+#app[data-folha] .cf-veu{opacity:1;pointer-events:auto}
+#app .cf-folha-pe{position:sticky;bottom:calc(-1*var(--cf-pe));z-index:1;margin:-12px 0 calc(-1*var(--cf-pe));padding:12px 0 var(--cf-pe);background:linear-gradient(to bottom,transparent,var(--cf-chapa) 12px)}
+#app .cf-folha-pe>button{display:flex}
+#app .cf-folha-pe~*{position:relative;z-index:2}
+#app .cf-folha{--cf-pe:calc(20px + env(safe-area-inset-bottom));position:absolute;left:0;right:0;bottom:0;z-index:21;max-height:90%;overflow-y:auto;overscroll-behavior:contain;padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+  background:var(--cf-chapa);border-radius:20px 20px 0 0;box-shadow:var(--cf-sombra);transform:translateY(105%);visibility:hidden;transition:transform var(--cf-sai) var(--cf-some),visibility 0s var(--cf-sai)}
+#app[data-folha=gerador] .cf-folha[data-folha=gerador],#app[data-folha=auditoria] .cf-folha[data-folha=auditoria],#app[data-folha=planos] .cf-folha[data-folha=planos]{transform:none;visibility:visible;transition:transform var(--cf-vira) var(--cf-mola),visibility 0s}
+#app .cf-puxador{width:38px;height:4px;margin:0 auto 14px;border-radius:99px;background:var(--cf-fio2)}
+#app .cf-folha-topo{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+#app .cf-folha-t{flex:1;min-width:0}
+#app .cf-folha-t h2{margin-top:2px;font-size:26px;font-weight:700;line-height:1.1;letter-spacing:-.03em}
+#app .cf-fechar{position:relative;display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;background:var(--cf-fundo2)}
+#app .cf-fechar::after{content:"";position:absolute;inset:-5px}
+#app .cf-fechar .cf-ic{width:15px;height:15px;stroke-width:2.4}
+#app .cf-gerada{min-height:84px;padding:14px;border-radius:14px;background:var(--cf-fundo);box-shadow:inset 0 0 0 1px var(--cf-metal);font:600 21px/1.4 var(--cf-mono);overflow-wrap:anywhere;color:var(--cf-tinta)}
+#app .cf-regua{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:0 12px;margin-top:14px}
+#app .cf-regua-r{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cf-suave)}
+#app .cf-regua input{grid-column:1/-1;width:100%;height:44px;margin:0;accent-color:var(--cf-metal)}
+#app .cf-regua-n{font:600 15px/1.2 var(--cf-mono);text-align:right}
+#app .cf-chaves{margin-top:4px}
+#app .cf-chave-l{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;border-bottom:1px solid var(--cf-fio);font-size:16px}
+#app .cf-chave-l:last-child{border-bottom:0}
+#app .cf-chave{position:relative;flex:none;width:48px;height:29px;border-radius:15px;background:var(--cf-fio2);transition:background-color var(--cf-sai)}
+#app .cf-chave::after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:var(--cf-chapa);box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform var(--cf-sai) var(--cf-mola)}
+#app .cf-chave-l[aria-pressed=true] .cf-chave{background:var(--cf-metal)}
+#app .cf-chave-l[aria-pressed=true] .cf-chave::after{transform:translateX(19px)}
+#app .cf-duas{position:sticky;bottom:calc(-1*var(--cf-pe));z-index:1;display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin:6px 0 calc(-1*var(--cf-pe));padding:12px 0 var(--cf-pe);background:linear-gradient(to bottom,transparent,var(--cf-chapa) 12px)}
+#app .cf-aud{display:block;width:100%;padding:12px 0;border-bottom:1px solid var(--cf-fio);font-size:15px;line-height:1.4}
+#app .cf-aud b{display:block;font-size:16.5px}
+#app .cf-aud-p{display:block;color:var(--cf-suave)}
+#app .cf-planos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#app .cf-opcao{display:grid;align-content:start;gap:3px;min-height:88px;padding:12px 13px;border-radius:14px;box-shadow:inset 0 0 0 1px var(--cf-fio2);font-size:13px;line-height:1.3;color:var(--cf-suave);transition:box-shadow var(--cf-rapido),background-color var(--cf-rapido)}
+#app .cf-opcao-n{font-size:13px;font-weight:700;color:var(--cf-tinta)}
+#app .cf-opcao b{font-size:24px;font-weight:700;line-height:1.1;letter-spacing:-.03em;color:var(--cf-tinta);white-space:nowrap}
+#app .cf-opcao[aria-pressed=true]{background:var(--cf-latao-bg);box-shadow:inset 0 0 0 2px var(--cf-metal)}
+#app .cf-depois{margin-top:8px;font-size:13.5px;color:var(--cf-suave);text-align:center}
+#app .cf-leva{margin:14px 0 18px;border-top:1px solid var(--cf-fio)}
+#app .cf-leva-i{padding:12px 0;border-bottom:1px solid var(--cf-fio);font-size:16px;font-weight:700;line-height:1.3}
+#app .cf-leva-s{display:block;font-size:14px;font-weight:400;color:var(--cf-suave)}
+#app .cf-fino{display:block;width:100%;min-height:48px;font-size:15px;font-weight:700;color:var(--cf-latao);text-align:center}
+#app .cf-miudo{margin-top:6px;font-size:12.5px;line-height:1.4;color:var(--cf-suave);text-align:center}
+#app .cf-aviso{position:absolute;left:50%;bottom:78px;z-index:30;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 24px);min-height:46px;padding:0 6px 0 16px;border-radius:12px;background:var(--cf-tinta);color:var(--cf-fundo);
+  font-size:14.5px;font-weight:600;line-height:1.3;box-shadow:var(--cf-sombra);opacity:0;transform:translate(-50%,12px);pointer-events:none;transition:opacity var(--cf-sai),transform var(--cf-sai) var(--cf-some)}
+#app .cf-aviso[data-visivel]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition:opacity var(--cf-sai),transform var(--cf-vira) var(--cf-mola)}
+#app .cf-aviso-t{padding:9px 10px 9px 0}
+#app .cf-aviso-b{position:relative;flex:none;min-height:34px;padding:0 12px;border-radius:8px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cf-fundo) 50%,transparent);font-size:13px;font-weight:800}
+#app .cf-aviso-b::after{content:"";position:absolute;inset:-5px 0}
+#app .cf-aviso .cf-aviso-b[hidden]{display:none}
+
+@media (hover:hover) and (pointer:fine){
+  #app .cf-linha:hover,#app .cf-ib:hover,#app .cf-btn-fio:hover,#app .cf-cat:hover,#app .cf-fav:hover{background-color:var(--cf-latao-bg)}
+  #app .cf-btn-latao:hover{background:var(--cf-metal2)}
+  #app .cf-aba:hover{color:var(--cf-tinta)}
+}
+
+/* ===== tela média e ampla: categorias · itens · o item aberto ===== */
+@container app (min-width:720px){
+  #app .cf-casca .cf-abas,#app .cf-item .cf-volta{display:none}
+  #app .cf-corpo{display:grid;grid-template-columns:350px minmax(0,1fr);grid-template-rows:minmax(0,1fr);overflow:hidden;padding-bottom:0}
+  #app .cf-corpo .cf-lista,#app .cf-corpo .cf-item,#app .cf-corpo .cf-cats{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:30px}
+  #app .cf-corpo .cf-lista,#app .cf-corpo .cf-item{display:block}
+  #app .cf-corpo .cf-lista{border-right:1px solid var(--cf-fio);animation:none}
+  #app .cf-item-in{max-width:560px;margin:0 auto;padding-top:30px}
+  #app .cf-lista .cf-acoes-topo{display:flex}
+  #app .cf-folha{--cf-pe:24px;left:50%;right:auto;bottom:auto;top:9%;width:min(480px,calc(100% - 64px));max-height:82%;padding:24px 26px;border-radius:18px;transform:translate(-50%,-10px);opacity:0;
+    transition:transform var(--cf-sai) var(--cf-some),opacity var(--cf-sai),visibility 0s var(--cf-sai)}
+  #app[data-folha=gerador] .cf-folha[data-folha=gerador],#app[data-folha=auditoria] .cf-folha[data-folha=auditoria],#app[data-folha=planos] .cf-folha[data-folha=planos]{transform:translate(-50%,0);opacity:1;transition:transform var(--cf-vira) var(--cf-mola),opacity var(--cf-sai),visibility 0s}
+  #app .cf-puxador{display:none}
+  #app .cf-aviso{bottom:28px}
+}
+@container app (min-width:1120px){
+  #app .cf-corpo{grid-template-columns:236px 360px minmax(0,1fr)}
+  #app .cf-corpo .cf-cats{display:flex;flex-direction:column;padding:20px 12px 16px;border-right:1px solid var(--cf-fio)}
+  #app .cf-lista .cf-acoes-topo{display:none}
+}
+#app .cf-acoes-topo{display:none;gap:8px;margin-top:12px}
+#app .cf-marca{display:flex;align-items:center;gap:9px;padding:0 8px 14px;font-size:20px;font-weight:700;letter-spacing:-.02em}
+#app .cf-marca .cf-ic{color:var(--cf-latao)}
+#app .cf-cat{display:flex;align-items:center;gap:11px;width:100%;min-height:42px;padding:0 10px;border-radius:9px;font-size:15.5px;font-weight:600;color:var(--cf-suave);transition:background-color var(--cf-rapido)}
+#app .cf-cat .cf-ic{width:19px;height:19px}
+#app .cf-cat[aria-pressed=true]{background:var(--cf-latao-bg);color:var(--cf-tinta)}
+#app .cf-cat[aria-pressed=true] .cf-ic{color:var(--cf-latao)}
+#app .cf-cat-n{margin-left:auto;font-size:13px;color:var(--cf-leve)}
+#app .cf-cats-pe{margin-top:auto;padding-top:12px;border-top:1px solid var(--cf-fio)}
+@container app (max-width:350px){
+  #app .cf-pad{padding-left:14px;padding-right:14px}
+  #app .cf-codigos{margin:0 -14px;padding-left:14px;padding-right:14px}
+  #app .cf-h1{font-size:28px}
+  #app .cf-geral-n{grid-template-columns:1fr 1fr}
+}
+/* acabamento da revisão: a alça da folha arrasta com o dedo; clicar dentro da folha mantém o foco nela (o Esc continua valendo);
+   e o botão do aviso fechado não fica no caminho do Tab */
+#app .cf-puxador,#app .cf-folha-topo{touch-action:none}
+#app [role=dialog]{outline:0}
+#app .cf-aviso:not([data-visivel]) button{visibility:hidden;transition:visibility 0s .2s}
+@media (prefers-reduced-motion:reduce){
+  #app *,#app *::before,#app *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1" data-vista="cofre">
+  <svg class="cf-so-leitor" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="cf-i-cofre" viewBox="0 0 24 24"><rect x="4" y="4.5" width="16" height="15" rx="2.5"/><circle cx="12" cy="12" r="3.2"/><path d="M12 8.8V7M12 17v-1.8M15.2 12H17M7 12h1.8M7 19.5V21M17 19.5V21"/></symbol>
+      <symbol id="cf-i-gerador" viewBox="0 0 24 24"><path d="M4 12h3l2-5 3 10 2.5-7 1.5 2h4"/></symbol>
+      <symbol id="cf-i-tranca" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+      <symbol id="cf-i-busca" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.2"/><path d="M15.2 15.2l4.6 4.6"/></symbol>
+      <symbol id="cf-i-escudo" viewBox="0 0 24 24"><path d="M12 3.5l7 2.5v5.5c0 4.3-2.9 7.4-7 9-4.1-1.6-7-4.7-7-9V6z"/><path d="M12 8.5v4M12 15.7v.2"/></symbol>
+      <symbol id="cf-i-seta" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+      <symbol id="cf-i-antes" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></symbol>
+      <symbol id="cf-i-copiar" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 5.5v-1a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1"/></symbol>
+      <symbol id="cf-i-olho" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+      <symbol id="cf-i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="cf-i-rosto" viewBox="0 0 24 24"><path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4h2M15.5 4h2A2.5 2.5 0 0 1 20 6.5v2M20 15.5v2a2.5 2.5 0 0 1-2.5 2.5h-2M8.5 20h-2A2.5 2.5 0 0 1 4 17.5v-2M9 9.5v1.5M15 9.5v1.5M12 9.5v3.5h-1M9 15.5c1.8 1.3 4.2 1.3 6 0"/></symbol>
+      <symbol id="cf-i-estrela" viewBox="0 0 24 24"><path d="M12 4l2.3 4.9 5.2.7-3.8 3.7.9 5.3L12 16l-4.6 2.6.9-5.3L4.5 9.6l5.2-.7z"/></symbol>
+      <symbol id="cf-i-cartao" viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="12" rx="2.5"/><path d="M3.5 10h17M7 14.5h3"/></symbol>
+      <symbol id="cf-i-nota" viewBox="0 0 24 24"><path d="M6 4.5h12v10l-5 5H6z"/><path d="M18 14.5h-5v5M9 9h6M9 12.5h3"/></symbol>
+      <symbol id="cf-i-tudo" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/></symbol>
+    </defs>
+  </svg>
+  <div class="cf-casca">
+    <div class="cf-corpo">
+      <aside class="cf-cats" aria-label="Categorias"></aside>
+      <section class="cf-lista" aria-label="Itens do cofre"></section>
+      <section class="cf-item" aria-label="Item aberto"></section>
+    </div>
+    <nav class="cf-abas" aria-label="Ações">
+      <button type="button" class="cf-aba" data-acao="vista" data-vista="cofre"><svg class="cf-ic" aria-hidden="true"><use href="#cf-i-cofre"/></svg>Cofre</button>
+      <button type="button" class="cf-aba" data-acao="gerador"><svg class="cf-ic" aria-hidden="true"><use href="#cf-i-gerador"/></svg>Gerador</button>
+      <button type="button" class="cf-aba" data-acao="trancar"><svg class="cf-ic" aria-hidden="true"><use href="#cf-i-tranca"/></svg>Trancar</button>
+    </nav>
+    <section class="cf-porta" aria-label="Cofre trancado"></section>
+    <div class="cf-veu" data-acao="fechar-folha"></div>
+    <section class="cf-folha" data-folha="gerador" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="cf-t-ger">
+      <div class="cf-puxador" aria-hidden="true"></div>
+      <div class="cf-folha-topo">
+        <div class="cf-folha-t"><span class="cf-rot" id="cf-ger-rot">Gerador</span><h2 id="cf-t-ger">Senha nova</h2></div>
+        <button type="button" class="cf-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="cf-ic" aria-hidden="true"><use href="#cf-i-fechar"/></svg></button>
+      </div>
+      <div class="cf-ger"></div>
+    </section>
+    <section class="cf-folha" data-folha="auditoria" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="cf-t-aud">
+      <div class="cf-puxador" aria-hidden="true"></div>
+      <div class="cf-folha-topo">
+        <div class="cf-folha-t"><span class="cf-rot">Auditoria</span><h2 id="cf-t-aud">O que pede atenção</h2></div>
+        <button type="button" class="cf-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="cf-ic" aria-hidden="true"><use href="#cf-i-fechar"/></svg></button>
+      </div>
+      <div class="cf-aud-l"></div>
+      <p class="cf-nota">A comparação acontece dentro do aparelho. Nenhuma senha sai do cofre para ser conferida.</p>
+    </section>
+    <section class="cf-folha" data-folha="planos" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="cf-t-planos">
+      <div class="cf-puxador" aria-hidden="true"></div>
+      <div class="cf-folha-topo">
+        <div class="cf-folha-t"><span class="cf-rot">14 dias para usar tudo</span><h2 id="cf-t-planos">Cofre Completo</h2></div>
+        <button type="button" class="cf-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="cf-ic" aria-hidden="true"><use href="#cf-i-fechar"/></svg></button>
+      </div>
+      <div class="cf-planos" role="group" aria-label="Qual plano">
+        <button type="button" class="cf-opcao" data-acao="plano" data-id="um" aria-pressed="true"><span class="cf-opcao-n">Individual</span><b>R$ 9,90</b><span>por mês</span></button>
+        <button type="button" class="cf-opcao" data-acao="plano" data-id="familia" aria-pressed="false"><span class="cf-opcao-n">Família, até 6 pessoas</span><b>R$ 16,90</b><span>por mês</span></button>
+      </div>
+      <ul class="cf-leva">
+        <li class="cf-leva-i">Itens sem limite, em todos os aparelhos<span class="cf-leva-s">O mesmo cofre no iPhone, no iPad e no Mac.</span></li>
+        <li class="cf-leva-i">Auditoria de senhas<span class="cf-leva-s">Fracas e repetidas, com o porquê e o conserto a um toque.</span></li>
+        <li class="cf-leva-i">Cofre da família<span class="cf-leva-s">Partilhe a senha do streaming sem mandar por mensagem. No plano família.</span></li>
+      </ul>
+      <div class="cf-folha-pe"><button type="button" class="cf-btn cf-btn-latao cf-largo" data-acao="comprar">Começar os 14 dias</button></div>
+      <p class="cf-depois">Depois dos 14 dias, R$ 9,90 por mês.</p>
+      <button type="button" class="cf-fino" data-acao="restaurar">Restaurar compra</button>
+      <p class="cf-miudo">Maquete: os valores são hipótese e nada é cobrado aqui. Nada do que aparece é guardado de verdade.</p>
+    </section>
+    <div class="cf-aviso" role="status" aria-live="polite"><span class="cf-aviso-t"></span><button type="button" class="cf-aviso-b" data-acao="desfazer">Desfazer</button></div>
+  </div>
+</main>
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura do Cofre: o mostrador de latão, um código de verificação com o anel e a lista de itens com monogramas">
+  <rect width="320" height="180" fill="#ebe9e4"/>
+  <circle cx="84" cy="90" r="58" fill="#f7f6f2" stroke="#b8892b" stroke-width="3"/>
+  <circle cx="84" cy="90" r="50" fill="none" stroke="#1d1c1a" stroke-width="5" stroke-dasharray="1.4 6.45" opacity=".7"/>
+  <circle cx="84" cy="90" r="34" fill="#ebe9e4" stroke="#b8892b" stroke-width="2"/>
+  <path d="M84 62v56M59.8 104l48.4-28M59.8 76l48.4 28" stroke="#b8892b" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="84" cy="90" r="9" fill="#b8892b"/>
+  <path d="M84 24l5 9h-10z" fill="#1d1c1a"/>
+  <rect x="166" y="24" width="134" height="56" rx="11" fill="#f7f6f2" stroke="#1d1c1a" stroke-opacity=".14"/>
+  <text x="178" y="62" font-family="Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#1d1c1a" letter-spacing="-.6">482 913</text>
+  <circle cx="284" cy="38" r="7" fill="none" stroke="#1d1c1a" stroke-opacity=".2" stroke-width="2.6"/><path d="M284 31a7 7 0 0 1 6.6 9.3" fill="none" stroke="#b8892b" stroke-width="2.6" stroke-linecap="round"/>
+  <rect x="166" y="92" width="134" height="30" rx="9" fill="#f7f6f2"/><rect x="172" y="98" width="18" height="18" rx="5" fill="#345a8a"/><rect x="198" y="102" width="62" height="5" rx="2.5" fill="#1d1c1a"/><rect x="198" y="111" width="40" height="3.5" rx="1.75" fill="#5b5852" opacity=".6"/>
+  <rect x="166" y="128" width="134" height="30" rx="9" fill="#f7f6f2"/><rect x="172" y="134" width="18" height="18" rx="5" fill="#7b2f4f"/><rect x="198" y="138" width="50" height="5" rx="2.5" fill="#1d1c1a"/><rect x="198" y="147" width="46" height="3.5" rx="1.75" fill="#5b5852" opacity=".6"/>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Cofre: o app sozinho. Tudo é de mentira e vive só na memória: nada é cifrado, guardado nem copiado de verdade, e nada sai da tela.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ── ajudantes de DOM: todo texto entra como texto, nunca como HTML ──
+  function h(tag, attrs, filhos) {
+    var n = document.createElement(tag), k;
+    for (k in attrs || {}) {
+      if (attrs[k] == null || attrs[k] === false) continue;
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    [].concat(filhos || []).forEach(function (f) { if (f != null && f !== false) n.appendChild(typeof f === "string" ? document.createTextNode(f) : f); });
+    return n;
+  }
+  function svg(tag, attrs) { var n = document.createElementNS(SVGNS, tag), k; for (k in attrs) n.setAttribute(k, attrs[k]); return n; }
+  function ic(nome, extra) { var s = svg("svg", {"class": "cf-ic" + (extra ? " " + extra : ""), "aria-hidden": "true"}); s.appendChild(svg("use", {href: "#cf-i-" + nome})); return s; }
+  function $(sel, raiz) { return (raiz || app).querySelector(sel); }
+  function todos(sel, raiz) { return Array.prototype.slice.call((raiz || app).querySelectorAll(sel)); }
+  function limpar(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+  function pl(n, um, muitos) { return n + " " + (n === 1 ? um : muitos); }
+  function semAcento(s) { return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+
+  // ── dados fictícios: serviços, usuários e senhas inventados; nenhuma marca real ──
+  var ITENS = [
+    {id: "correio", tipo: "login", nome: "Correio Sabiá", sub: "marina.duarte", cor: "#345a8a", mono: "CS", fav: true, cod: 7, usuario: "marina.duarte@sabia.exemplo", senha: "sol2019", mudou: "há 3 anos"},
+    {id: "banco", tipo: "login", nome: "Banco Jequitibá", sub: "marina.duarte", cor: "#2f5d50", mono: "BJ", fav: true, cod: 13, usuario: "marina.duarte", senha: "Vt7#kQ2m!xL9", mudou: "há 2 meses"},
+    {id: "loja", tipo: "login", nome: "Loja Araucária", sub: "marina.duarte", cor: "#7a4b2a", mono: "LA", usuario: "marina.duarte@sabia.exemplo", senha: "sol2019", mudou: "há 3 anos"},
+    {id: "filmes", tipo: "login", nome: "Filmes Cascata", sub: "casa.duarte", cor: "#7b2f4f", mono: "FC", fav: true, usuario: "casa.duarte", senha: "cinema1", mudou: "há 4 anos"},
+    {id: "energia", tipo: "login", nome: "Energia Lume", sub: "unidade 20418", cor: "#8a6a1c", mono: "EL", usuario: "20418", senha: "pedra-fogo-lua-mar", mudou: "há 5 meses"},
+    {id: "clube", tipo: "login", nome: "Clube Trilha", sub: "marina.d", cor: "#3f6a31", mono: "CT", cod: 29, usuario: "marina.d", senha: "R8v$Tn3q&Ws6Zp", mudou: "há 3 semanas"},
+    {id: "cartao1", tipo: "cartao", nome: "Cartão do dia a dia", sub: "final 4821", cor: "#3b3a37", mono: "48", titular: "MARINA A DUARTE", numero: "•••• •••• •••• 4821", validade: "08/29"},
+    {id: "cartao2", tipo: "cartao", nome: "Cartão virtual", sub: "final 0937", cor: "#5b5852", mono: "09", titular: "MARINA A DUARTE", numero: "•••• •••• •••• 0937", validade: "02/28"},
+    {id: "wifi", tipo: "nota", nome: "Wi-Fi de casa", sub: "nota segura", cor: "#4a5560", mono: "WF", segredo: "jabuticaba-42-azul"},
+    {id: "bike", tipo: "nota", nome: "Cadeado da bicicleta", sub: "nota segura", cor: "#6a4f6a", mono: "CB", segredo: "7 1 4 2"}
+  ];
+  var FABRICA = JSON.stringify(ITENS);   // os dados de fábrica: a barra da galeria devolve o item de exemplo a eles
+  var CATS = [["tudo", "Tudo", "tudo"], ["fav", "Favoritos", "estrela"], ["login", "Logins", "tranca"], ["cartao", "Cartões", "cartao"], ["nota", "Notas seguras", "nota"]];
+  var PALAVRAS = ["pedra", "nuvem", "trilha", "farol", "manga", "brisa", "canoa", "jardim", "cobre", "lagoa", "musgo", "ponte", "vento", "areia", "cedro", "rede", "sol", "mar", "lua", "fogo", "folha", "ninho", "serra", "milho"];
+  var ui = {vista: "cofre", antes: "cofre", sel: "correio", cat: "tudo", busca: "", revelado: {}, porta: "fechado", mestra: false, rolo: 0, plano: "um", ultimoFoco: null, desfazer: null, relAviso: 0, relCopia: 0};
+  var ger = {len: 18, palavras: 4, mai: true, num: true, sim: true, pal: false, valor: "", alvo: null}, relPorta = 0;
+
+  function item(id) { for (var i = 0; i < ITENS.length; i++) if (ITENS[i].id === id) return ITENS[i]; return ITENS[0]; }
+  // força: uma estimativa simples, pelo tamanho e pela variedade; frases de palavras contam pelo número de palavras
+  function forca(s) {
+    if (!s) return {n: 0, t: "", p: ""};
+    var partes = s.split("-");
+    if (ehFrase(s)) return partes.length >= 4 ? {n: 3, t: "Forte", p: "frase de " + partes.length + " palavras"} : {n: 2, t: "Razoável", p: "frase curta"};
+    var temSim = /[^A-Za-z0-9]/.test(s), temMai = /[A-Z]/.test(s), pool = (/[a-z]/.test(s) ? 26 : 0) + (temMai ? 26 : 0) + (/\d/.test(s) ? 10 : 0) + (temSim ? 24 : 0);
+    var bits = s.length * Math.log(pool || 1) / Math.LN2, n = bits < 45 ? 1 : bits < 62 ? 2 : bits < 84 ? 3 : 4;
+    return {n: n, t: ["", "Fraca", "Razoável", "Forte", "Excelente"][n], p: s.length + " caracteres" + (temSim ? "" : ", sem símbolos") + (temMai ? "" : ", sem maiúsculas")};
+  }
+  function ehFrase(s) { return s.split("-").length >= 3 && /^[a-z-]+\d*[^A-Za-z0-9]?$/i.test(s); }
+  function logins() { return ITENS.filter(function (x) { return x.tipo === "login"; }); }
+  function repeteEm(it) { return logins().filter(function (x) { return x.id !== it.id && x.senha === it.senha; }); }
+  function fracas() { return logins().filter(function (x) { return forca(x.senha).n === 1; }); }
+  function repetidas() { return logins().filter(function (x) { return repeteEm(x).length > 0; }); }
+  function auditados() { return logins().filter(function (x) { return forca(x.senha).n === 1 || repeteEm(x).length > 0; }); }   // cada item uma vez, mesmo fraco e repetido
+  // segredo à vista sai em grupos de quatro (só na tela: o valor guardado e copiado continua inteiro); frase de palavras já vem em grupos
+  function emGrupos(s) {
+    if (s.split("-").length >= 3 || /\s/.test(s) || s.length < 7) return s;
+    var caixa = h("span", {"class": "cf-grupos"}), i;
+    for (i = 0; i < s.length; i += 4) caixa.appendChild(h("span", {text: s.slice(i, i + 4)}));
+    return caixa;
+  }
+
+  // ── códigos de verificação de mentira: mudam a cada 30 s por uma conta local, sem valor nenhum fora da maquete ──
+  function janela() { return Math.floor(Date.now() / 30000); }
+  function codigo(semente) {
+    var x = (Math.imul(semente + 11, 2654435761) + Math.imul(janela(), 40503)) >>> 0;
+    x ^= x >>> 13; x = Math.imul(x, 1274126177) >>> 0; x ^= x >>> 16;
+    var s = ("00000" + (x >>> 0) % 1000000).slice(-6);
+    return s.slice(0, 3) + " " + s.slice(3);
+  }
+  var C_ANEL = 2 * Math.PI * 9;
+  function anel() {
+    var s = svg("svg", {"class": "cf-anel", viewBox: "0 0 24 24", "aria-hidden": "true"});
+    s.appendChild(svg("circle", {"class": "cf-anel-f", cx: 12, cy: 12, r: 9}));
+    s.appendChild(svg("circle", {"class": "cf-anel-v", "data-anel": "", cx: 12, cy: 12, r: 9, "stroke-dasharray": C_ANEL.toFixed(2), "stroke-dashoffset": (C_ANEL * (Date.now() % 30000) / 30000).toFixed(2)}));
+    return s;
+  }
+  var tique = 0;
+  function pintarCodigos() {
+    var gasto = (C_ANEL * (Date.now() % 30000) / 30000).toFixed(2);
+    todos("[data-anel]").forEach(function (n) { n.setAttribute("stroke-dashoffset", gasto); });
+    todos("[data-cod]").forEach(function (n) { var t = codigo(+n.getAttribute("data-cod")); if (n.textContent !== t) n.textContent = t; });
+  }
+  function acertarTique() {
+    var quer = ui.vista !== "trancado" && !document.hidden;
+    if (quer && !tique) tique = setInterval(pintarCodigos, 500);
+    else if (!quer && tique) { clearInterval(tique); tique = 0; }
+  }
+
+  function avisar(texto, desfazer) {
+    var a = $(".cf-aviso");
+    clearInterval(ui.relCopia);
+    $(".cf-aviso-t").textContent = texto;
+    $(".cf-aviso-b").hidden = !desfazer;
+    ui.desfazer = desfazer || null;
+    a.setAttribute("data-visivel", "");
+    clearTimeout(ui.relAviso);
+    ui.relAviso = setTimeout(function () { a.removeAttribute("data-visivel"); ui.desfazer = null; clearInterval(ui.relCopia); }, 5200);
+  }
+  function fecharAviso() { clearTimeout(ui.relAviso); clearInterval(ui.relCopia); $(".cf-aviso").removeAttribute("data-visivel"); ui.desfazer = null; }
+  // copiar é só o aviso (a maquete não toca na área de transferência), com a contagem da limpeza
+  function copiar(oQue) {
+    var resta = 30, feito = oQue + (/^Senha/.test(oQue) ? " copiada" : " copiado") + ". Some da área de transferência em ";
+    avisar(feito + "30 s.");
+    ui.relCopia = setInterval(function () { resta--; $(".cf-aviso-t").textContent = feito + resta + " s."; }, 1000);
+  }
+
+  // ── gerador: sorteio simples, suficiente para a maquete (no app de verdade, o gerador é o do sistema) ──
+  var semente = (Math.floor(performance.now() * 997) + 20261109) >>> 0;
+  function sorteio(n) { semente = (Math.imul(semente, 1664525) + 1013904223) >>> 0; return (semente >>> 8) % n; }
+  function gerar() {
+    var s = "", i;
+    if (ger.pal) {
+      // frase de palavras: Maiúsculas põe a inicial maiúscula; Números e Símbolos entram no fim
+      var usadas = [];
+      while (usadas.length < ger.palavras) { var p = PALAVRAS[sorteio(PALAVRAS.length)]; if (usadas.indexOf(p) < 0) usadas.push(p); }
+      s = usadas.map(function (x) { return ger.mai ? x.charAt(0).toUpperCase() + x.slice(1) : x; }).join("-") + (ger.num ? String(10 + sorteio(90)) : "") + (ger.sim ? "!#$%&*+=?@".charAt(sorteio(10)) : "");
+    } else {
+      var min = "abcdefghijkmnopqrstuvwxyz", mai = "ABCDEFGHJKLMNPQRSTUVWXYZ", num = "23456789", sim = "!#$%&*+-=?@", grupos = [min].concat(ger.mai ? [mai] : [], ger.num ? [num] : [], ger.sim ? [sim] : []), tudo = grupos.join(""), letras = [];
+      grupos.forEach(function (g) { letras.push(g.charAt(sorteio(g.length))); });
+      while (letras.length < ger.len) letras.push(tudo.charAt(sorteio(tudo.length)));
+      for (i = letras.length - 1; i > 0; i--) { var j = sorteio(i + 1), t = letras[i]; letras[i] = letras[j]; letras[j] = t; }
+      s = letras.slice(0, ger.len).join("");
+    }
+    ger.valor = s;
+  }
+  function reguaTxt() { return ger.pal ? ger.palavras + " palavras" : ger.len + " caracteres"; }
+
+  // ── peças ──
+  function monograma(it) { var m = h("span", {"class": "cf-mono-g", "aria-hidden": "true", text: it.mono}); m.style.background = it.cor; return m; }
+  function medidor(s) { var f = forca(s); return h("div", {"class": "cf-forca", "data-n": f.n}, [h("span", {"class": "cf-forca-b", "aria-hidden": "true"}, [h("i", {"class": "cf-forca-i"}), h("i", {"class": "cf-forca-i"}), h("i", {"class": "cf-forca-i"}), h("i", {"class": "cf-forca-i"})]), h("span", null, [h("b", {text: f.t}), ": " + f.p])]); }
+  function linha(it) {
+    var f = it.tipo === "login" ? forca(it.senha).n : 0, rep = it.tipo === "login" && repeteEm(it).length > 0;
+    return h("button", {type: "button", "class": "cf-linha", "data-acao": "abrir", "data-id": it.id, "data-foco": "it-" + it.id, "data-aberto": ui.vista === "item" && ui.sel === it.id}, [monograma(it),
+      h("span", {"class": "cf-linha-t"}, [h("span", {"class": "cf-linha-n", text: it.nome}),
+        h("span", {"class": "cf-linha-2"}, [h("span", {"class": "cf-linha-s", text: it.sub}), f === 1 ? h("span", {"class": "cf-alerta", text: "fraca"}) : null, rep ? h("span", {"class": "cf-alerta", text: "repetida"}) : null])]),
+      ic("seta", "cf-seta")]);
+  }
+  function favoritos(lista) {
+    if (!lista.length) return null;
+    return h("div", null, [h("header", {"class": "cf-sec"}, [h("h2", {text: "Favoritos"}), h("span", {"class": "cf-sec-lado", text: "acesso rápido"})]),
+      h("div", {"class": "cf-favs"}, lista.map(function (it) { return h("button", {type: "button", "class": "cf-chapa cf-fav", "data-acao": "abrir", "data-id": it.id, "data-foco": "fav-" + it.id}, [monograma(it), h("span", {"class": "cf-fav-n", text: it.nome})]); }))]);
+  }
+  function grupo(titulo, lista) {
+    if (!lista.length) return null;
+    return h("div", null, [h("header", {"class": "cf-sec"}, [h("h2", {text: titulo}), h("span", {"class": "cf-sec-lado", text: String(lista.length)})]), h("div", {"class": "cf-chapa cf-linhas"}, lista.map(linha))]);
+  }
+  function selo() {
+    var f = fracas().length, r = repetidas().length;
+    return h("button", {type: "button", "class": "cf-selo", "data-acao": "auditoria", "data-foco": "selo"}, [ic("escudo"), h("span", {"class": "cf-selo-t"}, [h("b", {text: f || r ? "Auditoria: " + pl(f, "senha fraca", "senhas fracas") + ", " + pl(r, "repetida", "repetidas") : "Auditoria: tudo em ordem"}), f || r ? "Toque para ver o porquê de cada uma." : "Nenhuma senha fraca nem repetida."]), ic("seta", "cf-seta")]);
+  }
+  function codigos() {
+    var faixa = h("div", {"class": "cf-codigos"});
+    ITENS.forEach(function (it) {
+      if (!it.cod) return;
+      // sem rótulo por cima: o leitor de tela lê o nome e o código que está valendo, e depois o que o toque faz
+      faixa.appendChild(h("button", {type: "button", "class": "cf-chapa cf-cod", "data-acao": "copiar-cod", "data-id": it.id}, [
+        h("span", {"class": "cf-cod-t"}, [h("span", {"class": "cf-cod-n", text: it.nome}), anel()]), h("b", {"class": "cf-cod-v", "data-cod": it.cod, text: codigo(it.cod)}), h("span", {"class": "cf-so-leitor", text: ". Tocar copia o código."})]));
+    });
+    return faixa;
+  }
+
+  // ── estado 1: o cofre aberto ──
+  function filtrados() {
+    var q = semAcento(ui.busca.trim());
+    return ITENS.filter(function (it) {
+      if (ui.cat === "fav" ? !it.fav : ui.cat !== "tudo" && it.tipo !== ui.cat) return false;
+      return q.length < 2 || semAcento(it.nome + " " + it.sub).indexOf(q) >= 0;
+    });
+  }
+  function desenharRes() {
+    var raiz = limpar($(".cf-res")), l = filtrados(), buscando = ui.busca.trim().length > 1, simples = ui.cat === "tudo" && !buscando;
+    if (simples) {
+      raiz.appendChild(selo());
+      raiz.appendChild(h("header", {"class": "cf-sec"}, [h("h2", {text: "Códigos"}), h("span", {"class": "cf-sec-lado", text: "mudam a cada 30 s"})]));
+      raiz.appendChild(codigos());
+      raiz.appendChild(favoritos(l.filter(function (x) { return x.fav; })));
+    }
+    if (!l.length) raiz.appendChild(h("div", {"class": "cf-vazio"}, [h("b", {text: "Nada guardado com esse nome"}), buscando ? "Nenhum item do cofre tem “" + ui.busca.trim() + "”." : "Esta categoria ainda está vazia."]));
+    [["login", "Logins"], ["cartao", "Cartões"], ["nota", "Notas seguras"]].forEach(function (t) { var g = grupo(t[1], l.filter(function (x) { return x.tipo === t[0]; })); if (g) raiz.appendChild(g); });
+    raiz.appendChild(h("div", {"class": "cf-fim"}));
+  }
+  function desenharLista() {
+    var raiz = limpar($(".cf-lista")), pad = h("div", {"class": "cf-pad"});
+    pad.appendChild(h("div", {"class": "cf-cab"}, [h("h1", {"class": "cf-h1", tabindex: "-1", text: ui.cat === "tudo" ? "Cofre" : CATS.filter(function (c) { return c[0] === ui.cat; })[0][1]}), h("button", {type: "button", "class": "cf-plano", "data-acao": "planos", "data-foco": "plano", text: "14 dias grátis"})]));
+    if (ui.cat === "tudo") pad.appendChild(h("p", {"class": "cf-sub", text: "Uma senha mestra; o resto, o Cofre lembra."}));
+    pad.appendChild(h("label", {"class": "cf-busca"}, [h("span", {"class": "cf-so-leitor", text: "Buscar no cofre"}), ic("busca"), h("input", {type: "text", "class": "cf-campo-c", id: "cf-busca", placeholder: "Buscar no cofre", autocomplete: "off", enterkeyhint: "search", value: ui.busca})]));
+    pad.appendChild(h("div", {"class": "cf-acoes-topo"}, [h("button", {type: "button", "class": "cf-btn cf-btn-fio", "data-acao": "gerador", "data-foco": "ger-topo"}, [ic("gerador"), "Gerador"]), h("button", {type: "button", "class": "cf-btn cf-btn-fio", "data-acao": "trancar", "data-foco": "tr-topo"}, [ic("tranca"), "Trancar"])]));
+    pad.appendChild(h("div", {"class": "cf-res"}));
+    raiz.appendChild(pad);
+    desenharRes();
+  }
+  function desenharCats() {
+    var raiz = limpar($(".cf-cats"));
+    raiz.appendChild(h("div", {"class": "cf-marca"}, [ic("cofre"), "Cofre"]));
+    CATS.forEach(function (c) {
+      var n = ITENS.filter(function (it) { return c[0] === "tudo" || (c[0] === "fav" ? it.fav : it.tipo === c[0]); }).length;
+      raiz.appendChild(h("button", {type: "button", "class": "cf-cat", "data-acao": "cat", "data-id": c[0], "data-foco": "cat-" + c[0], "aria-pressed": String(ui.cat === c[0])}, [ic(c[2]), c[1], h("span", {"class": "cf-cat-n cf-mono", text: String(n)})]));
+    });
+    raiz.appendChild(h("div", {"class": "cf-cats-pe"}, [
+      h("button", {type: "button", "class": "cf-cat", "data-acao": "auditoria", "data-foco": "cat-aud"}, [ic("escudo"), "Auditoria", h("span", {"class": "cf-cat-n cf-mono", text: String(auditados().length)})]),
+      h("button", {type: "button", "class": "cf-cat", "data-acao": "gerador", "data-foco": "cat-ger"}, [ic("gerador"), "Gerador"]),
+      h("button", {type: "button", "class": "cf-cat", "data-acao": "trancar", "data-foco": "cat-tr"}, [ic("tranca"), "Trancar o cofre"])]));
+  }
+
+  // ── estado 2: o item aberto (ou, em tela ampla com nada aberto, a visão geral) ──
+  function campo(rotulo, valor, opcoes) {
+    var o = opcoes || {}, acoes = h("span", {"class": "cf-c-a"});
+    if (o.revelar) acoes.appendChild(h("button", {type: "button", "class": "cf-ib", "data-acao": "revelar", "data-id": o.revelar, "data-foco": "rev-" + o.revelar, "aria-label": "Revelar " + rotulo.toLowerCase(), "aria-pressed": String(!!o.aberto)}, ic("olho")));
+    if (o.copiar) acoes.appendChild(h("button", {type: "button", "class": "cf-ib", "data-acao": "copiar", "data-id": o.copiar, "data-foco": "cop-" + rotulo, "aria-label": "Copiar " + rotulo.toLowerCase()}, ic("copiar")));
+    return h("div", {"class": "cf-c"}, [h("span", {"class": "cf-c-r", text: rotulo}), typeof valor === "string" ? h("span", {"class": "cf-c-v" + (o.mono ? " cf-mono" : "")}, o.aberto ? emGrupos(valor) : valor) : valor, acoes, o.extra || null]);
+  }
+  function oculto(s) { return new Array(Math.min(14, Math.max(8, s.length)) + 1).join("•"); }
+  function desenharItem() {
+    var raiz = limpar($(".cf-item")), pad = h("div", {"class": "cf-pad cf-item-in"}), it = item(ui.sel), campos = h("div", {"class": "cf-chapa cf-campos"}), aberto;
+    if (ui.vista !== "item") {
+      var f = fracas().length, r = repetidas().length;
+      pad.appendChild(h("h1", {"class": "cf-h1", text: "Tudo guardado"}));
+      pad.appendChild(h("p", {"class": "cf-nota", text: "Escolha um item na lista. O cofre tranca sozinho depois de 5 minutos parado."}));
+      pad.appendChild(h("div", {"class": "cf-geral-n"}, [["itens", ITENS.length], [f === 1 ? "senha fraca" : "senhas fracas", f], [r === 1 ? "repetida" : "repetidas", r]].map(function (x) { return h("div", {"class": "cf-chapa cf-geral-c"}, [h("b", {"class": "cf-geral-v cf-mono", text: String(x[1])}), h("span", {"class": "cf-geral-r", text: x[0]})]); })));
+      pad.appendChild(grupo("Pede atenção", auditados()));
+      pad.appendChild(grupo("Abertos há pouco", [item("banco"), item("clube"), item("wifi")]));
+      raiz.appendChild(pad); return;
+    }
+    pad.appendChild(h("button", {type: "button", "class": "cf-volta", "data-acao": "vista", "data-vista": "cofre", "data-foco": "volta"}, [ic("antes"), "Cofre"]));
+    pad.appendChild(h("div", {"class": "cf-item-topo"}, [monograma(it), h("div", null, [h("h1", {"class": "cf-item-n", tabindex: "-1", text: it.nome}), h("p", {"class": "cf-item-s", text: it.tipo === "login" ? "Login · senha alterada " + it.mudou : it.tipo === "cartao" ? "Cartão · " + it.sub : "Nota segura"})])]));
+    if (it.tipo === "login") {
+      aberto = !!ui.revelado[it.id];
+      campos.appendChild(campo("Usuário", it.usuario, {mono: true, copiar: "Usuário"}));
+      campos.appendChild(campo("Senha", aberto ? it.senha : oculto(it.senha), {mono: true, revelar: it.id, aberto: aberto, copiar: "Senha", extra: medidor(it.senha)}));
+      if (it.cod) campos.appendChild(campo("Código de verificação", h("span", {"class": "cf-c-cod"}, [h("span", {"data-cod": it.cod, text: codigo(it.cod)}), anel()]), {copiar: "Código"}));
+      // trocar a senha guarda a anterior no histórico do item
+      if (it.anterior) campos.appendChild(campo("Senha anterior", ui.revelado[it.id + ":ant"] ? it.anterior : oculto(it.anterior), {mono: true, revelar: it.id + ":ant", aberto: !!ui.revelado[it.id + ":ant"]}));
+      pad.appendChild(campos);
+      var rep = repeteEm(it);
+      if (rep.length) pad.appendChild(h("div", {"class": "cf-repete"}, [h("b", {text: "Esta senha se repete"}), " em " + pl(rep.length, "outro item", "outros itens") + ". Se uma conta vazar, as outras abrem junto.",
+        h("div", {"class": "cf-repete-l"}, rep.map(function (x) { return h("button", {type: "button", "class": "cf-ficha", "data-acao": "abrir", "data-id": x.id, text: x.nome}); }))]));
+      pad.appendChild(h("div", {"class": "cf-acoes"}, h("button", {type: "button", "class": "cf-btn " + (forca(it.senha).n < 3 || rep.length ? "cf-btn-latao" : "cf-btn-fio") + " cf-largo", "data-acao": "gerador", "data-id": it.id, "data-foco": "trocar"}, [ic("gerador"), "Trocar por uma senha gerada"])));
+    } else if (it.tipo === "cartao") {
+      var face = h("div", {"class": "cf-cartao-v", "aria-hidden": "true"}, [h("i", {"class": "cf-cartao-chip"}), h("span", {"class": "cf-cartao-n cf-mono", text: it.numero}), h("span", {"class": "cf-cartao-t", text: it.titular}), h("span", {"class": "cf-cartao-d cf-mono", text: it.validade})]);
+      face.style.background = "linear-gradient(135deg," + it.cor + ",#171615)";
+      pad.appendChild(face);
+      campos.appendChild(campo("Titular", it.titular, {copiar: "Titular"}));
+      campos.appendChild(campo("Número", it.numero, {mono: true}));
+      campos.appendChild(campo("Validade", it.validade, {mono: true}));
+      campos.appendChild(campo("Código de segurança", "•••", {mono: true}));
+      pad.appendChild(campos);
+      pad.appendChild(h("p", {"class": "cf-nota", text: "Na maquete o número completo e o código de segurança nunca aparecem. No app, eles só se revelam depois do rosto."}));
+    } else {
+      aberto = !!ui.revelado[it.id];
+      campos.appendChild(campo("Segredo", aberto ? it.segredo : oculto(it.segredo), {mono: true, revelar: it.id, aberto: aberto, copiar: "Segredo"}));
+      pad.appendChild(campos);
+    }
+    pad.appendChild(h("div", {"class": "cf-fim"}));
+    raiz.appendChild(pad);
+  }
+
+  // ── estado 3: trancado. O mostrador gira e a porta abre ──
+  function mostrador() {
+    var s = svg("svg", {viewBox: "0 0 200 200", "aria-hidden": "true"}), roda = svg("g", {"class": "cf-dial-roda"});
+    s.appendChild(svg("circle", {"class": "cf-d-aro", cx: 100, cy: 100, r: 97}));
+    s.appendChild(svg("path", {"class": "cf-d-seta", d: "M100 7l6 11H94z"}));
+    roda.appendChild(svg("circle", {"class": "cf-d-traco", cx: 100, cy: 100, r: 82, "stroke-width": 8, "stroke-dasharray": "1.6 6.99", opacity: .6}));
+    roda.appendChild(svg("circle", {"class": "cf-d-traco", cx: 100, cy: 100, r: 82, "stroke-width": 14, "stroke-dasharray": "2.4 40.54", opacity: .85}));
+    roda.appendChild(svg("circle", {"class": "cf-d-miolo", cx: 100, cy: 100, r: 60}));
+    roda.appendChild(svg("path", {"class": "cf-d-raio", d: "M100 52v96M58.4 124l83.2-48M58.4 76l83.2 48"}));
+    roda.appendChild(svg("circle", {"class": "cf-d-eixo", cx: 100, cy: 100, r: 15}));
+    roda.appendChild(svg("circle", {"class": "cf-d-furo", cx: 100, cy: 100, r: 5}));
+    s.appendChild(roda);
+    s.appendChild(svg("circle", {"class": "cf-dial-luz", cx: 100, cy: 100, r: 97}));
+    return h("div", {"class": "cf-dial", "data-estado": ui.porta}, s);
+  }
+  function desenharPorta() {
+    var raiz = limpar($(".cf-porta")), dentro = h("div", {"class": "cf-porta-in"});
+    dentro.appendChild(h("span", {"class": "cf-rot", text: "Cofre de Marina"}));
+    dentro.appendChild(mostrador());
+    dentro.appendChild(h("h1", {text: "Trancado"}));
+    dentro.appendChild(h("p", {"class": "cf-porta-s", "aria-live": "polite", text: "Tranca sozinho depois de 5 minutos parado. Nada aparece até você abrir."}));
+    dentro.appendChild(h("button", {type: "button", "class": "cf-btn cf-btn-latao cf-largo", "data-acao": "rosto", "data-foco": "rosto"}, [ic("rosto"), "Destrancar com o rosto"]));
+    dentro.appendChild(h("span", {"class": "cf-demo", text: "Demonstração: nenhum rosto é lido."}));
+    if (ui.mestra) dentro.appendChild(h("div", {"class": "cf-mestra"}, [h("input", {type: "text", "class": "cf-campo-c", id: "cf-mestra", "aria-label": "Senha mestra", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: "senha mestra"}), h("button", {type: "button", "class": "cf-btn cf-btn-fio", "data-acao": "abrir-mestra", text: "Abrir"})]));
+    else dentro.appendChild(h("button", {type: "button", "class": "cf-link", "data-acao": "mestra", "data-foco": "mestra", text: "Usar a senha mestra"}));
+    raiz.appendChild(dentro);
+  }
+  function trancar() {
+    if (ui.vista === "trancado") return;
+    fecharFolha();
+    fecharAviso();   // trancado não mostra nada do conteúdo, nem o aviso de uma cópia recém-feita
+    ui.antes = ui.vista; ui.porta = "fechado"; ui.mestra = false; ui.revelado = {};
+    irPara("trancado");
+    var b = $('[data-foco="rosto"]'); if (b) b.focus({preventScroll: true});
+  }
+  function abrirCofre() {
+    ui.porta = "fechado"; irPara(ui.antes === "item" ? "item" : "cofre");
+    // o foco entra no cofre pelo título da tela (não pela busca, para não chamar o teclado no celular)
+    var alvo = ui.vista === "item" ? $(".cf-item-n") : $(".cf-lista .cf-h1");
+    if (alvo && alvo.offsetParent) alvo.focus({preventScroll: true});
+  }
+  function destrancar(comRosto) {
+    var dial = $(".cf-dial"), fala = $(".cf-porta-s");
+    if (ui.vista !== "trancado" || ui.porta !== "fechado") return;
+    if (calmo) { abrirCofre(); return; }
+    ui.porta = comRosto ? "lendo" : "abrindo";
+    dial.setAttribute("data-estado", ui.porta);
+    if (fala) fala.textContent = comRosto ? "Olhando para você…" : "Abrindo…";
+    // os dois tempos ficam guardados: se a tela mudar no meio (irPara), a abertura pendente é cancelada
+    relPorta = setTimeout(function () {
+      ui.porta = "abrindo"; dial.setAttribute("data-estado", "abrindo");
+      if (fala) fala.textContent = "Abrindo…";
+      relPorta = setTimeout(abrirCofre, 470);
+    }, comRosto ? 620 : 20);
+  }
+  function abrirComMestra() { if ($("#cf-mestra").value.length) destrancar(false); else $(".cf-porta-s").textContent = "Digite a senha mestra. Na maquete, qualquer uma abre."; }
+
+  // ── folhas: gerador e auditoria ──
+  function pintarGerada() {
+    var v = $(".cf-gerada"), m = $(".cf-ger .cf-forca"), n = $(".cf-regua-n"), g = emGrupos(ger.valor);
+    if (v) limpar(v).appendChild(typeof g === "string" ? document.createTextNode(g) : g);
+    if (m && m.parentNode) m.parentNode.replaceChild(medidor(ger.valor), m);
+    if (n) n.textContent = reguaTxt();
+  }
+  function folhaGerador(alvo) {
+    var raiz = limpar($(".cf-ger")), it = alvo ? item(alvo) : null;
+    ger.alvo = alvo || null;
+    gerar();
+    $("#cf-ger-rot").textContent = it ? "Trocar a senha de " + it.nome : "Gerador";
+    raiz.appendChild(h("p", {"class": "cf-gerada", "aria-live": "polite"}, emGrupos(ger.valor)));
+    raiz.appendChild(medidor(ger.valor));
+    // a régua diz o que mede: caracteres na senha, palavras na frase
+    raiz.appendChild(h("label", {"class": "cf-regua"}, [h("span", {"class": "cf-regua-r", text: ger.pal ? "Tamanho da frase" : "Comprimento"}), h("b", {"class": "cf-regua-n", text: reguaTxt()}),
+      ger.pal ? h("input", {type: "range", id: "cf-len", min: 3, max: 7, step: 1, value: ger.palavras}) : h("input", {type: "range", id: "cf-len", min: 8, max: 40, step: 1, value: ger.len})]));
+    raiz.appendChild(h("div", {"class": "cf-chaves"}, [["mai", "Maiúsculas"], ["num", "Números"], ["sim", "Símbolos"], ["pal", "Frase de palavras"]].map(function (c) {
+      return h("button", {type: "button", "class": "cf-chave-l", "data-acao": "opcao", "data-id": c[0], "data-foco": "op-" + c[0], "aria-pressed": String(!!ger[c[0]])}, [c[1], h("span", {"class": "cf-chave", "aria-hidden": "true"})]);
+    })));
+    raiz.appendChild(h("div", {"class": "cf-duas"}, [h("button", {type: "button", "class": "cf-btn cf-btn-fio", "data-acao": "outra", "data-foco": "outra", text: "Gerar outra"}),
+      it ? h("button", {type: "button", "class": "cf-btn cf-btn-latao", "data-acao": "usar", "data-foco": "usar", text: "Usar esta senha"}) : h("button", {type: "button", "class": "cf-btn cf-btn-latao", "data-acao": "copiar-gerada", "data-foco": "usar", text: "Copiar"})]));
+  }
+  function pintarPlanos() {
+    todos(".cf-opcao").forEach(function (o) { o.setAttribute("aria-pressed", String(o.getAttribute("data-id") === ui.plano)); });
+    $(".cf-depois").textContent = ui.plano === "familia" ? "Depois dos 14 dias, R$ 16,90 por mês para até seis pessoas." : "Depois dos 14 dias, R$ 9,90 por mês.";
+  }
+  function folhaAuditoria() {
+    var raiz = limpar($(".cf-aud-l")), alvos = auditados();
+    if (!alvos.length) raiz.appendChild(h("div", {"class": "cf-vazio"}, [h("b", {text: "Tudo em ordem"}), "Nenhuma senha fraca nem repetida no cofre."]));
+    alvos.forEach(function (x) {
+      var f = forca(x.senha), rep = repeteEm(x), motivos = [];
+      if (f.n === 1) motivos.push("fraca: " + f.p);
+      if (rep.length) motivos.push("repetida em " + rep.map(function (y) { return y.nome; }).join(" e "));
+      raiz.appendChild(h("button", {type: "button", "class": "cf-aud", "data-acao": "abrir", "data-id": x.id}, [h("b", {text: x.nome}), h("span", {"class": "cf-aud-p", text: motivos.join(" · ")})]));
+    });
+  }
+  function abrirFolha(qual) {
+    ui.ultimoFoco = document.activeElement;
+    fecharAviso();
+    app.setAttribute("data-folha", qual);
+    todos(".cf-corpo,.cf-abas").forEach(function (x) { x.inert = true; });
+    setTimeout(function () { $('.cf-folha[data-folha="' + qual + '"] .cf-fechar').focus({preventScroll: true}); }, calmo ? 0 : 140);
+  }
+  function fecharFolha() {
+    if (!app.hasAttribute("data-folha")) return;
+    app.removeAttribute("data-folha");
+    todos(".cf-corpo,.cf-abas").forEach(function (x) { x.inert = false; });
+    if (ui.ultimoFoco && ui.ultimoFoco.focus && app.contains(ui.ultimoFoco)) ui.ultimoFoco.focus({preventScroll: true});
+  }
+
+  function desenhar() {
+    var f = document.activeElement, chave = f && app.contains(f) ? f.getAttribute("data-foco") : null;
+    var rolos = todos(".cf-corpo,.cf-lista,.cf-item").map(function (x) { return [x, x.scrollTop]; });
+    app.setAttribute("data-vista", ui.vista);
+    $(".cf-casca").toggleAttribute("data-trancado", ui.vista === "trancado");
+    todos(".cf-aba").forEach(function (b) { if (b.getAttribute("data-vista") === "cofre" && ui.vista !== "trancado") b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    desenharCats(); desenharLista(); desenharItem();
+    if (ui.vista === "trancado") desenharPorta();
+    acertarTique();
+    rolos.forEach(function (x) { if (x[1]) x[0].scrollTop = x[1]; });
+    if (chave) { var alvo = todos('[data-foco="' + chave + '"]').filter(function (x) { return x.offsetParent && !x.disabled; })[0]; if (alvo) alvo.focus({preventScroll: true}); }
+  }
+  function irPara(vista) {
+    var de = ui.vista;
+    clearTimeout(relPorta); relPorta = 0;   // mudou de tela: nenhuma abertura pendente sobrevive
+    ui.vista = vista;
+    desenhar();
+    todos(".cf-corpo,.cf-item").forEach(function (x) { x.scrollTop = 0; });
+    if (vista === "cofre" && de === "item") $(".cf-corpo").scrollTop = ui.rolo;   // voltar do item devolve a lista onde estava
+    sincronizarEstado();
+  }
+
+  // ── os três estados do stand: 1 Cofre · 2 Item · 3 Trancado ──
+  function estadoDaTela() { return ui.vista === "item" ? 2 : ui.vista === "trancado" ? 3 : 1; }
+  function sincronizarEstado() { var n = String(estadoDaTela()); if (app.getAttribute("data-estado") !== n) app.setAttribute("data-estado", n); }
+  function aplicarEstado(n) {
+    var vista = n === 2 ? "item" : n === 3 ? "trancado" : "cofre";
+    if (vista === ui.vista) return;
+    fecharFolha();
+    if (vista === "trancado") { trancar(); return; }
+    ui.porta = "fechado";
+    if (vista === "item") ui.sel = "correio";
+    irPara(vista);
+  }
+  // pedido da barra do stand: folha aberta fecha, mesmo no mesmo estado. Vindo da barra, o estado chega como a ficha o descreve:
+  // sem busca nem categoria; o estado 2 volta ao item de exemplo de fábrica; pedir "Trancado" cancela uma abertura em curso
+  app.addEventListener("maquete:estado", function (e) {
+    var n = e.detail && e.detail.estado;
+    fecharFolha();
+    if (e.detail && e.detail.origem === "stand") {
+      ui.busca = ""; ui.cat = "tudo";
+      if (n === 2) { ITENS = JSON.parse(FABRICA); ui.revelado = {}; fecharAviso(); }
+      if (n === 3 && ui.vista === "trancado" && ui.porta !== "fechado") { clearTimeout(relPorta); relPorta = 0; ui.porta = "fechado"; desenharPorta(); }
+      if (n === estadoDaTela()) desenhar();
+    }
+    aplicarEstado(n);
+  });
+  new MutationObserver(function () { aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1); }).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+
+  // ── eventos ──
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-acao]");
+    if (!b || !app.contains(b) || b.disabled) return;
+    var acao = b.getAttribute("data-acao"), id = b.getAttribute("data-id"), it = item(ui.sel);
+    if (acao === "vista") irPara(b.getAttribute("data-vista"));
+    else if (acao === "abrir") { fecharFolha(); if (ui.vista === "cofre") ui.rolo = $(".cf-corpo").scrollTop; ui.sel = id; irPara("item"); }
+    else if (acao === "cat") { ui.cat = id; if (ui.vista === "item") ui.vista = "cofre"; irPara(ui.vista); }
+    else if (acao === "revelar") { ui.revelado[id] = !ui.revelado[id]; desenhar(); }
+    else if (acao === "copiar") copiar(id);
+    else if (acao === "copiar-cod") copiar("Código de " + item(id).nome);
+    else if (acao === "auditoria") { folhaAuditoria(); abrirFolha("auditoria"); }
+    else if (acao === "gerador") { folhaGerador(id); abrirFolha("gerador"); }
+    else if (acao === "opcao") { ger[id] = !ger[id]; folhaGerador(ger.alvo); var o = $('[data-foco="op-' + id + '"]'); if (o) o.focus({preventScroll: true}); }
+    else if (acao === "outra") { gerar(); pintarGerada(); }
+    else if (acao === "copiar-gerada") { fecharFolha(); copiar("Senha gerada"); }
+    else if (acao === "usar") {
+      var alvo = item(ger.alvo), velha = alvo.senha, velhoQuando = alvo.mudou, velhaAnterior = alvo.anterior;
+      alvo.anterior = velha; alvo.senha = ger.valor; alvo.mudou = "agora"; fecharFolha(); desenhar();
+      avisar("Senha de " + alvo.nome + " trocada. A anterior fica guardada no item.", function () { alvo.senha = velha; alvo.mudou = velhoQuando; alvo.anterior = velhaAnterior; desenhar(); });
+    }
+    else if (acao === "trancar") trancar();
+    else if (acao === "rosto") destrancar(true);
+    else if (acao === "mestra") { ui.mestra = true; desenharPorta(); var c = $("#cf-mestra"); if (c) c.focus({preventScroll: true}); }
+    else if (acao === "abrir-mestra") abrirComMestra();
+    else if (acao === "planos") { pintarPlanos(); abrirFolha("planos"); }
+    else if (acao === "plano") { ui.plano = id; pintarPlanos(); }
+    else if (acao === "fechar-folha") fecharFolha();
+    else if (acao === "comprar") { fecharFolha(); avisar("Maquete: nada foi cobrado."); }
+    else if (acao === "restaurar") { fecharFolha(); avisar("Maquete: não há compra para restaurar."); }
+    else if (acao === "desfazer") { var fn = ui.desfazer; fecharAviso(); if (fn) fn(); }
+  });
+  app.addEventListener("input", function (e) {
+    if (e.target.id === "cf-busca") { ui.busca = e.target.value; desenharRes(); }
+    else if (e.target.id === "cf-len") { if (ger.pal) ger.palavras = +e.target.value; else ger.len = +e.target.value; gerar(); pintarGerada(); }
+  });
+  // a folha aberta prende o foco: o Tab dá a volta dentro dela, e o Esc fecha de onde quer que o foco esteja
+  document.addEventListener("keydown", function (e) {
+    var nome = app.getAttribute("data-folha"), folha = nome && app.querySelector('[role="dialog"][data-folha="' + nome + '"]'), itens, a, fora;
+    if (!folha || e.defaultPrevented || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") { fecharFolha(); return; }
+    if (e.key !== "Tab") return;
+    itens = Array.prototype.filter.call(folha.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]'), function (x) { return !x.disabled && x.tabIndex >= 0 && x.offsetParent; });
+    a = document.activeElement; fora = !folha.contains(a) || a === folha;
+    if (!itens.length) { e.preventDefault(); folha.focus({preventScroll: true}); }
+    else if (fora || a === itens[e.shiftKey ? 0 : itens.length - 1]) { e.preventDefault(); itens[e.shiftKey ? itens.length - 1 : 0].focus({preventScroll: true}); }
+  });
+  app.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && app.hasAttribute("data-folha")) { e.stopPropagation(); fecharFolha(); }
+    else if (e.key === "Enter" && e.target.id === "cf-mestra") { e.preventDefault(); abrirComMestra(); }
+  });
+  document.addEventListener("visibilitychange", function () { acertarTique(); if (!document.hidden) pintarCodigos(); });
+  $(".cf-veu").addEventListener("wheel", function (e) { e.preventDefault(); }, {passive: false});
+  $(".cf-veu").addEventListener("touchmove", function (e) { e.preventDefault(); }, {passive: false});
+  // arrastar a folha para baixo pelo topo fecha; soltar antes do limite devolve ao lugar
+  todos(".cf-folha").forEach(function (folha) {
+    var y0 = null, dy = 0;
+    folha.addEventListener("pointerdown", function (e) {
+      if (app.clientWidth >= 720 || !e.target.closest(".cf-puxador,.cf-folha-topo") || e.target.closest("button")) return;
+      y0 = e.clientY; dy = 0; folha.setPointerCapture(e.pointerId); folha.style.transition = "none";
+    });
+    folha.addEventListener("pointermove", function (e) { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); folha.style.transform = "translateY(" + dy + "px)"; });
+    var soltar = function () { if (y0 === null) return; y0 = null; folha.style.transition = ""; folha.style.transform = ""; if (dy > 90) fecharFolha(); };
+    folha.addEventListener("pointerup", soltar);
+    folha.addEventListener("pointercancel", soltar);
+  });
+
+  desenhar();
+  aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1);
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>

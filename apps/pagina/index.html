@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Página</title>
+<meta name="description" content="Um diário que cabe em cinco minutos: uma página por dia, com uma pergunta para destravar, e a devolução certa na hora certa: o que você escreveu neste mesmo dia há um, dois e cinco anos. Para quem quer escrever e nunca mantém, e para quem não quer esquecer o ano que viveu.">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Página">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f0e4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1b1714">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="icon" type="image/png" href="icone-192.png">
+<style>:root[data-tema=claro]{background:#f6f0e4}:root[data-tema=escuro]{background:#1b1714}</style>
+
+<style id="app-estilo">
+/* ===== Página · tokens =====
+   Tese visual: papel marfim com grão mínimo, tinta sépia e um bordô de fita (o hoje, a pergunta, o que se guarda); tudo em serifa
+   do sistema com entrelinha de livro, datas em versalete; sem cartões: a tela é a folha, com margem e fio de lombada.
+   Tese de interação: lento e macio como virar página. Toque responde em 120 ms; folhas e trocas em 300 ms com curva
+   sem quique; saídas em 200 ms; nada pisca, nada quica, e escrever nunca é interrompido por animação. */
+:root{
+  --pg-serifa:ui-serif,"New York","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --pg-papel:#f6f0e4;--pg-folha:#fbf7ee;--pg-tinta:#2b2118;--pg-suave:#6b5d4f;--pg-leve:#6f6458;
+  --pg-fio:rgba(43,33,24,.12);--pg-fio2:rgba(43,33,24,.24);--pg-grao:rgba(43,33,24,.045);
+  --pg-bordo:#8a2433;--pg-bordo2:#6f1b28;--pg-bordo-bg:#f1dfe0;--pg-sobre-bordo:#fff7ef;
+  --pg-vidro:rgba(246,240,228,.82);--pg-veu:rgba(43,33,24,.36);
+  --pg-sombra:0 1px 2px rgba(43,33,24,.08),0 22px 54px -22px rgba(43,33,24,.42);
+  --pg-rapido:.12s;--pg-sai:.2s;--pg-vira:.3s;--pg-mola:cubic-bezier(.2,.8,.2,1);--pg-some:cubic-bezier(.4,0,1,1);
+  color-scheme:light;
+}
+:root[data-tema=escuro]{
+  --pg-papel:#1b1714;--pg-folha:#211b17;--pg-tinta:#efe6d6;--pg-suave:#b6a893;--pg-leve:#968a7d;
+  --pg-fio:rgba(239,230,214,.11);--pg-fio2:rgba(239,230,214,.24);--pg-grao:rgba(239,230,214,.03);
+  --pg-bordo:#dd8090;--pg-bordo2:#e99aa8;--pg-bordo-bg:rgba(221,128,144,.15);--pg-sobre-bordo:#2a0d13;
+  --pg-vidro:rgba(27,23,20,.84);--pg-veu:rgba(6,4,3,.6);
+  --pg-sombra:0 1px 2px rgba(0,0,0,.4),0 24px 60px -22px rgba(0,0,0,.85);
+  color-scheme:dark;
+}
+html,body{margin:0}
+body{background:var(--pg-papel)}
+
+/* ===== base: a casca tem a altura da tela; quem rola é a folha ===== */
+#app{container:app / inline-size;position:relative;height:100vh;height:calc(100dvh - var(--stand-barra,0px));overflow:hidden;
+  background-color:var(--pg-papel);background-image:radial-gradient(var(--pg-grao) 1px,transparent 1.2px);background-size:4px 4px;
+  color:var(--pg-tinta);font:400 17px/1.5 var(--pg-serifa);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app button,#app input,#app textarea{font:inherit;color:inherit;letter-spacing:inherit}
+#app button{cursor:pointer;border:0;background:none;padding:0;margin:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app svg{display:block;flex:none}
+#app :focus-visible{outline:2px solid var(--pg-bordo);outline-offset:3px;border-radius:4px}
+#app .pg-so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .pg-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#app .pg-vers{font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--pg-suave)}
+#app .pg-num{font-variant-numeric:tabular-nums}
+#app .pg-casca{position:relative;height:100%;overflow:hidden;overflow:clip;display:grid;grid-template-columns:minmax(0,1fr)}
+
+/* ===== lombada (coluna da esquerda, só em tela ampla) ===== */
+#app .pg-lombada{display:none;flex-direction:column;min-height:0;padding:26px 22px 20px;border-right:1px solid var(--pg-fio2);overflow-y:auto}
+#app .pg-marca{font-size:26px;font-weight:500;letter-spacing:-.02em;font-style:italic}
+#app .pg-nav{display:grid;gap:2px;margin:22px -10px 0}
+#app .pg-nav button{display:flex;align-items:center;gap:12px;min-height:40px;padding:0 10px;border-radius:8px;font-size:17px;transition:background-color var(--pg-rapido)}
+#app .pg-nav button .pg-ic{width:19px;height:19px;color:var(--pg-suave)}
+#app .pg-nav button[aria-current=page]{color:var(--pg-bordo);font-style:italic}
+#app .pg-nav button[aria-current=page] .pg-ic{color:var(--pg-bordo)}
+#app .pg-recentes{margin:26px 0 18px}
+#app .pg-recentes h3{margin-bottom:8px}
+#app .pg-recentes button{display:block;width:100%;padding:11px 0;border-top:1px solid var(--pg-fio);font-size:15px;line-height:1.4}
+#app .pg-recentes button b{display:block;font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--pg-suave);margin-bottom:2px}
+#app .pg-recentes button span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--pg-tinta)}
+#app .pg-plano-atalho{margin-top:auto;padding-top:14px;border-top:1px solid var(--pg-fio2);font-size:14.5px;line-height:1.4;color:var(--pg-suave)}
+#app .pg-plano-atalho b{display:block;font-size:16px;font-weight:500;font-style:italic;color:var(--pg-bordo)}
+
+/* ===== folha (coluna do meio) ===== */
+#app .pg-folha{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column}
+#app .pg-topo{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:8px;height:52px;padding:0 10px 0 24px;border-bottom:1px solid transparent;
+  transition:background-color var(--pg-sai),border-color var(--pg-sai)}
+#app .pg-topo .pg-vers{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .pg-topo .pg-vers b{font-weight:inherit}
+#app .pg-topo .pg-vers em{display:none;font-style:normal}
+#app .pg-folha[data-rolado] .pg-topo{background:var(--pg-vidro);border-bottom-color:var(--pg-fio);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4)}
+#app .pg-folha[data-rolado] .pg-topo .pg-vers b{display:none}
+#app .pg-folha[data-rolado] .pg-topo .pg-vers em{display:inline;animation:pg-aparece var(--pg-sai)}
+@keyframes pg-aparece{from{opacity:0}}
+#app .pg-redondo{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:var(--pg-suave);transition:transform var(--pg-rapido)}
+#app .pg-redondo:active{transform:scale(.92)}
+#app .pg-topo .pg-so-ampla{display:none}
+#app .pg-plano{flex:none;min-height:44px;padding:0 14px;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--pg-bordo);white-space:nowrap;transition:margin-right var(--pg-sai)}
+#app[data-vista=hoje] .pg-folha:not([data-rolado]) .pg-plano{margin-right:104px}
+#app .pg-rolo{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:52px 26px 118px}
+#app .pg-vista{display:none;max-width:640px;margin:0 auto}
+#app[data-vista=hoje] .pg-vista[data-vista=hoje],#app[data-vista=reler] .pg-vista[data-vista=reler]{display:block;animation:pg-vira var(--pg-vira) var(--pg-mola)}
+@keyframes pg-vira{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+
+/* a data e a fita */
+#app .pg-data{position:relative;padding:8px 100px 20px 0;border-bottom:1px solid var(--pg-fio2)}
+#app .pg-data>b{display:block;margin:2px 0 0 -3px;font-size:84px;font-weight:500;line-height:.95;letter-spacing:-.03em}
+#app .pg-data .pg-mes{display:block;margin-top:6px;font-size:19px;font-style:italic;color:var(--pg-suave)}
+#app .pg-fita{position:absolute;top:-62px;right:42px;width:40px;height:150px;padding-top:70px;background:var(--pg-bordo);color:var(--pg-sobre-bordo);text-align:center;
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%);box-shadow:inset 6px 0 8px -6px rgba(0,0,0,.35),inset -6px 0 8px -6px rgba(0,0,0,.25)}
+#app .pg-fita b{display:block;margin:0;font-size:19px;font-weight:600;line-height:1;letter-spacing:0}
+#app .pg-fita small{display:block;margin-top:3px;font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+
+/* a página de hoje */
+#app .pg-pergunta{position:relative;display:flex;align-items:flex-start;gap:10px;width:100%;margin:22px 0 14px;font-size:19px;font-style:italic;line-height:1.4;color:var(--pg-bordo)}
+#app .pg-pergunta span{flex:1}
+#app .pg-pergunta .pg-ic{width:18px;height:18px;margin-top:5px;color:var(--pg-leve)}
+#app .pg-texto{display:block;width:100%;font-size:19px;line-height:1.65;white-space:pre-wrap;hyphens:auto}
+#app .pg-texto[data-vazio]{color:var(--pg-leve);font-style:italic}
+#app .pg-texto::first-letter{font-size:1.9em;line-height:1;font-weight:500}
+#app .pg-texto[data-vazio]::first-letter{font-size:1em;font-weight:400}
+#app .pg-rodape{display:flex;flex-wrap:wrap;gap:4px 14px;margin:18px 0 22px;font-size:13.5px;color:var(--pg-suave)}
+#app .pg-rodape span+span::before{content:"·";margin-right:14px;color:var(--pg-leve)}
+#app .pg-humor{display:flex;align-items:center;gap:6px;padding:16px 0;border-top:1px solid var(--pg-fio);border-bottom:1px solid var(--pg-fio)}
+#app .pg-humor .pg-vers{margin-right:auto;white-space:nowrap}
+#app .pg-humor-linha{border:0;padding:0}
+#app .pg-humor-rotulo{margin-left:auto;font-size:15px;font-style:italic;color:var(--pg-bordo);text-align:right;white-space:nowrap}
+#app .pg-mare{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;transition:transform var(--pg-rapido)}
+#app .pg-mare:active{transform:scale(.9)}
+#app .pg-mare svg{width:26px;height:26px;overflow:visible}
+#app .pg-mare .pg-aro{fill:none;stroke:var(--pg-leve);stroke-width:1.5}
+#app .pg-mare .pg-agua{fill:var(--pg-leve)}
+#app .pg-mare[aria-pressed=true] .pg-aro{stroke:var(--pg-bordo);stroke-width:2}
+#app .pg-mare[aria-pressed=true] .pg-agua{fill:var(--pg-bordo)}
+
+/* neste dia */
+#app .pg-neste{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;column-gap:12px;margin-top:30px}
+#app .pg-neste>h2{margin-bottom:4px;font-size:24px;font-weight:500;font-style:italic;letter-spacing:-.01em}
+#app .pg-neste>p{margin-bottom:10px;font-size:15px;color:var(--pg-suave)}
+#app .pg-antes{display:grid;grid-template-columns:74px minmax(0,1fr);gap:0 14px;width:100%;padding:16px 0;border-top:1px solid var(--pg-fio)}
+#app .pg-antes b{font-size:24px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
+#app .pg-antes small{display:block;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;color:var(--pg-suave)}
+#app .pg-antes span{font-size:17px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#app .pg-antes em{display:block;margin-top:6px;font-size:14px;color:var(--pg-suave)}
+
+/* ===== escrever: só o papel ===== */
+#app .pg-escrita{position:absolute;inset:0;z-index:12;display:flex;flex-direction:column;background-color:var(--pg-folha);background-image:radial-gradient(var(--pg-grao) 1px,transparent 1.2px);background-size:4px 4px;
+  transform:translateY(102%);visibility:hidden;transition:transform var(--pg-sai) var(--pg-some),visibility 0s var(--pg-sai)}
+#app[data-vista=escrever] .pg-escrita{transform:none;visibility:visible;transition:transform var(--pg-vira) var(--pg-mola),visibility 0s}
+#app .pg-escrita-topo{display:flex;align-items:center;gap:8px;min-height:54px;padding:0 14px;border-bottom:1px solid var(--pg-fio)}
+#app .pg-escrita-topo .pg-vers{flex:1;text-align:center}
+#app .pg-pergunta::after{content:"";position:absolute;inset:-9px 0}
+#app .pg-link{min-height:44px;padding:0 10px;font-size:17px;color:var(--pg-suave)}
+#app .pg-guardar{min-height:44px;padding:0 18px;border-radius:999px;background:var(--pg-bordo);color:var(--pg-sobre-bordo);font-size:16px;font-weight:600;transition:transform var(--pg-rapido),background-color var(--pg-rapido)}
+#app .pg-guardar:active{transform:scale(.96)}
+#app .pg-escrita-corpo{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:720px;margin:0 auto;padding:18px 26px 0}
+#app .pg-escrita .pg-pergunta{margin:0 0 10px}
+#app .pg-area{flex:1;min-height:120px;width:100%;padding:0;border:0;outline:0;resize:none;background:none;font-size:19px;line-height:1.65;color:var(--pg-tinta)}
+#app .pg-area::placeholder{color:var(--pg-leve);font-style:italic}
+#app .pg-escrita-pe{display:flex;align-items:center;gap:4px;width:100%;max-width:720px;margin:0 auto;padding:6px 16px calc(10px + env(safe-area-inset-bottom)) 26px;border-top:1px solid var(--pg-fio)}
+#app .pg-pe-info{display:grid;margin-right:auto;font-size:14.5px;line-height:1.5}
+#app .pg-conta{color:var(--pg-suave)}
+#app .pg-humor-nome{font-style:italic;color:var(--pg-bordo)}
+
+/* ===== reler ===== */
+#app .pg-ano{display:flex;align-items:flex-end;gap:6px;padding:8px 0 14px;border-bottom:1px solid var(--pg-fio2)}
+#app .pg-ano b{flex:1;font-size:64px;font-weight:500;line-height:.95;letter-spacing:-.03em;margin-left:-2px}
+#app .pg-ano button[disabled]{opacity:.3;cursor:default}
+#app .pg-soma{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:16px 0 18px}
+#app .pg-soma b{display:block;font-size:26px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
+#app .pg-soma span{display:block;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--pg-suave)}
+#app .pg-pontos{display:grid;gap:5px;padding:4px 0 18px}
+#app .pg-linha{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center}
+#app .pg-linha>span{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--pg-suave)}
+#app .pg-linha>div{display:grid;grid-template-columns:repeat(31,minmax(0,1fr));gap:2px}
+#app .pg-ponto{display:block;width:100%;aspect-ratio:1;max-width:11px;border-radius:50%;background:var(--pg-fio);justify-self:center}
+#app button.pg-ponto{background:var(--pg-tinta);transition:transform var(--pg-rapido)}
+#app button.pg-ponto[data-peso="1"]{opacity:.42}
+#app button.pg-ponto[data-peso="2"]{opacity:.7}
+#app button.pg-ponto[data-hoje]{background:var(--pg-bordo);opacity:1;box-shadow:0 0 0 2px var(--pg-papel),0 0 0 3.2px var(--pg-bordo)}
+#app button.pg-ponto[data-hoje][data-vazio]{background:var(--pg-papel)}
+#app .pg-pontos[data-filtro] button.pg-ponto{opacity:.16}
+#app .pg-pontos[data-filtro] button.pg-ponto[data-aceso]{background:var(--pg-bordo);opacity:1}
+#app .pg-ponto[data-futuro]{background:none;box-shadow:inset 0 0 0 1px var(--pg-fio)}
+#app .pg-pontos{touch-action:pan-y}
+#app .pg-pontos button.pg-ponto[data-espia]{opacity:1;box-shadow:0 0 0 2px var(--pg-papel),0 0 0 3.2px var(--pg-tinta)}
+#app .pg-espia{display:flex;align-items:center;gap:12px;min-height:60px;padding:0 0 14px}
+#app .pg-espia-t{flex:1;min-width:0;font-size:15px;line-height:1.4;font-style:italic;color:var(--pg-suave)}
+#app .pg-espia-t b{display:block;font-size:17px;font-weight:500;font-style:normal;color:var(--pg-tinta)}
+#app .pg-espia-t span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .pg-espia-b{flex:none;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--pg-fio2);font-size:15px;font-weight:600;color:var(--pg-tinta)}
+#app .pg-filtros{display:flex;align-items:center;gap:2px;padding:12px 0;border-top:1px solid var(--pg-fio)}
+#app .pg-filtros .pg-vers{margin-right:auto;white-space:nowrap}
+#app .pg-filtros .pg-mare{position:relative;width:40px}
+#app .pg-filtros .pg-mare::after{content:"";position:absolute;inset:0 -2px}
+#app .pg-fechar::after{content:"";position:absolute;inset:-4px}
+#app .pg-filtro-fala{padding:0 0 14px;font-size:15px;font-style:italic;color:var(--pg-bordo);min-height:22px}
+#app .pg-filtro-fala:empty{min-height:0;padding:0}
+#app .pg-busca{position:relative;display:block;margin:6px 0 4px}
+#app .pg-busca .pg-ic{position:absolute;left:0;top:50%;margin-top:-10px;width:20px;height:20px;color:var(--pg-leve);pointer-events:none}
+#app .pg-busca input{width:100%;height:50px;padding:0 4px 0 30px;border:0;border-bottom:1px solid var(--pg-fio2);border-radius:0;background:none;font-size:19px;font-style:italic;color:var(--pg-tinta)}
+#app .pg-busca input::placeholder{color:var(--pg-leve)}
+#app .pg-busca input:focus{outline:0;border-bottom-color:var(--pg-bordo)}
+#app .pg-achados .pg-antes{grid-template-columns:76px minmax(0,1fr)}
+#app .pg-achados .pg-antes b{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;line-height:1.6;color:var(--pg-suave)}
+#app .pg-achados mark{background:var(--pg-bordo-bg);color:var(--pg-bordo);padding:0 2px;border-radius:3px}
+#app .pg-nada{padding:22px 0;font-size:17px;font-style:italic;color:var(--pg-suave)}
+#app .pg-livro{display:grid;grid-template-columns:104px minmax(0,1fr);gap:18px;align-items:center;width:100%;margin-top:22px;padding:22px 0 6px;border-top:1px solid var(--pg-fio2)}
+#app .pg-capa{position:relative;display:grid;align-content:center;justify-items:center;gap:6px;height:142px;border-radius:3px 7px 7px 3px;background:linear-gradient(90deg,var(--pg-bordo2) 0 7px,var(--pg-bordo) 7px);color:var(--pg-sobre-bordo);
+  box-shadow:var(--pg-sombra);text-align:center}
+#app .pg-capa::after{content:"";position:absolute;inset:8px 8px 8px 15px;border:1px solid currentColor;opacity:.4;border-radius:2px}
+#app .pg-capa i{font-size:13px;font-style:italic}
+#app .pg-capa b{font-size:25px;font-weight:500;letter-spacing:.02em}
+#app .pg-livro h3{font-size:22px;font-weight:500;font-style:italic;letter-spacing:-.01em}
+#app .pg-livro p{margin-top:4px;font-size:15px;line-height:1.45;color:var(--pg-suave)}
+#app .pg-livro em{display:block;margin-top:8px;font-size:15px;color:var(--pg-bordo)}
+
+/* ===== margem direita (tela bem ampla) ===== */
+#app .pg-margem{display:none;min-height:0;overflow-y:auto;padding:30px 26px;border-left:1px solid var(--pg-fio2)}
+#app .pg-margem .pg-neste{margin-top:0}
+
+/* ===== barra de baixo: a borda do caderno ===== */
+#app .pg-pe{position:absolute;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 26px calc(10px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--pg-papel) 95%,transparent);border-top:1px solid var(--pg-fio2);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+#app .pg-pe::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:26px;margin-bottom:1px;background:linear-gradient(to bottom,transparent,var(--pg-papel));pointer-events:none}
+#app .pg-aba{min-height:48px;font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--pg-leve);transition:color var(--pg-rapido)}
+#app .pg-aba[aria-current=page]{color:var(--pg-tinta)}
+#app .pg-aba+.pg-pena+.pg-aba{text-align:right}
+#app .pg-pena{display:grid;place-items:center;width:58px;height:58px;margin:-22px 18px 0;border-radius:50%;background:var(--pg-bordo);color:var(--pg-sobre-bordo);box-shadow:0 0 0 5px var(--pg-papel),var(--pg-sombra);transition:transform var(--pg-rapido) var(--pg-mola)}
+#app .pg-pena .pg-ic{width:24px;height:24px;stroke-width:1.6}
+#app .pg-pena:active{transform:scale(.93)}
+
+/* ===== véu, folhas e aviso ===== */
+#app .pg-veu{position:absolute;inset:0;z-index:20;background:var(--pg-veu);opacity:0;pointer-events:none;transition:opacity var(--pg-sai)}
+#app[data-folha] .pg-veu{opacity:1;pointer-events:auto}
+#app .pg-folha-pe{position:sticky;bottom:calc(-1*var(--pg-pe));z-index:1;margin:-12px 0 calc(-1*var(--pg-pe));padding:12px 0 var(--pg-pe);background:radial-gradient(var(--pg-grao) 1px,transparent 1.2px) 0 0/4px 4px,linear-gradient(to bottom,transparent,var(--pg-folha) 12px)}
+#app .pg-folha-pe~*{position:relative;z-index:2}
+#app .pg-solta{--pg-pe:calc(22px + env(safe-area-inset-bottom));position:absolute;left:0;right:0;bottom:0;z-index:21;max-height:90%;overflow-y:auto;overscroll-behavior:contain;padding:10px 26px calc(22px + env(safe-area-inset-bottom));
+  background-color:var(--pg-folha);background-image:radial-gradient(var(--pg-grao) 1px,transparent 1.2px);background-size:4px 4px;border-radius:18px 18px 0 0;box-shadow:var(--pg-sombra);
+  transform:translateY(105%);visibility:hidden;transition:transform var(--pg-sai) var(--pg-some),visibility 0s var(--pg-sai)}
+#app[data-folha=leitura] .pg-solta[data-folha=leitura],#app[data-folha=planos] .pg-solta[data-folha=planos]{transform:none;visibility:visible;transition:transform var(--pg-vira) var(--pg-mola),visibility 0s}
+#app .pg-puxador{width:38px;height:4px;margin:0 auto 14px;border-radius:99px;background:var(--pg-fio2)}
+#app .pg-solta-topo{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+#app .pg-solta-topo>div{flex:1;min-width:0}
+#app .pg-solta-topo h2{font-size:30px;font-weight:500;letter-spacing:-.02em;line-height:1.1}
+#app .pg-fechar{position:relative;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--pg-fio2);color:var(--pg-suave)}
+#app .pg-fechar .pg-ic{width:15px;height:15px;stroke-width:2}
+#app .pg-leva{display:grid;gap:0;margin:8px 0 0;border-bottom:1px solid var(--pg-fio)}
+#app .pg-planos{margin:14px 0 18px;border-bottom:1px solid var(--pg-fio)}
+#app .pg-opcao{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 0;border-top:1px solid var(--pg-fio);font-size:17px;line-height:1.3;text-align:left}
+#app .pg-opcao-m{flex:none;width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--pg-suave);transition:box-shadow var(--pg-rapido)}
+#app .pg-opcao[aria-pressed=true] .pg-opcao-m{box-shadow:inset 0 0 0 5.5px var(--pg-bordo)}
+#app .pg-opcao-t{flex:1;min-width:0}
+#app .pg-opcao-t small{display:block;font-size:14.5px;font-style:italic;color:var(--pg-suave)}
+#app .pg-opcao-n{flex:none;font-size:20px;font-weight:500;letter-spacing:-.02em;white-space:nowrap}
+#app .pg-leva li{padding:12px 0;border-top:1px solid var(--pg-fio);font-size:17px;line-height:1.4}
+#app .pg-leva li small{display:block;font-size:14.5px;color:var(--pg-suave)}
+#app .pg-botao{display:block;width:100%;min-height:52px;border-radius:999px;background:var(--pg-bordo);color:var(--pg-sobre-bordo);font-size:17px;font-weight:600;text-align:center;transition:transform var(--pg-rapido)}
+#app .pg-botao:active{transform:scale(.98)}
+#app .pg-miudo{margin-top:6px;font-size:12.5px;line-height:1.4;color:var(--pg-leve);text-align:center}
+#app .pg-aviso{position:absolute;left:50%;bottom:104px;z-index:30;display:flex;align-items:center;gap:6px;max-width:calc(100% - 32px);min-height:46px;padding:0 6px 0 20px;border-radius:999px;background:var(--pg-tinta);color:var(--pg-papel);
+  font-size:15.5px;font-style:italic;white-space:nowrap;box-shadow:var(--pg-sombra);opacity:0;transform:translate(-50%,12px);pointer-events:none;transition:opacity var(--pg-sai),transform var(--pg-sai) var(--pg-some)}
+#app .pg-aviso[data-visivel]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition:opacity var(--pg-sai),transform var(--pg-vira) var(--pg-mola)}
+#app .pg-aviso span{padding-right:14px;overflow:hidden;text-overflow:ellipsis}
+#app .pg-aviso button{position:relative;min-height:34px;padding:0 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--pg-papel) 40%,transparent);font-style:normal;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+#app .pg-aviso button::after{content:"";position:absolute;inset:-5px 0}
+#app .pg-aviso button[hidden]{display:none}
+
+@media (hover:hover) and (pointer:fine){
+  #app .pg-nav button:hover{background:var(--pg-fio)}
+  #app .pg-recentes button:hover span,#app .pg-antes:hover span{color:var(--pg-bordo)}
+  #app button.pg-ponto:hover{transform:scale(1.5);opacity:1}
+  #app .pg-guardar:hover,#app .pg-botao:hover,#app .pg-pena:hover{background:var(--pg-bordo2)}
+  #app .pg-aba:hover,#app .pg-link:hover{color:var(--pg-tinta)}
+}
+
+/* ===== tela média e ampla: o caderno aberto ===== */
+@container app (min-width:720px){
+  #app .pg-casca{grid-template-columns:260px minmax(0,1fr)}
+  #app .pg-lombada{display:flex}
+  #app .pg-pe{display:none}
+  #app .pg-topo{position:relative;height:64px;padding:0 34px;background:none!important;border-bottom-color:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  #app .pg-folha[data-rolado] .pg-topo .pg-vers b{display:inline}
+  #app .pg-folha .pg-topo .pg-vers em,#app .pg-folha[data-rolado] .pg-topo .pg-vers em{display:none}
+  #app .pg-topo .pg-so-ampla{display:inline-block}
+  #app .pg-topo .pg-plano{display:none}
+  #app .pg-rolo{padding:6px 48px 60px}
+  #app .pg-data>b{font-size:104px}
+  #app .pg-fita{top:-6px;height:104px;padding-top:26px}
+  #app .pg-escrita{left:260px;border-left:1px solid var(--pg-fio2)}
+  #app .pg-solta{--pg-pe:28px;left:50%;right:auto;bottom:auto;top:10%;width:min(600px,calc(100% - 64px));max-height:80%;padding:26px 34px 28px;border-radius:14px;transform:translate(-50%,-10px);opacity:0;
+    transition:transform var(--pg-sai) var(--pg-some),opacity var(--pg-sai),visibility 0s var(--pg-sai)}
+  #app[data-folha=leitura] .pg-solta[data-folha=leitura],#app[data-folha=planos] .pg-solta[data-folha=planos]{transform:translate(-50%,0);opacity:1;transition:transform var(--pg-vira) var(--pg-mola),opacity var(--pg-sai),visibility 0s}
+  #app .pg-puxador{display:none}
+  #app .pg-aviso{bottom:30px}
+}
+@container app (min-width:1120px){
+  #app .pg-casca{grid-template-columns:270px minmax(0,1fr) 340px}
+  #app .pg-margem{display:block}
+  #app .pg-escrita{left:270px}
+  #app .pg-vista[data-vista=hoje] .pg-neste{display:none}
+}
+@container app (max-width:480px){
+  #app .pg-humor>.pg-vers{display:none}
+  #app .pg-filtros .pg-vers{font-size:11px;letter-spacing:.1em}
+  /* no celular a primeira tela tem de chegar ao "Neste dia" (estado 1) e à busca (estado 3) */
+  #app .pg-data{padding-top:4px;padding-bottom:16px}
+  #app .pg-vista>.pg-pergunta{margin:18px 0 10px}
+  #app .pg-rodape{margin:14px 0 16px}
+  #app .pg-vista>.pg-humor{padding:10px 0}
+  #app .pg-vista .pg-neste{margin-top:16px}
+  #app .pg-vista .pg-neste>p{margin-bottom:4px}
+  #app .pg-ano{padding:4px 0 10px}
+  #app .pg-soma{padding:12px 0}
+  #app .pg-pontos{padding-bottom:12px}
+}
+@container app (max-width:350px){
+  #app .pg-rolo{padding-left:20px;padding-right:20px}
+  #app .pg-data>b{font-size:72px}
+  #app .pg-filtros .pg-vers{display:none}
+  #app .pg-plano span{display:none}
+  /* o editor em 320 px: a data não quebra e os cinco humores cabem inteiros, numa linha só deles */
+  #app .pg-escrita-topo{gap:4px;padding:0 10px}
+  #app .pg-escrita-topo .pg-vers{font-size:11px;letter-spacing:.08em;white-space:nowrap}
+  #app .pg-link{padding:0 6px}
+  #app .pg-escrita-topo .pg-guardar{padding:0 14px}
+  #app .pg-escrita-pe{flex-wrap:wrap;padding-left:20px;padding-right:20px}
+  #app .pg-pe-info{display:flex;justify-content:space-between;width:100%;margin:2px 0 0}
+  #app .pg-humor-linha{width:100%;justify-content:space-between}
+}
+/* acabamento da revisão: a alça da folha arrasta com o dedo; clicar dentro da folha mantém o foco nela (o Esc continua valendo);
+   e o botão do aviso fechado não fica no caminho do Tab */
+#app .pg-puxador,#app .pg-solta-topo{touch-action:none}
+#app [role=dialog]{outline:0}
+#app .pg-aviso:not([data-visivel]) button{visibility:hidden;transition:visibility 0s .2s}
+@media (prefers-reduced-motion:reduce){
+  #app *,#app *::before,#app *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+<style>html,body{margin:0}</style>
+<script>document.documentElement.dataset.tema = matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";</script>
+<script>matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) { document.documentElement.dataset.tema = e.matches ? "escuro" : "claro"; });</script>
+</head>
+<body>
+<main id="app" data-estado="1" data-vista="hoje">
+  <svg class="pg-so-leitor" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="pg-i-hoje" viewBox="0 0 24 24"><path d="M6 3.5h10.5a1.5 1.5 0 0 1 1.5 1.5v15.5H7.5A1.5 1.5 0 0 1 6 19z"/><path d="M6 19a1.5 1.5 0 0 1 1.5-1.5H18M10 8h5M10 11.5h3.5"/></symbol>
+      <symbol id="pg-i-reler" viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="1.4"/><circle cx="12" cy="6" r="1.4"/><circle cx="18.5" cy="6" r="1.4"/><circle cx="5.5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="18.5" cy="12" r="1.4"/><circle cx="5.5" cy="18" r="1.4"/><circle cx="12" cy="18" r="1.4"/><circle cx="18.5" cy="18" r="1.4"/></symbol>
+      <symbol id="pg-i-pena" viewBox="0 0 24 24"><path d="M4 20l1.2-4.6L16.6 4a2.1 2.1 0 0 1 3 0l.4.4a2.1 2.1 0 0 1 0 3L8.6 18.8z"/><path d="M14.5 6.2l3.3 3.3M4 20h7"/></symbol>
+      <symbol id="pg-i-troca" viewBox="0 0 24 24"><path d="M4.5 9.5a7.6 7.6 0 0 1 13.6-2.2L20 9.5M20 4.5v5h-5M19.5 14.5a7.6 7.6 0 0 1-13.6 2.2L4 14.5M4 19.5v-5h5"/></symbol>
+      <symbol id="pg-i-busca" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.2"/><path d="M15.2 15.2l4.6 4.6"/></symbol>
+      <symbol id="pg-i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="pg-i-antes" viewBox="0 0 24 24"><path d="M14.5 5.5l-6.5 6.5 6.5 6.5"/></symbol>
+      <symbol id="pg-i-depois" viewBox="0 0 24 24"><path d="M9.5 5.5l6.5 6.5-6.5 6.5"/></symbol>
+    </defs>
+  </svg>
+  <div class="pg-casca">
+    <aside class="pg-lombada" aria-label="Caderno">
+      <div class="pg-marca">Página</div>
+      <nav class="pg-nav" aria-label="Seções"></nav>
+      <div class="pg-recentes"><h3 class="pg-vers">Últimas páginas</h3><div></div></div>
+      <button type="button" class="pg-plano-atalho" data-acao="planos"><b>Página Completa</b>9 dias de teste restantes</button>
+    </aside>
+    <section class="pg-folha">
+      <header class="pg-topo">
+        <span class="pg-vers"><b>Página</b><em></em></span>
+        <button type="button" class="pg-guardar pg-so-ampla" data-acao="escrever">Escrever</button>
+        <button type="button" class="pg-plano" data-acao="planos" aria-label="Página Completa: 9 dias de teste restantes">9 dias<span> de teste</span></button>
+      </header>
+      <div class="pg-rolo">
+        <div class="pg-vista" data-vista="hoje"></div>
+        <div class="pg-vista" data-vista="reler"></div>
+      </div>
+      <nav class="pg-pe" aria-label="Seções">
+        <button type="button" class="pg-aba" data-acao="vista" data-vista="hoje">Hoje</button>
+        <button type="button" class="pg-pena" data-acao="escrever" aria-label="Escrever a página de hoje"><svg class="pg-ic" aria-hidden="true"><use href="#pg-i-pena"/></svg></button>
+        <button type="button" class="pg-aba" data-acao="vista" data-vista="reler">Reler</button>
+      </nav>
+    </section>
+    <aside class="pg-margem" aria-label="Neste dia"></aside>
+    <section class="pg-escrita" aria-label="Escrever a página de hoje">
+      <div class="pg-escrita-topo">
+        <button type="button" class="pg-link" data-acao="cancelar">Cancelar</button>
+        <span class="pg-vers"></span>
+        <button type="button" class="pg-guardar" data-acao="guardar">Guardar</button>
+      </div>
+      <div class="pg-escrita-corpo">
+        <button type="button" class="pg-pergunta" data-acao="outra-pergunta" aria-label="Trocar a pergunta do dia"><span></span><svg class="pg-ic" aria-hidden="true"><use href="#pg-i-troca"/></svg></button>
+        <label class="pg-so-leitor" for="pg-area">A página de hoje</label>
+        <textarea id="pg-area" class="pg-area" placeholder="Comece por qualquer lugar." spellcheck="true"></textarea>
+      </div>
+      <div class="pg-escrita-pe">
+        <p class="pg-pe-info"><span class="pg-conta pg-num" aria-live="polite"></span><span class="pg-humor-nome"></span></p>
+        <div class="pg-humor-linha" role="group" aria-label="Como foi o dia"></div>
+      </div>
+    </section>
+    <div class="pg-veu" data-acao="fechar-folha"></div>
+    <section class="pg-solta" data-folha="leitura" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="pg-t-leitura">
+      <div class="pg-puxador" aria-hidden="true"></div>
+      <div class="pg-solta-topo">
+        <div><span class="pg-vers" id="pg-l-quando"></span><h2 id="pg-t-leitura"></h2></div>
+        <button type="button" class="pg-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="pg-ic" aria-hidden="true"><use href="#pg-i-fechar"/></svg></button>
+      </div>
+      <p class="pg-texto" id="pg-l-texto"></p>
+      <p class="pg-rodape" id="pg-l-rodape"></p>
+    </section>
+    <section class="pg-solta" data-folha="planos" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="pg-t-planos">
+      <div class="pg-puxador" aria-hidden="true"></div>
+      <div class="pg-solta-topo">
+        <div><span class="pg-vers">Faltam 9 dos 14 dias de teste</span><h2 id="pg-t-planos">Página Completa</h2></div>
+        <button type="button" class="pg-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="pg-ic" aria-hidden="true"><use href="#pg-i-fechar"/></svg></button>
+      </div>
+      <ul class="pg-leva">
+        <li>O livro do ano, pronto para imprimir<small>Capa, sumário por mês e as suas páginas em ordem.</small></li>
+        <li>Cópia cifrada, que só você abre<small>Trocar de aparelho não custa nenhuma página.</small></li>
+        <li>Vários diários<small>Um para o trabalho, um de viagem, um do bebê.</small></li>
+      </ul>
+      <div class="pg-planos" role="group" aria-label="Como pagar">
+        <button type="button" class="pg-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Por ano<small>R$ 6,66 por mês, 33% a menos</small></span><b class="pg-opcao-n pg-num">R$ 79,90</b></button>
+        <button type="button" class="pg-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Por mês<small>sem fidelidade</small></span><b class="pg-opcao-n pg-num">R$ 9,90</b></button>
+        <button type="button" class="pg-opcao" data-acao="plano" data-id="sempre" aria-pressed="false"><i class="pg-opcao-m" aria-hidden="true"></i><span class="pg-opcao-t">Para sempre<small>uma vez só, sem renovar</small></span><b class="pg-opcao-n pg-num">R$ 249</b></button>
+      </div>
+      <div class="pg-folha-pe"><button type="button" class="pg-botao" data-acao="comprar">Assinar por R$ 79,90 ao ano</button></div>
+      <p class="pg-miudo">Maquete: os valores são hipótese e nada é cobrado aqui.</p>
+    </section>
+    <div class="pg-aviso" role="status" aria-live="polite"><span></span><button type="button" data-acao="desfazer">Desfazer</button></div>
+  </div>
+</main>
+<script id="app-script">
+// Página: o app sozinho. As páginas vivem na memória, o ano é gerado por regra fixa (sempre igual) e nada sai da tela.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ── ajudantes de DOM: o que a pessoa escreve entra sempre como texto, nunca como HTML ──
+  function h(tag, attrs, filhos) {
+    var n = document.createElement(tag), k;
+    for (k in attrs || {}) {
+      if (attrs[k] == null || attrs[k] === false) continue;
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    [].concat(filhos || []).forEach(function (f) { if (f != null && f !== false) n.appendChild(typeof f === "string" ? document.createTextNode(f) : f); });
+    return n;
+  }
+  function svg(tag, attrs) { var n = document.createElementNS(SVGNS, tag), k; for (k in attrs) n.setAttribute(k, attrs[k]); return n; }
+  function ic(nome) { var s = svg("svg", {"class": "pg-ic", "aria-hidden": "true"}); s.appendChild(svg("use", {href: "#pg-i-" + nome})); return s; }
+  function $(sel, raiz) { return (raiz || app).querySelector(sel); }
+  function todos(sel, raiz) { return Array.prototype.slice.call((raiz || app).querySelectorAll(sel)); }
+  function limpar(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+  function semAcento(s) { return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+
+  // ── datas ──
+  var agora = new Date();
+  var HOJE = {a: agora.getFullYear(), m: agora.getMonth(), d: agora.getDate()};
+  var SEMANA = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
+  var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  var MES3 = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  function diasNoMes(a, m) { return new Date(a, m + 1, 0).getDate(); }
+  function diaDoAno(a, m, d) { return Math.round((new Date(a, m, d) - new Date(a, 0, 1)) / 864e5); }
+  function porExtenso(a, m, d) { return SEMANA[new Date(a, m, d).getDay()] + ", " + d + " de " + MESES[m] + " de " + a; }
+  function contaPalavras(t) { var p = String(t).trim().split(/\s+/); return p[0] ? p.length : 0; }
+  function milhar(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+
+  // ── dados fictícios ──
+  var HUMORES = ["pesado", "nublado", "neutro", "leve", "radiante"];
+  var PERGUNTAS = ["O que hoje você quase deixou passar?", "Que conversa ficou na sua cabeça?", "O que você faria de novo, exatamente igual?", "Do que você riu hoje?", "O que ficou mais leve do que ontem?"];
+  var SEQUENCIA = 23;
+  var NESTE_DIA = {
+    1: {humor: 4, lugar: "Goiânia", texto: "Primeira noite no apartamento novo. As caixas ainda fazem corredor na sala e o chuveiro só esquenta de um lado, mas a janela da cozinha dá para um ipê, e eu já decidi que é ali que vou tomar café."},
+    2: {humor: 5, lugar: "Pirenópolis", texto: "Chuva fina o dia inteiro. Desistimos da cachoeira e ficamos na varanda da pousada jogando buraco com um casal de Uberlândia. Perdi todas, e foi um dos melhores dias da viagem."},
+    5: {humor: 4, lugar: "Goiânia", texto: "Meu pai ensinou a receita do arroz com pequi por telefone, ditando devagar, e brigou comigo porque eu quis medir a água. “Arroz se olha”, ele disse. Ficou bom. Não ficou igual."}
+  };
+  // páginas comuns de um ano comum: hábitos e miudezas que se repetem na vida de qualquer pessoa, sem data nem estação.
+  // h: humor · u: só em dia útil · f: só em fim de semana · s: basta sozinha (não leva fecho)
+  var NUCLEOS = [
+    {h: 3, t: "Arrumei a estante e achei um livro que eu jurava ter emprestado."},
+    {h: 2, u: 1, t: "Reunião comprida, daquelas em que todo mundo concorda e nada anda."},
+    {h: 5, t: "Corri vinte minutos sem parar. Não foi bonito, mas foi inteiro."},
+    {h: 4, f: 1, t: "Feira de manhã. O moço do queijo lembrou do meu nome, e eu fiquei feliz de um jeito desproporcional."},
+    {h: 4, t: "Liguei para a vó. Ela contou de novo a história do casamento, e eu ouvi como se fosse novidade."},
+    {h: 3, u: 1, t: "Entreguei o relatório. Ninguém respondeu ainda, e eu decidi que isso é uma boa notícia."},
+    {h: 3, t: "Não fiz quase nada do que planejei e, mesmo assim, o dia rendeu. Às vezes a lista é que estava errada."},
+    {h: 3, u: 1, s: 1, t: "Dormi cedo e sem culpa."},
+    {h: 4, u: 1, t: "A Júlia trouxe bolo para a sala sem motivo nenhum. O dia melhorou na hora."},
+    {h: 4, t: "Cozinhei com calma: arroz, ovo, couve. Comi na mesa, e não no sofá."},
+    {h: 4, f: 1, s: 1, t: "Acordei sem despertador e fiquei na cama lendo até a fome chegar."},
+    {h: 2, u: 1, s: 1, t: "Dormi mal e o dia saiu torto. Nada grave, só tudo um pouco fora do lugar."},
+    {h: 3, u: 1, t: "Almocei na praça, sem celular. Meia hora que valeu por uma tarde."},
+    {h: 4, t: "A Clara ligou só para contar uma bobagem. Rimos até ela precisar desligar."},
+    {h: 3, t: "Lavei roupa, paguei conta, respondi mensagem. Um dia inteiro de manutenção."},
+    {h: 2, u: 1, t: "Trânsito parado na volta. Ouvi um disco inteiro no carro e cheguei em casa mais calma do que saí."},
+    {h: 5, t: "Fim de tarde na varanda, sem fazer nada. Fazia tempo."},
+    {h: 4, u: 1, s: 1, t: "Pôr do sol da janela do ônibus."},
+    {h: 4, f: 1, t: "Almoço comprido na casa da vó. Ninguém olhou o relógio."},
+    {h: 4, t: "Fui andando até a padaria em vez de ir de carro. O bairro é outro a pé."},
+    {h: 4, u: 1, t: "Resolvi de manhã o que eu vinha empurrando há uma semana. Levou quinze minutos."},
+    {h: 3, f: 1, s: 1, t: "Li trinta páginas de uma vez. O livro finalmente engrenou."},
+    {h: 1, t: "Dia pesado. Não aconteceu nada de errado, e talvez seja isso que cansa."},
+    {h: 3, u: 1, s: 1, t: "Nada a declarar. Dia comum, dos bons."},
+    {h: 3, u: 1, t: "Trabalhei até tarde. Não foi ruim: o prédio vazio tem um silêncio de que eu gosto."},
+    {h: 4, t: "Meu pai mandou foto do quintal. O pé de limão está carregado, e ele quer que eu vá buscar."},
+    {h: 3, f: 1, t: "Faxina com música alta. A casa ficou ótima e eu fiquei exausta, nessa ordem."},
+    {h: 3, u: 1, s: 1, t: "Fiquei devendo uma ligação para a Clara. Amanhã."},
+    {h: 4, t: "A vizinha do sexto deixou um pote de doce na minha porta. Devolvi o pote cheio de pão de queijo."},
+    {h: 1, u: 1, t: "Dia difícil no trabalho. Falei menos do que devia e pensei nisso o caminho todo."},
+    {h: 2, t: "Passei tempo demais no celular. Anoto aqui para ver se melhora."},
+    {h: 5, t: "Um dia bom do começo ao fim, sem motivo que eu saiba explicar."},
+    {h: 2, u: 1, s: 1, t: "Cansada. Amanhã escrevo direito."},
+    {h: 4, u: 1, t: "Saí no horário e peguei o caminho mais longo, só para passar pela rua das mangueiras."},
+    {h: 3, t: "Tentei meditar dez minutos. Pensei em lista de mercado em nove."},
+    {h: 4, f: 1, t: "Tarde inteira no sofá com um filme antigo. Não me arrependo de nada."},
+    {h: 4, t: "Cinema sozinha, sessão das sete. Gosto de sair sem precisar comentar o filme."},
+    {h: 3, u: 1, t: "Passei a tarde numa planilha. Quando levantei a cabeça, já estava escuro."},
+    {h: 3, t: "Mercado cheio. Voltei com tudo, menos com o que fui buscar."},
+    {h: 4, f: 1, s: 1, t: "Banho demorado, casa em silêncio."},
+    {h: 4, t: "Troquei as plantas de lugar. A samambaia costuma agradecer em dois dias; vamos ver."},
+    {h: 3, u: 1, t: "Café com o Tiago depois do expediente. Falamos mal de tudo e saímos mais leves."},
+    {h: 3, u: 1, s: 1, t: "Escrevo só para não quebrar a sequência. Amanhã eu conto melhor."},
+    {h: 2, u: 1, s: 1, t: "Respondi atravessado a quem não merecia. Pedi desculpa antes de dormir."},
+    {h: 5, f: 1, t: "Parque cedo, antes de o sol esquentar. Voltei com fome e de bom humor."},
+    {h: 4, t: "Jantei com meu pai. Ele repetiu que arroz se olha, não se mede."},
+    {h: 3, u: 1, t: "Esqueci a marmita em casa. Almocei pão de queijo, sem arrependimento."},
+    {h: 5, f: 1, s: 1, t: "Ri até doer a barriga. Não lembro mais do quê."}
+  ];
+  var FECHOS = ["Li dez páginas antes de dormir.", "Fui dormir com a janela aberta.", "Anotei três coisas para amanhã e fechei o caderno.", "Chá, e cama.", "Fico por aqui.", "Louça lavada, luz apagada."];
+  var FECHOS_BONS = ["Valeu o dia.", "Dia para guardar."], FECHOS_RUINS = ["Amanhã é outro dia.", "Dormir resolve metade."];
+  var hoje = {texto: "A apresentação que me tirava o sono durou doze minutos, e ninguém fez a pergunta que eu temia. À noite a Clara ligou só para contar que o pé de jabuticaba dela deu flor.",
+    humor: 4, pergunta: 0, lugar: "Goiânia", tempo: "27°, sol entre nuvens"};
+
+  // o ano é sempre o mesmo: uma regra fixa diz se um dia tem página, o peso dela e o humor
+  function semente(a, m, d) { var x = (a * 372 + m * 31 + d) * 2654435761 % 4294967296; return (x ^ (x >>> 15)) >>> 0; }
+  function distanciaDeHoje(a, m, d) { return Math.round((new Date(HOJE.a, HOJE.m, HOJE.d) - new Date(a, m, d)) / 864e5); }
+  function pagina(a, m, d) {
+    var dist = distanciaDeHoje(a, m, d);
+    if (dist < 0) return null;
+    if (dist === 0) return hoje.texto.trim() ? {texto: hoje.texto, humor: hoje.humor, lugar: hoje.lugar, hoje: true} : null;
+    var s = semente(a, m, d), anos = HOJE.a - a;
+    if (m === HOJE.m && d === HOJE.d && NESTE_DIA[anos]) return NESTE_DIA[anos];
+    if (dist < SEQUENCIA) return compor(a, m, d);
+    if (dist === SEQUENCIA) return null;
+    return s % 10 < 7 ? compor(a, m, d) : null;
+  }
+  // a página de um dia qualquer: dias úteis e fins de semana têm cada um a sua lista, percorrida em passo fixo (todo núcleo
+  // aparece mais ou menos o mesmo tanto e dois dias seguidos nunca saem iguais); o fecho vem do sorteio do dia
+  var UTEIS = NUCLEOS.filter(function (c) { return !c.f; }), LIVRES = NUCLEOS.filter(function (c) { return !c.u; }), compostas = {};
+  function listaDoDia(a, m, d) { var sem = new Date(a, m, d).getDay(); return sem > 0 && sem < 6 ? UTEIS : LIVRES; }
+  // cada lista tem o seu contador (dias úteis contam de cinco em cinco por semana; sábado e domingo, de dois em dois):
+  // contar pelo dia corrido faria a lista de sete em sete dias cair sempre nos mesmos núcleos
+  function nucleoDoDia(a, m, d) {
+    var n = Date.UTC(a, m, d) / 864e5, sem = new Date(a, m, d).getDay(), semana = Math.floor((n + 3) / 7), lista = listaDoDia(a, m, d);
+    return lista[((sem > 0 && sem < 6 ? semana * 5 + sem - 1 : semana * 2 + (sem === 6 ? 0 : 1)) * 19 + a * 11) % lista.length];
+  }
+  function compor(a, m, d) {
+    var chave = a * 400 + m * 32 + d;
+    if (compostas[chave]) return compostas[chave];
+    var s = semente(a, m, d), ontem = new Date(a, m, d - 1), lista = listaDoDia(a, m, d), c = nucleoDoDia(a, m, d), fechos, texto;
+    // sábado e segunda trocam de lista: se o núcleo coincidir com o da véspera, anda uma casa
+    if (c === nucleoDoDia(ontem.getFullYear(), ontem.getMonth(), ontem.getDate())) c = lista[(lista.indexOf(c) + 1) % lista.length];
+    texto = c.t;
+    if (!c.s && (s >>> 8) % 10 >= 4) { fechos = FECHOS.concat(c.h >= 4 ? FECHOS_BONS : c.h <= 2 ? FECHOS_RUINS : []); texto += " " + fechos[(s >>> 12) % fechos.length]; }
+    return (compostas[chave] = {texto: texto, humor: c.h, nucleo: NUCLEOS.indexOf(c)});
+  }
+  // a sequência sai das páginas, nunca de um número guardado; hoje em branco ainda não quebra a de ontem
+  function sequencia() {
+    var dia = new Date(HOJE.a, HOJE.m, HOJE.d), n = 0;
+    if (!pagina(HOJE.a, HOJE.m, HOJE.d)) dia.setDate(dia.getDate() - 1);
+    while (pagina(dia.getFullYear(), dia.getMonth(), dia.getDate())) { n++; dia.setDate(dia.getDate() - 1); }
+    return n;
+  }
+  function palavrasTxt(n) { return n === 0 ? "nenhuma palavra" : n === 1 ? "1 palavra" : milhar(n) + " palavras"; }
+
+  // ── estado da interface ──
+  var ui = {vista: "hoje", plano: "ano", ano: HOJE.a, busca: "", filtro: 0, espia: null, ponteiro: "mouse", antesDeEscrever: "hoje", focoEditor: null, rascunho: null, ultimoFoco: null, desfazer: null, relogio: 0};
+
+  // ── peças ──
+  function mare(nivel, ativo, acao) {
+    var s = svg("svg", {viewBox: "0 0 26 26", "aria-hidden": "true"}), id = "pg-m" + nivel + (acao === "humor" ? "e" : acao === "filtro" ? "f" : "h");
+    var corte = svg("clipPath", {id: id});
+    corte.appendChild(svg("rect", {x: 0, y: 26 - (nivel - 1) * 6.5 - (nivel === 1 ? 0 : 0), width: 26, height: 26}));
+    s.appendChild(corte);
+    s.appendChild(svg("circle", {"class": "pg-agua", cx: 13, cy: 13, r: 10.2, "clip-path": "url(#" + id + ")"}));
+    s.appendChild(svg("circle", {"class": "pg-aro", cx: 13, cy: 13, r: 10.2}));
+    return h("button", {type: "button", "class": "pg-mare", "data-acao": acao, "data-nivel": nivel, "aria-pressed": String(ativo), "aria-label": "Dia " + HUMORES[nivel - 1]}, s);
+  }
+  function linhaHumor(atual, acao, comRotulo) {
+    var g = h("div", {"class": "pg-humor", role: "group", "aria-label": "Como foi o dia"});
+    if (comRotulo) g.appendChild(h("span", {"class": "pg-vers", text: "O dia foi"}));
+    for (var n = 1; n <= 5; n++) g.appendChild(mare(n, n === atual, acao));
+    if (comRotulo) g.appendChild(h("span", {"class": "pg-humor-rotulo", text: "dia " + HUMORES[atual - 1]}));
+    return g;
+  }
+  function trecho(anos) {
+    var p = NESTE_DIA[anos], a = HOJE.a - anos;
+    return h("button", {type: "button", "class": "pg-antes", "data-acao": "abrir-dia", "data-a": a, "data-m": HOJE.m, "data-d": HOJE.d}, [
+      h("div", null, [h("b", {"class": "pg-num", text: String(a)}), h("small", {text: anos === 1 ? "há 1 ano" : "há " + anos + " anos"})]),
+      h("div", null, [h("span", {text: p.texto}), h("em", {text: "Ler a página inteira"})])
+    ]);
+  }
+  function nesteDia() {
+    return h("section", {"class": "pg-neste"}, [h("h2", {text: "Neste dia"}), h("p", {text: HOJE.d + " de " + MESES[HOJE.m] + ", em outros anos."}), trecho(1), trecho(2), trecho(5)]);
+  }
+
+  // ── vistas ──
+  function vistaHoje() {
+    var v = limpar($('.pg-vista[data-vista="hoje"]')), tem = !!hoje.texto.trim(), seq = sequencia();
+    v.appendChild(h("header", {"class": "pg-data"}, [
+      h("span", {"class": "pg-vers", text: SEMANA[new Date(HOJE.a, HOJE.m, HOJE.d).getDay()]}),
+      h("b", {"class": "pg-num", text: String(HOJE.d)}),
+      h("span", {"class": "pg-mes", text: MESES[HOJE.m] + " de " + HOJE.a}),
+      h("div", {"class": "pg-fita", role: "img", "aria-label": "Sequência de " + seq + (seq === 1 ? " dia" : " dias") + " escrevendo"}, [h("b", {"class": "pg-num", text: String(seq)}), h("small", {text: seq === 1 ? "dia" : "dias"})])
+    ]));
+    v.appendChild(h("button", {type: "button", "class": "pg-pergunta", "data-acao": "outra-pergunta", "aria-label": "Trocar a pergunta do dia"}, [h("span", {text: PERGUNTAS[hoje.pergunta]}), ic("troca")]));
+    // o leitor de tela lê a página e, depois dela, o que o toque faz: um rótulo por cima calaria o texto do dia
+    v.appendChild(h("button", {type: "button", "class": "pg-texto", "data-acao": "escrever", "data-vazio": !tem},
+      tem ? [hoje.texto, h("span", {"class": "pg-so-leitor", text: " Toque para continuar a página de hoje."})] : "A página de hoje está em branco. Toque para começar."));
+    v.appendChild(h("p", {"class": "pg-rodape"}, [h("span", {text: hoje.lugar}), h("span", {text: hoje.tempo}), h("span", {"class": "pg-num", text: palavrasTxt(contaPalavras(hoje.texto))})]));
+    v.appendChild(linhaHumor(hoje.humor, "humor-hoje", true));
+    v.appendChild(nesteDia());
+  }
+  function contaAno(a) {
+    var paginas = 0, palavras = 0, m, d;
+    for (m = 0; m < 12; m++) for (d = 1; d <= diasNoMes(a, m); d++) { var p = pagina(a, m, d); if (p) { paginas++; palavras += contaPalavras(p.texto); } }
+    return {paginas: paginas, palavras: palavras};
+  }
+  function vistaReler() {
+    var v = limpar($('.pg-vista[data-vista="reler"]')), a = ui.ano, soma = contaAno(a), m, d;
+    v.appendChild(h("header", {"class": "pg-ano"}, [
+      h("b", {"class": "pg-num", text: String(a)}),
+      h("button", {type: "button", "class": "pg-redondo", "data-acao": "ano", "data-passo": -1, "aria-label": "Ano anterior", disabled: a <= HOJE.a - 5}, ic("antes")),
+      h("button", {type: "button", "class": "pg-redondo", "data-acao": "ano", "data-passo": 1, "aria-label": "Ano seguinte", disabled: a >= HOJE.a}, ic("depois"))
+    ]));
+    v.appendChild(h("div", {"class": "pg-soma"}, [
+      h("div", null, [h("b", {"class": "pg-num", text: String(soma.paginas)}), h("span", {text: "páginas"})]),
+      h("div", null, [h("b", {"class": "pg-num", text: a === HOJE.a ? String(sequencia()) : "—"}), h("span", {text: a === HOJE.a ? "seguidas" : "sequência"})]),
+      h("div", null, [h("b", {"class": "pg-num", text: milhar(soma.palavras)}), h("span", {text: "palavras"})])
+    ]));
+    var acesos = 0, pontos = h("div", {"class": "pg-pontos", "data-toque-conjunto": true, "data-filtro": ui.filtro ? true : null});
+    for (m = 0; m < 12; m++) {
+      var fila = h("div", {role: "group", "aria-label": MESES[m]});
+      for (d = 1; d <= 31; d++) {
+        if (d > diasNoMes(a, m)) { fila.appendChild(h("i")); continue; }
+        var p = pagina(a, m, d), dist = distanciaDeHoje(a, m, d);
+        if (!p && dist !== 0) { fila.appendChild(h("i", {"class": "pg-ponto", "data-futuro": dist < 0})); continue; }
+        // hoje é sempre um ponto que se alcança, mesmo com a página em branco (aí ele é só o aro)
+        var aceso = !!(p && ui.filtro && p.humor === ui.filtro), n = p ? contaPalavras(p.texto) : 0;
+        if (aceso) acesos++;
+        fila.appendChild(h("button", {type: "button", "class": "pg-ponto", tabindex: dist === 0 ? "0" : "-1", "data-acao": "abrir-dia", "data-a": a, "data-m": m, "data-d": d, "data-hoje": dist === 0, "data-vazio": !p,
+          "data-peso": !p ? null : n < 14 ? 1 : n < 30 ? 2 : 3, "data-aceso": aceso, "aria-label": d + " de " + MESES[m] + (p ? ": dia " + HUMORES[p.humor - 1] : ": hoje, página em branco")}));
+      }
+      pontos.appendChild(h("div", {"class": "pg-linha"}, [h("span", {text: MES3[m]}), fila]));
+    }
+    // o Tab sempre tem por onde entrar no calendário: sem o ponto de hoje (ano passado), entra pelo último dia escrito
+    if (!$('button.pg-ponto[tabindex="0"]', pontos)) { var ultimo = todos("button.pg-ponto", pontos).pop(); if (ultimo) ultimo.tabIndex = 0; }
+    v.appendChild(pontos);
+    v.appendChild(h("div", {"class": "pg-espia", "aria-live": "polite"}));
+    ligarPontos(pontos);
+    var filtros = h("div", {"class": "pg-filtros", role: "group", "aria-label": "Acender os dias por humor"}, [h("span", {"class": "pg-vers", text: "Acender os dias"})]);
+    for (var n = 1; n <= 5; n++) filtros.appendChild(mare(n, n === ui.filtro, "filtro"));
+    v.appendChild(filtros);
+    v.appendChild(h("p", {"class": "pg-filtro-fala", "aria-live": "polite", text: ui.filtro ? acesos + (acesos === 1 ? " dia " : " dias ") + HUMORES[ui.filtro - 1] + (acesos === 1 ? "" : "s") + " em " + a + "." : ""}));
+    v.appendChild(h("label", {"class": "pg-busca"}, [h("span", {"class": "pg-so-leitor", text: "Buscar no que você escreveu"}), ic("busca"),
+      h("input", {type: "text", id: "pg-busca", placeholder: "Buscar no que você escreveu", autocomplete: "off", enterkeyhint: "search", value: ui.busca})]));
+    v.appendChild(h("div", {"class": "pg-achados"}));
+    v.appendChild(h("button", {type: "button", "class": "pg-livro", "data-acao": "planos"}, [
+      h("div", {"class": "pg-capa", "aria-hidden": "true"}, [h("i", {text: "Página"}), h("b", {"class": "pg-num", text: String(a)})]),
+      h("div", null, [h("h3", {text: "O livro de " + a}), h("p", {text: soma.paginas + (a === HOJE.a ? " páginas até agora" : " páginas") + ", em ordem, com capa e sumário por mês."}), h("em", {text: "Pronto para imprimir na Página Completa"})])
+    ]));
+    achados();
+    pintarEspia();
+  }
+  // o ano em pontos é uma superfície só: o dedo não acerta um ponto de 8 px, então tocar ou deslizar escolhe o dia mais
+  // perto e a faixa de baixo mostra quem é, com o botão de abrir do tamanho do dedo. Com o mouse, passar espia e o clique abre.
+  function maisPerto(x, y) {
+    var melhor = null, menor = Infinity;
+    todos(".pg-pontos button.pg-ponto").forEach(function (b) {
+      var r = b.getBoundingClientRect(), dx = x - (r.left + r.width / 2), dy = (y - (r.top + r.height / 2)) * 1.6, q = dx * dx + dy * dy;
+      if (q < menor) { menor = q; melhor = b; }
+    });
+    return melhor;
+  }
+  function espiar(b) {
+    if (!b) return;
+    ui.espia = {a: +b.getAttribute("data-a"), m: +b.getAttribute("data-m"), d: +b.getAttribute("data-d")};
+    pintarEspia();
+  }
+  function pintarEspia() {
+    var caixa = $(".pg-espia"), e = ui.espia && ui.espia.a === ui.ano ? ui.espia : null, ehHoje = !!e && distanciaDeHoje(e.a, e.m, e.d) === 0, p = e ? pagina(e.a, e.m, e.d) : null, b;
+    if (!caixa) return;
+    limpar(caixa);
+    todos(".pg-pontos button.pg-ponto[data-espia]").forEach(function (x) { x.removeAttribute("data-espia"); });
+    if (!p && !ehHoje) { caixa.appendChild(h("p", {"class": "pg-espia-t", text: "Passe pelos pontos para espiar um dia."})); return; }
+    b = $('.pg-pontos button.pg-ponto[data-m="' + e.m + '"][data-d="' + e.d + '"]');
+    if (b) b.setAttribute("data-espia", "");
+    caixa.appendChild(h("p", {"class": "pg-espia-t"}, [h("b", {text: e.d + " de " + MESES[e.m] + (p ? " · dia " + HUMORES[p.humor - 1] : " · hoje")}), h("span", {text: p ? p.texto : "A página de hoje ainda está em branco."})]));
+    caixa.appendChild(h("button", {type: "button", "class": "pg-espia-b", "data-acao": "abrir-dia", "data-a": e.a, "data-m": e.m, "data-d": e.d, text: ehHoje ? "Ir para hoje" : "Abrir"}));
+  }
+  function ligarPontos(pontos) {
+    var dedo = function (e) { if (e.pointerType !== "mouse") espiar(maisPerto(e.clientX, e.clientY)); };
+    pontos.addEventListener("pointerdown", dedo);
+    pontos.addEventListener("pointermove", function (e) { if (e.pointerType === "touch" || e.buttons) dedo(e); });
+    pontos.addEventListener("pointerover", function (e) { if (e.pointerType === "mouse" && e.target.matches && e.target.matches("button.pg-ponto")) espiar(e.target); });
+    pontos.addEventListener("focusin", function (e) { if (e.target.matches("button.pg-ponto")) espiar(e.target); });
+    // teclado: as setas andam pelos dias escritos (esquerda e direita no mesmo ano; cima e baixo mudam de mês)
+    pontos.addEventListener("keydown", function (e) {
+      var lista = todos("button.pg-ponto", pontos), i = lista.indexOf(e.target), alvo = null, m, d, passo, mm, melhor;
+      if (i < 0) return;
+      if (e.key === "ArrowRight") alvo = lista[i + 1];
+      else if (e.key === "ArrowLeft") alvo = lista[i - 1];
+      else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        m = +e.target.getAttribute("data-m"); d = +e.target.getAttribute("data-d"); passo = e.key === "ArrowDown" ? 1 : -1;
+        for (mm = m + passo; mm >= 0 && mm < 12 && !alvo; mm += passo) {
+          melhor = 99;
+          todos('button.pg-ponto[data-m="' + mm + '"]', pontos).forEach(function (b) { var dif = Math.abs(+b.getAttribute("data-d") - d); if (dif < melhor) { melhor = dif; alvo = b; } });
+        }
+      } else return;
+      e.preventDefault();
+      if (!alvo) return;
+      lista.forEach(function (b) { b.tabIndex = -1; });
+      alvo.tabIndex = 0;
+      alvo.focus({preventScroll: true});
+    });
+  }
+  function achados() {
+    var alvo = limpar($(".pg-achados")), termo = semAcento(ui.busca.trim()), a = ui.ano, vistos = {}, lista = [], m, d;
+    if (termo.length < 2) return;
+    for (m = 11; m >= 0; m--) for (d = diasNoMes(a, m); d >= 1; d--) {
+      var p = pagina(a, m, d);
+      var id = p && (p.nucleo != null ? "n" + p.nucleo : p.texto);
+      if (!p || vistos[id]) continue;
+      var onde = semAcento(p.texto).indexOf(termo);
+      if (onde < 0) continue;
+      vistos[id] = 1; lista.push({m: m, d: d, p: p, onde: onde});
+    }
+    if (!lista.length) { alvo.appendChild(h("p", {"class": "pg-nada", text: "Nada com “" + ui.busca.trim() + "” em " + a + ". Tente outra palavra, ou outro ano."})); return; }
+    lista.slice(0, 6).forEach(function (r) {
+      var ini = Math.max(0, r.onde - 46), fim = Math.min(r.p.texto.length, r.onde + termo.length + 70), t = r.p.texto;
+      alvo.appendChild(h("button", {type: "button", "class": "pg-antes", "data-acao": "abrir-dia", "data-a": a, "data-m": r.m, "data-d": r.d}, [
+        h("b", {"class": "pg-num", text: r.d + " " + MES3[r.m]}),
+        h("span", null, [(ini ? "…" : "") + t.slice(ini, r.onde), h("mark", {text: t.slice(r.onde, r.onde + termo.length)}), t.slice(r.onde + termo.length, fim) + (fim < t.length ? "…" : "")])
+      ]));
+    });
+  }
+  function lombada() {
+    var nav = limpar($(".pg-nav"));
+    [["hoje", "Hoje", "hoje"], ["reler", "Reler", "reler"]].forEach(function (x) {
+      nav.appendChild(h("button", {type: "button", "data-acao": "vista", "data-vista": x[0], "aria-current": ui.vista === x[0] ? "page" : null}, [ic(x[2]), x[1]]));
+    });
+    todos(".pg-aba").forEach(function (b) { if (b.getAttribute("data-vista") === ui.vista) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    var rec = limpar($(".pg-recentes div")), base = new Date(HOJE.a, HOJE.m, HOJE.d);
+    for (var i = 1; i <= 5; i++) {
+      var dia = new Date(base); dia.setDate(dia.getDate() - i);
+      var p = pagina(dia.getFullYear(), dia.getMonth(), dia.getDate());
+      if (!p) continue;
+      rec.appendChild(h("button", {type: "button", "data-acao": "abrir-dia", "data-a": dia.getFullYear(), "data-m": dia.getMonth(), "data-d": dia.getDate()},
+        [h("b", {text: (i === 1 ? "ontem" : SEMANA[dia.getDay()].replace("-feira", "")) + ", " + dia.getDate() + " " + MES3[dia.getMonth()]}), h("span", {text: p.texto})]));
+    }
+    limpar($(".pg-margem")).appendChild(nesteDia());
+  }
+  function desenhar() {
+    app.setAttribute("data-vista", ui.vista);
+    $(".pg-topo .pg-vers em").textContent = ui.vista === "reler" ? String(ui.ano) : HOJE.d + " de " + MESES[HOJE.m];
+    vistaHoje(); vistaReler(); lombada();
+  }
+  function irPara(vista) {
+    ui.vista = vista;
+    desenhar();
+    $(".pg-rolo").scrollTop = 0;
+    $(".pg-folha").removeAttribute("data-rolado");
+    sincronizarEstado();
+  }
+
+  // ── aviso com desfazer ──
+  function avisar(texto, desfazer) {
+    var a = $(".pg-aviso");
+    a.firstChild.textContent = texto;
+    a.lastChild.hidden = !desfazer;
+    ui.desfazer = desfazer || null;
+    a.setAttribute("data-visivel", "");
+    clearTimeout(ui.relogio);
+    ui.relogio = setTimeout(function () { a.removeAttribute("data-visivel"); ui.desfazer = null; }, 5200);
+  }
+
+  // ── escrever ──
+  // o que fica fora de alcance enquanto se escreve ou há folha aberta: decidido num lugar só, a partir do estado
+  function inerte() {
+    var folha = app.hasAttribute("data-folha"), escrevendo = ui.vista === "escrever", l = $(".pg-lombada");
+    l.inert = folha || (escrevendo && !l.offsetParent);
+    $(".pg-folha").inert = $(".pg-margem").inert = folha || escrevendo;
+    $(".pg-escrita").inert = folha;
+  }
+  function mostrarConta() { $(".pg-conta").textContent = palavrasTxt(contaPalavras($("#pg-area").value)); }
+  function montarEditor() {
+    $(".pg-escrita-topo .pg-vers").textContent = HOJE.d + " de " + MESES[HOJE.m];
+    $(".pg-escrita .pg-pergunta span").textContent = PERGUNTAS[ui.rascunho.pergunta];
+    var linha = limpar($(".pg-humor-linha"));
+    linha.className = "pg-humor-linha pg-humor";
+    for (var n = 1; n <= 5; n++) linha.appendChild(mare(n, n === ui.rascunho.humor, "humor"));
+    $(".pg-humor-nome").textContent = "dia " + HUMORES[ui.rascunho.humor - 1];
+    mostrarConta();
+  }
+  function abrirEditor(rascunho) {
+    if (ui.vista === "escrever") return;
+    ui.antesDeEscrever = ui.vista;
+    ui.focoEditor = document.activeElement;
+    ui.rascunho = rascunho || {texto: hoje.texto, humor: hoje.humor, pergunta: hoje.pergunta};
+    $("#pg-area").value = ui.rascunho.texto;
+    montarEditor();
+    ui.vista = "escrever";
+    app.setAttribute("data-vista", "escrever");
+    inerte();
+    setTimeout(function () { var a = $("#pg-area"); a.focus({preventScroll: true}); a.setSelectionRange(a.value.length, a.value.length); }, calmo ? 0 : 160);
+    sincronizarEstado();
+  }
+  // sair sem guardar não some com o que foi escrito: o rascunho descartado volta com Desfazer
+  function fecharEditor(guardar, destino, semFoco) {
+    if (ui.vista !== "escrever") return;
+    var antes = {texto: hoje.texto, humor: hoje.humor, pergunta: hoje.pergunta}, solto = {texto: $("#pg-area").value, humor: ui.rascunho.humor, pergunta: ui.rascunho.pergunta}, origem = ui.focoEditor, alvo;
+    if (guardar) { hoje.texto = solto.texto.replace(/\s+$/, ""); hoje.humor = solto.humor; hoje.pergunta = solto.pergunta; }
+    $("#pg-area").blur();
+    irPara(guardar ? "hoje" : destino || ui.antesDeEscrever);
+    inerte();
+    if (!semFoco) {
+      alvo = origem && app.contains(origem) && origem.offsetParent ? origem : $('.pg-vista[data-vista="hoje"] .pg-texto');
+      if (alvo && alvo.offsetParent) alvo.focus({preventScroll: true});
+    }
+    if (guardar && (antes.texto !== hoje.texto || antes.humor !== hoje.humor)) {
+      avisar(hoje.texto.trim() ? "Página guardada" : "Página em branco", function () { hoje.texto = antes.texto; hoje.humor = antes.humor; hoje.pergunta = antes.pergunta; desenhar(); });
+    } else if (!guardar && (solto.texto !== antes.texto || solto.humor !== antes.humor)) {
+      avisar("Rascunho descartado", function () { abrirEditor(solto); });
+    }
+  }
+
+  // ── folhas ──
+  function pintarPlanos() {
+    todos(".pg-opcao").forEach(function (o) { o.setAttribute("aria-pressed", String(o.getAttribute("data-id") === ui.plano)); });
+    $('.pg-folha-pe [data-acao="comprar"]').textContent = ui.plano === "ano" ? "Assinar por R$ 79,90 ao ano" : ui.plano === "mes" ? "Assinar por R$ 9,90 ao mês" : "Comprar por R$ 249, uma vez só";
+  }
+  function abrirFolha(qual) {
+    ui.ultimoFoco = document.activeElement;
+    $(".pg-aviso").removeAttribute("data-visivel"); ui.desfazer = null;
+    app.setAttribute("data-folha", qual);
+    inerte();
+    setTimeout(function () { $('.pg-solta[data-folha="' + qual + '"] .pg-fechar').focus({preventScroll: true}); }, calmo ? 0 : 140);
+  }
+  function fecharFolha() {
+    if (!app.hasAttribute("data-folha")) return;
+    app.removeAttribute("data-folha");
+    inerte();
+    if (ui.ultimoFoco && ui.ultimoFoco.focus && app.contains(ui.ultimoFoco)) ui.ultimoFoco.focus({preventScroll: true});
+  }
+  function lerDia(a, m, d) {
+    var p = pagina(a, m, d);
+    if (distanciaDeHoje(a, m, d) === 0) { irPara("hoje"); return; }
+    if (!p) return;
+    $("#pg-l-quando").textContent = SEMANA[new Date(a, m, d).getDay()];
+    $("#pg-t-leitura").textContent = d + " de " + MESES[m] + " de " + a;
+    $("#pg-l-texto").textContent = p.texto;
+    var pe = limpar($("#pg-l-rodape"));
+    [p.lugar || "Goiânia", "dia " + HUMORES[p.humor - 1], palavrasTxt(contaPalavras(p.texto))].forEach(function (t) { pe.appendChild(h("span", {text: t})); });
+    $('.pg-solta[data-folha="leitura"]').scrollTop = 0;
+    abrirFolha("leitura");
+  }
+
+  // ── os três estados do stand: 1 Hoje · 2 Escrever · 3 Reler ──
+  function estadoDaTela() { return ui.vista === "escrever" ? 2 : ui.vista === "reler" ? 3 : 1; }
+  function sincronizarEstado() { var n = String(estadoDaTela()); if (app.getAttribute("data-estado") !== n) app.setAttribute("data-estado", n); }
+  function aplicarEstado(n) {
+    if (n === estadoDaTela()) return;
+    fecharFolha();
+    if (n === 2) { abrirEditor(); return; }
+    if (ui.vista === "escrever") fecharEditor(false, n === 3 ? "reler" : "hoje", true);
+    else irPara(n === 3 ? "reler" : "hoje");
+  }
+  app.addEventListener("maquete:estado", function (e) { fecharFolha(); aplicarEstado(e.detail && e.detail.estado); });   // pedido da barra do stand: folha aberta fecha, mesmo no mesmo estado
+  new MutationObserver(function () { aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1); }).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+
+  // ── eventos ──
+  app.addEventListener("pointerdown", function (e) { ui.ponteiro = e.pointerType; }, true);
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-acao]");
+    if (!b || !app.contains(b) || b.disabled) return;
+    var acao = b.getAttribute("data-acao");
+    if (acao === "vista") {
+      var destino = b.getAttribute("data-vista"), daLombada = !!b.closest(".pg-nav"), nb;
+      if (ui.vista === "escrever") fecharEditor(false, destino, true); else irPara(destino);
+      if (daLombada && (nb = $('.pg-nav button[data-vista="' + destino + '"]'))) nb.focus({preventScroll: true});
+    }
+    else if (acao === "escrever") abrirEditor();
+    else if (acao === "cancelar") fecharEditor(false);
+    else if (acao === "guardar") fecharEditor(true);
+    else if (acao === "outra-pergunta") {
+      if (ui.vista === "escrever") { ui.rascunho.pergunta = (ui.rascunho.pergunta + 1) % PERGUNTAS.length; $(".pg-escrita .pg-pergunta span").textContent = PERGUNTAS[ui.rascunho.pergunta]; }
+      else { hoje.pergunta = (hoje.pergunta + 1) % PERGUNTAS.length; desenhar(); $('.pg-vista[data-vista="hoje"] .pg-pergunta').focus({preventScroll: true}); }
+    }
+    else if (acao === "humor") { ui.rascunho.humor = +b.getAttribute("data-nivel"); montarEditor(); var hm = $('.pg-humor-linha .pg-mare[data-nivel="' + ui.rascunho.humor + '"]'); if (hm) hm.focus({preventScroll: true}); }
+    else if (acao === "humor-hoje") {
+      var antes = hoje.humor; hoje.humor = +b.getAttribute("data-nivel"); desenhar();
+      var igual = $('.pg-vista[data-vista="hoje"] .pg-mare[data-nivel="' + hoje.humor + '"]'); if (igual) igual.focus({preventScroll: true});
+      if (antes !== hoje.humor) avisar("Dia " + HUMORES[hoje.humor - 1], function () { hoje.humor = antes; desenhar(); });
+    }
+    else if (acao === "filtro") { var n = +b.getAttribute("data-nivel"); ui.filtro = ui.filtro === n ? 0 : n; var topo = $(".pg-rolo").scrollTop; vistaReler(); $(".pg-rolo").scrollTop = topo;
+      var f = $('.pg-filtros .pg-mare[data-nivel="' + n + '"]'); if (f) f.focus({preventScroll: true}); }
+    else if (acao === "ano") {
+      var passo = +b.getAttribute("data-passo"), bt;
+      ui.ano += passo; ui.filtro = 0; desenhar();
+      bt = $('.pg-ano button[data-passo="' + passo + '"]');
+      if (bt && bt.disabled) bt = $('.pg-ano button[data-passo="' + (-passo) + '"]');
+      if (bt) bt.focus({preventScroll: true});
+    }
+    else if (acao === "abrir-dia") {
+      // toque num ponto do ano só escolhe (o botão Abrir fica na faixa de baixo); mouse e teclado abrem direto
+      if (b.classList.contains("pg-ponto") && e.detail !== 0 && ui.ponteiro !== "mouse") espiar(b);
+      else lerDia(+b.getAttribute("data-a"), +b.getAttribute("data-m"), +b.getAttribute("data-d"));
+    }
+    else if (acao === "planos") { pintarPlanos(); abrirFolha("planos"); }
+    else if (acao === "plano") { ui.plano = b.getAttribute("data-id"); pintarPlanos(); }
+    else if (acao === "fechar-folha") fecharFolha();
+    else if (acao === "comprar") { fecharFolha(); avisar("Maquete: nada foi cobrado"); }
+    else if (acao === "desfazer") { var d = ui.desfazer; $(".pg-aviso").removeAttribute("data-visivel"); ui.desfazer = null; if (d) d(); }
+  });
+  $("#pg-area").addEventListener("input", mostrarConta);
+  app.addEventListener("input", function (e) { if (e.target.id === "pg-busca") { ui.busca = e.target.value; achados(); } });
+  // a folha aberta prende o foco: o Tab dá a volta dentro dela, e o Esc fecha de onde quer que o foco esteja
+  document.addEventListener("keydown", function (e) {
+    var nome = app.getAttribute("data-folha"), folha = nome && app.querySelector('[role="dialog"][data-folha="' + nome + '"]'), itens, a, fora;
+    if (!folha || e.defaultPrevented || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") { fecharFolha(); return; }
+    if (e.key !== "Tab") return;
+    itens = Array.prototype.filter.call(folha.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]'), function (x) { return !x.disabled && x.tabIndex >= 0 && x.offsetParent; });
+    a = document.activeElement; fora = !folha.contains(a) || a === folha;
+    if (!itens.length) { e.preventDefault(); folha.focus({preventScroll: true}); }
+    else if (fora || a === itens[e.shiftKey ? 0 : itens.length - 1]) { e.preventDefault(); itens[e.shiftKey ? itens.length - 1 : 0].focus({preventScroll: true}); }
+  });
+  app.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if (app.hasAttribute("data-folha")) { e.stopPropagation(); fecharFolha(); }
+    else if (ui.vista === "escrever") { e.stopPropagation(); fecharEditor(false); }
+  });
+  $(".pg-rolo").addEventListener("scroll", function () {
+    var rolado = this.scrollTop > 60, f = $(".pg-folha");
+    if (rolado !== f.hasAttribute("data-rolado")) f.toggleAttribute("data-rolado", rolado);
+  }, {passive: true});
+  $(".pg-veu").addEventListener("wheel", function (e) { e.preventDefault(); }, {passive: false});
+  $(".pg-veu").addEventListener("touchmove", function (e) { e.preventDefault(); }, {passive: false});
+  // arrastar a folha para baixo pelo topo fecha; soltar antes do limite devolve ao lugar
+  todos(".pg-solta").forEach(function (folha) {
+    var y0 = null, dy = 0;
+    folha.addEventListener("pointerdown", function (e) {
+      if (app.clientWidth >= 720 || !e.target.closest(".pg-puxador,.pg-solta-topo") || e.target.closest("button")) return;
+      y0 = e.clientY; dy = 0; folha.setPointerCapture(e.pointerId); folha.style.transition = "none";
+    });
+    folha.addEventListener("pointermove", function (e) { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); folha.style.transform = "translateY(" + dy + "px)"; });
+    var soltar = function () { if (y0 === null) return; y0 = null; folha.style.transition = ""; folha.style.transform = ""; if (dy > 90) fecharFolha(); };
+    folha.addEventListener("pointerup", soltar);
+    folha.addEventListener("pointercancel", soltar);
+  });
+
+  desenhar();
+  aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1);
+})();
+</script>
+</body>
+</html>

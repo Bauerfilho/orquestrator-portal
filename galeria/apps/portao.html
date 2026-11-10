@@ -1,0 +1,1973 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portão · Maquete</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "portao",
+  "nome": "Portão",
+  "colecao": "referencia",
+  "tipo": "App celular",
+  "tela": "celular",
+  "ordem": 21,
+  "resumo": "Acompanha os seus voos ao vivo e avisa do atraso antes do painel do aeroporto: ele olha o avião que vem fazer o seu voo e, se esse avião saiu tarde, você fica sabendo na hora. Para quem voa a trabalho toda semana e para quem busca gente no aeroporto.",
+  "proposta": "Pago",
+  "modelo_negocio": "Assinatura Portão Antecipado de R$ 14,90 por mês ou R$ 99,90 por ano, com 7 dias grátis; para quem viaja pouco, um passe de viagem de R$ 9,90 que vale 7 dias e não renova. Quem paga é o viajante frequente, e o que se vende é uma coisa só: o aviso antes de todo mundo. Os valores são hipótese.",
+  "referencias": [
+    {"nome": "Flighty", "modelo": "pago"},
+    {"nome": "Flightradar24", "modelo": "freemium"},
+    {"nome": "OpenSky Network", "modelo": "dados abertos de aviação"}
+  ],
+  "direcao": "Noite de aeroporto, na linguagem do iPhone. Marca fictícia: Portão. O fundo é um marinho quase preto e há um único âmbar de painel de embarque, que só acende o que está vivo naquele instante: a contagem regressiva, o horário que mudou e o avião no arco; todo o resto é tinta fria e cinza de pista. Códigos de aeroporto e horários vão em monoespaçada do sistema, grandes e tabulares, e o texto corrido em sans discreta; no tema claro o mesmo desenho vira a manhã do voo, com céu acinzentado, bilhete de papel branco, tinta marinho e âmbar escurecido para leitura. A assinatura é o cartão de embarque com o picote e os recortes de bilhete, a contagem em células de painel e o arco da rota com o avião andando pelo relógio. No celular é uma coluna com a barra de três abas embaixo; em tela ampla vira três colunas, como num Mac: a lista de voos, o voo ao vivo com o arco grande e, à direita, a linha do tempo e os avisos, e o cartão de embarque deita, com o canhoto ao lado.",
+  "estados": [
+    {
+      "nome": "Meus voos",
+      "descricao": "O próximo voo como um cartão de embarque: a rota, o horário programado riscado ao lado do previsto, a contagem regressiva andando de verdade, portão, assento e a situação com o porquê do atraso. Abaixo, os próximos (tocar em um deles o põe em foco) e os já voados (tocar abre o resumo). Dá para adicionar um voo pelo código e ligar o aviso para quem vai buscar."
+    },
+    {
+      "nome": "Voo ao vivo",
+      "descricao": "O dia do voo: o arco da rota com o avião na posição que o relógio manda, incluindo o trecho do avião que vem de Brasília fazer o seu voo; a previsão de +25 min antes de a companhia admitir; a conexão em risco com a alternativa para guardar; e o tempo no destino. A linha do tempo (check-in, embarque, decolagem, pouso, esteira) abre etapa por etapa, e o seletor troca para o voo de quem você vai buscar."
+    },
+    {
+      "nome": "Passaporte",
+      "descricao": "O ano em números (voos, quilômetros, horas no ar, aeroportos), a carta de rotas em arcos com a rota mais voada em destaque, os aeroportos mais visitados e um cartão do ano pronto para compartilhar. Trocar o ano refaz tudo; compartilhar só mostra o aviso."
+    }
+  ],
+  "paleta": [
+    {"nome": "Noite de pátio (fundo)", "hex": "#060b18"},
+    {"nome": "Tinta de cabine", "hex": "#e8edf7"},
+    {"nome": "Âmbar de painel", "hex": "#ffb224"},
+    {"nome": "Marinho de bilhete", "hex": "#0f1930"},
+    {"nome": "Cinza de pista", "hex": "#93a0ba"},
+    {"nome": "Céu da manhã (fundo claro)", "hex": "#e4e9f0"},
+    {"nome": "Marinho de tinta (claro)", "hex": "#0c1a36"},
+    {"nome": "Âmbar de leitura (claro)", "hex": "#8f4f00"}
+  ],
+  "tipografia": "Duas vozes, as duas do sistema. Monoespaçada (SF Mono no iPhone e no Mac) para tudo o que é dado de painel, em 700 e sempre tabular: código de aeroporto a 40 px, células da contagem a 30 px, horários a 17 px e rótulos em caixa alta de 11 px com tracking de 0,1 em. Sans (San Francisco) para o resto: título de tela em 700 a 32 px com tracking de -0,03 em, corpo em 17 px e metadados em 13 px.",
+  "componentes": [
+    "Cartão de embarque com picote e recortes",
+    "Contagem regressiva em células de painel",
+    "Arco da rota com o avião no relógio",
+    "Faixa de previsão com o porquê",
+    "Linha de voo (próximos e já voados)",
+    "Painel do céu com os três trechos do dia",
+    "Cartão de conexão em risco com alternativa",
+    "Linha do tempo expansível",
+    "Interruptor de avisar quem busca",
+    "Carta de rotas em arcos",
+    "Cartão do ano para compartilhar",
+    "Barra de abas com luz âmbar",
+    "Folha de adicionar voo pelo código",
+    "Folha de planos"
+  ],
+  "replicar": [
+    "Modelo de dados: Voo (companhia, número, data, origem, destino, horários programados e previstos de embarque, decolagem e pouso, portão, esteira, assento), Trecho anterior (o voo que a mesma aeronave faz antes, com saída e pouso reais), Conexão (voo seguinte, tempo mínimo de troca, alternativa), Mudança (o que mudou, quando e o valor antigo) e Pessoa avisada. A situação de um voo é sempre calculada a partir desses horários, nunca guardada.",
+    "Regras que pegam: a previsão é o pouso previsto do trecho anterior mais o tempo mínimo de solo daquele avião; só vira aviso se passar de 10 min e aparece sempre ao lado do horário oficial, nunca no lugar dele. Portão e esteira que mudam geram uma Mudança com o valor antigo; a conexão entra em risco quando o tempo de troca cai abaixo do mínimo do aeroporto.",
+    "Pilha sugerida para iPhone: SwiftUI com SwiftData no aparelho; o arco desenhado em Canvas dentro de uma TimelineView, para o avião andar com o relógio; Atividade ao Vivo (ActivityKit) com a contagem na Tela Bloqueada e na Ilha Dinâmica; notificações remotas para as mudanças; StoreKit 2 para a assinatura, o teste de 7 dias e o passe de viagem.",
+    "Integrações: uma fonte licenciada de horários e situação de voos por companhia e número; posições de aeronaves por dados abertos de aviação, na linha do OpenSky Network, para seguir o trecho anterior; tempo no destino pelo WeatherKit; e a leitura do cartão de embarque da Carteira para adicionar voos sem digitar.",
+    "Corte do primeiro lançamento: adicionar voo pelo código, cartão de embarque com contagem, previsão pelo trecho anterior, avisos de portão, atraso e esteira, e o aviso para quem vai buscar. Ficam para depois: passaporte com cartão do ano, alternativas de conexão, relógio e widgets."
+  ]
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+/* ===== Portão =====
+   Tese visual: noite de aeroporto, em marinho quase preto, tinta fria e um único âmbar de painel que só acende o que
+   está vivo naquele instante (a contagem, o horário que mudou, o avião no arco), com dado de painel em monoespaçada
+   grande e tabular, o resto em sans discreta, espaço folgado, cartões de canto 16 a 20, o bilhete com picote e recortes
+   e a contagem em células de painel.
+   Tese de interação: tudo responde ao toque em 120 ms, telas e folhas entram em até 300 ms com mola sem quique e saem
+   mais curtas, o relógio anda de segundo em segundo trocando só o dígito que mudou e o avião desliza no arco; nunca
+   acontece: nada pisca, nada quica, âmbar não é enfeite e previsão não se passa por horário oficial (vem em âmbar, com
+   o oficial riscado ao lado no cartão e na linha do tempo).
+   Claro por padrão (a manhã do voo); escuro em :root[data-tema=escuro] (a noite de pátio). Tudo mora em #app. */
+:root{
+  --pt-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,"Segoe UI",Roboto,sans-serif;
+  --pt-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --pt-fundo:#e4e9f0;--pt-plano:#f6f8fb;--pt-bilhete:#ffffff;--pt-lado:#dbe2eb;--pt-realce:#ffffff;
+  --pt-tinta:#0c1a36;--pt-suave:#4a5873;--pt-leve:#566380;
+  --pt-fio:rgba(12,26,54,.1);--pt-fio2:rgba(12,26,54,.24);--pt-toque:rgba(12,26,54,.06);
+  --pt-ambar:#8f4f00;--pt-ambar-vivo:#d98600;--pt-ambar-bg:rgba(217,134,0,.14);
+  --pt-celula:#0c1a36;--pt-celula2:#1a2b52;--pt-digito:#ffbb3d;
+  --pt-botao:#0c1a36;--pt-sobre-botao:#f4f7fb;
+  --pt-ceu1:#c9d5e4;--pt-ceu2:#f1f4f8;--pt-ponto:rgba(12,26,54,.2);
+  --pt-selo1:#0c1a36;--pt-selo2:#1b2e5a;
+  --pt-vidro:rgba(236,240,246,.96);--pt-veu:rgba(8,16,36,.4);
+  --pt-sombra:0 1px 1px rgba(12,26,54,.05),0 14px 32px -18px rgba(12,26,54,.34);
+  --pt-sombra2:0 2px 8px rgba(12,26,54,.1),0 30px 70px -24px rgba(12,26,54,.5);
+  --pt-t1:.12s;--pt-t2:.2s;--pt-t3:.3s;--pt-mola:cubic-bezier(.2,.8,.2,1);--pt-sai:cubic-bezier(.4,0,1,1);
+  color-scheme:light;
+}
+:root[data-tema=escuro]{
+  --pt-fundo:#060b18;--pt-plano:#0d162a;--pt-bilhete:#0f1930;--pt-lado:#040812;--pt-realce:#24345a;
+  --pt-tinta:#e8edf7;--pt-suave:#93a0ba;--pt-leve:#7a88a6;
+  --pt-fio:rgba(232,237,247,.09);--pt-fio2:rgba(232,237,247,.2);--pt-toque:rgba(232,237,247,.07);
+  --pt-ambar:#ffb224;--pt-ambar-vivo:#ffb224;--pt-ambar-bg:rgba(255,178,36,.13);
+  --pt-celula:#02050c;--pt-celula2:#0a1224;--pt-digito:#ffb224;
+  --pt-botao:#e8edf7;--pt-sobre-botao:#060b18;
+  --pt-ceu1:#0a1328;--pt-ceu2:#12203f;--pt-ponto:rgba(232,237,247,.2);
+  --pt-selo1:#0f1930;--pt-selo2:#1a2a52;
+  --pt-vidro:rgba(8,14,30,.96);--pt-veu:rgba(1,3,8,.64);
+  --pt-sombra:0 1px 1px rgba(0,0,0,.4),0 16px 36px -18px rgba(0,0,0,.85);
+  --pt-sombra2:0 2px 8px rgba(0,0,0,.5),0 30px 70px -24px rgba(0,0,0,.95);
+  color-scheme:dark;
+}
+html,body{margin:0}
+body{background:var(--pt-fundo)}
+
+/* ===== base: a casca tem a altura da tela; quem rola são as telas de dentro ===== */
+#app{container:app / inline-size;position:relative;height:100vh;height:calc(100dvh - var(--stand-barra,0px));overflow:hidden;
+  background:var(--pt-fundo);color:var(--pt-tinta);font:400 17px/1.35 var(--pt-sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol,#app dl,#app dd,#app figure{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app button,#app input{font:inherit;color:inherit;letter-spacing:inherit}
+#app button{cursor:pointer;border:0;background:none;padding:0;margin:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app svg{display:block;flex:none}
+#app :focus-visible{outline:2.5px solid var(--pt-ambar-vivo);outline-offset:2px}
+#app .pt-mono{font-family:var(--pt-mono);font-variant-numeric:tabular-nums}
+#app .pt-so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .pt-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app .pt-casca{position:relative;height:100%;overflow:hidden;overflow:clip;display:grid;grid-template-columns:minmax(0,1fr)}
+#app .pt-rotulo{font:600 11px/1.25 var(--pt-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pt-suave)}
+
+/* ===== coluna lateral (só a partir de 720 px) ===== */
+#app .pt-lado{display:none;flex-direction:column;gap:20px;min-height:0;padding:20px 14px 14px;background:var(--pt-lado);border-right:1px solid var(--pt-fio);overflow-y:auto}
+#app .pt-marca{display:flex;align-items:center;gap:10px;padding:0 8px}
+#app .pt-marca-sinal{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--pt-celula);color:var(--pt-digito)}
+#app .pt-marca-sinal .pt-ic{width:20px;height:20px;stroke-width:2.2}
+#app .pt-marca-nome{font-size:20px;font-weight:700;letter-spacing:-.03em}
+#app .pt-marca .pt-relogio{margin-left:auto}
+#app .pt-relogio{font:600 13px/1 var(--pt-mono);font-variant-numeric:tabular-nums;letter-spacing:.03em;color:var(--pt-suave)}
+#app .pt-nav{display:grid;gap:2px}
+#app .pt-nav-b{position:relative;display:flex;align-items:center;gap:11px;width:100%;min-height:44px;padding:0 10px;border-radius:10px;font-size:15px;font-weight:600;transition:background-color var(--pt-t1)}
+#app .pt-nav-b .pt-ic{width:20px;height:20px;color:var(--pt-suave)}
+#app .pt-nav-b[aria-current=page]{background:var(--pt-toque)}
+#app .pt-nav-b[aria-current=page] .pt-ic{color:var(--pt-tinta)}
+#app .pt-nav-b[aria-current=page]::before{content:"";position:absolute;left:0;top:13px;bottom:13px;width:3px;border-radius:0 3px 3px 0;background:var(--pt-ambar-vivo)}
+#app .pt-lado-grupo{display:grid;gap:6px;min-height:0}
+#app .pt-lado-grupo>.pt-rotulo{padding:0 10px}
+#app .pt-mini{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;width:100%;padding:9px 10px;border-radius:10px;transition:background-color var(--pt-t1)}
+#app .pt-mini-rota{font:700 15px/1.2 var(--pt-mono);letter-spacing:-.01em}
+#app .pt-mini-hora{font:600 13px/1.3 var(--pt-mono);font-variant-numeric:tabular-nums;text-align:right;color:var(--pt-suave)}
+#app .pt-mini-sub{grid-column:1/-1;font-size:12.5px;line-height:1.3;color:var(--pt-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .pt-mini-sub[data-quente]{color:var(--pt-ambar);font-weight:600}
+#app .pt-mini[aria-current=true]{background:var(--pt-toque);box-shadow:inset 0 0 0 1px var(--pt-fio2)}
+/* auditoria da galeria: no claro, o âmbar de leitura sobre a linha escolhida media 4,37:1; um tom abaixo dá 4,7:1 */
+:root:not([data-tema=escuro]) #app .pt-mini[aria-current=true] .pt-mini-sub[data-quente]{color:#834700}
+#app .pt-lado-mais{display:flex;align-items:center;gap:9px;width:100%;min-height:44px;padding:0 10px;border-radius:10px;border:1.5px dashed var(--pt-fio2);font-size:14px;font-weight:600;color:var(--pt-suave)}
+#app .pt-lado-mais .pt-ic{width:18px;height:18px}
+#app .pt-lado-plano{margin-top:auto;display:grid;gap:3px;width:100%;padding:12px 14px;border-radius:14px;background:linear-gradient(160deg,var(--pt-selo2),var(--pt-selo1));color:#e8edf7;box-shadow:var(--pt-sombra)}
+#app .pt-lado-plano b{font-size:14.5px;font-weight:650}
+#app .pt-lado-plano span{font-size:12.5px;line-height:1.35;color:rgba(232,237,247,.74)}
+#app .pt-lado-plano em{font:600 11px/1.2 var(--pt-mono);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:#ffbb3d}
+
+/* ===== palco: a barra, as três telas e a doca ===== */
+#app .pt-palco{position:relative;min-width:0;min-height:0}
+#app .pt-barra{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:6px;height:50px;padding:0 6px 0 18px;border-bottom:1px solid transparent;transition:background-color var(--pt-t2),border-color var(--pt-t2)}
+#app .pt-palco[data-rolado] .pt-barra{background:var(--pt-vidro);border-bottom-color:var(--pt-fio);backdrop-filter:blur(22px) saturate(1.6);-webkit-backdrop-filter:blur(22px) saturate(1.6)}
+#app .pt-barra-lugar{position:relative;flex:1;min-width:0;height:22px}
+#app .pt-barra-lugar .pt-relogio,#app .pt-barra-titulo{position:absolute;left:0;top:0;line-height:22px;transition:opacity var(--pt-t2),transform var(--pt-t2) var(--pt-mola)}
+#app .pt-barra-titulo{font-size:17px;font-weight:650;letter-spacing:-.02em;opacity:0;transform:translateY(6px);white-space:nowrap}
+#app .pt-palco[data-rolado] .pt-barra-titulo{opacity:1;transform:none}
+#app .pt-palco[data-rolado] .pt-barra-lugar .pt-relogio{opacity:0;transform:translateY(-6px)}
+#app .pt-barra-plano{display:inline-flex;align-items:center;height:44px;padding:0 4px}
+#app .pt-pilula{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px 0 9px;border-radius:999px;border:1px solid var(--pt-fio2);font-size:13px;font-weight:600;white-space:nowrap;transition:background-color var(--pt-t1)}
+#app .pt-barra-plano .pt-ic{width:15px;height:15px;stroke-width:2}
+#app .pt-redondo{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;transition:background-color var(--pt-t1),transform var(--pt-t1)}
+#app .pt-redondo:active{transform:scale(.92)}
+#app .pt-tela{position:absolute;inset:0;display:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:54px 16px 88px}
+#app[data-estado="1"] .pt-tela[data-tela="1"],#app[data-estado="2"] .pt-tela[data-tela="2"],#app[data-estado="3"] .pt-tela[data-tela="3"]{display:block;animation:pt-entra var(--pt-t3) var(--pt-mola)}
+@keyframes pt-entra{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pt-surge{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#app .pt-centro,#app .pt-direita{min-width:0}
+#app .pt-cab{padding:2px 2px 13px}
+#app .pt-cab h1{margin-top:5px;font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1.08}
+#app .pt-sec{position:relative;margin-top:26px}
+#app .pt-sec-t{display:flex;align-items:baseline;gap:8px;padding:0 4px 8px;font-size:13px;font-weight:650;color:var(--pt-suave)}
+#app .pt-sec-t small{margin-left:auto;font:600 12px/1 var(--pt-mono);color:var(--pt-leve)}
+#app .pt-grupo{border-radius:16px;background:var(--pt-plano);box-shadow:var(--pt-sombra);overflow:hidden}
+#app .pt-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:12px;font-size:16px;font-weight:650;white-space:nowrap;transition:transform var(--pt-t1),background-color var(--pt-t1),opacity var(--pt-t1)}
+#app .pt-btn:active{transform:scale(.975)}
+#app .pt-btn-pri{background:var(--pt-botao);color:var(--pt-sobre-botao)}
+#app .pt-btn-sec{background:var(--pt-toque)}
+#app .pt-btn-largo{width:100%;min-height:52px;border-radius:14px;font-size:17px}
+#app .pt-btn .pt-ic{width:19px;height:19px;stroke-width:2.1}
+#app .pt-btn[disabled]{opacity:.42;cursor:default}
+
+/* ===== o cartão de embarque: rota em cima, picote com recortes, canhoto com a contagem ===== */
+#app .pt-passe{position:relative;border-radius:20px;background:var(--pt-bilhete);box-shadow:var(--pt-sombra);overflow:hidden}
+#app .pt-passe[data-entra]{animation:pt-surge var(--pt-t3) var(--pt-mola)}
+#app .pt-passe-a{padding:15px 18px 14px}
+#app .pt-passe-topo{display:flex;justify-content:space-between;gap:12px}
+#app .pt-passe-topo .pt-rotulo:last-child{text-align:right}
+#app .pt-rota{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;column-gap:8px;margin-top:14px}
+#app .pt-ponta-fim{text-align:right}
+#app .pt-iata{font:700 40px/1 var(--pt-mono);letter-spacing:-.03em}
+#app .pt-cidade{margin-top:5px;font-size:13px;line-height:1.2;color:var(--pt-suave)}
+#app .pt-hora{display:block;margin-top:9px;font:700 17px/1.15 var(--pt-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+#app .pt-hora s{display:block;margin-bottom:2px;font-size:12px;font-weight:500;color:var(--pt-leve)}
+#app .pt-hora[data-quente] b{color:var(--pt-ambar)}
+#app .pt-arquinho{min-width:0;padding-top:2px;text-align:center}
+#app .pt-arquinho svg{width:100%;height:auto;max-height:76px;overflow:visible}
+#app .pt-arquinho .pt-rotulo{margin-top:2px;letter-spacing:.06em;white-space:nowrap}
+#app .pt-arquinho .pt-rotulo[data-quente]{color:var(--pt-ambar)}
+#app .pt-previsao{display:grid;grid-template-columns:22px minmax(0,1fr);gap:1px 9px;margin-top:14px;padding:11px 13px 12px 11px;border-radius:12px;background:var(--pt-toque)}
+#app .pt-previsao .pt-ic{width:20px;height:20px;margin-top:1px;color:var(--pt-suave)}
+#app .pt-previsao strong{font-size:15.5px;font-weight:650;letter-spacing:-.01em}
+#app .pt-previsao p{grid-column:2;font-size:13.5px;line-height:1.4;color:var(--pt-suave)}
+#app .pt-previsao[data-quente]{background:var(--pt-ambar-bg)}
+#app .pt-previsao[data-quente] .pt-ic,#app .pt-previsao[data-quente] strong{color:var(--pt-ambar)}
+#app .pt-picote{position:relative;height:0;margin:0 18px;border-top:2px dashed var(--pt-fio2)}
+#app .pt-picote::before,#app .pt-picote::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--pt-fundo)}
+#app .pt-picote::before{left:-28px}
+#app .pt-picote::after{right:-28px}
+#app .pt-passe-b{padding:14px 18px 16px}
+#app .pt-flaps{display:flex;align-items:flex-start;gap:3px;margin-top:9px}
+#app .pt-flap-par{display:grid;grid-template-columns:auto auto;gap:3px;justify-items:center}
+#app .pt-flap{position:relative;display:grid;place-items:center;width:35px;height:48px;border-radius:7px;background:linear-gradient(var(--pt-celula2),var(--pt-celula));box-shadow:inset 0 1px 0 rgba(255,255,255,.09);color:var(--pt-digito);font:700 30px/1 var(--pt-mono);font-variant-numeric:tabular-nums;overflow:hidden}
+#app .pt-flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.6)}
+#app .pt-flap-n{display:block}
+#app .pt-flap-n[data-novo]{animation:pt-vira var(--pt-t2) var(--pt-mola)}
+@keyframes pt-vira{from{opacity:.25;transform:translateY(-7px)}to{opacity:1;transform:none}}
+#app .pt-flap-un{grid-column:1/-1;margin-top:4px;font:600 10.5px/1 var(--pt-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pt-leve)}
+#app .pt-flap-sep{width:9px;height:48px;display:grid;place-items:center;font:700 22px/1 var(--pt-mono);color:var(--pt-leve)}
+#app .pt-conta-nota{margin-top:9px;font-size:13px;line-height:1.35;color:var(--pt-suave)}
+#app .pt-fatos{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--pt-fio)}
+#app .pt-fato{min-width:0}
+#app .pt-fato dd{margin-top:5px;font:700 20px/1.1 var(--pt-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+#app .pt-fato dd small{font:600 11px/1.1 var(--pt-mono);letter-spacing:0;color:var(--pt-ambar)}
+#app .pt-passe-b .pt-btn-largo{margin-top:14px}
+
+/* ===== linhas de voo: próximos e já voados ===== */
+#app .pt-voo+.pt-voo{border-top:1px solid var(--pt-fio)}
+#app .pt-voo-b{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;width:100%;min-height:66px;padding:13px 16px 12px;transition:background-color var(--pt-t1)}
+#app .pt-voo-rota{display:flex;align-items:center;gap:7px;font:700 19px/1.15 var(--pt-mono);letter-spacing:-.02em}
+#app .pt-voo-rota .pt-ic{width:16px;height:16px;stroke-width:2;color:var(--pt-leve)}
+#app .pt-voo-hora{font:700 17px/1.25 var(--pt-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+#app .pt-voo-sub{font-size:13px;line-height:1.3;color:var(--pt-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .pt-voo-st{font-size:13px;line-height:1.3;color:var(--pt-suave);text-align:right;white-space:nowrap}
+#app .pt-voo-st[data-quente]{color:var(--pt-ambar);font-weight:600}
+#app .pt-voo[data-passado] .pt-voo-rota,#app .pt-voo[data-passado] .pt-voo-hora{color:var(--pt-suave);font-weight:600}
+#app .pt-voo[data-novo]{background:var(--pt-ambar-bg);box-shadow:inset 3px 0 0 var(--pt-ambar-vivo);animation:pt-surge var(--pt-t3) var(--pt-mola)}
+#app .pt-voo-mais{display:grid;grid-template-columns:repeat(4,auto);justify-content:space-between;gap:8px;padding:5px 16px 15px}
+#app .pt-voo-mais[data-entra]{animation:pt-surge var(--pt-t2) var(--pt-mola)}
+#app .pt-voo-mais dd{margin-top:4px;font:700 15px/1.1 var(--pt-mono);font-variant-numeric:tabular-nums}
+#app .pt-voo-mais .pt-voo-nota{grid-column:1/-1}
+#app .pt-voo-mais .pt-voo-nota dd{margin:0;font:400 13px/1.4 var(--pt-sans);color:var(--pt-suave)}
+#app .pt-adicionar{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;margin-top:10px;padding:0 16px;border-radius:16px;border:1.5px dashed var(--pt-fio2);font-size:15.5px;font-weight:600;color:var(--pt-suave);transition:background-color var(--pt-t1)}
+#app .pt-adicionar .pt-ic{width:20px;height:20px}
+#app .pt-vazio{display:grid;justify-items:center;gap:6px;padding:30px 22px 26px;text-align:center}
+#app .pt-vazio svg{width:150px;height:auto;margin-bottom:6px}
+#app .pt-vazio strong{font-size:19px;font-weight:700;letter-spacing:-.02em}
+#app .pt-vazio p{max-width:30ch;font-size:15px;color:var(--pt-suave)}
+#app .pt-vazio .pt-btn{margin-top:10px}
+
+/* ===== interruptor ===== */
+#app .pt-chave{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:10px 14px 10px 16px}
+#app .pt-chave-ic{color:var(--pt-suave)}
+#app .pt-chave-texto{flex:1;min-width:0;font-size:16px;font-weight:600;letter-spacing:-.01em}
+#app .pt-chave-texto small{display:block;margin-top:1px;font-size:13px;font-weight:400;letter-spacing:0;color:var(--pt-suave)}
+#app .pt-chave-trilho{position:relative;flex:none;width:51px;height:31px;border-radius:999px;background:var(--pt-fio2);transition:background-color var(--pt-t2)}
+#app .pt-chave-trilho::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.28);transition:transform var(--pt-t2) var(--pt-mola)}
+#app .pt-chave[aria-checked=true] .pt-chave-trilho{background:var(--pt-ambar-vivo)}
+#app .pt-chave[aria-checked=true] .pt-chave-trilho::after{transform:translateX(20px)}
+
+/* ===== o que mudou ===== */
+#app .pt-feed-item{display:grid;grid-template-columns:46px minmax(0,1fr);gap:0 10px;padding:12px 16px 12px}
+#app .pt-feed-item+.pt-feed-item{border-top:1px solid var(--pt-fio)}
+#app .pt-feed-hora{padding-top:2px;font:600 13px/1.3 var(--pt-mono);font-variant-numeric:tabular-nums;color:var(--pt-suave)}
+#app .pt-feed-oque{font-size:15px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
+#app .pt-feed-item[data-quente] .pt-feed-oque{color:var(--pt-ambar)}
+#app .pt-feed-porque{margin-top:2px;font-size:13px;line-height:1.35;color:var(--pt-suave)}
+#app .pt-anuncio{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 12px;width:100%;margin-top:26px;padding:15px 16px;border-radius:16px;background:linear-gradient(160deg,var(--pt-selo2),var(--pt-selo1));color:#e8edf7;box-shadow:var(--pt-sombra)}
+#app .pt-anuncio em{grid-column:1/-1;font:600 11px/1.2 var(--pt-mono);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:#ffbb3d}
+#app .pt-anuncio b{font-size:16px;font-weight:650;letter-spacing:-.01em}
+#app .pt-anuncio small{grid-column:1;font-size:13px;line-height:1.35;color:rgba(232,237,247,.76)}
+#app .pt-anuncio .pt-ic{grid-row:2/4;grid-column:2;width:18px;height:18px;stroke-width:2.2;color:rgba(232,237,247,.6)}
+
+/* ===== voo ao vivo: seletor, o céu com o arco, cartões e a linha do tempo ===== */
+#app .pt-troca{display:flex;gap:8px;margin:0 -16px 14px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+#app .pt-troca::-webkit-scrollbar{display:none}
+#app .pt-troca-b{flex:none;display:grid;gap:2px;min-height:48px;padding:7px 14px 8px;border-radius:13px;border:1px solid var(--pt-fio2);transition:background-color var(--pt-t1),border-color var(--pt-t1)}
+#app .pt-troca-b b{font:700 14px/1.15 var(--pt-mono);letter-spacing:-.01em}
+#app .pt-troca-b small{font-size:12px;line-height:1.2;color:var(--pt-suave)}
+#app .pt-troca-b[aria-pressed=true]{background:var(--pt-botao);border-color:var(--pt-botao);color:var(--pt-sobre-botao)}
+#app .pt-troca-b[aria-pressed=true] small{color:inherit;opacity:.72}
+#app .pt-ceu{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,var(--pt-ceu1),var(--pt-ceu2));box-shadow:var(--pt-sombra)}
+#app .pt-ceu[data-entra]{animation:pt-surge var(--pt-t3) var(--pt-mola)}
+#app .pt-ceu::before{content:"";position:absolute;inset:0 0 45% 0;background-image:radial-gradient(circle,var(--pt-ponto) .8px,transparent 1.1px);background-size:23px 23px;-webkit-mask-image:linear-gradient(#000,transparent);mask-image:linear-gradient(#000,transparent);pointer-events:none}
+#app .pt-ceu-topo{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 0}
+#app .pt-ceu-topo .pt-rotulo:first-child{color:var(--pt-tinta)}
+#app .pt-arco{position:relative;width:100%;height:auto;overflow:visible}
+#app .pt-a-chao{stroke:var(--pt-fio2);stroke-width:1}
+#app .pt-a-futuro{fill:none;stroke:var(--pt-leve);stroke-width:1.5;stroke-dasharray:.1 5;stroke-linecap:round}
+#app .pt-a-feito{fill:none;stroke:var(--pt-suave);stroke-width:1.5;stroke-linecap:round}
+#app .pt-a-vivo{fill:none;stroke:var(--pt-ambar-vivo);stroke-width:2.2;stroke-linecap:round}
+#app .pt-a-no{fill:var(--pt-ceu2);stroke:var(--pt-tinta);stroke-width:1.6}
+#app .pt-a-no[data-menor]{stroke:var(--pt-suave);stroke-width:1.3}
+#app .pt-a-iata{font:700 20px var(--pt-mono);letter-spacing:-.02em;fill:var(--pt-tinta);text-anchor:middle}
+#app .pt-a-iata[data-menor]{font-size:11px;font-weight:600;letter-spacing:.06em;fill:var(--pt-suave)}
+#app .pt-a-hora{font:600 11px var(--pt-mono);fill:var(--pt-suave);text-anchor:middle}
+#app .pt-a-hora[data-quente]{fill:var(--pt-ambar);font-weight:700}
+#app .pt-a-halo{fill:var(--pt-ambar-vivo);opacity:.2}
+#app .pt-a-aviao{fill:var(--pt-ambar-vivo);stroke:var(--pt-ambar-vivo);stroke-width:.8;stroke-linejoin:round}
+#app .pt-a-aviao[data-parado]{fill:var(--pt-suave);stroke:var(--pt-suave)}
+#app .pt-ceu-fatos{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:2px 16px 0;border-top:1px solid var(--pt-fio)}
+#app .pt-ceu-fato{padding:11px 8px 0 0;min-width:0}
+#app .pt-ceu-fato+.pt-ceu-fato{padding-left:12px;border-left:1px solid var(--pt-fio)}
+#app .pt-ceu-fato dt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .pt-ceu-fato dd{margin-top:5px;font:700 19px/1.1 var(--pt-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+#app .pt-ceu-fato[data-quente] dd{color:var(--pt-ambar)}
+#app .pt-ceu-nota{position:relative;padding:11px 16px 13px;font-size:12px;line-height:1.3;color:var(--pt-leve)}
+#app .pt-cartao{position:relative;margin-top:12px;padding:14px 16px 15px;border-radius:16px;background:var(--pt-plano);box-shadow:var(--pt-sombra)}
+#app .pt-cartao-t{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:650;letter-spacing:-.01em}
+#app .pt-cartao-t .pt-ic{width:20px;height:20px;color:var(--pt-suave)}
+#app .pt-cartao-t .pt-mono{margin-left:auto;font-size:13px;font-weight:600;color:var(--pt-suave);white-space:nowrap}
+#app .pt-cartao-p{margin-top:6px;font-size:14.5px;line-height:1.45;color:var(--pt-suave)}
+#app .pt-cartao[data-quente]::before{content:"";position:absolute;left:0;top:15px;bottom:15px;width:3px;border-radius:0 3px 3px 0;background:var(--pt-ambar-vivo)}
+#app .pt-cartao[data-quente] .pt-cartao-t,#app .pt-cartao[data-quente] .pt-cartao-t .pt-ic{color:var(--pt-ambar)}
+#app .pt-dupla{display:grid;grid-template-columns:1fr 1fr;align-items:end;gap:0 12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--pt-fio)}
+#app .pt-dupla dd{margin-top:5px;font:700 22px/1.1 var(--pt-mono);font-variant-numeric:tabular-nums}
+#app .pt-dupla-n[data-quente] dd{color:var(--pt-ambar)}
+#app .pt-alt{display:flex;align-items:center;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--pt-fio)}
+#app .pt-alt-texto{flex:1;min-width:0;font-size:14px;line-height:1.35;color:var(--pt-suave)}
+#app .pt-alt-texto b{display:block;font:700 15px/1.3 var(--pt-mono);color:var(--pt-tinta)}
+#app .pt-alt .pt-btn{flex:none;padding:0 14px;font-size:14.5px}
+#app .pt-alt .pt-btn[aria-pressed=true]{background:var(--pt-botao);color:var(--pt-sobre-botao)}
+#app .pt-tempo{position:relative;display:flex;align-items:center;gap:10px;margin-top:12px;padding:13px 16px;border-radius:16px;background:var(--pt-plano);box-shadow:var(--pt-sombra);font-size:15px;line-height:1.3}
+#app .pt-tempo .pt-ic{color:var(--pt-suave)}
+#app .pt-etapa{position:relative}
+#app .pt-etapa::before{content:"";position:absolute;left:25px;top:0;bottom:0;width:2px;background:var(--pt-fio2)}
+#app .pt-etapa:first-child::before{top:28px}
+#app .pt-etapa:last-child::before{bottom:auto;height:28px}
+#app .pt-etapa-b{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr) auto 16px;align-items:center;gap:0 10px;width:100%;min-height:56px;padding:8px 12px 8px 12px;transition:background-color var(--pt-t1)}
+#app .pt-etapa-marco{justify-self:center;width:12px;height:12px;border-radius:50%;border:2px solid var(--pt-leve);background:var(--pt-plano)}
+#app .pt-etapa[data-fase=feita] .pt-etapa-marco{background:var(--pt-tinta);border-color:var(--pt-tinta)}
+#app .pt-etapa[data-fase=agora] .pt-etapa-marco{background:var(--pt-ambar-vivo);border-color:var(--pt-ambar-vivo);box-shadow:0 0 0 4px var(--pt-ambar-bg)}
+#app .pt-etapa-nome{font-size:16px;font-weight:600;letter-spacing:-.01em}
+#app .pt-etapa-nome small{display:block;margin-top:1px;font-size:13px;font-weight:400;letter-spacing:0;color:var(--pt-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .pt-etapa[data-fase=depois] .pt-etapa-nome{color:var(--pt-suave)}
+#app .pt-etapa-hora{font:700 16px/1.2 var(--pt-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+#app .pt-etapa-hora s{display:block;font-size:12px;font-weight:500;color:var(--pt-leve)}
+#app .pt-etapa-hora[data-quente] b{color:var(--pt-ambar)}
+#app .pt-etapa-seta{width:16px;height:16px;stroke-width:2.2;color:var(--pt-leve);transition:transform var(--pt-t2) var(--pt-mola)}
+#app .pt-etapa-b[aria-expanded=true] .pt-etapa-seta{transform:rotate(180deg)}
+#app .pt-etapa-mais{position:relative;padding:0 16px 14px 50px;font-size:14px;line-height:1.45;color:var(--pt-suave)}
+#app .pt-etapa-mais[data-entra]{animation:pt-surge var(--pt-t2) var(--pt-mola)}
+#app .pt-parar{display:block;width:100%;min-height:44px;margin-top:14px;border-radius:12px;font-size:15px;font-weight:600;color:var(--pt-suave);text-align:center}
+
+/* ===== passaporte ===== */
+#app .pt-seg{display:flex;gap:3px;padding:3px;margin:0 0 14px;border-radius:12px;background:var(--pt-toque)}
+#app .pt-seg-b{flex:1;min-height:44px;border-radius:9px;font:600 15px/1 var(--pt-mono);font-variant-numeric:tabular-nums;color:var(--pt-suave);text-align:center;transition:color var(--pt-t1),background-color var(--pt-t1),box-shadow var(--pt-t1)}
+#app .pt-seg-b[aria-pressed=true]{background:var(--pt-realce);color:var(--pt-tinta);box-shadow:0 1px 2px rgba(0,0,0,.14),0 3px 8px -3px rgba(0,0,0,.2)}
+#app .pt-ano{padding:16px 18px 6px;border-radius:20px;background:var(--pt-bilhete);box-shadow:var(--pt-sombra)}
+#app .pt-ano[data-entra]{animation:pt-surge var(--pt-t3) var(--pt-mola)}
+#app .pt-ano-grande{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+#app .pt-ano-grande b{font:700 68px/1 var(--pt-mono);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+#app .pt-ano-grande span{font-size:17px;font-weight:600;color:var(--pt-suave)}
+#app .pt-ano-frase{margin-top:8px;font-size:14px;line-height:1.4;color:var(--pt-suave)}
+#app .pt-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:14px;border-top:1px solid var(--pt-fio)}
+#app .pt-trio-n{padding:12px 8px 12px 0;min-width:0}
+#app .pt-trio-n+.pt-trio-n{padding-left:12px;border-left:1px solid var(--pt-fio)}
+#app .pt-trio-n dd{margin-top:5px;font:700 21px/1.1 var(--pt-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+#app .pt-carta{position:relative;margin-top:12px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,var(--pt-ceu1),var(--pt-ceu2));box-shadow:var(--pt-sombra)}
+#app .pt-carta svg{position:relative;width:100%;height:auto}
+#app .pt-carta-topo{position:relative;display:flex;justify-content:space-between;gap:10px;padding:14px 16px 0}
+#app .pt-carta-nota{position:relative;padding:2px 16px 14px;font-size:13.5px;line-height:1.4;color:var(--pt-suave)}
+#app .pt-carta-nota b{font-family:var(--pt-mono);color:var(--pt-ambar)}
+#app .pt-r-arco{fill:none;stroke:var(--pt-tinta);stroke-linecap:round;opacity:.42}
+#app .pt-r-arco[data-quente]{stroke:var(--pt-ambar-vivo);opacity:1}
+#app .pt-r-no{fill:var(--pt-ceu2);stroke:var(--pt-tinta)}
+#app .pt-r-no[data-base]{fill:var(--pt-tinta)}
+#app .pt-r-iata{font:700 11.5px var(--pt-mono);letter-spacing:.04em;fill:var(--pt-tinta)}
+#app .pt-selo{position:relative;margin-top:12px;padding:18px 18px 16px;border-radius:20px;background:linear-gradient(155deg,var(--pt-selo2),var(--pt-selo1) 70%);color:#e8edf7;box-shadow:var(--pt-sombra);overflow:hidden}
+#app .pt-selo[data-entra]{animation:pt-surge var(--pt-t3) var(--pt-mola)}
+#app .pt-selo-arcos{position:absolute;right:-22px;top:-34px;width:160px;height:auto;opacity:.5}
+#app .pt-selo .pt-rotulo{position:relative;color:rgba(232,237,247,.7)}
+#app .pt-selo-nome{position:relative;margin-top:26px;font-size:15px;font-weight:600;color:rgba(232,237,247,.86)}
+#app .pt-selo-num{position:relative;margin-top:2px;font:700 46px/1.05 var(--pt-mono);letter-spacing:-.04em;color:#ffbb3d}
+#app .pt-selo-frase{position:relative;margin-top:8px;font-size:14px;line-height:1.4;color:rgba(232,237,247,.8)}
+#app .pt-selo-pe{position:relative;display:flex;justify-content:space-between;gap:10px;margin-top:16px;padding-top:12px;border-top:1px dashed rgba(232,237,247,.28)}
+#app .pt-selo-pe .pt-rotulo{color:rgba(232,237,247,.62)}
+#app .pt-direita .pt-selo+.pt-btn-largo{position:relative;margin-top:12px}
+#app .pt-pod{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:0 10px;padding:11px 16px}
+#app .pt-pod+.pt-pod{border-top:1px solid var(--pt-fio)}
+#app .pt-pod-iata{font:700 15px/1 var(--pt-mono)}
+#app .pt-pod-barra{height:6px;border-radius:3px;background:var(--pt-toque);overflow:hidden}
+#app .pt-pod-barra i{display:block;height:100%;border-radius:3px;background:var(--pt-tinta);opacity:.55;transform-origin:left center}
+#app .pt-pod[data-quente] .pt-pod-barra i{background:var(--pt-ambar-vivo);opacity:1}
+#app .pt-pod-n{font:600 13px/1 var(--pt-mono);font-variant-numeric:tabular-nums;color:var(--pt-suave);white-space:nowrap}
+
+/* ===== doca: três abas de vidro com a luz âmbar em cima da que está acesa ===== */
+#app .pt-doca{position:absolute;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(3,1fr);padding:0 10px env(safe-area-inset-bottom);background:var(--pt-vidro);border-top:1px solid var(--pt-fio);backdrop-filter:blur(24px) saturate(1.7);-webkit-backdrop-filter:blur(24px) saturate(1.7)}
+#app .pt-aba{position:relative;display:grid;justify-items:center;align-content:center;gap:3px;height:60px;font-size:11px;font-weight:600;color:var(--pt-leve);transition:color var(--pt-t1)}
+#app .pt-aba::before{content:"";position:absolute;top:-1px;left:50%;width:26px;height:3px;margin-left:-13px;border-radius:0 0 3px 3px;background:var(--pt-ambar-vivo);opacity:0;transform:scaleX(.3);transition:opacity var(--pt-t2),transform var(--pt-t2) var(--pt-mola)}
+#app .pt-aba[aria-current=page]{color:var(--pt-tinta)}
+#app .pt-aba[aria-current=page]::before{opacity:1;transform:none}
+#app .pt-aba .pt-ic{width:24px;height:24px;transition:transform var(--pt-t1)}
+#app .pt-aba:active .pt-ic{transform:scale(.9)}
+
+/* ===== véu, folhas e aviso ===== */
+#app .pt-veu{position:absolute;inset:0;z-index:20;background:var(--pt-veu);opacity:0;pointer-events:none;transition:opacity var(--pt-t2)}
+#app[data-folha] .pt-veu{opacity:1;pointer-events:auto}
+#app .pt-folha-pe{position:sticky;bottom:calc(-1*var(--pt-pe));z-index:1;margin:-12px 0 calc(-1*var(--pt-pe));padding:12px 0 var(--pt-pe);background:linear-gradient(to bottom,transparent,var(--pt-bilhete) 12px)}
+#app .pt-folha-pe>button{display:flex}
+#app .pt-folha-pe~*{position:relative;z-index:2}
+#app .pt-folha{--pt-pe:calc(18px + env(safe-area-inset-bottom));position:absolute;left:0;right:0;bottom:0;z-index:21;max-height:92%;overflow-y:auto;overscroll-behavior:contain;padding:8px 18px calc(18px + env(safe-area-inset-bottom));
+  background:var(--pt-bilhete);border-radius:22px 22px 0 0;box-shadow:var(--pt-sombra2);transform:translateY(105%);visibility:hidden;transition:transform var(--pt-t2) var(--pt-sai),visibility 0s var(--pt-t2)}
+#app[data-folha=voo] .pt-folha[data-folha=voo],#app[data-folha=planos] .pt-folha[data-folha=planos]{transform:none;visibility:visible;transition:transform var(--pt-t3) var(--pt-mola),visibility 0s}
+#app .pt-puxador{width:38px;height:5px;margin:0 auto 10px;border-radius:99px;background:var(--pt-fio2)}
+#app .pt-folha-topo{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+#app .pt-folha-topo h2{flex:1;font-size:21px;font-weight:700;letter-spacing:-.025em}
+#app .pt-fechar{display:grid;place-items:center;width:44px;height:44px;margin-right:-8px;border-radius:50%}
+#app .pt-fechar-face{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--pt-toque);color:var(--pt-suave)}
+#app .pt-fechar .pt-ic{width:15px;height:15px;stroke-width:2.6}
+#app .pt-campo-rot{display:block;margin:4px 2px 7px}
+#app .pt-campo{display:block;width:100%;height:60px;padding:0 16px;border:0;border-radius:14px;background:var(--pt-toque);color:var(--pt-tinta);font:700 26px/1 var(--pt-mono);letter-spacing:.06em;text-transform:uppercase}
+#app .pt-campo::placeholder{color:var(--pt-leve);opacity:.75}
+#app .pt-campo:focus{outline:2.5px solid var(--pt-ambar-vivo);outline-offset:0}
+#app .pt-dias{display:flex;gap:6px;margin:0 -18px;padding:0 18px 2px;overflow-x:auto;scrollbar-width:none}
+#app .pt-dias::-webkit-scrollbar{display:none}
+#app .pt-dia{flex:1 0 58px;display:grid;justify-items:center;align-content:center;gap:3px;height:54px;border-radius:12px;border:1px solid var(--pt-fio2);font-size:12px;color:var(--pt-suave);transition:background-color var(--pt-t1),color var(--pt-t1),border-color var(--pt-t1)}
+#app .pt-dia b{font:700 17px/1 var(--pt-mono);color:var(--pt-tinta)}
+#app .pt-dia[aria-checked=true]{background:var(--pt-botao);border-color:var(--pt-botao);color:var(--pt-sobre-botao)}
+#app .pt-dia[aria-checked=true] b{color:inherit}
+#app .pt-achado{min-height:92px;margin-top:14px}
+#app .pt-achado-dica{padding:14px 2px 0;font-size:14.5px;line-height:1.45;color:var(--pt-suave)}
+#app .pt-achado-cartao{padding:12px 14px 13px;border-radius:14px;background:var(--pt-toque);animation:pt-surge var(--pt-t2) var(--pt-mola)}
+#app .pt-achado-rota{display:flex;align-items:center;gap:8px;margin-top:6px;font:700 24px/1.1 var(--pt-mono);letter-spacing:-.02em}
+#app .pt-achado-rota .pt-ic{width:18px;height:18px;stroke-width:2;color:var(--pt-leve)}
+#app .pt-achado-rota small{margin-left:auto;font:700 16px/1.1 var(--pt-mono);font-variant-numeric:tabular-nums;letter-spacing:0}
+#app .pt-achado-sub{margin-top:5px;font-size:13.5px;color:var(--pt-suave)}
+#app .pt-sugestoes{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0 16px;font-size:13px;color:var(--pt-suave)}
+#app .pt-sug{min-height:44px;padding:0 13px;border-radius:999px;border:1px solid var(--pt-fio2);font:600 14px/1 var(--pt-mono);color:var(--pt-tinta);transition:background-color var(--pt-t1)}
+#app .pt-plano-frase{font-size:15px;line-height:1.4;color:var(--pt-suave)}
+#app .pt-opcoes{display:grid;gap:7px;margin:12px 0 15px}
+#app .pt-opcao{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:0 11px;width:100%;min-height:58px;padding:8px 14px;border-radius:14px;box-shadow:inset 0 0 0 1px var(--pt-fio2);transition:background-color var(--pt-t1),box-shadow var(--pt-t1)}
+#app .pt-opcao-marca{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.8px var(--pt-leve)}
+#app .pt-opcao-marca::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--pt-tinta);opacity:0;transform:scale(.4);transition:opacity var(--pt-t1),transform var(--pt-t2) var(--pt-mola)}
+#app .pt-opcao-nome{font-size:16px;font-weight:650;letter-spacing:-.01em}
+#app .pt-opcao-nome small{display:block;margin-top:1px;font-size:13px;font-weight:400;letter-spacing:0;color:var(--pt-suave)}
+#app .pt-opcao-preco{font:700 17px/1.1 var(--pt-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+#app .pt-opcao-preco small{display:block;margin-top:3px;font:500 12px/1 var(--pt-sans);color:var(--pt-suave)}
+#app .pt-opcao[aria-checked=true]{background:var(--pt-toque);box-shadow:inset 0 0 0 2px var(--pt-tinta)}
+#app .pt-opcao[aria-checked=true] .pt-opcao-marca{box-shadow:inset 0 0 0 1.8px var(--pt-tinta)}
+#app .pt-opcao[aria-checked=true] .pt-opcao-marca::after{opacity:1;transform:none}
+#app .pt-leva{display:grid;gap:10px;margin:0 2px 16px}
+#app .pt-leva-item{display:grid;grid-template-columns:22px minmax(0,1fr);gap:0 11px;font-size:15px;font-weight:600;line-height:1.3;letter-spacing:-.01em}
+#app .pt-leva-item .pt-ic{width:20px;height:20px;margin-top:1px;color:var(--pt-suave)}
+#app .pt-leva-item small{display:block;margin-top:1px;font-size:13px;font-weight:400;letter-spacing:0;color:var(--pt-suave)}
+#app .pt-folha .pt-folha-pe+.pt-btn-largo{margin-top:4px}
+#app .pt-miudo{margin-top:8px;font-size:12.5px;line-height:1.4;color:var(--pt-leve);text-align:center}
+#app .pt-aviso{position:absolute;left:50%;bottom:72px;z-index:30;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);min-height:52px;padding:0 4px 0 16px;border-radius:14px;
+  background:var(--pt-botao);color:var(--pt-sobre-botao);font-size:15px;font-weight:550;box-shadow:var(--pt-sombra2);white-space:nowrap;opacity:0;transform:translate(-50%,12px);pointer-events:none;transition:opacity var(--pt-t2),transform var(--pt-t2) var(--pt-sai)}
+#app .pt-aviso[data-visivel]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition:opacity var(--pt-t2),transform var(--pt-t3) var(--pt-mola)}
+#app .pt-aviso-texto{overflow:hidden;text-overflow:ellipsis;padding:0 10px 0 0}
+#app .pt-aviso-b{min-height:44px;padding:0 13px;border-radius:11px;background:color-mix(in srgb,var(--pt-sobre-botao) 16%,transparent);font-weight:700}
+#app .pt-aviso-b[hidden]{display:none}
+
+@media (hover:hover) and (pointer:fine){
+  #app .pt-nav-b:hover,#app .pt-mini:hover,#app .pt-lado-mais:hover,#app .pt-redondo:hover,#app .pt-voo-b:hover,#app .pt-etapa-b:hover,#app .pt-adicionar:hover,#app .pt-sug:hover,#app .pt-parar:hover{background:var(--pt-toque)}
+  #app .pt-barra-plano:hover .pt-pilula,#app .pt-fechar:hover .pt-fechar-face{background:var(--pt-fio2)}
+  #app .pt-btn-pri:hover{opacity:.88}
+  #app .pt-btn-sec:hover{background:var(--pt-fio2)}
+  #app .pt-aba:hover,#app .pt-seg-b:hover{color:var(--pt-tinta)}
+  #app .pt-troca-b:hover,#app .pt-dia:hover{border-color:var(--pt-tinta)}
+}
+
+/* ===== 720 px ou mais: coluna lateral e o conteúdo numa coluna folgada (iPad em pé) ===== */
+@container app (min-width:720px){
+  #app .pt-casca{grid-template-columns:248px minmax(0,1fr)}
+  #app .pt-lado{display:flex}
+  #app .pt-palco .pt-barra,#app .pt-palco .pt-doca,#app .pt-centro .pt-troca,#app .pt-direita .pt-anuncio{display:none}
+  #app .pt-tela{padding:30px 32px 44px}
+  #app .pt-centro,#app .pt-direita{max-width:680px;margin:0 auto}
+  #app .pt-direita{margin-top:26px}
+  #app .pt-direita .pt-selo{margin-top:0}
+  #app .pt-cab h1{font-size:36px}
+  #app .pt-folha{--pt-pe:20px;left:50%;right:auto;bottom:auto;top:11%;width:min(520px,calc(100% - 48px));max-height:80%;padding:22px 22px 20px;border-radius:22px;transform:translate(-50%,-10px) scale(.98);opacity:0;
+    transition:transform var(--pt-t2) var(--pt-sai),opacity var(--pt-t2),visibility 0s var(--pt-t2)}
+  #app[data-folha=voo] .pt-folha[data-folha=voo],#app[data-folha=planos] .pt-folha[data-folha=planos]{transform:translate(-50%,0);opacity:1;transition:transform var(--pt-t3) var(--pt-mola),opacity var(--pt-t2),visibility 0s}
+  #app .pt-folha .pt-puxador{display:none}
+  #app .pt-dias{margin:0;padding:0 0 2px}
+  #app .pt-aviso{bottom:26px}
+  #app .pt-ceu-fato dd{font-size:22px}
+  #app .pt-a-iata{font-size:17px}
+  #app .pt-a-iata[data-menor]{font-size:9.5px}
+  #app .pt-a-hora{font-size:9.5px}
+}
+/* ===== 880 px ou mais: o cartão de embarque deita, com o canhoto ao lado ===== */
+@container app (min-width:880px){
+  #app .pt-passe{display:grid;grid-template-columns:minmax(0,1fr) auto 266px}
+  #app .pt-passe-a{padding:20px 22px 20px}
+  #app .pt-passe .pt-picote{height:auto;margin:18px 0;border-top:0;border-left:2px dashed var(--pt-fio2)}
+  #app .pt-passe .pt-picote::before{left:-11px;top:-28px}
+  #app .pt-passe .pt-picote::after{left:-11px;right:auto;top:auto;bottom:-28px}
+  #app .pt-passe-b{display:flex;flex-direction:column;padding:20px 20px 20px}
+  #app .pt-flap{width:30px;height:42px;font-size:26px}
+  #app .pt-flap-sep{height:42px}
+  #app .pt-fatos{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-bottom:16px}
+  #app .pt-passe-b .pt-btn-largo{margin-top:auto}
+  #app .pt-iata{font-size:44px}
+}
+/* ===== 1240 px ou mais: três colunas, como num Mac: voos · o voo · linha do tempo e avisos ===== */
+@container app (min-width:1240px){
+  #app .pt-casca{grid-template-columns:256px minmax(0,1fr)}
+  #app .pt-tela{padding:0;overflow:hidden}
+  #app[data-estado="1"] .pt-tela[data-tela="1"],#app[data-estado="2"] .pt-tela[data-tela="2"],#app[data-estado="3"] .pt-tela[data-tela="3"]{display:grid;grid-template-columns:minmax(0,1fr) 336px}
+  #app .pt-centro,#app .pt-direita{max-width:none;margin:0;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  #app .pt-centro{padding:30px 36px 44px}
+  #app .pt-direita{padding:30px 22px 44px;border-left:1px solid var(--pt-fio);background:color-mix(in srgb,var(--pt-lado) 50%,var(--pt-fundo))}
+  #app .pt-direita .pt-sec:first-child{margin-top:0}
+  #app .pt-carta svg{max-height:clamp(250px,calc(100dvh - 532px),520px)}
+
+}
+@container app (max-width:359px){
+  #app .pt-aviso{white-space:normal;padding-top:8px;padding-bottom:8px}
+  #app .pt-tela{padding-left:12px;padding-right:12px}
+  #app .pt-passe-a,#app .pt-passe-b{padding-left:14px;padding-right:14px}
+  #app .pt-picote{margin:0 14px}
+  #app .pt-picote::before{left:-24px}
+  #app .pt-picote::after{right:-24px}
+  #app .pt-iata{font-size:34px}
+  #app .pt-flap{width:31px;height:44px;font-size:27px}
+  #app .pt-flap-sep{width:7px;height:44px}
+  #app .pt-fato dd{font-size:18px}
+  #app .pt-ano-grande b{font-size:58px}
+  #app .pt-ceu-fatos{margin-left:12px;margin-right:12px}
+  #app .pt-ceu-fato{padding-right:4px}
+  #app .pt-ceu-fato+.pt-ceu-fato{padding-left:8px}
+  #app .pt-ceu-fato dd{font-size:16px}
+  #app .pt-trio-n dt{font-size:10px;letter-spacing:.04em}
+  #app .pt-trio-n+.pt-trio-n{padding-left:9px}
+  #app .pt-trio-n dd{font-size:18px}
+  #app .pt-selo-num{font-size:40px}
+}
+/* acabamento da revisão: a alça da folha arrasta com o dedo; clicar dentro da folha mantém o foco nela (o Esc continua valendo);
+   e o botão do aviso fechado não fica no caminho do Tab */
+#app .pt-puxador,#app .pt-folha-topo{touch-action:none}
+#app [role=dialog]{outline:0}
+#app .pt-aviso:not([data-visivel]) button{visibility:hidden;transition:visibility 0s .2s}
+@media (prefers-reduced-motion:reduce){
+  #app *,#app *::before,#app *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1">
+  <svg class="pt-so-leitor" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="pt-i-voos" viewBox="0 0 24 24"><path d="M4 7.6A1.6 1.6 0 0 1 5.6 6h12.8A1.6 1.6 0 0 1 20 7.6v2.1a2.3 2.3 0 0 0 0 4.6v2.1a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 16.4v-2.1a2.3 2.3 0 0 0 0-4.6z"/><path d="M14.5 8.5v1.2M14.5 11.4v1.2M14.5 14.3v1.2"/></symbol>
+      <symbol id="pt-i-vivo" viewBox="0 0 24 24"><path d="M3.5 17.5C6.5 8.2 17.5 8.2 20.5 17.5"/><circle cx="3.5" cy="17.5" r="1.2" fill="currentColor"/><circle cx="20.5" cy="17.5" r="1.2" fill="currentColor"/><circle cx="14.6" cy="11.4" r="2.3" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="pt-i-passaporte" viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.6"/><circle cx="12" cy="10.4" r="3.3"/><path d="M8.7 10.4h6.6M12 7.1c-1.5 1.8-1.5 4.8 0 6.6M12 7.1c1.5 1.8 1.5 4.8 0 6.6M9.2 17h5.6"/></symbol>
+      <symbol id="pt-i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="pt-i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="pt-i-seta" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+      <symbol id="pt-i-baixo" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></symbol>
+      <symbol id="pt-i-vai" viewBox="0 0 24 24"><path d="M4 12h15M14 7l5 5-5 5"/></symbol>
+      <symbol id="pt-i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+      <symbol id="pt-i-antes" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.3V12l3.3 2.1"/></symbol>
+      <symbol id="pt-i-raio" viewBox="0 0 24 24"><path d="M13.2 3L5.6 13.4h5.2L9.9 21l7.6-10.6h-5.2z"/></symbol>
+      <symbol id="pt-i-sino" viewBox="0 0 24 24"><path d="M6.4 16.6v-5.2a5.6 5.6 0 0 1 11.2 0v5.2l1.5 2.1H4.9zM10 20.6a2.2 2.2 0 0 0 4 0"/></symbol>
+      <symbol id="pt-i-troca" viewBox="0 0 24 24"><path d="M4 8.4h14M14.6 5l3.4 3.4-3.4 3.4M20 15.6H6M9.4 12.2L6 15.6 9.4 19"/></symbol>
+      <symbol id="pt-i-chuva" viewBox="0 0 24 24"><path d="M7.2 15.4a4 4 0 0 1-.5-8 5.7 5.7 0 0 1 11 1.3 3.4 3.4 0 0 1-.5 6.7z"/><path d="M9 18.4l-.7 1.9M12.6 18.4l-.7 1.9M16.2 18.4l-.7 1.9"/></symbol>
+      <symbol id="pt-i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/></symbol>
+      <symbol id="pt-i-lua" viewBox="0 0 24 24"><path d="M20 13.7A8.1 8.1 0 1 1 10.3 4a6.4 6.4 0 0 0 9.7 9.7z"/></symbol>
+      <symbol id="pt-i-mala" viewBox="0 0 24 24"><rect x="4.5" y="8.4" width="15" height="11.2" rx="2"/><path d="M9 8.4V6.2a1.7 1.7 0 0 1 1.7-1.7h2.6A1.7 1.7 0 0 1 15 6.2v2.2M9.2 12v4M14.8 12v4"/></symbol>
+      <symbol id="pt-i-enviar" viewBox="0 0 24 24"><path d="M12 14.6V3.8M8 7.6l4-4 4 4M6 11.6v6.6a1.6 1.6 0 0 0 1.6 1.6h8.8a1.6 1.6 0 0 0 1.6-1.6v-6.6"/></symbol>
+      <symbol id="pt-i-portao" viewBox="0 0 24 24"><path d="M4 18.5C4 9.8 20 9.8 20 18.5"/><path d="M4 18.5h16"/><circle cx="12" cy="6.2" r="1.7" fill="currentColor" stroke="none"/></symbol>
+    </defs>
+  </svg>
+  <div class="pt-casca">
+    <aside class="pt-lado" aria-label="Portão: voos e seções">
+      <div class="pt-marca">
+        <span class="pt-marca-sinal"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-portao"/></svg></span>
+        <span class="pt-marca-nome">Portão</span>
+        <span class="pt-relogio" data-relogio aria-hidden="true">00:00:00</span>
+      </div>
+      <nav class="pt-nav" aria-label="Seções"></nav>
+      <div class="pt-lado-grupo">
+        <p class="pt-rotulo">Em acompanhamento</p>
+        <div class="pt-lado-voos"></div>
+        <button type="button" class="pt-lado-mais" data-acao="nova"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-mais"/></svg>Adicionar voo</button>
+      </div>
+      <button type="button" class="pt-lado-plano" data-acao="planos">
+        <em>Portão Antecipado</em>
+        <b>7 dias grátis</b>
+        <span>O atraso chega antes do painel.</span>
+      </button>
+    </aside>
+    <section class="pt-palco">
+      <header class="pt-barra">
+        <div class="pt-barra-lugar">
+          <span class="pt-relogio" data-relogio aria-hidden="true">00:00:00</span>
+          <span class="pt-barra-titulo" aria-hidden="true">Meus voos</span>
+        </div>
+        <button type="button" class="pt-barra-plano" data-acao="planos" aria-label="Portão Antecipado: ver os planos"><span class="pt-pilula"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-raio"/></svg>7 dias grátis</span></button>
+        <button type="button" class="pt-redondo" data-acao="nova" aria-label="Adicionar voo"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-mais"/></svg></button>
+      </header>
+      <div class="pt-tela" data-tela="1"><div class="pt-centro"></div><div class="pt-direita"></div></div>
+      <div class="pt-tela" data-tela="2"><div class="pt-centro"></div><div class="pt-direita"></div></div>
+      <div class="pt-tela" data-tela="3"><div class="pt-centro"></div><div class="pt-direita"></div></div>
+      <nav class="pt-doca" aria-label="Seções"></nav>
+    </section>
+    <div class="pt-veu" data-acao="fechar-folha"></div>
+    <section class="pt-folha" data-folha="voo" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="pt-t-voo">
+      <div class="pt-puxador" aria-hidden="true"></div>
+      <div class="pt-folha-topo">
+        <h2 id="pt-t-voo">Adicionar voo</h2>
+        <button type="button" class="pt-fechar" data-acao="fechar-folha" aria-label="Fechar"><span class="pt-fechar-face"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-fechar"/></svg></span></button>
+      </div>
+      <label class="pt-rotulo pt-campo-rot" for="pt-codigo">Código do voo</label>
+      <input id="pt-codigo" class="pt-campo" type="text" placeholder="ZC 1533" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="9" enterkeyhint="done">
+      <p class="pt-rotulo pt-campo-rot" id="pt-r-dias" style="margin-top:14px">Dia</p>
+      <div class="pt-dias" role="radiogroup" aria-labelledby="pt-r-dias"></div>
+      <div class="pt-achado" aria-live="polite"></div>
+      <div class="pt-sugestoes" role="group" aria-label="Códigos de exemplo"></div>
+      <button type="button" class="pt-btn pt-btn-pri pt-btn-largo" data-acao="incluir">Adicionar aos meus voos</button>
+    </section>
+    <section class="pt-folha" data-folha="planos" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="pt-t-planos">
+      <div class="pt-puxador" aria-hidden="true"></div>
+      <div class="pt-folha-topo">
+        <h2 id="pt-t-planos">Portão Antecipado</h2>
+        <button type="button" class="pt-fechar" data-acao="fechar-folha" aria-label="Fechar"><span class="pt-fechar-face"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-fechar"/></svg></span></button>
+      </div>
+      <p class="pt-plano-frase">Saiba do atraso antes do painel do aeroporto. São 7 dias grátis para usar tudo.</p>
+      <div class="pt-opcoes" role="radiogroup" aria-label="Como pagar">
+        <button type="button" class="pt-opcao" role="radio" aria-checked="true" data-acao="plano" data-plano="mensal"><span class="pt-opcao-marca" aria-hidden="true"></span><span class="pt-opcao-nome">Mensal<small>Cancela quando quiser</small></span><span class="pt-opcao-preco">R$ 14,90<small>por mês</small></span></button>
+        <button type="button" class="pt-opcao" role="radio" aria-checked="false" data-acao="plano" data-plano="anual"><span class="pt-opcao-marca" aria-hidden="true"></span><span class="pt-opcao-nome">Anual<small>Sai a R$ 8,33 por mês</small></span><span class="pt-opcao-preco">R$ 99,90<small>por ano</small></span></button>
+        <button type="button" class="pt-opcao" role="radio" aria-checked="false" data-acao="plano" data-plano="passe"><span class="pt-opcao-marca" aria-hidden="true"></span><span class="pt-opcao-nome">Passe de viagem<small>Vale 7 dias e não renova</small></span><span class="pt-opcao-preco">R$ 9,90<small>uma vez</small></span></button>
+      </div>
+      <ul class="pt-leva">
+        <li class="pt-leva-item"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-antes"/></svg><span>Aviso de atraso antes do painel<small>A previsão olha o avião que vem fazer o seu voo.</small></span></li>
+        <li class="pt-leva-item"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-sino"/></svg><span>Portão, esteira e conexão na hora<small>Chega na Tela Bloqueada, com o valor antigo.</small></span></li>
+        <li class="pt-leva-item"><svg class="pt-ic" aria-hidden="true"><use href="#pt-i-enviar"/></svg><span>Quem vai buscar fica sabendo<small>Por mensagem, sem instalar nada.</small></span></li>
+      </ul>
+      <div class="pt-folha-pe"><button type="button" class="pt-btn pt-btn-pri pt-btn-largo" data-acao="assinar">Começar 7 dias grátis</button></div>
+      <button type="button" class="pt-btn pt-btn-largo" data-acao="restaurar">Restaurar compra</button>
+      <p class="pt-miudo">Maquete: os valores são hipótese e nada é cobrado aqui.</p>
+    </section>
+    <div class="pt-aviso" role="status" aria-live="polite"><span class="pt-aviso-texto"></span><button type="button" class="pt-aviso-b" data-acao="desfazer">Desfazer</button></div>
+  </div>
+</main>
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura do Portão: o cartão de embarque com o arco da rota e a contagem em âmbar">
+  <rect width="320" height="180" fill="#060b18"/>
+  <rect x="52" y="14" width="216" height="152" rx="13" fill="#0f1930"/>
+  <text x="70" y="62" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#e8edf7" letter-spacing="-.6">GYN</text>
+  <text x="250" y="62" text-anchor="end" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#e8edf7" letter-spacing="-.6">CGH</text>
+  <path d="M126 56Q160 14 194 56" fill="none" stroke="#7a88a6" stroke-width="1.5" stroke-dasharray=".1 4.5" stroke-linecap="round"/>
+  <path d="M126 56Q139.6 39.2 153.2 35.8" fill="none" stroke="#ffb224" stroke-width="2" stroke-linecap="round"/>
+  <path d="M9 0L3.2-1.5-.6-8h-2.2l2 6.5-4.8.2-1.6-2.5h-1.4l.8 3.8-.8 3.8h1.4l1.6-2.5 4.8.2-2 6.5h2.2l3.8-6.5z" transform="translate(153.2 35.8) rotate(-14) scale(.82)" fill="#ffb224"/>
+  <rect x="70" y="72" width="34" height="5" rx="2.5" fill="#93a0ba"/>
+  <rect x="216" y="72" width="34" height="5" rx="2.5" fill="#93a0ba"/>
+  <rect x="70" y="84" width="180" height="12" rx="6" fill="#ffb224" opacity=".16"/>
+  <rect x="76" y="88" width="66" height="4" rx="2" fill="#ffb224"/>
+  <path d="M66 108h188" stroke="#3a4560" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <circle cx="52" cy="108" r="8" fill="#060b18"/><circle cx="268" cy="108" r="8" fill="#060b18"/>
+  <g font-family="ui-monospace,Menlo,Consolas,monospace" font-size="19" font-weight="700" fill="#ffb224" text-anchor="middle">
+    <rect x="70" y="120" width="22" height="30" rx="4.5" fill="#02050c"/><text x="81" y="142">0</text>
+    <rect x="95" y="120" width="22" height="30" rx="4.5" fill="#02050c"/><text x="106" y="142">0</text>
+    <rect x="127" y="120" width="22" height="30" rx="4.5" fill="#02050c"/><text x="138" y="142">3</text>
+    <rect x="152" y="120" width="22" height="30" rx="4.5" fill="#02050c"/><text x="163" y="142">8</text>
+    <rect x="184" y="120" width="22" height="30" rx="4.5" fill="#02050c"/><text x="195" y="142">1</text>
+    <rect x="209" y="120" width="22" height="30" rx="4.5" fill="#02050c"/><text x="220" y="142">2</text>
+  </g>
+  <text x="250" y="141" text-anchor="end" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="15" font-weight="700" fill="#e8edf7">4</text>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Portão: o app sozinho. Tudo é local e fictício: os horários nascem do relógio deste aparelho no instante em que a
+// página abre, o "ao vivo" é uma simulação por esse mesmo relógio e nada sai da página.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ── ajudantes de DOM: nada de HTML em texto; o que vem de dado ou de digitação entra sempre como texto ──
+  function preencher(n, filhos) {
+    [].concat(filhos == null ? [] : filhos).forEach(function (f) { if (f != null && f !== false) n.appendChild(typeof f === "object" ? f : document.createTextNode(String(f))); });
+    return n;
+  }
+  function h(tag, attrs, filhos) {
+    var n = document.createElement(tag), k;
+    for (k in attrs || {}) {
+      if (attrs[k] == null || attrs[k] === false) continue;
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    return preencher(n, filhos);
+  }
+  function s(tag, attrs, filhos) {
+    var n = document.createElementNS(SVGNS, tag), k;
+    for (k in attrs || {}) if (attrs[k] != null && attrs[k] !== false) n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    return preencher(n, filhos);
+  }
+  function ic(nome, classe) { return s("svg", {"class": "pt-ic" + (classe ? " " + classe : ""), "aria-hidden": "true"}, s("use", {href: "#pt-i-" + nome})); }
+  function $(sel, raiz) { return (raiz || app).querySelector(sel); }
+  function todos(sel, raiz) { return Array.prototype.slice.call((raiz || app).querySelectorAll(sel)); }
+  function limpar(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+
+  // ── tempo: tudo é relativo ao instante em que a página abriu, com os horários programados na grade de 5 min ──
+  var M = 60000, H = 3600000, DIA = 86400000;
+  // para mostrar as outras fases sem esperar o relógio: abrir com #adianta=80 põe o app 80 minutos à frente
+  var ADIANTA = +((/[#&]adianta=(\d{1,4})/.exec(location.hash) || [])[1] || 0) * M;
+  // de madrugada (das 22h às 5h) o enredo passa para o começo da manhã seguinte: um voo às 3h para um aeroporto que fecha
+  // à noite não convence quem voa toda semana. O relógio do app segue essa manhã, e a nota do painel do céu diz isso.
+  var MADRUGADA = (function () {
+    var d = new Date(), hh = d.getHours(), alvo = new Date(d);
+    if (hh >= 5 && hh < 22) return 0;
+    if (hh >= 22) alvo.setDate(alvo.getDate() + 1);
+    alvo.setHours(6, 40, 0, 0);
+    return alvo.getTime() - d.getTime();
+  })();
+  function agora() { return Date.now() + MADRUGADA + ADIANTA; }
+  var G = Math.ceil((Date.now() + MADRUGADA) / (5 * M)) * 5 * M;
+  var hoje0 = new Date(Date.now() + MADRUGADA); hoje0.setHours(0, 0, 0, 0);
+  var SEM = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  var MES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  function d2(n) { return (n < 10 ? "0" : "") + n; }
+  function hm(ms) { var d = new Date(ms); return d2(d.getHours()) + ":" + d2(d.getMinutes()); }
+  function noDia(n, hh, mm) { var d = new Date(hoje0); d.setDate(d.getDate() + n); d.setHours(hh, mm, 0, 0); return d.getTime(); }
+  function diasAte(ms) { var d = new Date(ms); d.setHours(0, 0, 0, 0); return Math.round((d - hoje0) / DIA); }
+  function dataCurta(ms) {
+    var n = diasAte(ms), d = new Date(ms);
+    if (n === 1 && d.getHours() < 6 && ms - agora() < 10 * H) return "esta madrugada";   // perto da meia-noite, "amanhã" confunde
+    return n === 0 ? "hoje" : n === 1 ? "amanhã" : n === -1 ? "ontem" : SEM[d.getDay()] + ", " + d.getDate() + " " + MES[d.getMonth()];
+  }
+  function duracao(min) { var hh = Math.floor(min / 60), mm = Math.round(min % 60); return hh ? hh + "h" + (mm ? d2(mm) : "") : mm + " min"; }
+  function falta(ms) {
+    var seg = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(seg / 3600), mm = Math.floor(seg % 3600 / 60);
+    return (hh ? hh + ":" + d2(mm) : String(mm)) + ":" + d2(seg % 60);
+  }
+  function milhar(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  function f1(n) { return Math.round(n * 10) / 10; }
+
+  // ── dados fictícios: aeroportos pelo código público, companhias inventadas, uma pessoa inventada ──
+  // ZC, QA e XV não tinham companhia nenhuma na busca de códigos da IATA em 10/11/2026
+  var CIAS = {ZC: "Cerrado", QA: "Quartzo", XV: "Vésper"};
+  var DONO = "Rafael Antunes", BASE = "GYN";
+  // x e y são a posição na carta de rotas (um esquema, sem mapa); rx, ry e anc dizem onde vai o rótulo
+  var AERO = {
+    GYN: {cidade: "Goiânia", x: 69, y: 124, rx: -9, ry: 4, anc: "end"},
+    BSB: {cidade: "Brasília", x: 92, y: 114, rx: 8, ry: -6, anc: "start"},
+    CGH: {cidade: "São Paulo", x: 110, y: 200, rx: 0, ry: 18, anc: "middle"},
+    SDU: {cidade: "Rio de Janeiro", x: 167, y: 192, rx: 9, ry: 4, anc: "start"},
+    CNF: {cidade: "Belo Horizonte", x: 154, y: 157, rx: 9, ry: 4, anc: "start"},
+    SSA: {cidade: "Salvador", x: 246, y: 84, rx: 9, ry: 4, anc: "start"},
+    REC: {cidade: "Recife", x: 301, y: 34, rx: -9, ry: 4, anc: "end"},
+    POA: {cidade: "Porto Alegre", x: 37, y: 268, rx: 9, ry: 4, anc: "start"}
+  };
+  // distância (km) e tempo de voo (min) de cada par, nos dois sentidos
+  var ROTAS = {"GYN-CGH": [812, 95], "GYN-BSB": [174, 40], "GYN-SDU": [938, 105], "CGH-POA": [836, 100], "GYN-CNF": [666, 80],
+    "GYN-SSA": [1228, 135], "SSA-REC": [648, 75], "CGH-SDU": [366, 60], "GYN-REC": [1872, 165], "CNF-SDU": [342, 55]};
+  function rota(a, b) { return ROTAS[a + "-" + b] || ROTAS[b + "-" + a] || [900, 100]; }
+  var CATALOGO = [["GYN", "CGH"], ["SDU", "GYN"], ["GYN", "BSB"], ["CGH", "POA"], ["GYN", "CNF"], ["SSA", "GYN"], ["GYN", "REC"], ["CNF", "SDU"]];
+  var ANO0 = new Date(Date.now() + MADRUGADA).getFullYear();
+  var ANOS = [
+    {nota: "até aqui", voos: [["GYN", "CGH", 14], ["GYN", "BSB", 8], ["GYN", "SDU", 4], ["GYN", "CNF", 4], ["CGH", "POA", 2], ["GYN", "SSA", 2], ["SSA", "REC", 2], ["CGH", "SDU", 2]]},
+    {nota: "o ano inteiro", voos: [["GYN", "CGH", 10], ["GYN", "BSB", 6], ["GYN", "SDU", 2], ["GYN", "CNF", 2], ["CGH", "SDU", 2]]},
+    {nota: "o ano inteiro", voos: [["GYN", "CGH", 6], ["GYN", "BSB", 4], ["GYN", "SSA", 2]]}
+  ];
+
+  var seq = 0;
+  function V(o) { o.id = "v" + (++seq); o.atraso = o.atraso || 0; o.feed = o.feed || []; return o; }
+  var t3 = noDia(3, 18, 40), t4 = noDia(9, 6, 15);
+  var voos = [
+    // o voo de hoje: o avião que vai fazê-lo saiu 25 min atrasado de Brasília e ainda está no ar
+    V({tipo: "meu", cia: "ZC", num: "1482", de: "GYN", para: "CGH", checkin: G - 320 * M, eProg: G + 15 * M, dProg: G + 45 * M, aProg: G + 140 * M, atraso: 25,
+      portao: "4", portaoEra: "2", assento: "14C", grupo: "B", esteira: "5", quem: "Caio", avisar: false,
+      vindo: {num: "ZC 1479", de: "BSB", saiu: G - 15 * M, pousa: G + 25 * M, solo: 45},
+      conexao: {num: "ZC 1806", para: "SDU", parte: G + 190 * M, minimo: 40, alt: {num: "ZC 1812", parte: G + 275 * M, lugares: 9}, guardada: false},
+      tempo: ["chuva", "São Paulo na sua chegada: 18°, garoa fina"],
+      feed: [[G - 12 * M, "Atraso previsto: +25 min", "O avião do seu voo saiu atrasado de Brasília.", true], [G - 35 * M, "Portão mudou: 2 → 4", "O embarque passou para o portão 4."], [G - 320 * M, "Check-in feito", "Assento 14C, uma mala despachada."]]}),
+    // quem busca gente: a Helena vem de Salvador e já está no ar
+    V({tipo: "buscar", cia: "QA", num: "2207", de: "SSA", para: "GYN", checkin: G - 260 * M, eProg: G - 125 * M, dProg: G - 95 * M, aProg: G + 40 * M, atraso: -6,
+      portao: "2", esteira: "3", quem: "Helena", avisar: true, tempo: ["", "Goiânia na chegada dela: 24°, céu limpo"],
+      feed: [[G - 18 * M, "Esteira definida: 3", "As malas da Helena saem na esteira 3."], [G - 101 * M, "Decolou 6 min antes", "Saiu de Salvador adiantado."]]}),
+    V({tipo: "meu", cia: "ZC", num: "1540", de: "SDU", para: "GYN", checkin: t3 - 48 * H, eProg: t3 - 30 * M, dProg: t3, aProg: t3 + 105 * M,
+      portao: "", assento: "9A", grupo: "A", esteira: "", quem: "Caio", avisar: false, tempo: null}),
+    V({tipo: "meu", cia: "XV", num: "3108", de: "GYN", para: "REC", checkin: t4 - 48 * H, eProg: t4 - 30 * M, dProg: t4, aProg: t4 + 165 * M,
+      portao: "", assento: "21F", grupo: "C", esteira: "", quem: "Caio", avisar: false, tempo: null})
+  ];
+  var passados = [
+    {id: "p1", cia: "ZC", num: "1466", de: "CNF", para: "GYN", dias: 6, hora: "19:05", nota: "pousou 8 min antes", assento: "9A", portao: "7"},
+    {id: "p2", cia: "QA", num: "2190", de: "GYN", para: "CNF", dias: 8, hora: "07:40", nota: "no horário", assento: "12D", portao: "3"},
+    {id: "p3", cia: "ZC", num: "1431", de: "BSB", para: "GYN", dias: 13, hora: "21:15", nota: "atrasou 40 min", assento: "4C", portao: "11", aviso: "O Portão avisou 31 min antes do painel."}
+  ];
+
+  // ── estado da interface ──
+  var ui = {tela: 0, foco: voos[0].id, etapa: null, passado: null, ano: 0, plano: "mensal", dia: 1, entra: null, novo: null, desfazer: null, relogioAviso: 0, ultimaFolha: null};
+  var vivos = [], marco = Infinity;
+  function porId(id) { for (var i = 0; i < voos.length; i++) if (voos[i].id === id) return voos[i]; return null; }
+  function foco() { return porId(ui.foco) || voos[0] || null; }
+  function prev(v, campo) { return v[campo] + v.atraso * M; }          // previsto = programado + atraso previsto
+  function quando(v) { return v.tipo === "meu" && agora() < prev(v, "dProg") ? prev(v, "dProg") : prev(v, "aProg"); }   // a hora que importa: a decolagem do meu voo até ele sair; depois, o pouso
+  function ordenar() { voos.sort(function (a, b) { return quando(a) - quando(b); }); }
+  // em que pé está o voo neste instante, e quanto do trecho já foi
+  function fase(v, t) {
+    var d = prev(v, "dProg"), a = prev(v, "aProg");
+    if (d - t > 24 * H) return {nome: "longe", frac: 0};
+    if (v.vindo && t < v.vindo.pousa) return {nome: "vindo", frac: Math.max(0, Math.min(1, (t - v.vindo.saiu) / (v.vindo.pousa - v.vindo.saiu)))};
+    if (t < d) return {nome: "solo", frac: 0};
+    if (t < a) return {nome: "voo", frac: (t - d) / (a - d)};
+    return {nome: "chegou", frac: 1};
+  }
+  function situacao(v, t, curta) {
+    var f = fase(v, t);
+    if (f.nome === "chegou") return {texto: "pousou " + hm(prev(v, "aProg")), quente: false};
+    var no = f.nome === "voo" && !curta ? "no ar · " : "";
+    if (v.atraso > 0) return {texto: no + "+" + v.atraso + " min previsto", quente: true};
+    if (v.atraso < 0) return {texto: no + "adiantado " + (-v.atraso) + " min", quente: false};
+    return {texto: no + "no horário", quente: false};
+  }
+  function proximoMarco(t) {
+    var m = Infinity;
+    voos.forEach(function (v) {
+      [v.checkin, v.vindo && v.vindo.pousa, prev(v, "eProg"), prev(v, "dProg"), prev(v, "aProg"), prev(v, "aProg") + 12 * M, prev(v, "dProg") - 24 * H].forEach(function (x) { if (x && x > t && x < m) m = x; });
+    });
+    return m;
+  }
+
+  // ── geometria do arco: uma curva de três pontos; o avião anda nela e o trecho já voado é o começo da mesma curva ──
+  var AVIAO = "M9 0L3.2-1.5-.6-8h-2.2l2 6.5-4.8.2-1.6-2.5h-1.4l.8 3.8-.8 3.8h1.4l1.6-2.5 4.8.2-2 6.5h2.2l3.8-6.5z";
+  function arcoDe(x0, x1, y, teto) { var alt = Math.min((x1 - x0) * .44, teto); return [[x0, y], [(x0 + x1) / 2, y - 2 * alt], [x1, y]]; }
+  function ponto(p, t) { var u = 1 - t; return [u * u * p[0][0] + 2 * u * t * p[1][0] + t * t * p[2][0], u * u * p[0][1] + 2 * u * t * p[1][1] + t * t * p[2][1]]; }
+  function angulo(p, t) { var u = 1 - t; return Math.atan2(u * (p[1][1] - p[0][1]) + t * (p[2][1] - p[1][1]), u * (p[1][0] - p[0][0]) + t * (p[2][0] - p[1][0])) * 180 / Math.PI; }
+  function curva(p, t) {
+    var a = [p[0][0] + (p[1][0] - p[0][0]) * t, p[0][1] + (p[1][1] - p[0][1]) * t], b = ponto(p, t);
+    return "M" + f1(p[0][0]) + " " + f1(p[0][1]) + "Q" + f1(a[0]) + " " + f1(a[1]) + " " + f1(b[0]) + " " + f1(b[1]);
+  }
+  function pousarAviao(grupo, p, frac, voando) {
+    var xy = ponto(p, frac);
+    grupo.setAttribute("transform", "translate(" + f1(xy[0]) + " " + f1(xy[1] - (voando ? 0 : 9)) + ") rotate(" + (voando ? f1(angulo(p, frac)) : 0) + ")");
+  }
+
+  // ── peças comuns ──
+  function cab(olho, titulo) { return h("header", {"class": "pt-cab"}, [h("p", {"class": "pt-rotulo", text: olho}), h("h1", {text: titulo})]); }
+  function sec(titulo, conteudo, conta) {
+    return h("section", {"class": "pt-sec"}, [h("h2", {"class": "pt-sec-t"}, [titulo, conta != null ? h("small", {text: String(conta)}) : null]), conteudo]);
+  }
+  function fato(rot, val, extra) { return h("div", {"class": "pt-fato"}, [h("dt", {"class": "pt-rotulo", text: rot}), h("dd", null, [val, extra ? h("small", {text: " " + extra}) : null])]); }
+  function horaDupla(classe, prog, v, vivo) {
+    var mudou = v.atraso !== 0 && vivo;
+    return h("span", {"class": classe, "data-quente": mudou && v.atraso > 0, "aria-label": mudou ? "previsto " + hm(prog + v.atraso * M) + ", programado " + hm(prog) : hm(prog)},
+      mudou ? [h("s", {text: hm(prog)}), h("b", {text: hm(prog + v.atraso * M)})] : h("b", {text: hm(prog)}));
+  }
+  function rotuloVoo(v) { return CIAS[v.cia] + " " + v.cia + " " + v.num; }
+
+  // o arco pequeno do cartão de embarque: só o seu trecho, com o avião onde o relógio manda
+  function arquinho(v) {
+    var p = [[8, 54], [80, -12], [152, 54]], r = rota(v.de, v.para);
+    var vivo = s("path", {"class": "pt-a-vivo", d: "M0 0"}), aviao = s("path", {"class": "pt-a-aviao", d: AVIAO}), halo = s("circle", {"class": "pt-a-halo", r: 10});
+    var grupo = s("g", null, [halo, aviao]), legenda = h("p", {"class": "pt-rotulo"});
+    var g = s("svg", {viewBox: "0 0 160 62", "aria-hidden": "true"}, [s("path", {"class": "pt-a-futuro", d: curva(p, 1)}), vivo,
+      s("circle", {"class": "pt-a-no", cx: 8, cy: 54, r: 3.5}), s("circle", {"class": "pt-a-no", cx: 152, cy: 54, r: 3.5}), grupo]);
+    vivos.push(function (t) {
+      var f = fase(v, t), voando = f.nome === "voo", frac = voando ? f.frac : f.nome === "chegou" ? 1 : 0;
+      vivo.setAttribute("d", voando && frac > .004 ? curva(p, frac) : "M0 0");
+      pousarAviao(grupo, p, frac, voando);
+      aviao.toggleAttribute("data-parado", !voando);
+      halo.style.display = voando ? "" : "none";
+      // a legenda do arco diz onde está o avião que importa agora; longe do voo, só a duração
+      var txt = f.nome === "vindo" ? "seu avião a " + Math.max(1, Math.round(rota(v.vindo.de, v.de)[0] * (1 - f.frac))) + " km" : f.nome === "solo" ? (v.vindo ? "avião em solo" : "no horário")
+        : voando ? "faltam " + milhar(Math.max(1, r[0] * (1 - frac))) + " km" : f.nome === "chegou" ? "pousou" : duracao(r[1]) + " · direto";
+      if (legenda.textContent !== txt) legenda.textContent = txt;
+      legenda.toggleAttribute("data-quente", f.nome === "vindo" || voando);
+    });
+    return h("div", {"class": "pt-arquinho"}, [g, legenda]);
+  }
+
+  // a faixa da situação: o que está acontecendo e por quê
+  function previsao(v, f) {
+    var icone = "check", titulo = "No horário", texto, quente = false, pouso = hm(prev(v, "aProg"));
+    if (f.nome === "chegou") { icone = "mala"; titulo = "Pousou às " + pouso; texto = v.esteira ? "As malas saem na esteira " + v.esteira + "." : "A esteira ainda não saiu."; }
+    else if (v.tipo === "buscar") {
+      if (v.atraso < 0) titulo = "Adiantado " + (-v.atraso) + " min"; else if (v.atraso > 0) { titulo = "Atraso previsto: +" + v.atraso + " min"; quente = true; icone = "antes"; }
+      texto = v.quem + " pousa às " + pouso + (v.esteira ? ", esteira " + v.esteira + "." : ".") + " O programado era " + hm(v.aProg) + ".";
+    } else if (v.atraso > 0 && f.nome === "voo") {
+      icone = "antes"; quente = true; titulo = "No ar, com " + v.atraso + " min de atraso";
+      texto = "O pouso em " + AERO[v.para].cidade + " deve ser às " + pouso + "; o programado era " + hm(v.aProg) + ".";
+    } else if (v.atraso > 0) {
+      icone = "antes"; quente = true; titulo = "Atraso previsto: +" + v.atraso + " min";
+      if (f.nome === "vindo") texto = "O avião do seu voo saiu tarde de " + AERO[v.vindo.de].cidade + ". O painel ainda diz no horário.";
+      else texto = "O avião do seu voo pousou atrasado. A decolagem deve ser às " + hm(prev(v, "dProg")) + ".";
+    } else if (f.nome === "voo") { titulo = "No ar, no horário"; texto = "O pouso em " + AERO[v.para].cidade + " está previsto para as " + pouso + "."; }
+    else if (f.nome === "longe") texto = "Ainda longe: o acompanhamento ao vivo começa 24 horas antes da decolagem.";
+    else texto = v.vindo ? "O avião do seu voo já está em solo e nada mudou até agora." : "Nada mudou até agora. O avião do seu voo aparece aqui umas 3 horas antes da decolagem.";
+    return h("div", {"class": "pt-previsao", "data-quente": quente}, [ic(icone), h("strong", {text: titulo}), h("p", {text: texto})]);
+  }
+
+  // a contagem regressiva em células de painel; ela sabe o que esperar em cada fase do voo
+  function alvoDaContagem(v, t) {
+    var e = prev(v, "eProg"), d = prev(v, "dProg"), a = prev(v, "aProg");
+    var p = v.atraso !== 0 && d - t < 24 * H ? "previsto em" : "em";
+    if (v.tipo === "buscar") return t < a ? ["Pouso " + p, a] : ["Pousou", a];
+    if (t < e) return ["Embarque " + p, e];
+    if (t < d) return ["Decolagem " + (p === "em" ? p : "prevista em"), d];
+    return t < a ? ["Pouso " + p, a] : ["Pousou", a];
+  }
+  function contagem(v) {
+    var t0 = agora(), par = alvoDaContagem(v, t0), longo = par[1] - t0 >= 100 * H, cel = [];
+    var caixa = h("div", {"class": "pt-flaps", "aria-hidden": "true"}), falado = h("span", {"class": "pt-so-leitor"});
+    (longo ? ["dias", "h", "min"] : ["h", "min", "s"]).forEach(function (u, i) {
+      var a = h("span", {"class": "pt-flap-n"}), b = h("span", {"class": "pt-flap-n"});
+      cel.push(a, b);
+      if (i) caixa.appendChild(h("span", {"class": "pt-flap-sep", text: ":"}));
+      caixa.appendChild(h("span", {"class": "pt-flap-par"}, [h("span", {"class": "pt-flap"}, a), h("span", {"class": "pt-flap"}, b), h("span", {"class": "pt-flap-un", text: u})]));
+    });
+    function pinta(t, primeira) {
+      var seg = Math.max(0, Math.floor((par[1] - t) / 1000)), txt, i;
+      if (longo) txt = d2(Math.min(99, Math.floor(seg / 86400))) + d2(Math.floor(seg % 86400 / 3600)) + d2(Math.floor(seg % 3600 / 60));
+      else txt = d2(Math.min(99, Math.floor(seg / 3600))) + d2(Math.floor(seg % 3600 / 60)) + d2(seg % 60);
+      for (i = 0; i < 6; i++) {
+        if (cel[i].textContent === txt.charAt(i)) continue;
+        cel[i].textContent = txt.charAt(i);
+        if (primeira !== true && !calmo) { cel[i].removeAttribute("data-novo"); void cel[i].offsetWidth; cel[i].setAttribute("data-novo", ""); }
+      }
+      if (primeira === true || seg % 60 === 0) falado.textContent = par[0] + " " + (seg >= 3600 ? Math.floor(seg / 3600) + " h e " : "") + Math.floor(seg % 3600 / 60) + " min";
+    }
+    pinta(t0, true);
+    vivos.push(pinta);
+    var nota = null, f = fase(v, t0);
+    if (v.tipo === "buscar" && f.nome !== "chegou") nota = v.quem + " sai pelo desembarque uns 20 min depois.";
+    else if (v.atraso > 0 && t0 < v.eProg) nota = "A companhia ainda chama para as " + hm(v.eProg) + ".";
+    else if (v.atraso > 0 && t0 < prev(v, "eProg")) nota = "O horário da companhia era " + hm(v.eProg) + ".";
+    else if (f.nome === "longe") nota = "Embarque " + dataCurta(v.eProg) + ", às " + hm(v.eProg) + ".";
+    return h("div", {"class": "pt-conta"}, [h("p", {"class": "pt-rotulo", text: par[0]}), caixa, falado, nota ? h("p", {"class": "pt-conta-nota", text: nota}) : null]);
+  }
+  function fatos(v) {
+    var nome = fase(v, agora()).nome;
+    if (v.tipo === "buscar") return h("dl", {"class": "pt-fatos"}, [fato("Esteira", v.esteira || "—"), fato("Vem de", v.de), fato("Pouso", hm(prev(v, "aProg"))), fato("Malas", "12 min")]);
+    if (nome === "voo" || nome === "chegou") return h("dl", {"class": "pt-fatos"}, [fato("Assento", v.assento || "—"), fato("Esteira", v.esteira || "—"), fato("Pouso", hm(prev(v, "aProg"))), fato("Malas", "12 min")]);
+    return h("dl", {"class": "pt-fatos"}, [fato("Portão", v.portao || "—", v.portaoEra ? "era " + v.portaoEra : null), fato("Assento", v.assento || "—"), fato("Grupo", v.grupo || "—"), fato("Fecha", hm(prev(v, "dProg") - 15 * M))]);
+  }
+  function passe(v) {
+    var t = agora(), f = fase(v, t), vivo = f.nome !== "longe" || v.atraso !== 0;
+    function ponta(cod, prog, fim) {
+      return h("div", {"class": "pt-ponta" + (fim ? " pt-ponta-fim" : "")}, [h("p", {"class": "pt-iata", text: cod}), h("p", {"class": "pt-cidade", text: AERO[cod].cidade}), h("p", null, horaDupla("pt-hora", prog, v, vivo))]);
+    }
+    var a = h("div", {"class": "pt-passe-a"}, [
+      h("div", {"class": "pt-passe-topo"}, [h("span", {"class": "pt-rotulo", text: CIAS[v.cia] + " · " + v.cia + " " + v.num}), h("span", {"class": "pt-rotulo", text: v.tipo === "meu" ? dataCurta(v.dProg) : "buscar " + v.quem})]),
+      h("div", {"class": "pt-rota"}, [ponta(v.de, v.dProg), arquinho(v), ponta(v.para, v.aProg, true)]),
+      previsao(v, f)]);
+    var b = h("div", {"class": "pt-passe-b"}, [contagem(v), fatos(v),
+      h("button", {type: "button", "class": "pt-btn pt-btn-pri pt-btn-largo", "data-acao": "aovivo", "data-k": "aovivo"}, ["Acompanhar ao vivo", ic("seta")])]);
+    return h("article", {"class": "pt-passe", "data-entra": ui.entra === "foco", "aria-label": "Cartão de embarque: " + rotuloVoo(v) + ", de " + AERO[v.de].cidade + " para " + AERO[v.para].cidade},
+      [a, h("div", {"class": "pt-picote", "aria-hidden": "true"}), b]);
+  }
+
+  // linhas de voo
+  function linhaVoo(v) {
+    var t = agora(), st = situacao(v, t, true), meu = v.tipo === "meu";
+    return h("li", {"class": "pt-voo", "data-novo": ui.novo === v.id}, h("button", {type: "button", "class": "pt-voo-b", "data-acao": "focar", "data-id": v.id, "data-k": "voo-" + v.id}, [
+      h("span", {"class": "pt-voo-rota"}, [v.de, ic("vai"), v.para]),
+      h("span", {"class": "pt-voo-hora", text: hm(quando(v))}),
+      h("span", {"class": "pt-voo-sub", text: rotuloVoo(v) + " · " + (meu ? dataCurta(v.dProg) : "buscar " + v.quem)}),
+      h("span", {"class": "pt-voo-st", "data-quente": st.quente, text: st.texto})]));
+  }
+  function linhaPassado(p) {
+    var aberto = ui.passado === p.id, r = rota(p.de, p.para), dia = new Date(hoje0);
+    dia.setDate(dia.getDate() - p.dias);
+    var li = h("li", {"class": "pt-voo", "data-passado": true}, h("button", {type: "button", "class": "pt-voo-b", "data-acao": "passado", "data-id": p.id, "data-k": "pas-" + p.id, "aria-expanded": String(aberto)}, [
+      h("span", {"class": "pt-voo-rota"}, [p.de, ic("vai"), p.para]),
+      h("span", {"class": "pt-voo-hora", text: p.hora}),
+      h("span", {"class": "pt-voo-sub", text: rotuloVoo(p) + " · " + dia.getDate() + " " + MES[dia.getMonth()]}),
+      h("span", {"class": "pt-voo-st", text: p.nota})]));
+    if (aberto) li.appendChild(h("dl", {"class": "pt-voo-mais", "data-entra": ui.entra === "pas-" + p.id}, [fato("No ar", duracao(r[1])), fato("Distância", milhar(r[0]) + " km"), fato("Assento", p.assento), fato("Portão", p.portao),
+      p.aviso ? h("div", {"class": "pt-voo-nota"}, [h("dt", {"class": "pt-so-leitor", text: "Aviso"}), h("dd", {text: p.aviso})]) : null]));
+    return li;
+  }
+  function interruptor(v, onde) {
+    var meu = v.tipo === "meu";
+    var pequeno = meu ? (v.avisar ? v.quem + " recebe o pouso e a esteira" : "Ninguém recebe as mudanças deste voo") : (v.avisar ? "Você recebe o pouso e a esteira" : "Sem avisos para este voo");
+    return h("div", {"class": "pt-grupo"}, h("button", {type: "button", "class": "pt-chave", role: "switch", "aria-checked": String(!!v.avisar), "data-acao": "avisar", "data-id": v.id, "data-k": "chave-" + onde}, [
+      ic("sino", "pt-chave-ic"), h("span", {"class": "pt-chave-texto"}, [meu ? "Avisar quem vai me buscar" : "Me avisar quando " + v.quem + " pousar", h("small", {text: pequeno})]),
+      h("span", {"class": "pt-chave-trilho", "aria-hidden": "true"})]));
+  }
+  function feed(itens, comVoo) {
+    return h("ul", {"class": "pt-grupo"}, itens.map(function (x) {
+      return h("li", {"class": "pt-feed-item", "data-quente": !!x[3]}, [h("span", {"class": "pt-feed-hora", text: hm(x[0])}),
+        h("div", null, [h("p", {"class": "pt-feed-oque", text: x[1]}), h("p", {"class": "pt-feed-porque", text: (comVoo && x[4] ? x[4] + " · " : "") + x[2]})])]);
+    }));
+  }
+  function vazio() {
+    var g = s("svg", {viewBox: "0 0 150 62", "aria-hidden": "true"}, [s("path", {"class": "pt-a-futuro", d: "M12 52Q75 -20 138 52"}), s("circle", {"class": "pt-a-no", cx: 12, cy: 52, r: 4}), s("circle", {"class": "pt-a-no", cx: 138, cy: 52, r: 4})]);
+    return h("div", {"class": "pt-grupo pt-vazio"}, [g, h("strong", {text: "Nenhum voo à vista"}), h("p", {text: "Adicione um voo pelo código e o Portão passa a vigiar o avião que vem fazê-lo."}),
+      h("button", {type: "button", "class": "pt-btn pt-btn-pri", "data-acao": "nova", "data-k": "vazio-nova"}, [ic("mais"), "Adicionar voo"])]);
+  }
+
+  // ── tela 1: meus voos ──
+  function tela1() {
+    var c = limpar($('.pt-tela[data-tela="1"] .pt-centro')), d = limpar($('.pt-tela[data-tela="1"] .pt-direita'));
+    var v = foco(), dia = new Date(agora()), n = voos.length;
+    c.appendChild(cab(SEM[dia.getDay()] + ", " + dia.getDate() + " " + MES[dia.getMonth()] + " · " + (n === 0 ? "nenhum voo à vista" : n === 1 ? "1 voo à vista" : n + " voos à vista"), "Meus voos"));
+    if (v) {
+      c.appendChild(passe(v));
+      var outros = voos.filter(function (x) { return x !== v; });
+      var lista = h("div", null, [outros.length ? h("ul", {"class": "pt-grupo"}, outros.map(linhaVoo)) : null,
+        h("button", {type: "button", "class": "pt-adicionar", "data-acao": "nova", "data-k": "adicionar"}, [ic("mais"), "Adicionar voo pelo código"])]);
+      c.appendChild(sec("Em acompanhamento", lista, outros.length));
+    } else c.appendChild(vazio());
+    c.appendChild(sec("Já voados", h("ul", {"class": "pt-grupo"}, passados.map(linhaPassado)), passados.length));
+    var mudancas = [];
+    voos.forEach(function (x) { x.feed.forEach(function (m) { if (agora() - m[0] < 18 * H) mudancas.push([m[0], m[1], m[2], m[3], x.cia + " " + x.num]); }); });
+    mudancas.sort(function (a, b) { return b[0] - a[0]; });
+    if (v) d.appendChild(h("section", {"class": "pt-sec"}, [h("h2", {"class": "pt-sec-t", text: "Quem fica sabendo"}), interruptor(v, 1)]));
+    if (mudancas.length) d.appendChild(sec("Últimas mudanças", feed(mudancas.slice(0, 5), true), Math.min(5, mudancas.length)));
+    d.appendChild(h("button", {type: "button", "class": "pt-anuncio", "data-acao": "planos", "data-k": "anuncio"}, [h("em", {text: "Portão Antecipado"}), h("b", {text: "7 dias grátis, depois R$ 14,90 por mês"}), ic("seta"), h("small", {text: "O aviso de atraso chega antes do painel do aeroporto."})]));
+  }
+
+  // ── tela 2: voo ao vivo ──
+  // o céu: até três trechos no mesmo desenho (o avião que vem, o seu voo, a conexão) e o avião onde o relógio manda
+  function fatosVivos(v, t) {
+    var f = fase(v, t), d = prev(v, "dProg"), a = prev(v, "aProg");
+    if (f.nome === "longe") { var n = diasAte(d), antes = diasAte(d - 24 * H); return [["Faltam", n === 1 ? "1 dia" : n + " dias"], ["Decola às", hm(d)], [antes > 1 ? "Ao vivo em" : "Ao vivo", antes < 1 ? "hoje" : antes === 1 ? "amanhã" : antes + " dias"]]; }
+    if (f.nome === "vindo") return [["Seu avião", "a " + Math.max(1, Math.round(rota(v.vindo.de, v.de)[0] * (1 - f.frac))) + " km"], ["Pousa em", falta(v.vindo.pousa - t)], ["Decola às", hm(d), v.atraso > 0]];
+    if (f.nome === "solo") return [["Seu avião", v.vindo ? "em solo" : "a definir"], ["Embarque", hm(prev(v, "eProg"))], ["Decola em", falta(d - t), v.atraso > 0]];
+    if (f.nome === "voo") return [["Faltam", milhar(Math.max(1, rota(v.de, v.para)[0] * (1 - f.frac))) + " km"], ["Pousa em", falta(a - t)], ["Esteira", v.esteira || "a definir"]];
+    return [["Pousou", hm(a)], ["Esteira", v.esteira || "a definir"], ["Malas", "12 min"]];
+  }
+  var NOME_FASE = {longe: "ainda longe", vindo: "avião a caminho", solo: "avião em solo", voo: "no ar", chegou: "pousou"};
+  function ceu(v) {
+    var t0 = agora(), Y = 98, x = 22, larg = 296, partes = [], seu = null, vindo = null, ultimo = null;
+    if (v.vindo) partes.push({tipo: "vindo", peso: .22});
+    partes.push({tipo: "seu", peso: 1 - (v.vindo ? .22 : 0) - (v.conexao ? .22 : 0)});
+    if (v.conexao) partes.push({tipo: "conexao", peso: .22});
+    if (partes.length === 1) { x = 46; larg = 248; }
+    var g = s("svg", {"class": "pt-arco", viewBox: "0 0 340 150", role: "img", "aria-label": "Arco da rota de " + AERO[v.de].cidade + " para " + AERO[v.para].cidade + ", com a posição do avião"});
+    g.appendChild(s("path", {"class": "pt-a-chao", d: "M10 " + Y + "H330"}));
+    partes.forEach(function (p) {
+      p.arco = arcoDe(x, x + larg * p.peso, Y, 76); x += larg * p.peso; ultimo = p;
+      if (p.tipo === "seu") seu = p; else if (p.tipo === "vindo") vindo = p;
+      g.appendChild(s("path", {"class": "pt-a-futuro", d: curva(p.arco, 1)}));
+    });
+    var feito = s("path", {"class": "pt-a-feito", d: "M0 0"}), vivo = s("path", {"class": "pt-a-vivo", d: "M0 0"});
+    g.appendChild(feito); g.appendChild(vivo);
+    function no(px, cod, menor, hora) {
+      g.appendChild(s("circle", {"class": "pt-a-no", "data-menor": menor, cx: f1(px), cy: Y, r: menor ? 3 : 4.5}));
+      g.appendChild(s("text", {"class": "pt-a-iata", "data-menor": menor, x: f1(px), y: Y + (menor ? 19 : 27)}, cod));
+      if (hora) g.appendChild(s("text", {"class": "pt-a-hora", "data-quente": v.atraso > 0 && fase(v, t0).nome !== "chegou", x: f1(px), y: Y + 43}, hora));
+    }
+    if (vindo) no(vindo.arco[0][0], v.vindo.de, true);
+    no(seu.arco[0][0], v.de, false, hm(prev(v, "dProg")));
+    no(seu.arco[2][0], v.para, false, hm(prev(v, "aProg")));
+    if (v.conexao) no(ultimo.arco[2][0], v.conexao.para, true);
+    var aviao = s("path", {"class": "pt-a-aviao", d: AVIAO}), halo = s("circle", {"class": "pt-a-halo", r: 11}), grupo = s("g", null, [halo, aviao]);
+    g.appendChild(grupo);
+    var celulas = [0, 1, 2].map(function () { var dt = h("dt", {"class": "pt-rotulo"}), dd = h("dd"); return {caixa: h("div", {"class": "pt-ceu-fato"}, [dt, dd]), dt: dt, dd: dd}; });
+    vivos.push(function (t) {
+      var f = fase(v, t), p = seu, frac = 0, voando = f.nome === "vindo" || f.nome === "voo", pronto = "";
+      if (f.nome === "vindo") { p = vindo; frac = f.frac; } else if (f.nome === "voo") frac = f.frac; else if (f.nome === "chegou") frac = 1;
+      if (vindo && f.nome !== "vindo" && f.nome !== "longe") pronto = curva(vindo.arco, 1);
+      if (f.nome === "chegou") pronto += curva(seu.arco, 1);
+      feito.setAttribute("d", pronto || "M0 0");
+      vivo.setAttribute("d", voando && frac > .004 ? curva(p.arco, frac) : "M0 0");
+      pousarAviao(grupo, p.arco, frac, voando);
+      aviao.toggleAttribute("data-parado", !voando);
+      halo.style.display = voando ? "" : "none";
+      grupo.style.display = f.nome === "longe" ? "none" : "";
+      fatosVivos(v, t).forEach(function (x, i) {
+        if (celulas[i].dt.textContent !== x[0]) celulas[i].dt.textContent = x[0];
+        if (celulas[i].dd.textContent !== x[1]) celulas[i].dd.textContent = x[1];
+        celulas[i].caixa.toggleAttribute("data-quente", !!x[2]);
+      });
+    });
+    return h("section", {"class": "pt-ceu", "data-entra": ui.entra === "foco", "aria-label": "O voo agora"}, [
+      h("div", {"class": "pt-ceu-topo"}, [h("span", {"class": "pt-rotulo", text: v.cia + " " + v.num + " · " + CIAS[v.cia]}), h("span", {"class": "pt-rotulo", text: fase(v, t0).nome === "solo" && !v.vindo ? "no horário" : NOME_FASE[fase(v, t0).nome]})]),
+      g, h("dl", {"class": "pt-ceu-fatos"}, celulas.map(function (x) { return x.caixa; })),
+      h("p", {"class": "pt-ceu-nota", text: MADRUGADA ? "Simulação: de madrugada, o Portão mostra a manhã que vem. Posições e horários seguem o relógio do app." : "Simulação: posições e horários calculados pelo relógio deste aparelho."})]);
+  }
+  function dupla(rot, val, quente) { return h("div", {"class": "pt-dupla-n", "data-quente": !!quente}, [h("dt", {"class": "pt-rotulo", text: rot}), h("dd", {text: val})]); }
+  function alerta(v) {
+    var f = fase(v, agora()), d = prev(v, "dProg"), a = prev(v, "aProg");
+    if (v.tipo === "meu" && v.atraso > 0 && v.vindo && f.nome !== "chegou" && f.nome !== "longe") {
+      var noAr = f.nome === "voo", pousou = f.nome === "solo";
+      return h("section", {"class": "pt-cartao", "data-quente": true}, [
+        h("h3", {"class": "pt-cartao-t"}, [ic("antes"), noAr ? "No ar, com " + v.atraso + " min de atraso" : "Atraso previsto: +" + v.atraso + " min"]),
+        h("p", {"class": "pt-cartao-p", text: noAr ? "Decolou de " + AERO[v.de].cidade + " às " + hm(d) + ", " + v.atraso + " min depois do programado. O pouso em " + AERO[v.para].cidade + " deve ser às " + hm(a) + "."
+          : "O avião que fará o seu voo (" + v.vindo.num + ") saiu atrasado de " + AERO[v.vindo.de].cidade + " e " + (pousou ? "pousou" : "pousa") + " em " + AERO[v.de].cidade + " às " + hm(v.vindo.pousa) + ". Com " + v.vindo.solo + " min de solo, a decolagem passa para as " + hm(d) + "."}),
+        h("dl", {"class": "pt-dupla"}, noAr ? [dupla("Pouso no painel", hm(v.aProg)), dupla("O Portão prevê", hm(a), true)] : [dupla("Painel do aeroporto", hm(v.dProg)), dupla("O Portão prevê", hm(d), true)])]);
+    }
+    var titulo = "No horário", texto = v.vindo ? "O avião do seu voo já está em solo e nada mudou até agora." : "Nada mudou até agora. O avião do seu voo aparece aqui umas 3 horas antes da decolagem.", icone = "check";
+    if (f.nome === "chegou") { icone = "mala"; titulo = "Pousou às " + hm(a); texto = v.esteira ? "As malas saem na esteira " + v.esteira + ", uns 12 min depois do pouso." : "A esteira ainda não saiu."; }
+    else if (f.nome === "longe") { titulo = "Ainda longe"; icone = "antes"; texto = "O acompanhamento ao vivo começa 24 horas antes da decolagem. Até lá, o Portão só avisa se o horário mudar."; }
+    else if (v.tipo === "buscar") {
+      titulo = v.atraso < 0 ? "Adiantado " + (-v.atraso) + " min" : "No horário";
+      texto = v.quem + " decolou de " + AERO[v.de].cidade + " às " + hm(d) + ". O pouso está previsto para as " + hm(a) + "; o programado era " + hm(v.aProg) + ".";
+    }
+    return h("section", {"class": "pt-cartao"}, [h("h3", {"class": "pt-cartao-t"}, [ic(icone), titulo]), h("p", {"class": "pt-cartao-p", text: texto})]);
+  }
+  function conexao(v) {
+    var c = v.conexao, t = agora(), sobra = Math.round((c.parte - prev(v, "aProg")) / M), risco = sobra < c.minimo, pousou = t >= prev(v, "aProg"), partiu = t >= c.parte;
+    var texto = partiu ? (risco ? "O " + c.num + " das " + hm(c.parte) + " saiu sem você: sobraram " + sobra + " min, e o mínimo ali é " + c.minimo + " min. Siga no " + c.alt.num + " das " + hm(c.alt.parte) + "." : "Você seguiu no " + c.num + " das " + hm(c.parte) + ".")
+      : (pousou ? "Sobraram " : "Com o atraso previsto sobram ") + sobra + " min em " + AERO[v.para].cidade + " para pegar o " + c.num + " das " + hm(c.parte) + ". Para trocar de avião ali, o mínimo é " + c.minimo + " min.";
+    return h("section", {"class": "pt-cartao", "data-quente": risco}, [
+      h("h3", {"class": "pt-cartao-t"}, [ic("troca"), partiu ? (risco ? "Conexão perdida" : "Conexão feita") : risco ? "Conexão em risco" : "Conexão tranquila", h("span", {"class": "pt-mono", text: v.para + " → " + c.para})]),
+      h("p", {"class": "pt-cartao-p", text: texto}),
+      h("div", {"class": "pt-alt"}, [
+        h("p", {"class": "pt-alt-texto"}, [h("b", {text: c.alt.num + " · " + hm(c.alt.parte)}), c.guardada ? "Guardada: o Portão avisa se precisar trocar" : "Alternativa com " + c.alt.lugares + " lugares"]),
+        h("button", {type: "button", "class": "pt-btn pt-btn-sec", "data-acao": "guardar", "data-id": v.id, "data-k": "guardar", "aria-pressed": String(!!c.guardada)}, c.guardada ? [ic("check"), "Guardada"] : "Guardar")])]);
+  }
+  function tempo(v) {
+    var hora = new Date(prev(v, "aProg")).getHours(), ceu = hora >= 6 && hora < 18 ? "sol" : "lua";   // céu limpo de noite não leva sol
+    return h("p", {"class": "pt-tempo"}, v.tempo ? [ic(v.tempo[0] || ceu), v.tempo[1]] : [ic("sol"), prev(v, "dProg") - agora() > 2 * DIA ? "O tempo no destino aparece dois dias antes do voo." : "A previsão do destino ainda não chegou para este voo."]);
+  }
+  function textoDaEtapa(v, i, longe) {
+    var e = prev(v, "eProg"), d = prev(v, "dProg"), a = prev(v, "aProg"), busca = v.tipo === "buscar", de = AERO[v.de].cidade, para = AERO[v.para].cidade;
+    if (i === 0 && v.adicionado) return agora() >= v.checkin ? "O check-in já está aberto na companhia. Quando estiver feito, o assento confirmado aparece aqui." : "O check-in abre 48 horas antes do voo. O Portão lembra você na hora.";
+    if (i === 0) return longe ? "O check-in abre 48 horas antes do voo. O Portão lembra você na hora." : busca ? v.quem + " fez o check-in em " + de + " às " + hm(v.checkin) + "." : "Feito pelo app às " + hm(v.checkin) + ". Assento " + v.assento + ", uma mala despachada.";
+    if (i === 1) {
+      if (longe) return "O portão costuma sair duas horas antes. Quando sair, ele aparece aqui e no cartão de embarque.";
+      if (busca) return "Embarcou em " + de + " pelo portão " + v.portao + ".";
+      return "Portão " + v.portao + (v.portaoEra ? ", que era o " + v.portaoEra + " até pouco tempo atrás" : "") + ". " + (v.atraso > 0 ? "A companhia ainda chama para as " + hm(v.eProg) + "; pela previsão, o embarque começa às " + hm(e) + "." : "O embarque fecha 15 min antes da decolagem.");
+    }
+    if (i === 2) {
+      if (busca) return "Decolou de " + de + " às " + hm(d) + (v.atraso < 0 ? ", " + (-v.atraso) + " min antes do horário." : ".");
+      if (v.atraso > 0 && v.vindo) return "Programada para as " + hm(v.dProg) + ". O avião do seu voo pousa às " + hm(v.vindo.pousa) + " e precisa de " + v.vindo.solo + " min de solo: a decolagem deve ser às " + hm(d) + ".";
+      return "Programada para as " + hm(v.dProg) + ", de " + de + ". Voo direto de " + duracao(rota(v.de, v.para)[1]) + ".";
+    }
+    if (i === 3) return v.atraso !== 0 && !longe ? "Previsto para as " + hm(a) + " em " + para + "; o programado era " + hm(v.aProg) + "." : "Programado para as " + hm(v.aProg) + " em " + para + ".";
+    return v.esteira ? "Esteira " + v.esteira + ". As malas costumam sair 12 min depois do pouso." : "A esteira sai perto do pouso. Quando sair, ela aparece aqui.";
+  }
+  function etapas(v) {
+    var t = agora(), longe = fase(v, t).nome === "longe", a = prev(v, "aProg"), achou = false;
+    var lista = [
+      ["Check-in", v.adicionado ? (t >= v.checkin ? "Aberto na companhia" : "Abre " + dataCurta(v.checkin)) : longe ? "Abre " + dataCurta(v.checkin) : "Feito", null, v.checkin],
+      ["Embarque", v.portao ? "Portão " + v.portao + (v.grupo ? " · grupo " + v.grupo : "") : "Portão a definir", v.eProg, prev(v, "eProg")],
+      ["Decolagem", AERO[v.de].cidade, v.dProg, prev(v, "dProg")],
+      ["Pouso", AERO[v.para].cidade, v.aProg, a],
+      ["Esteira", v.esteira ? "Esteira " + v.esteira : "A definir", null, a + 12 * M]
+    ];
+    return h("ol", {"class": "pt-grupo"}, lista.map(function (x, i) {
+      var feita = t >= x[3] && !(i === 0 && v.adicionado), fs = feita ? "feita" : (!longe && !achou ? "agora" : "depois"), aberta = ui.etapa === i;   // voo adicionado agora não tem check-in feito
+      if (fs === "agora") achou = true;
+      var hora = x[2] && v.atraso && !longe ? [h("s", {text: hm(x[2])}), h("b", {text: hm(x[3])})] : h("b", {text: hm(x[3])});
+      var li = h("li", {"class": "pt-etapa", "data-fase": fs}, h("button", {type: "button", "class": "pt-etapa-b", "data-acao": "etapa", "data-i": i, "data-k": "etapa-" + i, "aria-expanded": String(aberta)}, [
+        h("span", {"class": "pt-etapa-marco", "aria-hidden": "true"}),
+        h("span", {"class": "pt-etapa-nome"}, [x[0], h("span", {"class": "pt-so-leitor", text: fs === "feita" ? " (feita)" : fs === "agora" ? " (a próxima)" : ""}), h("small", {text: x[1]})]),
+        h("span", {"class": "pt-etapa-hora", "data-quente": v.atraso > 0 && !!x[2] && !feita && !longe}, hora),
+        ic("baixo", "pt-etapa-seta")]));
+      if (aberta) li.appendChild(h("p", {"class": "pt-etapa-mais", "data-entra": ui.entra === "etapa-" + i, text: textoDaEtapa(v, i, longe)}));
+      return li;
+    }));
+  }
+  function seletor() {
+    return h("div", {"class": "pt-troca", role: "group", "aria-label": "Voo em foco"}, voos.map(function (v) {
+      return h("button", {type: "button", "class": "pt-troca-b", "data-acao": "focar", "data-id": v.id, "data-k": "troca-" + v.id, "aria-pressed": String(v.id === ui.foco)},
+        [h("b", {text: v.de + " → " + v.para}), h("small", {text: v.tipo === "meu" ? v.cia + " " + v.num + " · " + dataCurta(v.dProg) : "buscar " + v.quem})]);
+    }));
+  }
+  function tela2() {
+    var c = limpar($('.pt-tela[data-tela="2"] .pt-centro')), d = limpar($('.pt-tela[data-tela="2"] .pt-direita')), v = foco();
+    c.appendChild(cab(v ? (v.tipo === "meu" ? "Seu voo" : "Buscar " + v.quem) + " · " + AERO[v.de].cidade + " → " + AERO[v.para].cidade : "Nada em acompanhamento", "Voo ao vivo"));
+    if (!v) { c.appendChild(vazio()); return; }
+    if (voos.length > 1) c.appendChild(seletor());
+    c.appendChild(ceu(v));
+    c.appendChild(alerta(v));
+    if (v.conexao) c.appendChild(conexao(v));
+    c.appendChild(tempo(v));
+    d.appendChild(sec("Linha do tempo", etapas(v)));
+    d.appendChild(h("section", {"class": "pt-sec"}, [h("h2", {"class": "pt-sec-t", text: "Quem fica sabendo"}), interruptor(v, 2)]));
+    if (v.feed.length) d.appendChild(sec("O que mudou", feed(v.feed), v.feed.length));
+    d.appendChild(h("button", {type: "button", "class": "pt-parar", "data-acao": "parar", "data-id": v.id, "data-k": "parar", text: "Parar de acompanhar este voo"}));
+  }
+
+  // ── tela 3: passaporte ──
+  function resumoAno(i) {
+    var a = ANOS[i], r = {n: 0, km: 0, min: 0, visitas: {}, topo: null, voos: a.voos, nota: a.nota, ano: ANO0 - i};
+    a.voos.forEach(function (x) {
+      var par = rota(x[0], x[1]);
+      r.n += x[2]; r.km += x[2] * par[0]; r.min += x[2] * par[1];
+      r.visitas[x[0]] = (r.visitas[x[0]] || 0) + x[2]; r.visitas[x[1]] = (r.visitas[x[1]] || 0) + x[2];
+      if (!r.topo || x[2] > r.topo[2]) r.topo = x;
+    });
+    r.horas = Math.round(r.min / 60); r.aer = Object.keys(r.visitas).length;
+    return r;
+  }
+  function carta(r) {
+    var cods = Object.keys(r.visitas), x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    cods.forEach(function (c) { var a = AERO[c]; x0 = Math.min(x0, a.x); x1 = Math.max(x1, a.x); y0 = Math.min(y0, a.y); y1 = Math.max(y1, a.y); });
+    // o enquadramento acompanha os aeroportos do ano; traços, nós e letras são divididos pelo zoom para não engordarem
+    var larg = Math.max(150, (x1 - x0) / .72, (y1 - y0) / .72 * 340 / 292), alt = larg * 292 / 340, k = 340 / larg;
+    var g = s("svg", {viewBox: f1((x0 + x1) / 2 - larg / 2) + " " + f1((y0 + y1) / 2 - alt / 2) + " " + f1(larg) + " " + f1(alt), role: "img", "aria-label": "Carta das rotas voadas em " + r.ano});
+    r.voos.forEach(function (x) {
+      var a = AERO[x[0]], b = AERO[x[1]], dx = b.x - a.x, dy = b.y - a.y, len = Math.sqrt(dx * dx + dy * dy) || 1, desvio = len * .24, nx = dy / len, ny = -dx / len;
+      if (ny > 0) { nx = -nx; ny = -ny; }
+      g.appendChild(s("path", {"class": "pt-r-arco", "data-quente": x === r.topo, "stroke-width": Math.round((1.1 + x[2] * .26) / k * 100) / 100,
+        d: "M" + a.x + " " + a.y + "Q" + f1((a.x + b.x) / 2 + nx * desvio) + " " + f1((a.y + b.y) / 2 + ny * desvio) + " " + b.x + " " + b.y}));
+    });
+    cods.forEach(function (cod) {
+      var a = AERO[cod];
+      g.appendChild(s("circle", {"class": "pt-r-no", "data-base": cod === BASE, cx: a.x, cy: a.y, r: f1((cod === BASE ? 5 : 4) / k), "stroke-width": Math.round(150 / k) / 100}));
+      g.appendChild(s("text", {"class": "pt-r-iata", x: f1(a.x + a.rx / k), y: f1(a.y + a.ry / k), "text-anchor": a.anc, style: "font-size:" + Math.round(1150 / k) / 100 + "px"}, cod));
+    });
+    return g;
+  }
+  function tela3() {
+    var c = limpar($('.pt-tela[data-tela="3"] .pt-centro')), d = limpar($('.pt-tela[data-tela="3"] .pt-direita'));
+    var r = resumoAno(ui.ano), antes = ui.ano + 1 < ANOS.length ? resumoAno(ui.ano + 1) : null, entra = ui.entra === "ano";
+    c.appendChild(cab(DONO + " · base " + BASE, "Passaporte"));
+    c.appendChild(h("div", {"class": "pt-seg", role: "group", "aria-label": "Ano"}, ANOS.map(function (_, i) {
+      return h("button", {type: "button", "class": "pt-seg-b", "data-acao": "ano", "data-n": i, "data-k": "ano-" + i, "aria-pressed": String(ui.ano === i), text: String(ANO0 - i)});
+    })));
+    var frase = !antes ? "O primeiro ano inteiro com o Portão." : r.n > antes.n ? (r.n - antes.n) + " a mais que em " + antes.ano + (ui.ano === 0 ? ", e o ano ainda não acabou." : ".") : (antes.n - r.n) + " a menos que em " + antes.ano + ".";
+    c.appendChild(h("section", {"class": "pt-ano", "data-entra": entra, "aria-label": "O ano em números"}, [
+      h("p", {"class": "pt-rotulo", text: "Voos em " + r.ano + ", " + r.nota}),
+      h("p", {"class": "pt-ano-grande"}, [h("b", {text: String(r.n)}), h("span", {text: "voos"})]),
+      h("p", {"class": "pt-ano-frase", text: frase}),
+      h("dl", {"class": "pt-trio"}, [["Quilômetros", milhar(r.km)], ["Horas no ar", String(r.horas)], ["Aeroportos", String(r.aer)]].map(function (x) {
+        return h("div", {"class": "pt-trio-n"}, [h("dt", {"class": "pt-rotulo", text: x[0]}), h("dd", {text: x[1]})]);
+      }))]));
+    c.appendChild(h("section", {"class": "pt-carta", "aria-label": "Carta de rotas"}, [
+      h("div", {"class": "pt-carta-topo"}, [h("span", {"class": "pt-rotulo", text: "Carta de rotas"}), h("span", {"class": "pt-rotulo", text: r.voos.length + " rotas"})]),
+      carta(r),
+      h("p", {"class": "pt-carta-nota"}, ["A rota mais voada: ", h("b", {text: r.topo[0] + " ⇄ " + r.topo[1]}), ", " + r.topo[2] + " vezes. Esquema das suas rotas, sem escala."])]));
+    var enfeite = s("svg", {"class": "pt-selo-arcos", viewBox: "0 0 190 120", "aria-hidden": "true"}, [
+      s("path", {d: "M6 112Q70 -30 184 60", fill: "none", stroke: "#e8edf7", "stroke-width": 1.2, "stroke-dasharray": ".1 5", "stroke-linecap": "round"}),
+      s("path", {d: "M40 116Q110 10 186 96", fill: "none", stroke: "#ffbb3d", "stroke-width": 1.6, "stroke-linecap": "round"}),
+      s("circle", {cx: 186, cy: 96, r: 3.4, fill: "#ffbb3d"})]);
+    d.appendChild(h("section", {"class": "pt-selo", "data-entra": entra, "aria-label": "Cartão do ano"}, [enfeite,
+      h("p", {"class": "pt-rotulo", text: "Passaporte · " + r.ano}),
+      h("p", {"class": "pt-selo-nome", text: DONO}),
+      h("p", {"class": "pt-selo-num", text: milhar(r.km) + " km"}),
+      h("p", {"class": "pt-selo-frase", text: r.n + " voos, " + r.horas + " horas no ar e " + r.aer + " aeroportos. Dá " + Math.round(r.km / 40075 * 100) + "% de uma volta na Terra."}),
+      h("div", {"class": "pt-selo-pe"}, [h("span", {"class": "pt-rotulo", text: "Base " + BASE}), h("span", {"class": "pt-rotulo", text: "Portão"})])]));
+    d.appendChild(h("button", {type: "button", "class": "pt-btn pt-btn-pri pt-btn-largo", "data-acao": "compartilhar", "data-k": "compartilhar"}, [ic("enviar"), "Compartilhar o cartão"]));
+    var podio = Object.keys(r.visitas).map(function (cod) { return [cod, r.visitas[cod]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 5);
+    d.appendChild(sec("Aeroportos mais visitados", h("ul", {"class": "pt-grupo"}, podio.map(function (x, i) {
+      return h("li", {"class": "pt-pod", "data-quente": i === 0}, [h("span", {"class": "pt-pod-iata", text: x[0]}),
+        h("span", {"class": "pt-pod-barra", "aria-hidden": "true"}, h("i", {style: "width:" + Math.round(x[1] / podio[0][1] * 100) + "%"})),
+        h("span", {"class": "pt-pod-n", text: x[1] + (x[1] === 1 ? " passagem" : " passagens")})]);
+    }))));
+  }
+
+  // ── navegação: a doca do celular e a coluna lateral da tela ampla ──
+  var ABAS = [[1, "voos", "Meus voos", "Voos"], [2, "vivo", "Voo ao vivo", "Ao vivo"], [3, "passaporte", "Passaporte", "Passaporte"]];
+  function navegacao() {
+    var nav = limpar($(".pt-nav")), doca = limpar($(".pt-doca")), lista = limpar($(".pt-lado-voos")), t = agora();
+    ABAS.forEach(function (a) {
+      var atual = ui.tela === a[0] ? "page" : null;
+      nav.appendChild(h("button", {type: "button", "class": "pt-nav-b", "data-acao": "aba", "data-n": a[0], "data-k": "nav-" + a[0], "aria-current": atual}, [ic(a[1]), a[2]]));
+      doca.appendChild(h("button", {type: "button", "class": "pt-aba", "data-acao": "aba", "data-n": a[0], "data-k": "aba-" + a[0], "aria-current": atual}, [ic(a[1]), a[3]]));
+    });
+    voos.forEach(function (v) {
+      var st = situacao(v, t, true), longe = fase(v, t).nome === "longe";
+      lista.appendChild(h("button", {type: "button", "class": "pt-mini", "data-acao": "focar", "data-id": v.id, "data-k": "mini-" + v.id, "aria-current": v.id === ui.foco ? "true" : null}, [
+        h("span", {"class": "pt-mini-rota", text: v.de + " → " + v.para}), h("span", {"class": "pt-mini-hora", text: hm(quando(v))}),
+        h("span", {"class": "pt-mini-sub", "data-quente": st.quente, text: (v.tipo !== "meu" ? v.quem + " · " : longe ? dataCurta(v.dProg) + " · " : "") + st.texto})]));
+    });
+    if (!voos.length) lista.appendChild(h("p", {"class": "pt-mini-sub", style: "padding:4px 10px 8px", text: "Nenhum voo por enquanto."}));
+  }
+  // no celular, o voo em foco fica sempre à vista na fila de pílulas do "ao vivo"
+  function mostrarPilula() {
+    var p = $('.pt-troca-b[aria-pressed="true"]');
+    if (p && p.offsetParent) p.parentNode.scrollLeft = Math.max(0, p.offsetLeft - p.parentNode.offsetLeft - 56);
+  }
+  var relogios = todos("[data-relogio]");
+  function tique(soPintar) {
+    var t = agora(), d = new Date(t), txt = hm(t) + ":" + d2(d.getSeconds());
+    if (soPintar !== true && t >= marco) { desenhar(); return; }
+    relogios.forEach(function (r) { r.textContent = txt; });
+    vivos.forEach(function (f) { f(t); });
+  }
+  function desenhar() {
+    var ativo = document.activeElement, k = ativo && ativo.getAttribute && app.contains(ativo) ? ativo.getAttribute("data-k") : null;
+    if (!porId(ui.foco)) ui.foco = voos[0] ? voos[0].id : null;
+    // esvaziar uma lista zera a rolagem dela: guarda a posição de cada uma e devolve depois de redesenhar
+    var rolos = todos(".pt-tela,.pt-centro,.pt-direita").map(function (n) { return [n, n.scrollTop]; });
+    vivos = [];
+    navegacao(); tela1(); tela2(); tela3();
+    rolos.forEach(function (x) { if (x[1]) x[0].scrollTop = x[1]; });
+    mostrarPilula();
+    ui.entra = null; ui.novo = null;
+    marco = proximoMarco(agora());
+    tique(true);
+    if (k) {
+      var igual = todos('[data-k="' + k + '"]').filter(function (n) { return n.offsetParent; })[0];
+      if (igual) igual.focus({preventScroll: true});
+    }
+  }
+  // o relógio: um quadro de animação por vez, que só trabalha quando o segundo vira e para sozinho com a página escondida
+  var ultimoSegundo = -1;
+  function laco() {
+    var seg = Math.floor(agora() / 1000);
+    if (seg !== ultimoSegundo) { ultimoSegundo = seg; tique(); }
+    requestAnimationFrame(laco);
+  }
+
+  // ── avisos com desfazer ──
+  function avisar(texto, desfazer) {
+    var a = $(".pt-aviso");
+    $(".pt-aviso-texto").textContent = texto;
+    $(".pt-aviso-b").hidden = !desfazer;
+    ui.desfazer = desfazer || null;
+    a.setAttribute("data-visivel", "");
+    clearTimeout(ui.relogioAviso);
+    ui.relogioAviso = setTimeout(function () { a.removeAttribute("data-visivel"); ui.desfazer = null; }, 5200);
+  }
+
+  // ── ações ──
+  function subir() { todos(".pt-tela,.pt-centro,.pt-direita").forEach(function (x) { x.scrollTop = 0; }); $(".pt-palco").removeAttribute("data-rolado"); }
+  function focar(id) {
+    if (!porId(id)) return;
+    var mesmo = ui.foco === id;
+    ui.foco = id; ui.etapa = null;
+    if (!mesmo) { ui.entra = "foco"; desenhar(); }
+    if (ui.tela === 3) irPara(2); else if (!mesmo) subir();
+  }
+  function alternarAviso(id) {
+    var v = porId(id);
+    if (!v) return;
+    v.avisar = !v.avisar;
+    desenhar();
+    avisar(!v.avisar ? "Avisos deste voo desligados" : v.tipo === "meu" ? v.quem + " recebe os avisos deste voo" : "Você recebe o aviso do pouso", function () { v.avisar = !v.avisar; desenhar(); });
+  }
+  function guardar(id) {
+    var v = porId(id);
+    if (!v || !v.conexao) return;
+    v.conexao.guardada = !v.conexao.guardada;
+    desenhar();
+    avisar(v.conexao.guardada ? "Alternativa guardada: " + v.conexao.alt.num : "Alternativa liberada", function () { v.conexao.guardada = !v.conexao.guardada; desenhar(); });
+  }
+  function parar(id) {
+    var v = porId(id), i = voos.indexOf(v), antes = ui.foco;
+    if (!v) return;
+    voos.splice(i, 1);
+    ui.etapa = null; ui.entra = "foco";
+    desenhar(); subir();
+    avisar(v.cia + " " + v.num + " saiu dos seus voos", function () { voos.splice(i, 0, v); ui.foco = antes; ui.entra = "foco"; desenhar(); });
+  }
+
+  // ── adicionar voo pelo código: a maquete reconhece as três companhias fictícias e monta um voo plausível ──
+  function reconhecer(texto, dia) {
+    var limpo = String(texto).toUpperCase().replace(/[\s.\-]/g, ""), m = /^([A-Z]{2})(\d{3,4})$/.exec(limpo);
+    if (!limpo) return {dica: "Digite a companhia e o número, como estão no cartão de embarque. Esta maquete conhece três companhias fictícias: ZC, QA e XV."};
+    if (!m) return {dica: /^[A-Z]{1,2}\d{0,2}$/.test(limpo) ? "Continue: duas letras da companhia e três ou quatro números." : "O código tem duas letras e três ou quatro números, como ZC 1533."};
+    if (!CIAS[m[1]]) return {dica: "Não conheço a companhia " + m[1] + ". Nesta maquete voam a Cerrado (ZC), a Quartzo (QA) e a Vésper (XV)."};
+    var n = +m[2], par = CATALOGO[(n + m[1].charCodeAt(0)) % CATALOGO.length], parte = noDia(dia, 6 + (n * 7) % 16, [0, 10, 25, 40, 55][n % 5]);
+    if (parte < agora() + 90 * M) parte = Math.ceil((agora() + 3 * H) / (5 * M)) * 5 * M;
+    if (voos.some(function (v) { return v.cia === m[1] && v.num === m[2] && diasAte(v.dProg) === diasAte(parte); })) return {dica: "O " + m[1] + " " + m[2] + " deste dia já está nos seus voos."};
+    return {voo: {tipo: "meu", adicionado: true, cia: m[1], num: m[2], de: par[0], para: par[1], checkin: parte - 48 * H, eProg: parte - 30 * M, dProg: parte, aProg: parte + rota(par[0], par[1])[1] * M,
+      portao: "", assento: (3 + n % 27) + "ABCDEF".charAt(n % 6), grupo: "ABC".charAt(n % 3), esteira: "", quem: "Caio", avisar: false, tempo: null}};
+  }
+  function mostrarAchado() {
+    var r = reconhecer($("#pt-codigo").value, ui.dia), alvo = limpar($(".pt-achado")), v = r.voo;
+    if (v) alvo.appendChild(h("div", {"class": "pt-achado-cartao"}, [
+      h("p", {"class": "pt-rotulo", text: "Achei · " + rotuloVoo(v)}),
+      h("p", {"class": "pt-achado-rota"}, [v.de, ic("vai"), v.para, h("small", {text: hm(v.dProg) + " – " + hm(v.aProg)})]),
+      h("p", {"class": "pt-achado-sub", text: AERO[v.de].cidade + " para " + AERO[v.para].cidade + ", " + dataCurta(v.dProg) + " · " + duracao(rota(v.de, v.para)[1]) + " de voo"})]));
+    else alvo.appendChild(h("p", {"class": "pt-achado-dica", text: r.dica}));
+    $('[data-acao="incluir"]').disabled = !v;
+    return r;
+  }
+  function montarFolhaVoo() {
+    var dias = limpar($(".pt-dias")), sug = limpar($(".pt-sugestoes")), n, d;
+    for (n = 0; n < 5; n++) {
+      d = new Date(hoje0); d.setDate(d.getDate() + n);
+      dias.appendChild(h("button", {type: "button", "class": "pt-dia", role: "radio", "aria-checked": String(ui.dia === n), "data-acao": "dia", "data-n": n}, [n === 0 ? "hoje" : n === 1 ? "amanhã" : SEM[d.getDay()], h("b", {text: String(d.getDate())})]));
+    }
+    sug.appendChild(document.createTextNode("Para testar:"));
+    ["ZC 1533", "QA 2240", "XV 3120"].forEach(function (x) { sug.appendChild(h("button", {type: "button", "class": "pt-sug", "data-acao": "sugestao", text: x})); });
+  }
+  function incluir() {
+    var r = mostrarAchado(), antes = ui.foco;
+    if (!r.voo) { $("#pt-codigo").focus(); return; }
+    var v = V(r.voo);
+    v.feed = [[agora(), "Voo adicionado", "O Portão passa a vigiar este voo."]];
+    voos.push(v); ordenar();
+    $("#pt-codigo").value = "";
+    fecharFolha();
+    if (!antes) ui.foco = v.id;
+    ui.novo = v.id;
+    if (ui.tela !== 1) irPara(1);
+    desenhar();
+    var linha = $('.pt-tela[data-tela="1"] [data-k="voo-' + v.id + '"]');
+    if (linha && linha.scrollIntoView) linha.scrollIntoView({block: "center", behavior: calmo ? "auto" : "smooth"});
+    avisar(v.cia + " " + v.num + " entrou nos seus voos", function () { voos.splice(voos.indexOf(v), 1); ui.foco = antes; desenhar(); });
+  }
+  function escolherPlano(qual) {
+    ui.plano = qual;
+    todos(".pt-opcao").forEach(function (b) { b.setAttribute("aria-checked", String(b.getAttribute("data-plano") === qual)); });
+    $('[data-acao="assinar"]').textContent = qual === "passe" ? "Comprar o passe por R$ 9,90" : "Começar 7 dias grátis";
+  }
+
+  // ── folhas ──
+  function largo() { return app.clientWidth >= 720; }
+  function abrirFolha(qual) {
+    ui.ultimaFolha = document.activeElement;
+    $(".pt-aviso").removeAttribute("data-visivel"); ui.desfazer = null;
+    app.setAttribute("data-folha", qual);
+    todos(".pt-lado,.pt-palco").forEach(function (n) { n.inert = true; });
+    if (qual === "voo") mostrarAchado();
+    var alvo = qual === "voo" ? $("#pt-codigo") : $('.pt-folha[data-folha="planos"] .pt-fechar');
+    setTimeout(function () { alvo.focus({preventScroll: true}); }, calmo ? 0 : 140);
+  }
+  function fecharFolha() {
+    if (!app.hasAttribute("data-folha")) return;
+    app.removeAttribute("data-folha");
+    todos(".pt-lado,.pt-palco").forEach(function (n) { n.inert = false; });
+    if (ui.ultimaFolha && ui.ultimaFolha.focus && app.contains(ui.ultimaFolha)) ui.ultimaFolha.focus({preventScroll: true});
+  }
+
+  // ── os três estados do stand: 1 Meus voos · 2 Voo ao vivo · 3 Passaporte ──
+  function aplicar(n) {
+    n = n === 2 || n === 3 ? n : 1;
+    if (n === ui.tela) return;
+    ui.tela = n;
+    fecharFolha();
+    todos(".pt-nav-b,.pt-aba").forEach(function (b) { if (+b.getAttribute("data-n") === n) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    $(".pt-barra-titulo").textContent = ABAS[n - 1][2];
+    subir();
+    mostrarPilula();
+  }
+  function irPara(n) { if (app.getAttribute("data-estado") !== String(n)) app.setAttribute("data-estado", String(n)); aplicar(n); }
+  app.addEventListener("maquete:estado", function (e) { fecharFolha(); aplicar(e.detail && e.detail.estado); });   // pedido da barra do stand: folha aberta fecha, mesmo no mesmo estado
+  new MutationObserver(function () { aplicar(parseInt(app.getAttribute("data-estado"), 10) || 1); }).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+
+  // ── eventos ──
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-acao]");
+    if (!b || !app.contains(b) || b.disabled) return;
+    var acao = b.getAttribute("data-acao"), id = b.getAttribute("data-id"), n = +b.getAttribute("data-n");
+    if (acao === "aba") irPara(n);
+    else if (acao === "focar") focar(id);
+    else if (acao === "aovivo") irPara(2);
+    else if (acao === "etapa") { n = +b.getAttribute("data-i"); ui.etapa = ui.etapa === n ? null : n; ui.entra = "etapa-" + n; desenhar(); }
+    else if (acao === "passado") { ui.passado = ui.passado === id ? null : id; ui.entra = "pas-" + id; desenhar(); }
+    else if (acao === "avisar") alternarAviso(id);
+    else if (acao === "guardar") guardar(id);
+    else if (acao === "parar") parar(id);
+    else if (acao === "ano") { if (ui.ano !== n) { ui.ano = n; ui.entra = "ano"; desenhar(); } }
+    else if (acao === "compartilhar") avisar("Maquete: o cartão sairia como imagem");
+    else if (acao === "nova") abrirFolha("voo");
+    else if (acao === "planos") abrirFolha("planos");
+    else if (acao === "fechar-folha") fecharFolha();
+    else if (acao === "dia") { ui.dia = n; todos(".pt-dia").forEach(function (x) { x.setAttribute("aria-checked", String(+x.getAttribute("data-n") === n)); }); mostrarAchado(); }
+    else if (acao === "sugestao") { $("#pt-codigo").value = b.textContent; mostrarAchado(); }
+    else if (acao === "incluir") incluir();
+    else if (acao === "plano") escolherPlano(b.getAttribute("data-plano"));
+    else if (acao === "assinar" || acao === "restaurar") { fecharFolha(); avisar(acao === "restaurar" ? "Maquete: não há compra para restaurar" : "Maquete: nada foi cobrado"); }
+    else if (acao === "desfazer") { var d = ui.desfazer; $(".pt-aviso").removeAttribute("data-visivel"); ui.desfazer = null; if (d) d(); }
+  });
+  $("#pt-codigo").addEventListener("input", mostrarAchado);
+  // a folha aberta prende o foco: o Tab dá a volta dentro dela, e o Esc fecha de onde quer que o foco esteja
+  document.addEventListener("keydown", function (e) {
+    var nome = app.getAttribute("data-folha"), folha = nome && app.querySelector('[role="dialog"][data-folha="' + nome + '"]'), itens, a, fora;
+    if (!folha || e.defaultPrevented || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") { fecharFolha(); return; }
+    if (e.key !== "Tab") return;
+    itens = Array.prototype.filter.call(folha.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]'), function (x) { return !x.disabled && x.tabIndex >= 0 && x.offsetParent; });
+    a = document.activeElement; fora = !folha.contains(a) || a === folha;
+    if (!itens.length) { e.preventDefault(); folha.focus({preventScroll: true}); }
+    else if (fora || a === itens[e.shiftKey ? 0 : itens.length - 1]) { e.preventDefault(); itens[e.shiftKey ? itens.length - 1 : 0].focus({preventScroll: true}); }
+  });
+  app.addEventListener("keydown", function (e) {
+    var alvo = e.target, passo = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+    if (e.key === "Escape" && app.hasAttribute("data-folha")) { e.stopPropagation(); fecharFolha(); }
+    else if (e.key === "Enter" && alvo.id === "pt-codigo") { e.preventDefault(); incluir(); }
+    else if (passo && alvo.getAttribute && alvo.getAttribute("role") === "radio") {
+      // setas andam dentro do grupo de opções, como num grupo de rádio
+      var irmaos = todos('[role="radio"]', alvo.parentNode), prox = irmaos[(irmaos.indexOf(alvo) + passo + irmaos.length) % irmaos.length];
+      e.preventDefault(); prox.focus(); prox.click();
+    }
+  });
+  var palco = $(".pt-palco");
+  todos(".pt-tela").forEach(function (tela) {
+    tela.addEventListener("scroll", function () {
+      var rolado = tela.scrollTop > 44;
+      if (rolado !== palco.hasAttribute("data-rolado")) palco.toggleAttribute("data-rolado", rolado);
+    }, {passive: true});
+  });
+  // o véu segura a rolagem do que está atrás
+  $(".pt-veu").addEventListener("wheel", function (e) { e.preventDefault(); }, {passive: false});
+  $(".pt-veu").addEventListener("touchmove", function (e) { e.preventDefault(); }, {passive: false});
+  // arrastar a folha para baixo pelo puxador ou pelo topo fecha; soltar antes do limite devolve ao lugar
+  todos(".pt-folha").forEach(function (folha) {
+    var y0 = null, dy = 0;
+    folha.addEventListener("pointerdown", function (e) {
+      if (largo() || !e.target.closest(".pt-puxador,.pt-folha-topo") || e.target.closest("button")) return;
+      y0 = e.clientY; dy = 0; folha.setPointerCapture(e.pointerId); folha.style.transition = "none";
+    });
+    folha.addEventListener("pointermove", function (e) { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); folha.style.transform = "translateY(" + dy + "px)"; });
+    var soltar = function () {
+      if (y0 === null) return;
+      y0 = null; folha.style.transition = ""; folha.style.transform = "";
+      if (dy > 90) fecharFolha();
+    };
+    folha.addEventListener("pointerup", soltar);
+    folha.addEventListener("pointercancel", soltar);
+  });
+
+  ordenar();
+  montarFolhaVoo();
+  desenhar();
+  aplicar(parseInt(app.getAttribute("data-estado"), 10) || 1);
+  requestAnimationFrame(laco);
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>

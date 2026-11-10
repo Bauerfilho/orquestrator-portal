@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edital</title>
+<meta name="description" content="O planejador de quem estuda para concurso ou residência trabalhando. Destrincha o edital em tópicos, monta os blocos de cada dia, agenda as revisões de 1, 7 e 30 dias e, quando a vida atrasa o cronograma, redistribui o que ficou para trás em um toque, à vista, sem empilhar culpa.">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Edital">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fdfdfb">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0c1322">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="icon" type="image/png" href="icone-192.png">
+<style>:root[data-tema=claro]{background:#fdfdfb}:root[data-tema=escuro]{background:#0c1322}</style>
+
+<style id="app-estilo">
+/* ===== Edital · tokens =====
+   Tese visual: papel branco e tinta azul-marinho, que também carimba as ações principais; azul de caneta para o que é
+   agora e para o que se toca no meio do texto; caixas desenhadas a traço, sem
+   sombra; toda lista é folha de caderno, com margem à esquerda para a hora, a sigla e a marcação; tempo em
+   monoespaçada. O amarelo de marca-texto nunca é fundo de botão: é o traço atrás do que importa. Vermelho só no atraso.
+   Tese de interação: seco e exato como riscar um item. Toque responde em 120 ms; telas, folhas e blocos que mudam de
+   dia levam 300 ms numa curva sem quique; saídas em 200 ms. O relógio só troca o dígito: nada pulsa, nada pisca. */
+:root{
+  --ed-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --ed-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --ed-papel:#fdfdfb;--ed-folha:#ffffff;--ed-tinta:#141b33;--ed-tinta2:#27315a;--ed-suave:#5a6379;--ed-leve:#8a93a8;
+  --ed-caneta:#2340a8;--ed-sobre-caneta:#ffffff;--ed-caneta-bg:rgba(35,64,168,.07);
+  --ed-marca:#ffdd3d;--ed-grifo:#ffdd3d;--ed-sobre-marca:#141b33;
+  --ed-erro:#c63a2f;
+  --ed-pauta:#e3e7f1;--ed-fio:rgba(20,27,51,.14);--ed-traco:rgba(20,27,51,.82);--ed-margem:rgba(198,58,47,.36);
+  --ed-vidro:rgba(253,253,251,.95);--ed-veu:rgba(20,27,51,.4);
+  --ed-sombra:0 2px 4px rgba(20,27,51,.06),0 24px 60px -24px rgba(20,27,51,.5);
+  --ed-rapido:.12s;--ed-sai:.2s;--ed-vira:.3s;--ed-mola:cubic-bezier(.2,.8,.2,1);--ed-some:cubic-bezier(.4,0,1,1);
+  color-scheme:light;
+}
+:root[data-tema=escuro]{
+  --ed-papel:#0c1322;--ed-folha:#121b30;--ed-tinta:#e8ebf5;--ed-tinta2:#ffffff;--ed-suave:#a3acc4;--ed-leve:#7682a0;
+  --ed-caneta:#93a9ff;--ed-sobre-caneta:#0c1322;--ed-caneta-bg:rgba(147,169,255,.11);
+  --ed-marca:#e2b54a;--ed-grifo:rgba(232,186,72,.5);--ed-sobre-marca:#0c1322;
+  --ed-erro:#ff8f85;
+  --ed-pauta:rgba(232,235,245,.11);--ed-fio:rgba(232,235,245,.14);--ed-traco:rgba(232,235,245,.74);--ed-margem:rgba(255,143,133,.44);
+  --ed-vidro:rgba(12,19,34,.95);--ed-veu:rgba(3,6,12,.64);
+  --ed-sombra:0 2px 4px rgba(0,0,0,.4),0 24px 60px -24px rgba(0,0,0,.9);
+  color-scheme:dark;
+}
+html,body{margin:0}
+body{background:var(--ed-papel)}
+
+/* ===== base: a casca tem a altura da tela; quem rola são as folhas de dentro ===== */
+#app{container:app / inline-size;position:relative;height:100vh;height:calc(100dvh - var(--stand-barra,0px));overflow:hidden;
+  background:var(--ed-papel);color:var(--ed-tinta);font:400 17px/1.4 var(--ed-sans);-webkit-font-smoothing:antialiased}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app button,#app input{font:inherit;color:inherit;letter-spacing:inherit}
+#app button{cursor:pointer;border:0;background:none;padding:0;margin:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app svg{display:block;flex:none}
+#app :focus-visible{outline:2.5px solid var(--ed-caneta);outline-offset:2px;border-radius:6px}
+#app .ed-so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .ed-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app .ed-mono{font-family:var(--ed-mono);font-variant-numeric:tabular-nums}
+#app .ed-casca{position:relative;height:100%;overflow:hidden;overflow:clip;display:grid;grid-template-columns:minmax(0,1fr)}
+
+/* o traço de marca-texto: passa atrás do texto, levemente torto, como feito à mão */
+#app .ed-grifo{position:relative;z-index:0;display:inline-block}
+#app .ed-grifo::before{content:"";position:absolute;z-index:-1;left:-.1em;right:-.16em;bottom:.05em;height:.5em;background:var(--ed-grifo);
+  border-radius:.1em .32em .14em .36em/.3em .12em .34em .1em;transform:rotate(-.9deg) skewX(-12deg);transform-origin:0 60%}
+#app .ed-grifo[data-traca]::before{animation:ed-grifar var(--ed-vira) var(--ed-mola) both}
+@keyframes ed-grifar{from{transform:rotate(-.9deg) skewX(-12deg) scaleX(0)}to{transform:rotate(-.9deg) skewX(-12deg) scaleX(1)}}
+
+/* ===== lateral (só em tela ampla) ===== */
+#app .ed-lateral{display:none;flex-direction:column;min-height:0;overflow-y:auto;padding:26px 16px 14px;border-right:1px solid var(--ed-fio)}
+#app .ed-nome{padding:0 8px;font-size:25px;font-weight:800;letter-spacing:-.035em}
+#app .ed-alvo{display:block;width:100%;margin-top:20px;padding:14px;border:1.5px solid var(--ed-traco);border-radius:12px;transition:background-color var(--ed-rapido)}
+#app .ed-alvo-nome{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:700;letter-spacing:-.01em}
+#app .ed-alvo-nome .ed-ic{width:16px;height:16px;margin-left:auto;color:var(--ed-suave)}
+#app .ed-alvo-sub{display:block;margin-top:1px;font-size:13px;line-height:1.35;color:var(--ed-suave)}
+#app .ed-alvo-dias{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:11px;border-top:1px solid var(--ed-pauta)}
+#app .ed-alvo-n{font-size:34px;font-weight:600;line-height:1;letter-spacing:-.05em}
+#app .ed-alvo-dt{font-size:12.5px;line-height:1.3;color:var(--ed-suave)}
+#app .ed-nav{display:grid;gap:2px;margin-top:18px}
+#app .ed-nav-item{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border-radius:9px;font-size:16px;font-weight:600;color:var(--ed-suave);transition:background-color var(--ed-rapido)}
+#app .ed-nav-item .ed-ic{width:20px;height:20px}
+#app .ed-nav-item[aria-current=page]{color:var(--ed-tinta);background:var(--ed-caneta-bg)}
+#app .ed-nav-item[aria-current=page] .ed-ic{color:var(--ed-caneta)}
+#app .ed-nav-n{margin-left:auto;font-size:13px;font-weight:600;color:var(--ed-suave)}
+#app .ed-teste{display:block;width:100%;margin-top:auto;padding:14px 10px 6px;border-top:1px solid var(--ed-pauta);font-size:13px;line-height:1.35;color:var(--ed-suave)}
+#app .ed-teste b{display:block;font-size:15px;font-weight:700;color:var(--ed-caneta)}
+
+/* ===== palco: barra de cima, a seção que rola e as abas ===== */
+#app .ed-palco{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column}
+#app .ed-topo{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;height:52px;padding:0 14px 0 20px;
+  border-bottom:1px solid transparent;transition:background-color var(--ed-sai),border-color var(--ed-sai)}
+#app .ed-palco[data-rolado] .ed-topo{background:var(--ed-vidro);border-bottom-color:var(--ed-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5)}
+#app .ed-seletor{display:flex;align-items:center;gap:4px;min-width:0;min-height:44px;font-size:15px;font-weight:700;letter-spacing:-.01em}
+#app .ed-seletor-t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .ed-seletor .ed-ic{width:16px;height:16px;color:var(--ed-suave)}
+#app .ed-pilula{position:relative;flex:none;min-height:32px;padding:0 12px;border:1.5px solid var(--ed-caneta);border-radius:999px;font-size:13px;font-weight:700;color:var(--ed-caneta);white-space:nowrap}
+#app .ed-pilula::after{content:"";position:absolute;inset:-7px -4px}
+#app .ed-rolo{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:52px 20px 98px}
+#app .ed-vista{display:none;flex-direction:column;max-width:640px;margin:0 auto}
+#app .ed-vista[data-ativa]{display:flex;animation:ed-entra var(--ed-vira) var(--ed-mola)}
+@keyframes ed-entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#app .ed-principal,#app .ed-miolo,#app .ed-lado{display:contents}
+#app .ed-cob{order:1}
+#app .ed-sete{order:2}
+#app .ed-mats{order:3}
+
+/* cabeçalho de seção: o título grifado e o número que importa */
+#app .ed-cab{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:6px 0 2px}
+#app .ed-cab h1{font-size:40px;font-weight:800;line-height:1.05;letter-spacing:-.035em}
+#app .ed-cab-num{display:flex;align-items:center;gap:8px;padding-bottom:3px}
+#app .ed-cab-n{font-size:30px;font-weight:600;line-height:1;letter-spacing:-.05em;white-space:nowrap}
+#app .ed-cab-rot{font-size:12.5px;line-height:1.2;color:var(--ed-suave)}
+#app .ed-sub{margin-top:6px;font-size:14px;line-height:1.4;color:var(--ed-suave)}
+#app .ed-bloco{margin-top:26px}
+#app .ed-sec{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:36px;margin-bottom:6px}
+#app .ed-sec h2{font-size:19px;font-weight:800;letter-spacing:-.025em}
+#app .ed-sec-lado{font-size:13px;color:var(--ed-suave);white-space:nowrap}
+#app .ed-sec:has(.ed-sec-acoes){flex-wrap:wrap}
+#app .ed-sec-acoes{display:flex;align-items:center;gap:8px}
+#app .ed-nota{margin-top:10px;font-size:14px;line-height:1.45;color:var(--ed-suave)}
+#app .ed-link{position:relative;display:inline;font-weight:700;color:var(--ed-caneta);text-decoration:underline;text-underline-offset:3px}
+#app .ed-link::after{content:"";position:absolute;inset:-12px -8px}
+
+/* botões: cheio de caneta, ou desenhado a traço */
+#app .ed-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 16px;border-radius:11px;font-size:16px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;
+  transition:transform var(--ed-rapido),background-color var(--ed-rapido)}
+#app .ed-btn:active{transform:scale(.97)}
+#app .ed-btn .ed-ic{width:18px;height:18px;stroke-width:2.1}
+#app .ed-btn-cheio{background:var(--ed-tinta);color:var(--ed-papel)}
+#app .ed-btn-fio{border:1.5px solid var(--ed-traco)}
+#app .ed-btn-erro{border:1.5px solid var(--ed-erro);color:var(--ed-erro)}
+#app .ed-btn-p{position:relative;min-height:36px;padding:0 14px;border-radius:9px;font-size:14px}
+#app .ed-btn-p::after{content:"";position:absolute;inset:-5px 0}
+#app .ed-btn-largo{display:flex;width:100%;min-height:52px}
+#app .ed-acoes{display:grid;grid-template-columns:1fr 1.35fr;gap:10px;margin-top:14px}
+#app .ed-acoes-1{grid-template-columns:1fr}
+#app .ed-acoes-2{grid-template-columns:1fr 1fr}
+
+/* a ficha do bloco da vez */
+#app .ed-agora{margin-top:16px;padding:16px 16px 14px;border:1.5px solid var(--ed-traco);border-radius:14px;background:var(--ed-folha)}
+#app .ed-agora-topo{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ed-suave)}
+#app .ed-agora-mat{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .ed-sigla{display:inline-grid;place-items:center;flex:none;min-width:28px;height:20px;padding:0 4px;border:1.5px solid var(--ed-traco);border-radius:5px;font:700 11px/1 var(--ed-mono);color:var(--ed-tinta)}
+#app .ed-agora h2{margin-top:8px;font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.02em}
+#app .ed-crono{margin:10px 0 10px -2px;font-size:52px;font-weight:600;line-height:1;letter-spacing:-.05em}
+#app .ed-agora[data-parado] .ed-crono{color:var(--ed-suave)}
+#app .ed-barra{height:10px;border-radius:3px;background:var(--ed-pauta);overflow:hidden}
+#app .ed-barra-i{display:block;height:100%;background:var(--ed-marca);border-radius:2px 5px 3px 6px;transform:scaleX(0);transform-origin:0 50%;transition:transform var(--ed-vira) var(--ed-mola)}
+#app .ed-agora-pe{display:flex;justify-content:space-between;gap:10px;margin-top:7px;font-size:12.5px;color:var(--ed-suave);white-space:nowrap}
+#app .ed-agora[data-passou] .ed-so-largo{display:none}
+#app .ed-cumprido h2{margin-top:2px;font-size:24px;font-weight:800;letter-spacing:-.03em}
+#app .ed-cumprido-t{margin-top:10px;font-size:15px;line-height:1.45;color:var(--ed-suave)}
+
+/* a folha de caderno: toda lista tem margem (hora, sigla ou marcação) e pauta */
+#app .ed-pauta{--ed-m:58px;position:relative;border-top:1px solid var(--ed-pauta);background:linear-gradient(var(--ed-margem),var(--ed-margem)) var(--ed-m) 0/1.5px 100% no-repeat}
+#app .ed-linha{display:flex;align-items:center;width:100%;min-height:56px;border-bottom:1px solid var(--ed-pauta);text-align:left;transition:background-color var(--ed-rapido)}
+#app .ed-na-margem{display:flex;align-items:center;flex:none;width:var(--ed-m);padding-right:6px;font:600 12.5px/1.2 var(--ed-mono);color:var(--ed-suave)}
+#app .ed-corpo{flex:1;min-width:0;padding:8px 6px 8px 12px}
+#app .ed-corpo-t{display:block;font-size:16.5px;font-weight:600;line-height:1.25;letter-spacing:-.01em}
+#app .ed-corpo-s{display:block;margin-top:1px;font-size:13px;line-height:1.3;color:var(--ed-suave)}
+#app .ed-fim{display:flex;align-items:center;flex:none;gap:8px;padding-left:4px;font-size:12.5px;color:var(--ed-suave);white-space:nowrap}
+#app .ed-fim .ed-ic{width:18px;height:18px}
+#app .ed-seta{width:16px;height:16px;color:var(--ed-suave);transition:transform var(--ed-sai)}
+#app .ed-linha[data-feito] .ed-corpo-t{color:var(--ed-suave);text-decoration:line-through;text-decoration-thickness:1.5px}
+#app .ed-linha[data-feito] .ed-fim .ed-ic{color:var(--ed-tinta);stroke-width:2.2}
+#app .ed-linha[data-atual]{width:calc(100% + 16px);margin:0 -8px;padding:0 8px;border-radius:8px;border-bottom-color:transparent;background:var(--ed-caneta-bg)}
+#app .ed-linha[data-atual] .ed-na-margem{color:var(--ed-caneta)}
+#app .ed-ponto{flex:none;width:8px;height:8px;border-radius:50%;background:var(--ed-caneta)}
+
+/* aviso do que ficou para trás */
+#app .ed-atraso{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;margin-top:12px;padding:8px 10px 8px 12px;border:1.5px dashed var(--ed-erro);border-radius:12px;font-size:15px;font-weight:600;line-height:1.25;color:var(--ed-erro)}
+#app .ed-atraso-t{flex:1;min-width:0}
+#app .ed-atraso-ir{font-weight:700;color:var(--ed-caneta);white-space:nowrap}
+#app .ed-emdia{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:12px;font-size:15px;color:var(--ed-suave)}
+#app .ed-emdia .ed-ic{color:var(--ed-tinta)}
+
+/* meta da semana */
+#app .ed-dias7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:16px}
+#app .ed-dia7{display:grid;gap:6px;justify-items:center;font:600 11px/1 var(--ed-mono);color:var(--ed-suave)}
+#app .ed-dia7-col{display:flex;align-items:flex-end;justify-content:center;width:100%;height:56px;border-bottom:1.5px solid var(--ed-traco)}
+#app .ed-dia7-i{display:block;width:100%;max-width:30px;height:100%;border-radius:3px 3px 0 0;background:var(--ed-traco);transform:scaleY(0);transform-origin:50% 100%;transition:transform var(--ed-vira) var(--ed-mola)}
+#app .ed-dia7[data-hoje]{color:var(--ed-caneta)}
+#app .ed-dia7[data-hoje] .ed-dia7-i{background:var(--ed-caneta)}
+
+/* ===== edital: cobertura, risco, próximos 7 dias, matérias ===== */
+#app .ed-cobertura{display:flex;align-items:flex-end;gap:14px;margin:16px 0 12px}
+#app .ed-cob-n{font-size:56px;font-weight:600;line-height:.9;letter-spacing:-.06em}
+#app .ed-cob-t{min-width:0;padding-bottom:2px}
+#app .ed-cob-t1{display:block;font-size:16px;font-weight:700;letter-spacing:-.01em}
+#app .ed-cob-t2{display:block;font-size:13px;line-height:1.3;color:var(--ed-suave)}
+#app .ed-risco{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;margin-top:14px;padding:8px 10px 8px 12px;border:1.5px solid var(--ed-traco);border-radius:12px;font-size:14px;line-height:1.3;transition:background-color var(--ed-rapido)}
+#app .ed-risco .ed-ic-alerta{color:var(--ed-erro)}
+#app .ed-risco-t{flex:1;min-width:0}
+#app .ed-risco-r{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ed-erro)}
+#app .ed-pilha{display:flex;flex-wrap:wrap;align-items:center;gap:5px;min-height:42px;margin-bottom:14px;padding:8px 10px;border:1.5px dashed var(--ed-erro);border-radius:10px}
+#app .ed-pilha-rot{margin-right:3px;font-size:12px;font-weight:700;color:var(--ed-erro);white-space:nowrap}
+#app .ed-pilha[data-vazia]{border:1px solid var(--ed-pauta)}
+#app .ed-pilha[data-vazia] .ed-pilha-rot{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ed-suave)}
+#app .ed-pilha[data-vazia] .ed-ic{width:17px;height:17px;color:var(--ed-tinta)}
+#app .ed-grade{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;align-items:start}
+#app .ed-col{display:grid;gap:4px;align-content:start}
+#app .ed-col-d{display:block;text-align:center;font:600 11px/1 var(--ed-mono);color:var(--ed-suave)}
+#app .ed-col-n{display:grid;place-items:center;width:26px;height:26px;margin:1px auto 3px;border-radius:50%;font-size:13px;font-weight:600}
+#app .ed-col[data-hoje] .ed-col-n{background:var(--ed-caneta);color:var(--ed-sobre-caneta)}
+#app .ed-tij{display:grid;place-items:center;height:22px;border:1.5px solid var(--ed-traco);border-radius:5px;background:var(--ed-papel);font:700 10.5px/1 var(--ed-mono)}
+#app .ed-pilha .ed-tij{width:38px}
+#app .ed-tij[data-tipo=feito]{background:var(--ed-tinta);border-color:var(--ed-tinta);color:var(--ed-papel)}
+#app .ed-tij[data-tipo=atual]{border-color:var(--ed-caneta);box-shadow:inset 0 0 0 1px var(--ed-caneta);color:var(--ed-caneta)}
+#app .ed-tij[data-tipo=atrasado]{border-color:var(--ed-erro);border-style:dashed;color:var(--ed-erro)}
+#app .ed-tij[data-tipo=movido]{background:var(--ed-marca);border-color:var(--ed-sobre-marca);color:var(--ed-sobre-marca)}
+#app .ed-legenda{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12px;line-height:1.2;color:var(--ed-suave)}
+#app .ed-leg{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+#app .ed-tij-leg{flex:none;width:18px;height:12px;border-radius:3px}
+#app .ed-seg{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:2px;border:1.5px solid var(--ed-traco);border-radius:10px}
+#app .ed-seg-b{position:relative;min-height:30px;padding:0 12px;border-radius:7px;font-size:13px;font-weight:700;color:var(--ed-suave);text-align:center;transition:background-color var(--ed-rapido)}
+#app .ed-seg-b::after{content:"";position:absolute;inset:-8px 0}
+#app .ed-seg-b[aria-pressed=true]{background:var(--ed-tinta);color:var(--ed-papel)}
+#app .ed-mini{display:block;flex:none;width:52px;height:6px;border-radius:2px;background:var(--ed-pauta);overflow:hidden}
+#app .ed-mini-i{display:block;height:100%;background:var(--ed-tinta);transform:scaleX(0);transform-origin:0 50%;transition:transform var(--ed-vira) var(--ed-mola)}
+#app .ed-mat[data-risco] .ed-mini-i{background:var(--ed-erro)}
+#app .ed-mat[data-aberta] .ed-seta{transform:rotate(90deg)}
+#app .ed-tops .ed-linha{min-height:48px}
+#app .ed-tops .ed-corpo{font-size:16px;line-height:1.3}
+#app .ed-st{flex:none;padding:0 2px 0 8px;font-size:12.5px;color:var(--ed-suave);white-space:nowrap}
+#app .ed-top[data-st="3"] .ed-st{color:var(--ed-tinta);font-weight:700}
+#app .ed-caixa{width:22px;height:22px;fill:none;stroke:var(--ed-traco);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#app .ed-caixa[data-st="0"]{stroke:var(--ed-leve)}
+#app .ed-caixa[data-st="3"] .ed-cx-fundo{fill:var(--ed-marca);stroke:var(--ed-sobre-marca)}
+#app .ed-caixa[data-st="3"] .ed-cx-risco{stroke:var(--ed-sobre-marca);stroke-width:2}
+
+/* ===== revisões: o cartão da vez, a fila, a agenda, o desempenho ===== */
+#app .ed-cartao{margin:16px 5px 5px 0;padding:16px;border:1.5px solid var(--ed-traco);border-radius:14px;background:var(--ed-folha);box-shadow:5px 5px 0 -1.5px var(--ed-papel),5px 5px 0 0 var(--ed-traco)}
+#app .ed-cartao[data-novo]{animation:ed-entra var(--ed-vira) var(--ed-mola)}
+#app .ed-cartao[data-sai]{opacity:0;transition:transform var(--ed-sai) var(--ed-some),opacity var(--ed-sai)}
+#app .ed-cartao[data-sai=ok]{transform:translateX(26px) rotate(1.5deg)}
+#app .ed-cartao[data-sai=erro]{transform:translateX(-26px) rotate(-1.5deg)}
+#app .ed-cartao-topo{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ed-suave)}
+#app .ed-etq{display:inline-grid;place-items:center;flex:none;height:20px;padding:0 7px;border-radius:5px;background:var(--ed-marca);color:var(--ed-sobre-marca);font:700 11px/1 var(--ed-mono);white-space:nowrap}
+#app .ed-cartao h2{margin-top:12px;font-size:25px;font-weight:800;line-height:1.15;letter-spacing:-.03em}
+#app .ed-cartao-quando{margin-top:5px;font-size:13.5px;color:var(--ed-suave)}
+#app .ed-cartao-pede{margin-top:14px;padding-top:12px;border-top:1px solid var(--ed-pauta);font-size:15px;line-height:1.45}
+#app .ed-agenda{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1.5px solid var(--ed-traco);border-radius:12px;overflow:hidden}
+#app .ed-agenda-c{padding:12px 12px 10px;border-left:1px solid var(--ed-pauta)}
+#app .ed-agenda-c:first-child{border-left:0}
+#app .ed-agenda-n{display:block;font-size:26px;font-weight:600;line-height:1;letter-spacing:-.04em}
+#app .ed-agenda-r{display:block;margin-top:5px;font-size:12.5px;color:var(--ed-suave)}
+#app .ed-des-lista{border-top:1px solid var(--ed-pauta)}
+#app .ed-des{display:flex;align-items:center;gap:10px;min-height:50px;border-bottom:1px solid var(--ed-pauta)}
+#app .ed-des-m{flex:1;min-width:0}
+#app .ed-des-nome{display:block;margin-bottom:5px;font-size:14.5px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .ed-des .ed-mini{width:100%}
+#app .ed-des-p{flex:none;width:44px;font-size:15px;font-weight:600;text-align:right}
+#app .ed-des-n{flex:none;width:44px;font-size:12px;color:var(--ed-suave);text-align:right}
+#app .ed-semanas{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:end;height:92px;margin-top:22px;border-bottom:1.5px solid var(--ed-traco)}
+#app .ed-semanas-meta{position:absolute;left:0;right:0;bottom:80%;border-top:1.5px dashed var(--ed-caneta);font-size:11px;font-weight:600;line-height:1;color:var(--ed-caneta);text-align:right}
+#app .ed-semanas-meta-t{position:absolute;right:0;bottom:4px}
+#app .ed-sem{display:flex;align-items:flex-end;height:100%}
+#app .ed-sem-i{display:block;width:100%;height:100%;border-radius:3px 3px 0 0;background:var(--ed-leve);transform:scaleY(0);transform-origin:50% 100%}
+#app .ed-sem[data-bateu] .ed-sem-i{background:var(--ed-tinta)}
+#app .ed-sem[data-esta] .ed-sem-i{background:var(--ed-caneta)}
+#app .ed-semanas-rot{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:6px;font-size:11px;font-weight:600;color:var(--ed-suave);text-align:center}
+
+/* ===== abas de baixo (celular) ===== */
+#app .ed-abas{position:absolute;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:5px 10px calc(6px + env(safe-area-inset-bottom));
+  background:var(--ed-vidro);border-top:1.5px solid var(--ed-traco);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5)}
+#app .ed-aba{position:relative;display:grid;justify-items:center;align-content:center;gap:3px;min-height:52px;font-size:11.5px;font-weight:700;color:var(--ed-suave);transition:color var(--ed-rapido)}
+#app .ed-aba .ed-ic{width:23px;height:23px}
+#app .ed-aba[aria-current=page]{color:var(--ed-tinta)}
+#app .ed-aba[aria-current=page] .ed-ic{color:var(--ed-caneta)}
+#app .ed-aba-t{position:relative;z-index:0}
+#app .ed-aba[aria-current=page] .ed-aba-t::before{content:"";position:absolute;z-index:-1;left:-5px;right:-6px;bottom:0;height:7px;background:var(--ed-grifo);border-radius:2px 5px 3px 6px;transform:rotate(-1deg) skewX(-12deg)}
+#app .ed-aba-n{position:absolute;top:3px;left:calc(50% + 7px);min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--ed-tinta);color:var(--ed-papel);font:700 11px/18px var(--ed-mono);font-style:normal;text-align:center}
+#app .ed-aba .ed-aba-n[hidden]{display:none}
+
+/* ===== véu, folhas e aviso ===== */
+#app .ed-veu{position:absolute;inset:0;z-index:20;background:var(--ed-veu);opacity:0;pointer-events:none;transition:opacity var(--ed-sai)}
+#app[data-folha] .ed-veu{opacity:1;pointer-events:auto}
+#app .ed-folha{position:absolute;left:0;right:0;bottom:0;z-index:21;max-height:90%;overflow-y:auto;overscroll-behavior:contain;padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+  background:var(--ed-folha);border-top:1.5px solid var(--ed-traco);border-radius:18px 18px 0 0;box-shadow:var(--ed-sombra);
+  transform:translateY(105%);visibility:hidden;transition:transform var(--ed-sai) var(--ed-some),visibility 0s var(--ed-sai)}
+#app[data-folha=prova] .ed-folha[data-folha=prova],#app[data-folha=planos] .ed-folha[data-folha=planos]{transform:none;visibility:visible;transition:transform var(--ed-vira) var(--ed-mola),visibility 0s}
+#app .ed-puxador{width:38px;height:4px;margin:0 auto 14px;border-radius:99px;background:var(--ed-leve);opacity:.55}
+#app .ed-folha-topo{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+#app .ed-folha-t{flex:1;min-width:0}
+#app .ed-rotulo{display:block;margin-bottom:2px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ed-suave)}
+#app .ed-folha h2{font-size:28px;font-weight:800;line-height:1.1;letter-spacing:-.035em}
+#app .ed-fechar{position:relative;display:grid;place-items:center;flex:none;width:36px;height:36px;border:1.5px solid var(--ed-traco);border-radius:50%}
+#app .ed-fechar::after{content:"";position:absolute;inset:-5px}
+#app .ed-fechar .ed-ic{width:15px;height:15px;stroke-width:2.2}
+#app .ed-prova{display:flex;align-items:center;gap:10px;width:100%;min-height:68px;margin-top:8px;padding:10px 14px 10px 10px;border:1.5px solid var(--ed-pauta);border-radius:12px;transition:background-color var(--ed-rapido)}
+#app .ed-prova[aria-pressed=true]{border-color:var(--ed-traco)}
+#app .ed-prova-m{display:grid;place-items:center;flex:none;width:26px;height:26px;color:var(--ed-caneta)}
+#app .ed-prova-t{flex:1;min-width:0}
+#app .ed-prova-t1{display:block;font-size:17px;font-weight:700;letter-spacing:-.01em}
+#app .ed-prova-t2{display:block;font-size:13px;line-height:1.3;color:var(--ed-suave)}
+#app .ed-prova-d{flex:none;font-size:12px;line-height:1.1;color:var(--ed-suave);text-align:right}
+#app .ed-prova-dn{display:block;font-size:22px;font-weight:600;letter-spacing:-.04em;color:var(--ed-tinta)}
+#app .ed-add{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;margin-top:8px;padding:0 14px;border:1.5px dashed var(--ed-leve);border-radius:12px;font-size:15px;font-weight:600;color:var(--ed-suave);transition:background-color var(--ed-rapido)}
+#app .ed-add .ed-ic{width:18px;height:18px}
+#app .ed-leva{margin:4px 0 16px;border-top:1px solid var(--ed-pauta)}
+#app .ed-opcoes{display:grid;gap:8px;margin-bottom:2px}
+#app .ed-folha{--ed-pe:calc(20px + env(safe-area-inset-bottom))}
+#app .ed-folha-pe{position:sticky;bottom:calc(-1*var(--ed-pe));z-index:1;padding:12px 0 var(--ed-pe);margin-bottom:calc(-1*var(--ed-pe));background:linear-gradient(to bottom,transparent,var(--ed-folha) 12px)}
+#app .ed-folha .ed-btn-fino{position:relative;z-index:2}
+#app .ed-opcao{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:9px 14px 9px 12px;border:1.5px solid var(--ed-pauta);border-radius:12px;transition:background-color var(--ed-rapido),border-color var(--ed-rapido)}
+#app .ed-opcao[aria-pressed=true]{border-color:var(--ed-traco);box-shadow:inset 0 0 0 1px var(--ed-traco)}
+#app .ed-opcao-m{display:grid;place-items:center;flex:none;width:22px;height:22px;border:1.5px solid var(--ed-traco);border-radius:50%}
+#app .ed-opcao[aria-pressed=true] .ed-opcao-m::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--ed-tinta)}
+#app .ed-opcao-t{flex:1;min-width:0;font-size:17px;font-weight:700;line-height:1.25;letter-spacing:-.01em}
+#app .ed-opcao-t .ed-etq{margin-left:8px;vertical-align:2px}
+#app .ed-opcao-s{display:block;font-size:13px;font-weight:400;letter-spacing:0;line-height:1.3;color:var(--ed-suave)}
+#app .ed-opcao-n{flex:none;font-size:19px;font-weight:600;letter-spacing:-.04em;white-space:nowrap}
+#app .ed-leva-i{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--ed-pauta)}
+#app .ed-leva-i .ed-ic{width:20px;height:20px;margin-top:1px;color:var(--ed-caneta);stroke-width:2.2}
+#app .ed-leva-t{font-size:16px;font-weight:700;line-height:1.3;letter-spacing:-.01em}
+#app .ed-leva-s{display:block;font-size:14px;font-weight:400;letter-spacing:0;color:var(--ed-suave)}
+#app .ed-btn-fino{display:block;width:100%;min-height:48px;font-size:15px;font-weight:600;color:var(--ed-caneta);text-align:center}
+#app .ed-miudo{margin-top:8px;font-size:12.5px;line-height:1.4;color:var(--ed-suave);text-align:center}
+#app .ed-aviso{position:absolute;left:50%;bottom:86px;z-index:30;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 24px);min-height:48px;padding:0 6px 0 16px;border-radius:12px;background:var(--ed-tinta);color:var(--ed-papel);
+  font-size:14.5px;font-weight:600;line-height:1.3;box-shadow:var(--ed-sombra);opacity:0;transform:translate(-50%,12px);pointer-events:none;transition:opacity var(--ed-sai),transform var(--ed-sai) var(--ed-some)}
+#app .ed-aviso[data-visivel]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition:opacity var(--ed-sai),transform var(--ed-vira) var(--ed-mola)}
+#app .ed-aviso-t{padding:9px 10px 9px 0}
+#app .ed-aviso-b{position:relative;flex:none;min-height:36px;padding:0 12px;border:1.5px solid color-mix(in srgb,var(--ed-papel) 50%,transparent);border-radius:8px;font-size:13px;font-weight:800}
+#app .ed-aviso-b::after{content:"";position:absolute;inset:-4px 0}
+#app .ed-aviso .ed-aviso-b[hidden]{display:none}
+
+@media (hover:hover) and (pointer:fine){
+  #app .ed-nav-item:hover,#app .ed-alvo:hover,#app .ed-risco:hover,#app .ed-prova:hover,#app .ed-opcao:hover,#app .ed-add:hover,#app button.ed-linha:hover,#app .ed-btn-fio:hover{background-color:var(--ed-caneta-bg)}
+  #app .ed-btn-cheio:hover{background:var(--ed-tinta2)}
+  #app .ed-aba:hover,#app .ed-seg-b:hover{color:var(--ed-tinta)}
+  #app .ed-seg-b[aria-pressed=true]:hover{color:var(--ed-papel)}
+}
+
+/* ===== tela média: a lateral entra; tela ampla: a mesa, com o contexto à direita ===== */
+@container app (min-width:720px){
+  #app .ed-casca{grid-template-columns:252px minmax(0,1fr)}
+  #app .ed-lateral{display:flex}
+  #app .ed-casca .ed-topo,#app .ed-casca .ed-abas{display:none}
+  #app .ed-rolo{padding:28px 40px 56px}
+  #app .ed-cab h1{font-size:46px}
+  #app .ed-folha{left:50%;right:auto;bottom:auto;top:9%;width:min(520px,calc(100% - 64px));max-height:82%;padding:24px 28px;border:1.5px solid var(--ed-traco);border-radius:16px;transform:translate(-50%,-10px);opacity:0;
+    transition:transform var(--ed-sai) var(--ed-some),opacity var(--ed-sai),visibility 0s var(--ed-sai)}
+  #app[data-folha=prova] .ed-folha[data-folha=prova],#app[data-folha=planos] .ed-folha[data-folha=planos]{transform:translate(-50%,0);opacity:1;transition:transform var(--ed-vira) var(--ed-mola),opacity var(--ed-sai),visibility 0s}
+  #app .ed-folha{--ed-pe:24px}
+  #app .ed-puxador{display:none}
+  #app .ed-aviso{bottom:28px}
+}
+@container app (min-width:1120px){
+  #app .ed-casca{grid-template-columns:268px minmax(0,1fr)}
+  #app .ed-rolo{padding:0;overflow:hidden}
+  #app .ed-vista{max-width:none;height:100%;margin:0}
+  #app .ed-vista[data-ativa]{display:grid;grid-template-columns:minmax(0,1fr) 396px}
+  #app .ed-principal,#app .ed-lado{display:block;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  #app .ed-principal{padding:28px 40px 56px}
+  #app .ed-miolo{display:block;max-width:660px}
+  #app .ed-lado{padding:34px 28px 56px;border-left:1px solid var(--ed-fio)}
+  #app .ed-lado .ed-bloco:first-child{margin-top:0}
+}
+@container app (max-width:350px){
+  #app .ed-rolo{padding-left:14px;padding-right:14px}
+  #app .ed-cab h1{font-size:34px}
+  #app .ed-crono{font-size:44px}
+  #app .ed-pauta{--ed-m:50px}
+  #app .ed-grade{gap:3px}
+  #app .ed-pilha .ed-tij{width:32px}
+  #app .ed-acoes{grid-template-columns:1fr}
+  #app .ed-agora-pe{font-size:11.5px}
+  #app .ed-so-largo{display:none}
+}
+/* acabamento da revisão: a alça da folha arrasta com o dedo; clicar dentro da folha mantém o foco nela (o Esc continua valendo);
+   e o botão do aviso fechado não fica no caminho do Tab */
+#app .ed-puxador,#app .ed-folha-topo{touch-action:none}
+#app [role=dialog]{outline:0}
+#app .ed-aviso:not([data-visivel]) button{visibility:hidden;transition:visibility 0s .2s}
+@media (prefers-reduced-motion:reduce){
+  #app *,#app *::before,#app *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+<style>html,body{margin:0}</style>
+<script>document.documentElement.dataset.tema = matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";</script>
+<script>matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) { document.documentElement.dataset.tema = e.matches ? "escuro" : "claro"; });</script>
+</head>
+<body>
+<main id="app" data-estado="1" data-vista="hoje">
+  <svg class="ed-so-leitor" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="ed-i-hoje" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3v4M15.5 3v4"/><circle cx="12" cy="15" r="1.7" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="ed-i-edital" viewBox="0 0 24 24"><path d="M7.5 3.5H14l4 4v11.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M14 3.5V8h4M9.2 12.5h5.6M9.2 16h3.6"/></symbol>
+      <symbol id="ed-i-revisoes" viewBox="0 0 24 24"><path d="M5 11a7 7 0 0 1 12.2-4.2L19 8.5M19 4v4.5h-4.5M19 13a7 7 0 0 1-12.2 4.2L5 15.5M5 20v-4.5h4.5"/></symbol>
+      <symbol id="ed-i-seta" viewBox="0 0 24 24"><path d="M9.5 5.5l6.5 6.5-6.5 6.5"/></symbol>
+      <symbol id="ed-i-baixo" viewBox="0 0 24 24"><path d="M5.5 9l6.5 6.5L18.5 9"/></symbol>
+      <symbol id="ed-i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="ed-i-tocar" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol>
+      <symbol id="ed-i-pausa" viewBox="0 0 24 24"><path d="M8.5 5.5v13M15.5 5.5v13"/></symbol>
+      <symbol id="ed-i-certo" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="ed-i-alerta" viewBox="0 0 24 24"><path d="M12 4.5l8.5 14.5h-17z"/><path d="M12 10v4M12 16.7v.2"/></symbol>
+      <symbol id="ed-i-trocar" viewBox="0 0 24 24"><path d="M4 7h3c5.5 0 5 10 10.5 10H20M17 14l3 3-3 3M4 17h3c1.4 0 2.3-.7 3.1-1.7M20 7h-2.5c-1.4 0-2.3.7-3.1 1.7M17 4l3 3-3 3"/></symbol>
+      <symbol id="ed-i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    </defs>
+  </svg>
+  <div class="ed-casca">
+    <aside class="ed-lateral" aria-label="Edital">
+      <div class="ed-nome"><span class="ed-grifo">Edital</span></div>
+      <button type="button" class="ed-alvo" data-acao="prova" data-foco="alvo-lateral" aria-label="Trocar a prova-alvo"></button>
+      <nav class="ed-nav" aria-label="Seções"></nav>
+      <button type="button" class="ed-teste" data-acao="planos"><b>Edital Completo</b>5 dias de teste restantes</button>
+    </aside>
+    <section class="ed-palco">
+      <header class="ed-topo">
+        <button type="button" class="ed-seletor" data-acao="prova" data-foco="alvo" aria-label="Trocar a prova-alvo"><span class="ed-seletor-t"></span><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-baixo"/></svg></button>
+        <button type="button" class="ed-pilula" data-acao="planos" aria-label="Edital Completo: 5 dias de teste restantes">Teste · 5 dias</button>
+      </header>
+      <div class="ed-rolo">
+        <div class="ed-vista" data-vista="hoje"><div class="ed-principal"><div class="ed-miolo"></div></div><div class="ed-lado"></div></div>
+        <div class="ed-vista" data-vista="edital"><div class="ed-principal"><div class="ed-miolo"></div></div><div class="ed-lado"></div></div>
+        <div class="ed-vista" data-vista="revisoes"><div class="ed-principal"><div class="ed-miolo"></div></div><div class="ed-lado"></div></div>
+      </div>
+      <nav class="ed-abas" aria-label="Seções">
+        <button type="button" class="ed-aba" data-acao="vista" data-vista="hoje"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-hoje"/></svg><span class="ed-aba-t">Hoje</span></button>
+        <button type="button" class="ed-aba" data-acao="vista" data-vista="edital"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-edital"/></svg><span class="ed-aba-t">Edital</span></button>
+        <button type="button" class="ed-aba" data-acao="vista" data-vista="revisoes"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-revisoes"/></svg><span class="ed-aba-t">Revisões</span><i class="ed-aba-n" aria-hidden="true"></i></button>
+      </nav>
+    </section>
+    <div class="ed-veu" data-acao="fechar-folha"></div>
+    <section class="ed-folha" data-folha="prova" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="ed-t-prova">
+      <div class="ed-puxador" aria-hidden="true"></div>
+      <div class="ed-folha-topo">
+        <div class="ed-folha-t"><span class="ed-rotulo">Prova-alvo</span><h2 id="ed-t-prova">Qual é a prova?</h2></div>
+        <button type="button" class="ed-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-fechar"/></svg></button>
+      </div>
+      <div class="ed-provas"></div>
+      <button type="button" class="ed-add" data-acao="importar"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-mais"/></svg>Adicionar um edital em PDF</button>
+      <p class="ed-miudo">Cada prova tem o seu edital, o seu plano e as suas revisões.</p>
+    </section>
+    <section class="ed-folha" data-folha="planos" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="ed-t-planos">
+      <div class="ed-puxador" aria-hidden="true"></div>
+      <div class="ed-folha-topo">
+        <div class="ed-folha-t"><span class="ed-rotulo">Faltam 5 dos 7 dias de teste</span><h2 id="ed-t-planos">Edital Completo</h2></div>
+        <button type="button" class="ed-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-fechar"/></svg></button>
+      </div>
+      <ul class="ed-leva">
+        <li class="ed-leva-i"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-certo"/></svg><span class="ed-leva-t">Replanejar sem limite<span class="ed-leva-s">Atrasou? O plano se refaz em um toque, quantas vezes precisar.</span></span></li>
+        <li class="ed-leva-i"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-certo"/></svg><span class="ed-leva-t">Revisões de 1, 7 e 30 dias<span class="ed-leva-s">Agendadas sozinhas a cada bloco concluído.</span></span></li>
+        <li class="ed-leva-i"><svg class="ed-ic" aria-hidden="true"><use href="#ed-i-certo"/></svg><span class="ed-leva-t">Vários editais no mesmo calendário<span class="ed-leva-s">Concurso e residência sem um atropelar o outro.</span></span></li>
+      </ul>
+      <div class="ed-opcoes" role="group" aria-label="Plano">
+        <button type="button" class="ed-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><i class="ed-opcao-m" aria-hidden="true"></i><span class="ed-opcao-t">Anual<span class="ed-etq">33% a menos</span><span class="ed-opcao-s">equivale a R$ 19,92 por mês</span></span><b class="ed-opcao-n ed-mono">R$ 239</b></button>
+        <button type="button" class="ed-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><i class="ed-opcao-m" aria-hidden="true"></i><span class="ed-opcao-t">Mensal<span class="ed-opcao-s">sem fidelidade</span></span><b class="ed-opcao-n ed-mono">R$ 29,90</b></button>
+      </div>
+      <div class="ed-folha-pe"><button type="button" class="ed-btn ed-btn-cheio ed-btn-largo" data-acao="comprar">Assinar por R$ 239 ao ano</button></div>
+      <button type="button" class="ed-btn-fino" data-acao="restaurar">Restaurar compra</button>
+      <p class="ed-miudo">Assinando hoje, a cobrança só começa quando o teste acabar. Maquete: os valores são hipótese e nada é cobrado aqui.</p>
+    </section>
+    <div class="ed-aviso" role="status" aria-live="polite"><span class="ed-aviso-t"></span><button type="button" class="ed-aviso-b" data-acao="desfazer">Desfazer</button></div>
+  </div>
+</main>
+<script id="app-script">
+// Edital: o app sozinho. O edital, os blocos e as revisões vivem na memória; o relógio conta de verdade e nada sai da tela.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ── ajudantes de DOM: todo texto entra como texto, nunca como HTML ──
+  function h(tag, attrs, filhos) {
+    var n = document.createElement(tag), k;
+    for (k in attrs || {}) {
+      if (attrs[k] == null || attrs[k] === false) continue;
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    [].concat(filhos || []).forEach(function (f) { if (f != null && f !== false) n.appendChild(typeof f === "string" ? document.createTextNode(f) : f); });
+    return n;
+  }
+  function svg(tag, attrs) { var n = document.createElementNS(SVGNS, tag), k; for (k in attrs) n.setAttribute(k, attrs[k]); return n; }
+  function ic(nome, extra) { var s = svg("svg", {"class": "ed-ic" + (extra ? " " + extra : ""), "aria-hidden": "true"}); s.appendChild(svg("use", {href: "#ed-i-" + nome})); return s; }
+  function $(sel, raiz) { return (raiz || app).querySelector(sel); }
+  function todos(sel, raiz) { return Array.prototype.slice.call((raiz || app).querySelectorAll(sel)); }
+  function limpar(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+  function d2(n) { return (n < 10 ? "0" : "") + n; }
+  function pl(n, um, muitos) { return n + " " + (n === 1 ? um : muitos); }
+  function maiuscula(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function escalar(n, eixo, f) { if (n) n.style.transform = "scale" + eixo + "(" + Math.max(0, Math.min(1, f)).toFixed(4) + ")"; return n; }
+  function escala() { return app.offsetWidth ? app.getBoundingClientRect().width / app.offsetWidth || 1 : 1; }
+
+  // ── datas e tempos ──
+  var agora = new Date(), HOJE = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  var LETRA = ["D", "S", "T", "Q", "Q", "S", "S"], DIA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+  var MES3 = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  function em(n) { var d = new Date(HOJE); d.setDate(d.getDate() + n); return d; }
+  function curta(d) { return d.getDate() + " " + MES3[d.getMonth()]; }
+  function longa(d) { return d.getDate() + " de " + MESES[d.getMonth()]; }
+  function horas(min) { min = Math.max(0, Math.round(min)); var hh = Math.floor(min / 60), mm = min % 60; return hh ? hh + " h" + (mm ? " " + d2(mm) : "") : mm + " min"; }
+  function relogio(ms) { var s = Math.floor(ms / 1000); return d2(Math.floor(s / 3600)) + ":" + d2(Math.floor(s % 3600 / 60)) + ":" + d2(s % 60); }
+
+  // ── dados fictícios: duas provas inventadas; só nomes de matérias e de tópicos, nenhum conteúdo ──
+  // matéria: [id, nome, peso, tópicos (nomes, ou quantos módulos), situação de cada um (0 a 3), [acertos, respostas]]
+  // bloco:   [dia, matéria, tópico, minutos, hora, feito, segundos já contados]; dia negativo = ficou para trás
+  // revisão: [matéria, tópico, intervalo em dias, qual revisão]
+  var DEF = [
+    {id: "tribunal", nome: "Tribunal Regional", cargo: "Analista Judiciário", banca: "banca Instituto Aroeira", dias: 68, meta: 1080, seguidos: 12,
+      agenda: [3, 5, 2], semana: [135, 90, 25, 160, 110, 130], semanas: [14.5, 18.5, 11, 19, 18],
+      materias: [
+        ["pt", "Português", 2, ["Interpretação de texto", "Ortografia e acentuação", "Crase e regência", "Concordância", "Pontuação", "Classes de palavras", "Redação oficial"], "2311100", [14, 17]],
+        ["rl", "Raciocínio Lógico", 1, ["Proposições e conectivos", "Equivalências e negações", "Diagramas lógicos", "Sequências", "Porcentagem e razão"], "10000", [7, 11]],
+        ["dc", "Direito Constitucional", 3, ["Princípios fundamentais", "Direitos e garantias", "Organização do Estado", "Poder Judiciário", "Controle de constitucionalidade", "Administração pública", "Processo legislativo", "Funções essenciais à Justiça"], "32110000", [16, 21]],
+        ["da", "Direito Administrativo", 3, ["Princípios da administração", "Atos administrativos", "Poderes administrativos", "Licitações e contratos", "Agentes públicos", "Responsabilidade civil do Estado", "Processo administrativo", "Controle da administração", "Serviços públicos"], "110000000", [7, 12]],
+        ["in", "Informática", 1, ["Sistemas operacionais", "Editores de texto", "Planilhas eletrônicas", "Segurança da informação", "Redes e internet"], "21000", [8, 9]],
+        ["le", "Legislação específica", 2, ["Regimento interno", "Código de ética", "Estatuto dos servidores", "Organização judiciária", "Atendimento ao público", "Acessibilidade"], "100000", [7, 10]]
+      ],
+      blocos: [[0, "pt", 2, 45, "07:00", 1, 2700], [0, "dc", 4, 50, "08:00", 0, 1476], [0, "rl", 1, 40, "19:30"], [0, "in", 2, 35, "20:20"],
+        [-1, "da", 2, 60], [-2, "da", 3, 60], [-2, "dc", 5, 50], [-3, "le", 1, 40], [-4, "le", 2, 45], [-4, "pt", 5, 40], [-5, "rl", 2, 40],
+        [1, "da", 4, 60], [1, "pt", 6, 40], [1, "in", 3, 35], [2, "dc", 6, 50], [2, "le", 3, 40], [3, "da", 5, 60], [3, "rl", 3, 40], [3, "in", 4, 35],
+        [4, "dc", 7, 50], [4, "le", 4, 40], [5, "da", 6, 60], [5, "rl", 4, 40], [6, "da", 7, 60], [6, "le", 5, 40]],
+      fila: [["dc", 1, 7, 2], ["da", 1, 1, 1], ["pt", 4, 1, 1], ["in", 0, 7, 2], ["pt", 0, 30, 3], ["le", 0, 1, 1]]},
+    {id: "residencia", nome: "Residência", cargo: "Acesso direto", banca: "tópicos resumidos em módulos", dias: 124, meta: 1200, seguidos: 9,
+      agenda: [2, 4, 1], semana: [120, 60, 150, 90, 45, 130], semanas: [16, 21, 12.5, 20, 22],
+      materias: [["cm", "Clínica Médica", 3, 8, "21111000", [18, 24]], ["ci", "Cirurgia", 2, 6, "110000", [9, 14]], ["pe", "Pediatria", 2, 6, "210000", [11, 15]],
+        ["go", "Ginecologia e Obstetrícia", 2, 6, "100000", [6, 10]], ["pv", "Preventiva", 1, 5, "11000", [8, 10]]],
+      blocos: [[0, "cm", 4, 60, "06:30", 1, 3600], [0, "pe", 2, 50, "12:30"], [0, "pv", 2, 40, "20:00"],
+        [-1, "ci", 2, 50], [-2, "go", 1, 50], [-3, "cm", 5, 60], [-3, "pe", 3, 50],
+        [1, "ci", 3, 50], [1, "go", 2, 50], [2, "cm", 6, 60], [2, "pv", 3, 40], [3, "pe", 4, 50], [3, "ci", 4, 50], [4, "go", 3, 50], [4, "cm", 7, 60],
+        [5, "pe", 5, 50], [5, "pv", 4, 40], [6, "ci", 5, 50], [6, "go", 4, 50]],
+      fila: [["cm", 0, 7, 2], ["pe", 0, 7, 2], ["ci", 0, 1, 1], ["pv", 0, 1, 1]]}
+  ];
+  function montar(def) {
+    var p = {id: def.id, nome: def.nome, cargo: def.cargo, banca: def.banca, dias: def.dias, meta: def.meta, seguidos: def.seguidos,
+      agenda: def.agenda.slice(), semana: def.semana.slice(), semanas: def.semanas.slice(), materias: [], blocos: [], fila: [], atual: null, rodando: false, marco: 0, verAntes: false};
+    def.materias.forEach(function (m) {
+      var nomes = [], i;
+      if (typeof m[3] === "number") for (i = 1; i <= m[3]; i++) nomes.push("Módulo " + i); else nomes = m[3];
+      p.materias.push({id: m[0], sigla: m[0].toUpperCase(), nome: m[1], peso: m[2], acertos: m[5][0], total: m[5][1],
+        topicos: nomes.map(function (nome, k) { return {nome: nome, st: +m[4].charAt(k)}; })});
+    });
+    def.blocos.forEach(function (b, i) { p.blocos.push({id: "b" + i, dia: b[0], de: b[0], m: b[1], t: b[2], min: b[3], hora: b[4] || "", feito: !!b[5], ms: (b[6] || 0) * 1000, movido: false}); });
+    def.fila.forEach(function (r, i) { p.fila.push({id: "r" + i, m: r[0], t: r[1], dias: r[2], vez: r[3]}); });
+    var primeiro = p.blocos.filter(function (b) { return b.dia === 0 && !b.feito; })[0];
+    p.atual = primeiro ? primeiro.id : null;
+    return p;
+  }
+  var PROVAS = {}, ST = ["não visto", "estudado", "revisado", "dominado"];
+  DEF.forEach(function (d) { PROVAS[d.id] = montar(d); });
+  var ui = {prova: "tribunal", vista: "hoje", aberta: null, traca: false, cartaoNovo: false, travado: false, guarda: 0, plano: "ano", ultimoFoco: null, desfazer: null, relAviso: 0};
+
+  // ── leituras: tudo o que aparece como número é derivado daqui ──
+  function P() { return PROVAS[ui.prova]; }
+  function mat(p, id) { for (var i = 0; i < p.materias.length; i++) if (p.materias[i].id === id) return p.materias[i]; return null; }
+  function bloco(p, id) { for (var i = 0; i < p.blocos.length; i++) if (p.blocos[i].id === id) return p.blocos[i]; return null; }
+  function topico(p, b) { return mat(p, b.m).topicos[b.t]; }
+  function vistos(m) { return m.topicos.filter(function (t) { return t.st > 0; }).length; }
+  function cobertura(p) { var a = 0, b = 0; p.materias.forEach(function (m) { a += m.peso * vistos(m) / m.topicos.length; b += m.peso; }); return Math.round(a / b * 100); }
+  function perigo(m) { return m.peso * (1 - vistos(m) / m.topicos.length); }
+  function risco(p) { return p.materias.slice().sort(function (x, y) { return perigo(y) - perigo(x); })[0]; }
+  function doDia(p, n) { return p.blocos.filter(function (b) { return b.dia === n; }); }
+  function atrasados(p) { return p.blocos.filter(function (b) { return b.dia < 0 && !b.feito && topico(p, b).st === 0; }); }
+  function msDe(p, b) { return b.ms + (p.rodando && p.atual === b.id ? performance.now() - p.marco : 0); }
+  function minutosHoje(p) { var s = 0; doDia(p, 0).forEach(function (b) { s += msDe(p, b); }); return s / 60000; }
+  function minutosInteiros(p) { var s = 0; doDia(p, 0).forEach(function (b) { s += Math.floor(msDe(p, b) / 60000); }); return s; }   // a soma das linhas, minuto a minuto
+  // prova resumida em módulos: o título da linha leva a matéria, para "Módulo 3" não se repetir sem dono
+  function rotulo(m, t) { var nome = m.topicos[t].nome; return /^Módulo /.test(nome) ? [m.nome + " · " + nome.toLowerCase(), "peso " + m.peso + " no edital"] : [nome, m.nome]; }
+  function minutosSemana(p) { var s = minutosInteiros(p); p.semana.forEach(function (m) { s += m; }); return s; }
+  ui.aberta = risco(P()).id;
+
+  // ── o relógio: guarda o instante em que começou; o tique só repinta, e para quando a aba some ──
+  var tique = 0;
+  function acertarRelogio() {
+    var quer = P().rodando && !document.hidden;
+    if (quer && !tique) tique = setInterval(pintarTempo, 500);
+    else if (!quer && tique) { clearInterval(tique); tique = 0; }
+  }
+  function pausar(p) { if (!p.rodando) return; var b = bloco(p, p.atual); if (b) b.ms += performance.now() - p.marco; p.rodando = false; acertarRelogio(); }
+  function ligar(p) { if (p.rodando || !bloco(p, p.atual)) return; p.rodando = true; p.marco = performance.now(); acertarRelogio(); }
+  function pintarTempo() {
+    var p = P(), b = bloco(p, p.atual), c = $(".ed-crono"), n = $(".ed-meta-num");
+    if (b && c) {
+      var ms = msDe(p, b), mins = Math.floor(ms / 60000), txt = relogio(ms);
+      if (c.textContent !== txt) c.textContent = txt;
+      escalar($(".ed-agora .ed-barra-i"), "X", ms / (b.min * 60000));
+      $(".ed-agora-feito").textContent = mins > b.min ? (mins - b.min) + " min além do plano" : mins + " de " + b.min + " min";
+      $(".ed-agora").toggleAttribute("data-passou", mins > b.min);
+      var bt = $('.ed-agora [data-acao="concluir"]'), pode = ms >= 60000;
+      if (bt && bt.hasAttribute("data-pular") === pode) {
+        bt.toggleAttribute("data-pular", !pode); bt.classList.toggle("ed-btn-cheio", pode); bt.classList.toggle("ed-btn-fio", !pode);
+        bt.querySelector("use").setAttribute("href", "#ed-i-" + (pode ? "certo" : "seta")); bt.lastChild.textContent = pode ? "Concluir bloco" : "Pular bloco";
+      }
+    }
+    if (n) {
+      var tot = Math.floor(minutosSemana(p)), falta = p.meta - tot;
+      n.textContent = horas(tot) + " de " + horas(p.meta);
+      escalar($(".ed-meta .ed-barra-i"), "X", tot / p.meta);
+      escalar($(".ed-dia7[data-hoje] .ed-dia7-i"), "Y", minutosHoje(p) / 180);
+      $(".ed-meta-nota").textContent = falta > 0 ? "Faltam " + horas(falta) + " para a meta de " + horas(p.meta) + ". Hoje: " + horas(minutosInteiros(p)) + " de tempo líquido." : "Meta batida, com " + horas(-falta) + " de folga.";
+    }
+  }
+
+  // ── desfazer: uma cópia do plano antes da ação; o tempo já contado nunca volta atrás, e o relógio que a ação parou volta a contar ──
+  function copia(p) { var ligado = p.rodando, s; if (ligado) pausar(p); p.eraLigado = ligado; s = JSON.stringify(p); delete p.eraLigado; if (ligado) ligar(p); return s; }
+  function restaurar(s, parouNaAcao) {
+    var novo = JSON.parse(s), vivo = PROVAS[novo.id], religar = (parouNaAcao && novo.eraLigado) || (vivo.rodando && vivo.atual === novo.atual);
+    delete novo.eraLigado;
+    novo.blocos.forEach(function (b) { var a = bloco(vivo, b.id); if (a) b.ms = Math.max(b.ms, msDe(vivo, a)); });
+    vivo.rodando = false; novo.rodando = false; PROVAS[novo.id] = novo;
+    if (religar) ligar(novo); else acertarRelogio();
+  }
+  function focar(chave) { var alvo = todos('[data-foco="' + chave + '"]').filter(function (x) { return x.offsetParent && !x.disabled; })[0]; if (alvo) alvo.focus({preventScroll: true}); return !!alvo; }
+  function focarTitulo() { var t = $(".ed-vista[data-ativa] .ed-cab h1"); if (t) t.focus({preventScroll: true}); }
+  function avisar(texto, desfazer) {
+    var a = $(".ed-aviso");
+    $(".ed-aviso-t").textContent = texto;
+    $(".ed-aviso-b").hidden = !desfazer;
+    ui.desfazer = desfazer || null;
+    a.setAttribute("data-visivel", "");
+    clearTimeout(ui.relAviso);
+    ui.relAviso = setTimeout(function () { a.removeAttribute("data-visivel"); ui.desfazer = null; }, 5200);
+  }
+
+  // ── movimento: o que muda de lugar vai andando do lugar antigo para o novo ──
+  function comMovimento(mudar) {
+    if (calmo) { mudar(); return; }
+    var antes = {}, e = escala(), i = 0;
+    todos("[data-flip]").forEach(function (n) { if (n.offsetParent) antes[n.getAttribute("data-flip")] = n.getBoundingClientRect(); });
+    mudar();
+    todos("[data-flip]").forEach(function (n) {
+      var a = antes[n.getAttribute("data-flip")];
+      if (!a || !n.offsetParent) return;
+      var d = n.getBoundingClientRect(), dx = (a.left - d.left) / e, dy = (a.top - d.top) / e, atraso = Math.min(i * 22, 150);
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+      i++;
+      n.style.transition = "none"; n.style.position = "relative"; n.style.zIndex = "2";
+      n.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px)";
+      requestAnimationFrame(function () { requestAnimationFrame(function () { n.style.transition = "transform var(--ed-vira) var(--ed-mola) " + atraso + "ms"; n.style.transform = ""; }); });
+    });
+  }
+  function rolarAte(n) {
+    var r = n.closest(".ed-lado,.ed-principal");
+    if (!r || getComputedStyle(r).display === "contents") r = $(".ed-rolo");
+    var topo = (n.getBoundingClientRect().top - r.getBoundingClientRect().top) / escala() + r.scrollTop - 66;
+    r.scrollTo({top: Math.max(0, topo), behavior: calmo ? "auto" : "smooth"});
+  }
+
+  // ── peças ──
+  function grifo(texto) { return h("span", {"class": "ed-grifo", "data-traca": ui.traca, text: texto}); }
+  function secao(titulo, lado) { return h("header", {"class": "ed-sec"}, [h("h2", {text: titulo}), typeof lado === "string" ? h("span", {"class": "ed-sec-lado ed-mono", text: lado}) : lado || null]); }
+  function sigla(m) { return h("span", {"class": "ed-sigla", text: m.sigla}); }
+  function barra(f) { var b = h("div", {"class": "ed-barra"}, h("i", {"class": "ed-barra-i"})); escalar(b.firstChild, "X", f); return b; }
+  function mini(f) { var b = h("span", {"class": "ed-mini"}, h("i", {"class": "ed-mini-i"})); escalar(b.firstChild, "X", f); return b; }
+  function cabecalho(titulo, numero, rotulo) {
+    return h("header", {"class": "ed-cab"}, [h("h1", {tabindex: "-1"}, grifo(titulo)),
+      h("p", {"class": "ed-cab-num"}, [h("b", {"class": "ed-cab-n ed-mono", text: numero}), h("span", {"class": "ed-cab-rot"}, [rotulo[0], h("br"), rotulo[1]])])]);
+  }
+  function linha(tag, attrs, margem, titulo, sub, fim) {
+    attrs["class"] = "ed-linha" + (attrs["class"] ? " " + attrs["class"] : "");
+    return h(tag, attrs, [h("span", {"class": "ed-na-margem"}, margem),
+      h("span", {"class": "ed-corpo"}, [h("span", {"class": "ed-corpo-t", text: titulo}), h("span", {"class": "ed-corpo-s", text: sub})]),
+      fim ? h("span", {"class": "ed-fim ed-mono"}, fim) : null]);
+  }
+  function caixa(st) {
+    var s = svg("svg", {"class": "ed-caixa", viewBox: "0 0 22 22", "data-st": st, "aria-hidden": "true"});
+    s.appendChild(svg("rect", {"class": "ed-cx-fundo", x: 3, y: 3, width: 16, height: 16, rx: 3.5}));
+    if (st === 1) s.appendChild(svg("path", {"class": "ed-cx-risco", d: "M6.5 15.5l9-9"}));
+    if (st === 2) s.appendChild(svg("path", {"class": "ed-cx-risco", d: "M6.5 15.5l9-9M6.5 6.5l9 9"}));
+    if (st === 3) s.appendChild(svg("path", {"class": "ed-cx-risco", d: "M6.6 11.4l3 3 5.9-6.5"}));
+    return s;
+  }
+  function amostra(tipo, texto) { return h("span", {"class": "ed-leg"}, [h("i", {"class": "ed-tij ed-tij-leg", "data-tipo": tipo || null}), texto]); }
+  function tijolo(p, b, tipo) { return h("span", {"class": "ed-tij", "data-flip": b.id, "data-tipo": tipo || null, text: mat(p, b.m).sigla}); }
+
+  // ── seção 1: Hoje ──
+  function vistaHoje(p) {
+    var v = $('.ed-vista[data-vista="hoje"]'), pr = limpar($(".ed-miolo", v)), la = limpar($(".ed-lado", v));
+    var hoje = doDia(p, 0), atual = bloco(p, p.atual), feitos = hoje.filter(function (b) { return b.feito; }).length, late = atrasados(p), planejado = 0;
+    hoje.forEach(function (b) { planejado += b.min; });
+    pr.appendChild(cabecalho("Hoje", String(p.dias), ["dias para", "a prova"]));
+    pr.appendChild(h("p", {"class": "ed-sub", text: maiuscula(DIA[HOJE.getDay()]) + ", " + longa(HOJE) + " · " + feitos + " de " + pl(hoje.length, "bloco feito", "blocos feitos")}));
+    if (atual) {
+      var m = mat(p, atual.m), jaTem = msDe(p, atual) > 0, pode = msDe(p, atual) >= 60000;
+      pr.appendChild(h("section", {"class": "ed-agora", "aria-label": "Bloco da vez", "data-parado": !p.rodando}, [
+        h("div", {"class": "ed-agora-topo"}, [sigla(m), h("span", {"class": "ed-agora-mat", text: m.nome}), h("span", {"class": "ed-mono", text: "bloco " + (hoje.indexOf(atual) + 1) + " de " + hoje.length})]),
+        h("h2", {text: m.topicos[atual.t].nome}),
+        h("div", {"class": "ed-crono ed-mono", role: "timer", "aria-label": "Tempo líquido deste bloco", text: relogio(msDe(p, atual))}),
+        barra(0),
+        h("p", {"class": "ed-agora-pe ed-mono"}, [h("span", {"class": "ed-agora-feito"}), p.rodando ? h("span", null, ["contando", h("span", {"class": "ed-so-largo", text: " tempo líquido"})]) : h("span", {text: "relógio parado"})]),
+        h("div", {"class": "ed-acoes"}, [
+          h("button", {type: "button", "class": "ed-btn ed-btn-fio", "data-acao": "alternar", "data-foco": "alternar"}, [ic(p.rodando ? "pausa" : "tocar"), p.rodando ? "Pausar" : jaTem ? "Retomar" : "Iniciar"]),
+          h("button", {type: "button", "class": "ed-btn " + (pode ? "ed-btn-cheio" : "ed-btn-fio"), "data-acao": "concluir", "data-foco": "concluir", "data-pular": !pode}, [ic(pode ? "certo" : "seta"), pode ? "Concluir bloco" : "Pular bloco"])
+        ])
+      ]));
+    } else {
+      var amanha = doDia(p, 1).filter(function (b) { return !b.feito; })[0], pulou = p.blocos.some(function (b) { return b.pulado; });
+      var esperam = late.filter(function (b) { return b.pulado; }).length;
+      var estudo = hoje.length ? horas(minutosInteiros(p)) + " de tempo líquido em " + pl(hoje.length, "bloco", "blocos") + ". " : "Nenhum bloco estudado hoje. ";
+      pr.appendChild(h("section", {"class": "ed-agora ed-cumprido", "aria-label": "Plano de hoje"}, [
+        h("h2", null, grifo(pulou ? "Por hoje é só" : "Plano de hoje cumprido")),
+        h("p", {"class": "ed-cumprido-t", text: estudo + (!pulou ? "O que você estudou hoje volta nas revisões de amanhã."
+          : esperam ? pl(esperam, "bloco pulado espera", "blocos pulados esperam") + " nos atrasados." : "O que você pulou já não está nos atrasados.")}),
+        amanha ? h("div", {"class": "ed-acoes ed-acoes-1"}, h("button", {type: "button", "class": "ed-btn ed-btn-fio", "data-acao": "adiantar", "data-foco": "concluir"}, [ic("mais"), "Adiantar um bloco de amanhã"])) : null
+      ]));
+    }
+    pr.appendChild(late.length
+      ? h("button", {type: "button", "class": "ed-atraso", "data-acao": "ir-replanejar", "data-foco": "ir-replanejar"}, [ic("alerta"),
+          h("span", {"class": "ed-atraso-t", text: pl(late.length, "tópico atrasado", "tópicos atrasados")}), h("span", {"class": "ed-atraso-ir", text: "Replanejar"}), ic("seta", "ed-seta")])
+      : h("p", {"class": "ed-emdia"}, [ic("certo"), "Plano em dia: nada ficou para trás."]));
+    var lista = h("div", {"class": "ed-pauta"});
+    hoje.forEach(function (b) {
+      var mm = mat(p, b.m), rt = rotulo(mm, b.t), nome = rt[0], eAtual = b.id === p.atual;
+      if (b.feito) lista.appendChild(linha("div", {"data-feito": true}, b.hora || "extra", nome, rt[1], [horas(Math.floor(b.ms / 60000)), ic("certo")]));
+      else lista.appendChild(linha("button", {type: "button", "data-acao": "bloco", "data-id": b.id, "data-atual": eAtual, "data-foco": "bl-" + b.id,
+        "aria-label": nome + ", " + mm.nome + ", " + b.min + " minutos. " + (eAtual ? "É o bloco da vez." : "Tocar torna este o bloco da vez.")},
+        b.hora || "extra", nome, rt[1], [b.min + " min", eAtual ? h("i", {"class": "ed-ponto"}) : null]));
+    });
+    pr.appendChild(h("section", {"class": "ed-bloco"}, [secao("Plano do dia", horas(planejado) + " no plano"), lista]));
+
+    var barras = h("div", {"class": "ed-dias7"});
+    p.semana.concat([0]).forEach(function (min, i) {
+      var col = h("i", {"class": "ed-dia7-i"});
+      escalar(col, "Y", min / 180);
+      barras.appendChild(h("div", {"class": "ed-dia7", "data-hoje": i === 6}, [h("span", {"class": "ed-dia7-col"}, col), h("span", {text: LETRA[em(i - 6).getDay()]})]));
+    });
+    la.appendChild(h("section", {"class": "ed-bloco ed-meta"}, [secao("Últimos 7 dias", h("span", {"class": "ed-sec-lado ed-mono ed-meta-num"})), barra(0), barras, h("p", {"class": "ed-nota ed-meta-nota"})]));
+    var curtas = h("div", {"class": "ed-pauta"});
+    p.fila.slice(0, 3).forEach(function (r) {
+      var mm = mat(p, r.m), rt = rotulo(mm, r.t);
+      curtas.appendChild(linha("button", {type: "button", "data-acao": "vista", "data-vista": "revisoes"}, r.dias + " d", rt[0], rt[1], [ic("seta", "ed-seta")]));
+    });
+    la.appendChild(h("section", {"class": "ed-bloco"}, [secao("Revisões de hoje", p.fila.length ? p.fila.length + " na fila" : "fila zerada"),
+      p.fila.length ? curtas : h("p", {"class": "ed-nota", text: "Nada para revisar agora. As próximas chegam amanhã."})]));
+  }
+
+  // ── seção 2: Edital ──
+  function vistaEdital(p) {
+    var v = $('.ed-vista[data-vista="edital"]'), pr = limpar($(".ed-miolo", v)), la = limpar($(".ed-lado", v));
+    var c = cobertura(p), r = risco(p), total = 0, vis = 0, d;
+    p.materias.forEach(function (m) { total += m.topicos.length; vis += vistos(m); });
+    pr.appendChild(h("div", {"class": "ed-cob"}, [
+      cabecalho("Edital", String(em(p.dias).getDate()), ["de " + MESES[em(p.dias).getMonth()] + ",", "dia da prova"]),
+      h("p", {"class": "ed-sub", text: p.nome + " · " + p.cargo + " · " + p.banca}),
+      h("div", {"class": "ed-cobertura"}, [h("b", {"class": "ed-cob-n ed-mono"}, h("span", {"class": "ed-grifo", text: c + "%"})),
+        h("div", {"class": "ed-cob-t"}, [h("span", {"class": "ed-cob-t1", text: "do edital coberto"}), h("span", {"class": "ed-cob-t2", text: "pelo peso de cada matéria · " + vis + " de " + total + " tópicos vistos"})])]),
+      barra(c / 100),
+      h("button", {type: "button", "class": "ed-risco", "data-acao": "abrir-materia", "data-id": r.id, "data-foco": "risco"}, [ic("alerta", "ed-ic-alerta"),
+        h("span", {"class": "ed-risco-t"}, [h("span", {"class": "ed-risco-r", text: "Maior risco"}), r.nome + ": peso " + r.peso + ", " + vistos(r) + " de " + r.topicos.length + " vistos"]), ic("seta", "ed-seta")])
+    ]));
+
+    var late = atrasados(p), mov = p.blocos.filter(function (b) { return b.movido; }), antes = p.verAntes && mov.length > 0, naPilha = antes ? mov.concat(late) : late;
+    var pilha = h("div", {"class": "ed-pilha", "data-vazia": !naPilha.length, role: "img", "aria-label": naPilha.length ? "Atrasados: " + pl(naPilha.length, "tópico", "tópicos") : "Nenhum tópico atrasado"});
+    if (naPilha.length) { pilha.appendChild(h("span", {"class": "ed-pilha-rot", text: "Atrasados"})); naPilha.forEach(function (b) { pilha.appendChild(tijolo(p, b, "atrasado")); }); }
+    else pilha.appendChild(h("span", {"class": "ed-pilha-rot"}, [ic("certo"), "Nenhum tópico atrasado"]));
+    var grade = h("div", {"class": "ed-grade"}), cheio = 0;
+    for (d = 0; d < 7; d++) {
+      var dt = em(d), col = h("div", {"class": "ed-col", "data-hoje": d === 0, role: "img"}), nomes = [];
+      col.appendChild(h("span", {"class": "ed-col-d", text: LETRA[dt.getDay()]}));
+      col.appendChild(h("b", {"class": "ed-col-n ed-mono", text: String(dt.getDate())}));
+      doDia(p, d).sort(function (x, y) { return (x.movido ? 1 : 0) - (y.movido ? 1 : 0); }).forEach(function (b) {
+        if (antes && b.movido) return;
+        nomes.push(mat(p, b.m).nome);
+        col.appendChild(tijolo(p, b, b.feito ? "feito" : b.id === p.atual ? "atual" : b.movido ? "movido" : ""));
+      });
+      cheio = Math.max(cheio, nomes.length);
+      col.setAttribute("aria-label", DIA[dt.getDay()] + ", " + dt.getDate() + ": " + (nomes.length ? pl(nomes.length, "bloco", "blocos") + " (" + nomes.join(", ") + ")" : "sem blocos"));
+      grade.appendChild(col);
+    }
+    var controle = null, nota, repete = false;
+    if (mov.length) {
+      var dias = {}, seg;
+      mov.forEach(function (b) { dias[b.dia] = 1; });
+      for (d = 1; d < 7; d++) { var vistas = {}; doDia(p, d).forEach(function (b) { if (vistas[b.m]) repete = true; vistas[b.m] = 1; }); }
+      seg = h("div", {"class": "ed-seg", role: "group", "aria-label": "Comparar o plano"}, [
+        h("button", {type: "button", "class": "ed-seg-b", "data-acao": "ver", "data-qual": "antes", "aria-pressed": String(antes), "data-foco": "ver-antes", text: "Antes"}),
+        h("button", {type: "button", "class": "ed-seg-b", "data-acao": "ver", "data-qual": "depois", "aria-pressed": String(!antes), "data-foco": "ver-depois", text: "Depois"})]);
+      // ficou atrasado depois de replanejar: o botão continua à mão, ao lado do antes e depois
+      controle = late.length ? h("span", {"class": "ed-sec-acoes"}, [seg, h("button", {type: "button", "class": "ed-btn ed-btn-cheio ed-btn-p", "data-acao": "replanejar", "data-foco": "replanejar"}, [ic("trocar"), "Replanejar"])]) : seg;
+      nota = h("p", {"class": "ed-nota", "aria-live": "polite"}, [antes
+        ? "Antes: " + pl(mov.length, "tópico parado", "tópicos parados") + ", sem dia para acontecer. "
+        : "Depois: " + pl(mov.length, "tópico", "tópicos") + " em " + pl(Object.keys(dias).length, "dia", "dias") + ", no máximo " + cheio + " blocos por dia" + (repete ? "" : " e sem repetir matéria no mesmo dia") + ". ",
+        h("button", {type: "button", "class": "ed-link", "data-acao": "desfazer-replano", "data-foco": "desfazer-replano", text: "Desfazer"})]);
+    } else {
+      if (late.length) controle = h("button", {type: "button", "class": "ed-btn ed-btn-cheio ed-btn-p", "data-acao": "replanejar", "data-foco": "replanejar"}, [ic("trocar"), "Replanejar"]);
+      nota = h("p", {"class": "ed-nota", text: late.length
+        ? "Replanejar tira os atrasados da pilha e encaixa cada um no dia com mais folga, do mais pesado para o mais leve, sem repetir matéria no dia nem mexer no que já foi feito."
+        : "Tudo com dia marcado. Se um bloco ficar para trás, ele aparece aqui."});
+    }
+    var legenda = h("p", {"class": "ed-legenda", "aria-hidden": "true"}, [amostra("feito", "feito"), amostra("atual", "da vez"), amostra("", "marcado"), naPilha.length ? amostra("atrasado", "atrasado") : null, mov.length && !antes ? amostra("movido", "mudou de dia") : null]);
+    la.appendChild(h("section", {"class": "ed-bloco ed-sete"}, [secao("Próximos 7 dias", controle), pilha, grade, legenda, nota]));
+
+    var lista = h("div", {"class": "ed-pauta"});
+    p.materias.forEach(function (m) {
+      var aberta = ui.aberta === m.id, vs = vistos(m), grupo = h("div", {"class": "ed-mat", id: "ed-m-" + m.id, "data-aberta": aberta, "data-risco": m === r});
+      grupo.appendChild(linha("button", {type: "button", "data-acao": "materia", "data-id": m.id, "aria-expanded": String(aberta), "data-foco": "m-" + m.id},
+        m.sigla, m.nome, "peso " + m.peso + " · " + vs + " de " + m.topicos.length + " vistos", [mini(vs / m.topicos.length), ic("seta", "ed-seta")]));
+      if (aberta) {
+        var ul = h("ul", {"class": "ed-tops"});
+        m.topicos.forEach(function (t, i) {
+          ul.appendChild(h("li", null, h("button", {type: "button", "class": "ed-linha ed-top", "data-acao": "topico", "data-m": m.id, "data-t": i, "data-st": t.st, "data-foco": "t-" + m.id + "-" + i,
+            "aria-label": t.nome + ": " + ST[t.st] + ". Tocar muda para " + ST[(t.st + 1) % 4] + "."},
+            [h("span", {"class": "ed-na-margem"}, caixa(t.st)), h("span", {"class": "ed-corpo", text: t.nome}), h("span", {"class": "ed-st", text: ST[t.st]})])));
+        });
+        grupo.appendChild(ul);
+      }
+      lista.appendChild(grupo);
+    });
+    pr.appendChild(h("section", {"class": "ed-bloco ed-mats"}, [secao("Matérias", p.materias.length + " · " + total + " tópicos"), lista]));
+  }
+
+  // ── seção 3: Revisões ──
+  function vistaRevisoes(p) {
+    var v = $('.ed-vista[data-vista="revisoes"]'), pr = limpar($(".ed-miolo", v)), la = limpar($(".ed-lado", v)), r = p.fila[0];
+    pr.appendChild(cabecalho("Revisões", String(p.fila.length), ["para", "hoje"]));
+    pr.appendChild(h("p", {"class": "ed-sub", text: "Cada bloco concluído volta em 1, 7 e 30 dias. Aqui só aparece o nome do tópico: a resposta é sua."}));
+    if (r) {
+      var m = mat(p, r.m);
+      pr.appendChild(h("section", {"class": "ed-cartao", "data-novo": ui.cartaoNovo, "aria-label": "Revisão da vez"}, [
+        h("div", {"class": "ed-cartao-topo"}, [h("span", {"class": "ed-etq", text: r.dias === 1 ? "1 dia" : r.dias + " dias"}), sigla(m), h("span", {"class": "ed-agora-mat", text: m.nome})]),
+        h("h2", {text: m.topicos[r.t].nome}),
+        h("p", {"class": "ed-cartao-quando", text: (r.vez > 1 ? "Visto pela última vez " : "Estudado ") + (r.dias === 1 ? "ontem" : "há " + r.dias + " dias") + ", em " + curta(em(-r.dias)) + " · " + r.vez + "ª revisão"}),
+        h("p", {"class": "ed-cartao-pede", text: "Feche o material e tente lembrar o tópico de cabeça. Lembrou?"}),
+        h("div", {"class": "ed-acoes ed-acoes-2"}, [
+          h("button", {type: "button", "class": "ed-btn ed-btn-erro", "data-acao": "errei", "data-foco": "errei"}, [ic("fechar"), "Errei"]),
+          h("button", {type: "button", "class": "ed-btn ed-btn-cheio", "data-acao": "acertei", "data-foco": "acertei"}, [ic("certo"), "Acertei"])])
+      ]));
+    } else {
+      pr.appendChild(h("section", {"class": "ed-cartao ed-cumprido", "data-novo": ui.cartaoNovo}, [
+        h("h2", null, grifo("Fila zerada")),
+        h("p", {"class": "ed-cartao-pede", text: "Você respondeu tudo o que vencia hoje. Amanhã " + (p.agenda[0] === 1 ? "chega 1 revisão." : "chegam " + p.agenda[0] + " revisões.")})]));
+    }
+    var resto = p.fila.slice(1);
+    if (resto.length) {
+      var lista = h("div", {"class": "ed-pauta"});
+      resto.forEach(function (x) { var mm = mat(p, x.m), rt = rotulo(mm, x.t); lista.appendChild(linha("div", {"data-flip": "f" + x.id}, x.dias + " d", rt[0], rt[1], [x.vez + "ª revisão"])); });
+      pr.appendChild(h("section", {"class": "ed-bloco"}, [secao("Na fila", String(resto.length)), lista]));
+    }
+    pr.appendChild(h("section", {"class": "ed-bloco"}, [secao("Agenda de revisões", "1 · 7 · 30"), h("div", {"class": "ed-agenda"}, [["amanhã", 0], ["em 7 dias", 1], ["em 30 dias", 2]].map(function (x) {
+      return h("div", {"class": "ed-agenda-c"}, [h("b", {"class": "ed-agenda-n ed-mono", text: String(p.agenda[x[1]])}), h("span", {"class": "ed-agenda-r", text: x[0]})]);
+    }))]));
+
+    var des = h("div", {"class": "ed-des-lista"});
+    p.materias.forEach(function (mm) {
+      var f = mm.total ? mm.acertos / mm.total : 0;
+      des.appendChild(h("div", {"class": "ed-des"}, [sigla(mm), h("span", {"class": "ed-des-m"}, [h("span", {"class": "ed-des-nome", text: mm.nome}), mini(f)]),
+        h("b", {"class": "ed-des-p ed-mono", text: Math.round(f * 100) + "%"}), h("span", {"class": "ed-des-n ed-mono", text: mm.acertos + "/" + mm.total})]));
+    });
+    la.appendChild(h("section", {"class": "ed-bloco"}, [secao("Desempenho por matéria", "acertos"), des]));
+    var teto = p.meta * 1.25, sem = h("div", {"class": "ed-semanas", role: "img"}), rot = h("div", {"class": "ed-semanas-rot ed-mono", "aria-hidden": "true"}), bateu = 0;
+    sem.appendChild(h("span", {"class": "ed-semanas-meta ed-mono"}, h("span", {"class": "ed-semanas-meta-t", text: "meta " + horas(p.meta)})));
+    p.semanas.concat([minutosSemana(p) / 60]).forEach(function (hs, i) {
+      var ok = hs * 60 >= p.meta, col = h("i", {"class": "ed-sem-i"}), ini = em(-(5 - i) * 7 - 6);
+      if (ok && i < 5) bateu++;
+      escalar(col, "Y", hs * 60 / teto);
+      sem.appendChild(h("span", {"class": "ed-sem", "data-bateu": ok && i < 5, "data-esta": i === 5}, col));
+      rot.appendChild(h("span", {text: i === 5 ? "agora" : ini.getDate() + "/" + (ini.getMonth() + 1)}));
+    });
+    sem.setAttribute("aria-label", "Horas por semana nas últimas seis semanas; " + bateu + " das cinco anteriores bateram a meta");
+    la.appendChild(h("section", {"class": "ed-bloco"}, [secao("Constância", pl(p.seguidos, "dia seguido", "dias seguidos")), sem, rot,
+      h("p", {"class": "ed-nota", text: bateu + " das últimas 5 semanas bateram a meta de " + horas(p.meta) + " de tempo líquido."})]));
+  }
+
+  // ── o que fica fora das seções: a lateral, a barra de cima, as abas ──
+  function moldura(p) {
+    var a = limpar($(".ed-alvo")), nav = limpar($(".ed-nav")), n = $(".ed-aba-n");
+    a.appendChild(h("span", {"class": "ed-alvo-nome"}, [p.nome, ic("baixo")]));
+    a.appendChild(h("span", {"class": "ed-alvo-sub", text: p.cargo + " · " + p.banca}));
+    a.appendChild(h("span", {"class": "ed-alvo-dias"}, [h("b", {"class": "ed-alvo-n ed-mono", text: String(p.dias)}), h("span", {"class": "ed-alvo-dt"}, ["dias para a prova,", h("br"), "em " + longa(em(p.dias))])]));
+    [["hoje", "Hoje", ""], ["edital", "Edital", cobertura(p) + "%"], ["revisoes", "Revisões", p.fila.length ? String(p.fila.length) : ""]].forEach(function (x) {
+      nav.appendChild(h("button", {type: "button", "class": "ed-nav-item", "data-acao": "vista", "data-vista": x[0], "data-foco": "nav-" + x[0], "aria-current": ui.vista === x[0] ? "page" : null},
+        [ic(x[0]), x[1], x[2] ? h("span", {"class": "ed-nav-n ed-mono", text: x[2]}) : null]));
+    });
+    $(".ed-seletor-t").textContent = p.nome;
+    todos(".ed-aba").forEach(function (b) { if (b.getAttribute("data-vista") === ui.vista) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    n.textContent = String(p.fila.length); n.hidden = !p.fila.length;
+    todos(".ed-vista").forEach(function (v) { v.toggleAttribute("data-ativa", v.getAttribute("data-vista") === ui.vista); });
+  }
+  function desenhar() {
+    var p = P(), f = document.activeElement, chave = f && app.contains(f) ? f.getAttribute("data-foco") : null;
+    var rolos = todos(".ed-rolo,.ed-principal,.ed-lado").map(function (n) { return [n, n.scrollTop]; });
+    app.setAttribute("data-vista", ui.vista);
+    moldura(p); vistaHoje(p); vistaEdital(p); vistaRevisoes(p);
+    rolos.forEach(function (x) { if (x[1]) x[0].scrollTop = x[1]; });
+    if (chave) focar(chave);
+    pintarTempo();
+  }
+  function irPara(vista) {
+    ui.vista = vista; ui.traca = true; ui.cartaoNovo = true;
+    desenhar();
+    ui.traca = false; ui.cartaoNovo = false;
+    todos(".ed-rolo,.ed-principal,.ed-lado").forEach(function (n) { n.scrollTop = 0; });
+    $(".ed-palco").removeAttribute("data-rolado");
+    sincronizarEstado();
+  }
+
+  // ── ações ──
+  // bloco com menos de um minuto contado não vira estudado: sai de hoje e entra nos atrasados, para replanejar
+  function concluir() {
+    var p = P(), b = bloco(p, p.atual);
+    if (!b) return;
+    var antes = copia(p), t = topico(p, b), estudou = msDe(p, b) >= 60000, atrasa = t.st === 0;
+    pausar(p);
+    if (estudou) { b.feito = true; if (t.st < 1) t.st = 1; p.agenda[0] += 1; }
+    else { b.de = b.dia; b.dia = -1; b.hora = ""; b.pulado = true; }
+    var prox = doDia(p, 0).filter(function (x) { return !x.feito; })[0];
+    p.atual = prox ? prox.id : null;
+    desenhar();
+    // o foco não cai no Concluir do bloco seguinte: um segundo toque sem querer não conclui outro
+    focar("alternar") || focar("concluir") || focar("ir-replanejar");
+    avisar(estudou ? "Concluído. Revisão marcada: amanhã." : atrasa ? "Bloco pulado: o tópico foi para os atrasados." : "Bloco pulado: o tópico já estava estudado.",
+      function () { restaurar(antes, true); desenhar(); focar("concluir"); });
+  }
+  function escolherBloco(id) {
+    var p = P(), b = bloco(p, id);
+    if (!b || b.feito) return;
+    if (p.atual === id) { if (p.rodando) pausar(p); else ligar(p); }
+    else { pausar(p); p.atual = id; }
+    desenhar();
+    todos(".ed-rolo,.ed-principal").forEach(function (n) { if (n.scrollTop > 0) n.scrollTo({top: 0, behavior: calmo ? "auto" : "smooth"}); });
+  }
+  function adiantar() {
+    var p = P(), b = doDia(p, 1).filter(function (x) { return !x.feito; })[0];
+    if (!b) return;
+    var antes = copia(p);
+    b.dia = 0; b.de = 0; b.hora = ""; p.atual = b.id;
+    desenhar();
+    avisar("Bloco de amanhã adiantado.", function () { restaurar(antes); desenhar(); });
+  }
+  function replanejar() {
+    var p = P(), late = atrasados(p), tinhaFoco = app.contains(document.activeElement);
+    if (!late.length) return;
+    late.sort(function (a, b) { return mat(p, b.m).peso - mat(p, a.m).peso || a.dia - b.dia; });
+    comMovimento(function () {
+      late.forEach(function (b) {
+        var melhor = 1, nota = Infinity, d;
+        for (d = 1; d < 7; d++) {
+          // a carga do dia conta em minutos, e repetir a matéria no mesmo dia pesa como uma hora e meia a mais
+          var doD = doDia(p, d), carga = 0, n;
+          doD.forEach(function (x) { carga += x.min; });
+          n = carga + (doD.some(function (x) { return x.m === b.m; }) ? 90 : 0) + d * 0.5;
+          if (n < nota) { nota = n; melhor = d; }
+        }
+        b.de = b.dia; b.dia = melhor; b.movido = true;
+      });
+      p.verAntes = false;
+      desenhar();
+    });
+    var dias = {};
+    late.forEach(function (b) { dias[b.dia] = 1; });
+    if (tinhaFoco) focar("ver-depois");
+    avisar("Plano refeito: " + pl(late.length, "tópico", "tópicos") + " em " + pl(Object.keys(dias).length, "dia", "dias") + ".", desfazerReplano);
+  }
+  function desfazerReplano() {
+    var p = P(), tinhaFoco = app.contains(document.activeElement);
+    comMovimento(function () {
+      p.blocos.forEach(function (b) { if (b.movido) { b.dia = b.de; b.movido = false; } });
+      p.verAntes = false;
+      desenhar();
+    });
+    $(".ed-aviso").removeAttribute("data-visivel"); ui.desfazer = null;
+    var alvo = $('[data-foco="replanejar"]');
+    if (tinhaFoco && alvo && alvo.offsetParent) alvo.focus({preventScroll: true});
+  }
+  function abrirMateria(id) {
+    ui.aberta = id;
+    desenhar();
+    var grupo = $("#ed-m-" + id), botao = $('[data-foco="m-' + id + '"]');
+    if (grupo) rolarAte(grupo);
+    if (botao) botao.focus({preventScroll: true});
+  }
+  function marcarTopico(mid, i) {
+    var p = P(), antes = copia(p), t = mat(p, mid).topicos[i];
+    t.st = (t.st + 1) % 4;
+    desenhar();
+    avisar(maiuscula(ST[t.st]) + ". Cobertura em " + cobertura(p) + "%.", function () { restaurar(antes); desenhar(); });
+  }
+  function responder(ok) {
+    var p = P(), r = p.fila[0], cartao = $(".ed-cartao");
+    if (!r || ui.travado) return;
+    var antes = copia(p), m = mat(p, r.m), t = m.topicos[r.t], fala;
+    function aplicar() {
+      p.fila.shift(); m.total += 1;
+      if (!ok) { p.agenda[0] += 1; fala = "Errou: volta amanhã, do começo."; }
+      else {
+        m.acertos += 1;
+        if (r.dias === 30) { t.st = 3; fala = "Acertou: dominado, sai da fila."; }
+        else { t.st = Math.max(t.st, 2); p.agenda[r.dias === 1 ? 1 : 2] += 1; fala = "Acertou: volta em " + curta(em(r.dias === 1 ? 7 : 30)) + "."; }
+      }
+      ui.travado = false; ui.cartaoNovo = true;
+      comMovimento(desenhar);
+      ui.cartaoNovo = false;
+      var alvo = $('[data-foco="' + (ok ? "acertei" : "errei") + '"]');
+      if (alvo && alvo.offsetParent) alvo.focus({preventScroll: true});
+      avisar(fala, function () { restaurar(antes); ui.cartaoNovo = true; desenhar(); ui.cartaoNovo = false; });
+    }
+    if (calmo || !cartao) { aplicar(); return; }
+    ui.travado = true;
+    cartao.setAttribute("data-sai", ok ? "ok" : "erro");
+    setTimeout(aplicar, 190);
+  }
+  function irReplanejar() {
+    irPara("edital");
+    var alvo = $(".ed-sete");
+    if (alvo) rolarAte(alvo);
+    focar("replanejar") || focar("ver-depois");
+  }
+
+  // ── folhas ──
+  function folhaProva() {
+    var alvo = limpar($(".ed-provas"));
+    Object.keys(PROVAS).forEach(function (id) {
+      var p = PROVAS[id];
+      alvo.appendChild(h("button", {type: "button", "class": "ed-prova", "data-acao": "escolher-prova", "data-id": id, "aria-pressed": String(id === ui.prova)}, [
+        h("span", {"class": "ed-prova-m"}, id === ui.prova ? ic("certo") : null),
+        h("span", {"class": "ed-prova-t"}, [h("span", {"class": "ed-prova-t1", text: p.nome}), h("span", {"class": "ed-prova-t2", text: p.cargo + " · " + cobertura(p) + "% coberto"})]),
+        h("span", {"class": "ed-prova-d"}, [h("b", {"class": "ed-prova-dn ed-mono", text: String(p.dias)}), "dias"])]));
+    });
+  }
+  function abrirFolha(qual) {
+    ui.ultimoFoco = document.activeElement;
+    $(".ed-aviso").removeAttribute("data-visivel"); ui.desfazer = null;
+    app.setAttribute("data-folha", qual);
+    todos(".ed-lateral,.ed-palco").forEach(function (n) { n.inert = true; });
+    setTimeout(function () { $('.ed-folha[data-folha="' + qual + '"] .ed-fechar').focus({preventScroll: true}); }, calmo ? 0 : 140);
+  }
+  function fecharFolha() {
+    if (!app.hasAttribute("data-folha")) return;
+    app.removeAttribute("data-folha");
+    todos(".ed-lateral,.ed-palco").forEach(function (n) { n.inert = false; });
+    if (ui.ultimoFoco && ui.ultimoFoco.focus && app.contains(ui.ultimoFoco)) ui.ultimoFoco.focus({preventScroll: true});
+  }
+  function escolherProva(id) {
+    var antes = ui.prova, ligado = P().rodando;
+    fecharFolha();
+    if (id === antes) return;
+    function trocar(para) { pausar(P()); ui.prova = para; ui.aberta = risco(P()).id; irPara(ui.vista); acertarRelogio(); }
+    trocar(id);
+    avisar("O plano agora é de " + P().nome + ".", function () { trocar(antes); if (ligado) { ligar(P()); desenhar(); } });
+  }
+  function pintarPlanos() {
+    todos(".ed-opcao").forEach(function (o) { o.setAttribute("aria-pressed", String(o.getAttribute("data-id") === ui.plano)); });
+    $('[data-acao="comprar"]').textContent = ui.plano === "ano" ? "Assinar por R$ 239 ao ano" : "Assinar por R$ 29,90 ao mês";
+  }
+
+  // ── os três estados do stand: 1 Hoje · 2 Edital · 3 Revisões ──
+  function estadoDaTela() { return ui.vista === "edital" ? 2 : ui.vista === "revisoes" ? 3 : 1; }
+  function sincronizarEstado() { var n = String(estadoDaTela()); if (app.getAttribute("data-estado") !== n) app.setAttribute("data-estado", n); }
+  function aplicarEstado(n) {
+    var vista = n === 2 ? "edital" : n === 3 ? "revisoes" : "hoje";
+    if (vista === ui.vista) return;
+    fecharFolha();
+    irPara(vista);
+  }
+  app.addEventListener("maquete:estado", function (e) { fecharFolha(); aplicarEstado(e.detail && e.detail.estado); });   // pedido da barra do stand: folha aberta fecha, mesmo no mesmo estado
+  new MutationObserver(function () { aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1); }).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+
+  // ── eventos ──
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-acao]");
+    if (!b || !app.contains(b) || b.disabled) return;
+    var acao = b.getAttribute("data-acao"), p = P();
+    if (acao === "vista") { irPara(b.getAttribute("data-vista")); if (!app.contains(document.activeElement)) focarTitulo(); }
+    else if (acao === "alternar") { if (p.rodando) pausar(p); else ligar(p); desenhar(); }
+    else if (acao === "concluir") { if (performance.now() < ui.guarda) return; ui.guarda = performance.now() + 600; concluir(); }
+    else if (acao === "bloco") escolherBloco(b.getAttribute("data-id"));
+    else if (acao === "adiantar") adiantar();
+    else if (acao === "ir-replanejar") irReplanejar();
+    else if (acao === "replanejar") replanejar();
+    else if (acao === "ver") { p.verAntes = b.getAttribute("data-qual") === "antes"; comMovimento(desenhar); }
+    else if (acao === "desfazer-replano") desfazerReplano();
+    else if (acao === "materia") { var id = b.getAttribute("data-id"); ui.aberta = ui.aberta === id ? null : id; desenhar(); }
+    else if (acao === "abrir-materia") abrirMateria(b.getAttribute("data-id"));
+    else if (acao === "topico") marcarTopico(b.getAttribute("data-m"), +b.getAttribute("data-t"));
+    else if (acao === "acertei") responder(true);
+    else if (acao === "errei") responder(false);
+    else if (acao === "prova") { folhaProva(); abrirFolha("prova"); }
+    else if (acao === "escolher-prova") escolherProva(b.getAttribute("data-id"));
+    else if (acao === "importar") { fecharFolha(); avisar("Maquete: aqui o PDF do edital viraria tópicos."); }
+    else if (acao === "planos") { pintarPlanos(); abrirFolha("planos"); }
+    else if (acao === "plano") { ui.plano = b.getAttribute("data-id"); pintarPlanos(); }
+    else if (acao === "fechar-folha") fecharFolha();
+    else if (acao === "comprar") { fecharFolha(); avisar("Maquete: nada foi cobrado."); }
+    else if (acao === "restaurar") { fecharFolha(); avisar("Maquete: não há compra para restaurar."); }
+    else if (acao === "desfazer") {
+      var d = ui.desfazer; $(".ed-aviso").removeAttribute("data-visivel"); ui.desfazer = null; if (d) d();
+      if (document.activeElement === b || !app.contains(document.activeElement)) focar("concluir") || focar("replanejar") || focar("ver-depois") || focar("acertei") || focarTitulo();
+    }
+  });
+  // a folha aberta prende o foco: o Tab dá a volta dentro dela, e o Esc fecha de onde quer que o foco esteja
+  document.addEventListener("keydown", function (e) {
+    var nome = app.getAttribute("data-folha"), folha = nome && app.querySelector('[role="dialog"][data-folha="' + nome + '"]'), itens, a, fora;
+    if (!folha || e.defaultPrevented || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") { fecharFolha(); return; }
+    if (e.key !== "Tab") return;
+    itens = Array.prototype.filter.call(folha.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]'), function (x) { return !x.disabled && x.tabIndex >= 0 && x.offsetParent; });
+    a = document.activeElement; fora = !folha.contains(a) || a === folha;
+    if (!itens.length) { e.preventDefault(); folha.focus({preventScroll: true}); }
+    else if (fora || a === itens[e.shiftKey ? 0 : itens.length - 1]) { e.preventDefault(); itens[e.shiftKey ? itens.length - 1 : 0].focus({preventScroll: true}); }
+  });
+  app.addEventListener("keydown", function (e) { if (e.key === "Escape" && app.hasAttribute("data-folha")) { e.stopPropagation(); fecharFolha(); } });
+  document.addEventListener("visibilitychange", function () { acertarRelogio(); pintarTempo(); });
+  $(".ed-rolo").addEventListener("scroll", function () {
+    var rolado = this.scrollTop > 28, palco = $(".ed-palco");
+    if (rolado !== palco.hasAttribute("data-rolado")) palco.toggleAttribute("data-rolado", rolado);
+  }, {passive: true});
+  $(".ed-veu").addEventListener("wheel", function (e) { e.preventDefault(); }, {passive: false});
+  $(".ed-veu").addEventListener("touchmove", function (e) { e.preventDefault(); }, {passive: false});
+  // arrastar a folha para baixo pelo topo fecha; soltar antes do limite devolve ao lugar
+  todos(".ed-folha").forEach(function (folha) {
+    var y0 = null, dy = 0;
+    folha.addEventListener("pointerdown", function (e) {
+      if (app.clientWidth >= 720 || !e.target.closest(".ed-puxador,.ed-folha-topo") || e.target.closest("button")) return;
+      y0 = e.clientY; dy = 0; folha.setPointerCapture(e.pointerId); folha.style.transition = "none";
+    });
+    folha.addEventListener("pointermove", function (e) { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); folha.style.transform = "translateY(" + dy + "px)"; });
+    var soltar = function () { if (y0 === null) return; y0 = null; folha.style.transition = ""; folha.style.transform = ""; if (dy > 90) fecharFolha(); };
+    folha.addEventListener("pointerup", soltar);
+    folha.addEventListener("pointercancel", soltar);
+  });
+
+  // o bloco da vez da prova inicial já chega contando, como quem abriu o app no meio do estudo
+  ligar(P());
+  desenhar();
+  aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1);
+})();
+</script>
+</body>
+</html>

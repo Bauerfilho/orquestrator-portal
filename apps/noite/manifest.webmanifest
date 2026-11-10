@@ -1,0 +1,32 @@
+{
+  "name": "Noite",
+  "short_name": "Noite",
+  "description": "Durma na hora e acorde com calma. Um horário de sono que dá para cumprir: o app avisa a hora de começar a desacelerar, conduz uma rotina curta antes de deitar (baixar a luz, um minuto de respiração, uma linha de diário) e desperta aos poucos, sem susto. Para quem dorme tarde rolando o celular e acorda no tranco.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fde9dc",
+  "theme_color": "#fde9dc",
+  "icons": [
+    {
+      "src": "icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "gerado_por": "laboratorio/publicar.py"
+}

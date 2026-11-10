@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dito</title>
+<meta name="description" content="Fale; a nota chega escrita, organizada e resumida. Um gravador que transcreve no próprio aparelho, separa quem falou, resume em tópicos e tira as decisões e as tarefas combinadas, para quem vive em reunião, aula e atendimento. O argumento que fecha a venda é a privacidade: o áudio não sai do iPhone.">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dito">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f2ea">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#161412">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="icon" type="image/png" href="icone-192.png">
+<style>:root[data-tema=claro]{background:#f5f2ea}:root[data-tema=escuro]{background:#161412}</style>
+
+<style id="app-estilo">
+/* ===== Dito · tokens =====
+   Tese visual: tinta e papel. Branco-osso, preto-tinta e cinzas quentes, sem cor nenhuma além do ponto vermelho de
+   gravar, que some quando não se grava. O que foi dito vem em serifa, com entrelinha de livro; os controles em sans,
+   pequenos e quietos; fios finos no lugar de caixas. A voz é desenhada em barras finas, vivas ou paradas.
+   Tese de interação: silencioso. Toque responde em 120 ms; telas e folhas em 300 ms, sem quique; saídas em 200 ms.
+   Só duas coisas se movem sozinhas: a onda enquanto grava e a palavra acesa enquanto toca. E as duas param com a tela. */
+:root{
+  --dt-serifa:ui-serif,"New York","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --dt-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --dt-osso:#f5f2ea;--dt-papel:#fcfaf5;--dt-osso2:#ebe7dc;--dt-tinta:#191714;--dt-suave:#5e5952;--dt-leve:#706c64;--dt-barra:#cfc9bc;
+  --dt-fio:rgba(25,23,20,.12);--dt-fio2:rgba(25,23,20,.26);--dt-aceso:rgba(25,23,20,.1);
+  --dt-rec:#e5263b;--dt-vidro:rgba(245,242,234,.97);--dt-veu:rgba(25,23,20,.4);
+  --dt-sombra:0 1px 2px rgba(25,23,20,.06),0 20px 44px -22px rgba(25,23,20,.45);
+  --dt-rapido:.12s;--dt-sai:.2s;--dt-vira:.3s;--dt-mola:cubic-bezier(.2,.8,.2,1);--dt-some:cubic-bezier(.4,0,1,1);
+  color-scheme:light;
+}
+:root[data-tema=escuro]{
+  --dt-osso:#161412;--dt-papel:#1f1c19;--dt-osso2:#2a2622;--dt-tinta:#efe9dc;--dt-suave:#b3aa9b;--dt-leve:#857d70;--dt-barra:#4a443c;
+  --dt-fio:rgba(239,233,220,.12);--dt-fio2:rgba(239,233,220,.26);--dt-aceso:rgba(239,233,220,.13);
+  --dt-rec:#ff5a66;--dt-vidro:rgba(22,20,18,.97);--dt-veu:rgba(0,0,0,.62);
+  --dt-sombra:0 1px 2px rgba(0,0,0,.4),0 20px 44px -22px rgba(0,0,0,.9);
+  color-scheme:dark;
+}
+html,body{margin:0}
+body{background:var(--dt-osso)}
+
+/* ===== base: a casca tem a altura da tela; quem rola são as colunas de dentro ===== */
+#app{container:app / inline-size;position:relative;height:100vh;height:calc(100dvh - var(--stand-barra,0px));overflow:hidden;
+  background:var(--dt-osso);color:var(--dt-tinta);font:400 16px/1.45 var(--dt-sans);-webkit-font-smoothing:antialiased}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app button,#app input{font:inherit;color:inherit;letter-spacing:inherit}
+#app button{cursor:pointer;border:0;background:none;padding:0;margin:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app svg{display:block;flex:none}
+#app :focus-visible{outline:2px solid var(--dt-tinta);outline-offset:3px;border-radius:6px}
+#app .dt-so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .dt-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#app .dt-num{font-variant-numeric:tabular-nums}
+#app .dt-rot{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dt-suave)}
+#app .dt-casca{position:relative;height:100%;overflow:hidden;overflow:clip;display:flex;flex-direction:column}
+
+/* ===== barra de cima (tela ampla) e abas de baixo (celular) ===== */
+#app .dt-topo{display:none;align-items:center;gap:26px;flex:none;height:60px;padding:0 26px;border-bottom:1px solid var(--dt-fio)}
+#app .dt-marca{font:600 24px/1 var(--dt-serifa);letter-spacing:-.02em}
+#app .dt-seg{display:flex;gap:22px}
+#app .dt-seg-b{position:relative;display:inline-flex;align-items:center;gap:7px;min-height:44px;font-size:15px;font-weight:600;color:var(--dt-suave);transition:color var(--dt-rapido)}
+#app .dt-seg-t{font-size:13px;font-weight:500;color:var(--dt-suave)}
+#app .dt-seg-b[aria-current=page]{color:var(--dt-tinta)}
+#app .dt-seg-b[aria-current=page]::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:2px;background:var(--dt-tinta)}
+#app .dt-plano{position:relative;flex:none;margin-left:auto;min-height:32px;padding:0 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--dt-fio2);font-size:13px;font-weight:600;white-space:nowrap}
+#app .dt-plano::after{content:"";position:absolute;inset:-7px -4px}
+#app .dt-abas{position:absolute;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0 16px env(safe-area-inset-bottom);background:var(--dt-vidro);border-top:1px solid var(--dt-fio);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+#app .dt-aba{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;min-height:54px;font-size:14px;font-weight:600;color:var(--dt-leve);transition:color var(--dt-rapido)}
+#app .dt-aba[aria-current=page]{color:var(--dt-tinta)}
+#app .dt-aba[aria-current=page]::before{content:"";position:absolute;top:-1px;left:22%;right:22%;height:2px;background:var(--dt-tinta)}
+#app .dt-ponto{flex:none;width:9px;height:9px;border-radius:50%;background:var(--dt-rec)}
+#app .dt-ponto[hidden],#app .dt-seg-t[hidden]{display:none}
+
+/* ===== corpo ===== */
+#app .dt-corpo{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:56px}
+#app .dt-centro,#app .dt-nota{display:contents}
+#app .dt-bib,#app .dt-gravar,#app .dt-nota-cab,#app .dt-trans,#app .dt-tocador,#app .dt-lado{display:none;min-width:0}
+#app[data-vista=gravar] .dt-gravar{display:flex}
+#app[data-vista=nota] .dt-nota-cab,#app[data-vista=nota] .dt-trans,#app[data-vista=nota] .dt-lado,#app[data-vista=biblioteca] .dt-bib{display:block}
+#app[data-vista=nota] .dt-tocador{display:flex}
+#app .dt-nota-cab{order:1}
+#app .dt-lado{order:2}
+#app .dt-trans{order:3}
+#app .dt-tocador{order:9}
+#app[data-vista=gravar] .dt-gravar,#app[data-vista=nota] .dt-nota-cab,#app[data-vista=biblioteca] .dt-bib{animation:dt-entra var(--dt-vira) var(--dt-mola)}
+@keyframes dt-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#app .dt-pad{padding:18px 22px 0}
+#app .dt-sec{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:26px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--dt-fio2)}
+#app .dt-sec h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+#app .dt-sec-lado{font-size:13px;color:var(--dt-suave)}
+
+/* a voz em barras finas */
+#app .dt-onda{position:relative;display:flex;align-items:center;gap:3px;height:96px}
+#app .dt-onda[role=slider]::after{content:"";position:absolute;inset:-4px 0}
+#app .dt-onda-b{flex:1;min-width:1px;height:100%;border-radius:2px;background:var(--dt-tinta);transform:scaleY(.04);transform-origin:50% 50%}
+#app .dt-onda[data-parada] .dt-onda-b{background:var(--dt-barra)}
+
+/* ===== gravar ===== */
+#app .dt-gravar{flex-direction:column;flex:1;padding:14px 22px 20px}
+#app .dt-g-topo{display:flex;align-items:center;gap:10px}
+#app .dt-selo{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--dt-suave)}
+#app .dt-selo .dt-ic{width:15px;height:15px}
+#app .dt-g-meio{display:flex;flex-direction:column;justify-content:center;flex:1;min-height:0;padding:16px 0}
+#app .dt-g-estado{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dt-suave)}
+#app .dt-tempo{margin:6px 0 2px -3px;font:300 68px/1 var(--dt-sans);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+#app .dt-quem{display:flex;align-items:center;gap:9px;min-height:30px;font-size:15px;color:var(--dt-suave)}
+#app .dt-quem b{font-weight:600;color:var(--dt-tinta)}
+#app .dt-ini{display:inline-grid;place-items:center;flex:none;width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--dt-fio2);font-size:12px;font-weight:700;color:var(--dt-tinta)}
+#app .dt-gravar .dt-onda{margin:22px 0 18px}
+#app .dt-legenda{min-height:84px;font:400 italic 19px/1.45 var(--dt-serifa);color:var(--dt-suave)}
+#app .dt-g-ctl{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;justify-items:center;gap:8px;padding-top:6px}
+#app .dt-ctl{display:grid;justify-items:center;gap:6px;min-width:84px;min-height:64px;font-size:12.5px;font-weight:600;color:var(--dt-suave);transition:transform var(--dt-rapido)}
+#app .dt-ctl:active{transform:scale(.94)}
+#app .dt-ctl-c{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--dt-fio2);color:var(--dt-tinta)}
+#app .dt-ctl-c .dt-ic{width:20px;height:20px}
+#app .dt-rec{display:grid;place-items:center;width:84px;height:84px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--dt-tinta);transition:transform var(--dt-rapido)}
+#app .dt-rec:active{transform:scale(.94)}
+#app .dt-rec-i{width:30px;height:30px;border-radius:7px;background:var(--dt-tinta)}
+#app .dt-rec[data-estado=parado] .dt-rec-i{width:60px;height:60px;border-radius:50%;background:var(--dt-rec)}
+#app .dt-rec[data-estado=pausa] .dt-rec-i{width:0;height:0;border-radius:0;background:none;border-style:solid;border-width:15px 0 15px 25px;border-color:transparent transparent transparent var(--dt-tinta);margin-left:7px}
+#app .dt-trilho{height:3px;margin-top:14px;border-radius:2px;background:var(--dt-fio2);overflow:hidden}
+#app .dt-trilho-i{display:block;height:100%;background:var(--dt-tinta);transform:scaleX(0);transform-origin:0 50%}
+#app .dt-trilho[data-indo] .dt-trilho-i{transform:scaleX(1);transition:transform 1.3s linear}
+#app .dt-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:15px;font-weight:600;text-decoration:underline;text-underline-offset:4px}
+
+/* ===== a nota: cabeçalho, resumo com tarefas, transcrição e tocador ===== */
+#app .dt-nota-cab{padding:18px 22px 0}
+#app .dt-titulo{margin-top:6px;font:600 28px/1.12 var(--dt-serifa);letter-spacing:-.02em}
+#app .dt-nota-acoes{display:flex;gap:8px;margin-top:14px}
+#app .dt-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--dt-fio2);font-size:14px;font-weight:600;white-space:nowrap;transition:background-color var(--dt-rapido),transform var(--dt-rapido)}
+#app .dt-btn:active{transform:scale(.96)}
+#app .dt-btn .dt-ic{width:17px;height:17px}
+#app .dt-btn[aria-pressed=true]{background:var(--dt-tinta);box-shadow:none;color:var(--dt-osso)}
+#app .dt-btn-cheio{background:var(--dt-tinta);box-shadow:none;color:var(--dt-osso)}
+#app .dt-campo{display:block;position:relative;margin-top:12px}
+#app .dt-campo .dt-ic{position:absolute;left:0;top:50%;width:18px;height:18px;margin-top:-9px;color:var(--dt-leve);pointer-events:none}
+#app .dt-campo-c{width:100%;height:46px;padding:0 4px 0 28px;border:0;border-bottom:1px solid var(--dt-fio2);border-radius:0;background:none;font-size:17px}
+#app .dt-campo .dt-campo-nome{padding-left:2px;font-size:20px}
+#app .dt-campo-c::placeholder{color:var(--dt-leve)}
+#app .dt-campo-c:focus{outline:0;border-bottom:2px solid var(--dt-tinta)}
+#app .dt-achou{min-height:20px;margin-top:6px;font-size:13px;color:var(--dt-suave)}
+#app .dt-achou .dt-link{margin-left:10px;font-size:13px;color:var(--dt-tinta)}
+#app .dt-vivo{padding:9px 0;border-bottom:1px solid var(--dt-fio);font:400 16px/1.5 var(--dt-serifa)}
+#app .dt-vivo b{margin-right:8px;font:700 13px/1.3 var(--dt-sans)}
+#app .dt-vivo .dt-num{font:400 12.5px/1.3 var(--dt-sans);color:var(--dt-suave)}
+#app .dt-vivo-t{display:block}
+#app .dt-previa{padding-top:26px}
+#app .dt-previa-t{margin:6px 0 14px;font:600 26px/1.15 var(--dt-serifa);letter-spacing:-.02em}
+#app .dt-trecho b{font:600 12.5px/1.3 var(--dt-sans);font-style:normal;color:var(--dt-tinta)}
+#app .dt-lado{padding:0 22px}
+#app .dt-modo{display:flex;gap:14px}
+#app .dt-modo-b{position:relative;min-height:30px;font-size:13px;font-weight:600;color:var(--dt-leve)}
+#app .dt-modo-b::after{content:"";position:absolute;inset:-8px -4px}
+#app .dt-modo-b[aria-pressed=true]{color:var(--dt-tinta);text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px}
+#app .dt-topicos{font:400 17.5px/1.5 var(--dt-serifa)}
+#app .dt-topico{position:relative;padding:5px 0 5px 20px}
+#app .dt-topico::before{content:"";position:absolute;left:2px;top:17px;width:7px;height:1.5px;background:var(--dt-tinta)}
+#app .dt-tarefa{display:flex;align-items:flex-start;gap:12px;width:100%;min-height:52px;padding:9px 0;border-bottom:1px solid var(--dt-fio);transition:background-color var(--dt-rapido)}
+#app .dt-caixa{display:grid;place-items:center;flex:none;width:24px;height:24px;margin-top:1px;border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--dt-fio2);color:transparent}
+#app .dt-caixa .dt-ic{width:15px;height:15px;stroke-width:2.6}
+#app .dt-tarefa-t{flex:1;min-width:0;font:400 17px/1.35 var(--dt-serifa)}
+#app .dt-tarefa-q{display:block;margin-top:2px;font:500 13px/1.3 var(--dt-sans);color:var(--dt-suave)}
+#app .dt-tarefa[aria-pressed=true] .dt-caixa{background:var(--dt-tinta);box-shadow:none;color:var(--dt-osso)}
+#app .dt-tarefa[aria-pressed=true] .dt-tarefa-t{color:var(--dt-leve);text-decoration:line-through}
+#app .dt-trans{padding:0 22px 24px}
+#app .dt-fala{padding:14px 0 4px}
+#app .dt-fala-cab{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+#app .dt-fala-quem{position:relative;z-index:1;min-height:28px;font-size:13.5px;font-weight:700}
+#app .dt-fala-quem::after{content:"";position:absolute;inset:-8px -8px}
+#app .dt-fala-quem[data-sem-nome]{text-decoration:underline dotted;text-underline-offset:4px;color:var(--dt-suave)}
+#app .dt-fala-h{font-size:12.5px;color:var(--dt-leve)}
+#app .dt-fala-m{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--dt-suave)}
+#app .dt-fala-m .dt-ic{width:13px;height:13px}
+#app .dt-fala-t{position:relative;display:block;width:100%;font:400 18px/1.6 var(--dt-serifa);cursor:pointer}
+#app .dt-fala-t::after{content:"";position:absolute;inset:-8px 0}
+#app .dt-pal{border-radius:3px;transition:background-color var(--dt-rapido)}
+#app .dt-pal[data-dita]{color:var(--dt-tinta)}
+#app .dt-trans[data-tocando] .dt-pal{color:var(--dt-leve)}
+#app .dt-trans[data-tocando] .dt-pal[data-dita]{color:var(--dt-tinta)}
+#app .dt-pal[data-agora]{background:var(--dt-tinta);color:var(--dt-osso);box-shadow:0 0 0 2px var(--dt-tinta)}
+#app .dt-trans[data-tocando] .dt-pal[data-agora]{color:var(--dt-osso)}
+#app .dt-pal mark,#app .dt-trecho mark{background:var(--dt-aceso);color:inherit;box-shadow:0 1.5px 0 var(--dt-tinta);border-radius:2px}
+#app .dt-tocador{position:sticky;bottom:0;z-index:4;align-items:center;gap:12px;padding:10px 18px;background:var(--dt-vidro);border-top:1px solid var(--dt-fio);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+#app .dt-tocar{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:50%;background:var(--dt-tinta);color:var(--dt-osso);transition:transform var(--dt-rapido)}
+#app .dt-tocar:active{transform:scale(.93)}
+#app .dt-tocar .dt-ic{width:19px;height:19px;fill:currentColor;stroke:none}
+#app .dt-tocador .dt-onda{position:relative;flex:1;min-width:0;height:40px;gap:2px;cursor:pointer;overflow:visible}
+#app .dt-tocador .dt-onda-b{background:var(--dt-barra);transition:background-color var(--dt-rapido)}
+#app .dt-tocador .dt-onda-b[data-tocada]{background:var(--dt-tinta)}
+#app .dt-onda-m{position:absolute;top:-2px;width:2px;height:9px;margin-left:-1px;border-radius:1px;background:var(--dt-tinta);pointer-events:none}
+#app .dt-onda-m::after{content:"";position:absolute;left:2px;top:0;width:5px;height:4px;background:var(--dt-tinta);clip-path:polygon(0 0,100% 50%,0 100%)}
+#app .dt-toc-t{flex:none;min-width:86px;font-size:12.5px;color:var(--dt-suave);text-align:right;white-space:nowrap}
+
+/* ===== biblioteca ===== */
+#app .dt-bib{padding:18px 22px 24px}
+#app .dt-cab{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+#app .dt-h1{font:600 36px/1.05 var(--dt-serifa);letter-spacing:-.025em}
+#app .dt-pastas{display:flex;gap:18px;margin:12px -22px 0;padding:0 22px;overflow-x:auto;scrollbar-width:none}
+#app .dt-pastas::-webkit-scrollbar{display:none}
+#app .dt-pasta{position:relative;flex:none;min-height:36px;font-size:14px;font-weight:600;color:var(--dt-leve);white-space:nowrap}
+#app .dt-pasta::after{content:"";position:absolute;inset:-4px -6px}
+#app .dt-pasta[aria-pressed=true]{color:var(--dt-tinta);text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:2px}
+#app .dt-dia{margin:22px 0 2px;padding-bottom:7px;border-bottom:1px solid var(--dt-fio2);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dt-suave)}
+#app .dt-n{display:grid;grid-template-columns:minmax(0,1fr) 58px;align-items:center;gap:4px 14px;width:100%;padding:13px 0;border-bottom:1px solid var(--dt-fio);transition:background-color var(--dt-rapido)}
+#app .dt-n-t{font:600 19px/1.2 var(--dt-serifa);letter-spacing:-.01em}
+#app .dt-n-m{display:block;margin-top:3px;font:400 13px/1.3 var(--dt-sans);color:var(--dt-suave)}
+#app .dt-n .dt-onda{height:26px;gap:2px}
+#app .dt-n .dt-onda-b{background:var(--dt-barra)}
+#app .dt-n[data-aberta] .dt-onda-b{background:var(--dt-tinta)}
+#app .dt-trecho{grid-column:1/-1;font:400 italic 16px/1.5 var(--dt-serifa);color:var(--dt-suave)}
+#app .dt-vazio{padding:44px 12px;text-align:center}
+#app .dt-vazio-t{font:600 22px/1.2 var(--dt-serifa)}
+#app .dt-vazio-s{margin-top:6px;font-size:15px;line-height:1.45;color:var(--dt-suave)}
+#app .dt-vazio .dt-onda{width:120px;height:40px;margin:0 auto 18px}
+#app .dt-vazio .dt-onda-b{background:var(--dt-barra);transform:scaleY(.06)}
+
+/* ===== véu, folhas e aviso ===== */
+#app .dt-veu{position:absolute;inset:0;z-index:20;background:var(--dt-veu);opacity:0;pointer-events:none;transition:opacity var(--dt-sai)}
+#app[data-folha] .dt-veu{opacity:1;pointer-events:auto}
+#app .dt-folha-pe{position:sticky;bottom:calc(-1*var(--dt-pe));z-index:1;margin:-12px 0 calc(-1*var(--dt-pe));padding:12px 0 var(--dt-pe);background:linear-gradient(to bottom,transparent,var(--dt-papel) 12px)}
+#app .dt-folha-pe>button{display:flex}
+#app .dt-folha-pe~*{position:relative;z-index:2}
+#app .dt-folha{--dt-pe:calc(22px + env(safe-area-inset-bottom));position:absolute;left:0;right:0;bottom:0;z-index:21;max-height:90%;overflow-y:auto;overscroll-behavior:contain;padding:10px 22px calc(22px + env(safe-area-inset-bottom));
+  background:var(--dt-papel);border-radius:18px 18px 0 0;box-shadow:var(--dt-sombra);transform:translateY(105%);visibility:hidden;transition:transform var(--dt-sai) var(--dt-some),visibility 0s var(--dt-sai)}
+#app[data-folha=pessoa] .dt-folha[data-folha=pessoa],#app[data-folha=planos] .dt-folha[data-folha=planos]{transform:none;visibility:visible;transition:transform var(--dt-vira) var(--dt-mola),visibility 0s}
+#app .dt-puxador{width:38px;height:4px;margin:0 auto 14px;border-radius:99px;background:var(--dt-fio2)}
+#app .dt-folha-topo{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+#app .dt-folha-t{flex:1;min-width:0}
+#app .dt-folha-t h2{margin-top:2px;font:600 28px/1.1 var(--dt-serifa);letter-spacing:-.02em}
+#app .dt-fechar{position:relative;display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--dt-fio2)}
+#app .dt-fechar::after{content:"";position:absolute;inset:-5px}
+#app .dt-fechar .dt-ic{width:15px;height:15px;stroke-width:2.2}
+#app .dt-sug{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+#app .dt-leva{margin:6px 0 0;border-top:1px solid var(--dt-fio2)}
+#app .dt-planos{margin-bottom:18px}
+#app .dt-opcao{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:8px 0;border-bottom:1px solid var(--dt-fio);font-size:16.5px;font-weight:600;line-height:1.3;text-align:left}
+#app .dt-opcao:last-child{border-bottom-color:var(--dt-fio2)}
+#app .dt-opcao-m{display:grid;place-items:center;flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--dt-tinta)}
+#app .dt-opcao[aria-pressed=true] .dt-opcao-m::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--dt-tinta)}
+#app .dt-opcao-t{flex:1;min-width:0}
+#app .dt-opcao-s{display:block;font-size:13.5px;font-weight:400;color:var(--dt-suave)}
+#app .dt-opcao-n{flex:none;font:300 24px/1 var(--dt-sans);letter-spacing:-.03em;white-space:nowrap}
+#app .dt-depois{font-size:13.5px;color:var(--dt-suave);text-align:center}
+#app .dt-leva-i{padding:12px 0;border-bottom:1px solid var(--dt-fio);font:400 17.5px/1.35 var(--dt-serifa)}
+#app .dt-leva-s{display:block;font:400 14px/1.4 var(--dt-sans);color:var(--dt-suave)}
+#app .dt-largo{display:flex;width:100%;min-height:52px;font-size:16px}
+#app .dt-fino{display:block;width:100%;min-height:48px;font-size:15px;font-weight:600;text-align:center;text-decoration:underline;text-underline-offset:4px}
+#app .dt-miudo{margin-top:6px;font-size:12.5px;line-height:1.4;color:var(--dt-suave);text-align:center}
+#app .dt-aviso{position:absolute;left:50%;bottom:72px;z-index:30;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 24px);min-height:46px;padding:0 6px 0 16px;border-radius:999px;background:var(--dt-tinta);color:var(--dt-osso);
+  font-size:14.5px;font-weight:500;line-height:1.3;box-shadow:var(--dt-sombra);opacity:0;transform:translate(-50%,12px);pointer-events:none;transition:opacity var(--dt-sai),transform var(--dt-sai) var(--dt-some)}
+#app .dt-aviso[data-visivel]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition:opacity var(--dt-sai),transform var(--dt-vira) var(--dt-mola)}
+#app[data-vista=nota] .dt-aviso{bottom:140px}
+#app[data-vista=gravar] .dt-aviso{bottom:auto;top:10px;transform:translate(-50%,-12px)}
+#app[data-vista=gravar] .dt-aviso[data-visivel]{transform:translate(-50%,0)}
+#app .dt-aviso-t{padding:9px 10px 9px 0}
+#app .dt-aviso-b::after{content:"";position:absolute;inset:-5px 0}
+#app .dt-aviso-b{position:relative;flex:none;min-height:34px;padding:0 13px;border-radius:999px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--dt-osso) 50%,transparent);font-size:13px;font-weight:700}
+#app .dt-aviso .dt-aviso-b[hidden]{display:none}
+
+@media (hover:hover) and (pointer:fine){
+  #app .dt-n:hover,#app .dt-tarefa:hover{background-color:var(--dt-aceso)}
+  #app .dt-btn:hover{background-color:var(--dt-aceso)}
+  #app .dt-btn[aria-pressed=true]:hover,#app .dt-btn-cheio:hover{background-color:var(--dt-tinta)}
+  #app .dt-seg-b:hover,#app .dt-aba:hover,#app .dt-pasta:hover,#app .dt-modo-b:hover{color:var(--dt-tinta)}
+  #app .dt-fala-t:hover .dt-pal{color:var(--dt-tinta)}
+}
+
+/* ===== tela média e ampla: biblioteca · a nota · resumo e tarefas ===== */
+@container app (min-width:720px){
+  #app .dt-topo{display:flex}
+  #app .dt-casca .dt-abas,#app .dt-bib .dt-plano,#app .dt-g-topo .dt-plano{display:none}
+  #app .dt-corpo{display:grid;grid-template-columns:330px minmax(0,1fr);grid-template-rows:minmax(0,1fr);overflow:hidden;padding-bottom:0}
+  #app .dt-corpo .dt-bib,#app .dt-corpo .dt-centro,#app .dt-corpo .dt-lado{display:block;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  #app .dt-corpo .dt-bib{border-right:1px solid var(--dt-fio);animation:none}
+  #app .dt-corpo .dt-centro{display:flex;flex-direction:column}
+  #app .dt-corpo .dt-nota{display:none;flex-direction:column;flex:1;min-height:0}
+  #app[data-vista=nota] .dt-corpo .dt-nota,#app[data-vista=biblioteca] .dt-corpo .dt-nota{display:flex}
+  #app[data-vista=biblioteca] .dt-nota-cab,#app[data-vista=biblioteca] .dt-trans{display:block}
+  #app[data-vista=biblioteca] .dt-tocador{display:flex}
+  #app .dt-corpo .dt-lado{display:none}
+  #app[data-vista=biblioteca] .dt-corpo{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+  #app[data-vista=nota] .dt-corpo{grid-template-columns:minmax(0,1fr) 340px}
+  #app[data-vista=nota] .dt-corpo .dt-bib{display:none}
+  #app[data-vista=nota] .dt-corpo .dt-lado{display:block;border-left:1px solid var(--dt-fio);padding:0 24px 30px}
+  #app .dt-nota-cab,#app .dt-trans{width:100%;max-width:680px;margin:0 auto}
+  #app .dt-trans{flex:1}
+  #app .dt-tocador{padding:12px 28px}
+  #app .dt-gravar{max-width:640px;width:100%;margin:0 auto;padding:26px 28px 34px}
+  #app .dt-tempo{font-size:92px}
+  #app .dt-onda{height:120px}
+  #app .dt-h1{font-size:28px}
+  #app .dt-titulo{font-size:34px}
+  #app .dt-folha{--dt-pe:24px;left:50%;right:auto;bottom:auto;top:10%;width:min(480px,calc(100% - 64px));max-height:80%;padding:24px 28px;border-radius:16px;transform:translate(-50%,-10px);opacity:0;
+    transition:transform var(--dt-sai) var(--dt-some),opacity var(--dt-sai),visibility 0s var(--dt-sai)}
+  #app[data-folha=pessoa] .dt-folha[data-folha=pessoa],#app[data-folha=planos] .dt-folha[data-folha=planos]{transform:translate(-50%,0);opacity:1;transition:transform var(--dt-vira) var(--dt-mola),opacity var(--dt-sai),visibility 0s}
+  #app .dt-puxador{display:none}
+  #app .dt-aviso,#app[data-vista=nota] .dt-aviso{bottom:92px}
+  #app[data-vista=gravar] .dt-aviso{bottom:auto;top:72px}
+  #app .dt-pastas{flex-wrap:wrap;gap:0 18px;margin:12px 0 0;padding:0;overflow:visible}
+}
+@container app (min-width:1120px){
+  #app .dt-corpo,#app[data-vista=nota] .dt-corpo{grid-template-columns:330px minmax(0,1fr) 380px}
+  /* estado 3 em tela ampla tem cara própria: a biblioteca larga, em duas colunas, com a busca; ao lado, a prévia da nota escolhida */
+  #app[data-vista=biblioteca] .dt-corpo{grid-template-columns:minmax(0,1fr) 400px}
+  #app[data-vista=biblioteca] .dt-corpo .dt-centro{display:none}
+  #app[data-vista=biblioteca] .dt-corpo .dt-bib{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:44px;align-content:start;padding:30px 44px 34px}
+  #app[data-vista=biblioteca] .dt-bib>:not(.dt-n){grid-column:1/-1}
+  #app[data-vista=biblioteca] .dt-bib .dt-campo{max-width:560px}
+  #app[data-vista=biblioteca] .dt-h1{font-size:38px}
+  #app[data-vista=nota] .dt-corpo .dt-bib{display:block}
+  #app .dt-corpo .dt-lado{display:block;border-left:1px solid var(--dt-fio);padding:0 26px 30px}
+}
+@container app (max-width:350px){
+  #app .dt-pad,#app .dt-nota-cab,#app .dt-lado,#app .dt-trans,#app .dt-bib,#app .dt-gravar{padding-left:16px;padding-right:16px}
+  #app .dt-tempo{font-size:56px}
+  #app .dt-ctl{min-width:68px}
+  #app .dt-toc-t{min-width:0}
+  #app .dt-tocador .dt-onda{gap:1px}
+}
+/* telas baixas (um iPhone pequeno): a onda e a frase encolhem para os três controles caberem sem rolar */
+@media (max-height:700px){
+  #app .dt-gravar .dt-onda{height:54px;margin:12px 0 10px}
+  #app .dt-legenda{min-height:54px;font-size:17px}
+  #app .dt-g-meio{padding:6px 0}
+}
+/* acabamento da revisão: a alça da folha arrasta com o dedo; clicar dentro da folha mantém o foco nela (o Esc continua valendo);
+   e o botão do aviso fechado não fica no caminho do Tab */
+#app .dt-puxador,#app .dt-folha-topo{touch-action:none}
+#app [role=dialog]{outline:0}
+#app .dt-aviso:not([data-visivel]) button{visibility:hidden;transition:visibility 0s .2s}
+@media (prefers-reduced-motion:reduce){
+  #app *,#app *::before,#app *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+<style>html,body{margin:0}</style>
+<script>document.documentElement.dataset.tema = matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";</script>
+<script>matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) { document.documentElement.dataset.tema = e.matches ? "escuro" : "claro"; });</script>
+</head>
+<body>
+<main id="app" data-estado="1" data-vista="gravar">
+  <svg class="dt-so-leitor" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="dt-i-busca" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.2"/><path d="M15.2 15.2l4.6 4.6"/></symbol>
+      <symbol id="dt-i-certo" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="dt-i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="dt-i-marco" viewBox="0 0 24 24"><path d="M6.5 20V4.5h10l-2.3 4 2.3 4h-10"/></symbol>
+      <symbol id="dt-i-fim" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></symbol>
+      <symbol id="dt-i-tocar" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+      <symbol id="dt-i-pausa" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></symbol>
+      <symbol id="dt-i-enviar" viewBox="0 0 24 24"><path d="M12 15V4.5M8 8l4-4 4 4M6 12.5v5.5a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 18v-5.5"/></symbol>
+      <symbol id="dt-i-cadeado" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+    </defs>
+  </svg>
+  <div class="dt-casca">
+    <header class="dt-topo">
+      <span class="dt-marca">Dito</span>
+      <div class="dt-seg" role="group" aria-label="Seções">
+        <button type="button" class="dt-seg-b" data-acao="vista" data-vista="gravar"><i class="dt-ponto" aria-hidden="true"></i>Gravar<span class="dt-seg-t dt-num" aria-hidden="true"></span></button>
+        <button type="button" class="dt-seg-b" data-acao="vista" data-vista="nota">Nota</button>
+        <button type="button" class="dt-seg-b" data-acao="vista" data-vista="biblioteca">Biblioteca</button>
+      </div>
+      <button type="button" class="dt-plano" data-acao="planos">7 dias grátis</button>
+    </header>
+    <div class="dt-corpo">
+      <section class="dt-bib" aria-label="Biblioteca"></section>
+      <section class="dt-centro">
+        <div class="dt-gravar" aria-label="Gravação"></div>
+        <div class="dt-nota">
+          <header class="dt-nota-cab"></header>
+          <div class="dt-trans" aria-label="Transcrição"></div>
+          <div class="dt-tocador" aria-label="Tocador"></div>
+        </div>
+      </section>
+      <aside class="dt-lado" aria-label="Resumo e tarefas"></aside>
+    </div>
+    <nav class="dt-abas" aria-label="Seções">
+      <button type="button" class="dt-aba" data-acao="vista" data-vista="gravar"><i class="dt-ponto" aria-hidden="true"></i>Gravar</button>
+      <button type="button" class="dt-aba" data-acao="vista" data-vista="nota">Nota</button>
+      <button type="button" class="dt-aba" data-acao="vista" data-vista="biblioteca">Biblioteca</button>
+    </nav>
+    <div class="dt-veu" data-acao="fechar-folha"></div>
+    <section class="dt-folha" data-folha="pessoa" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="dt-t-pessoa">
+      <div class="dt-puxador" aria-hidden="true"></div>
+      <div class="dt-folha-topo">
+        <div class="dt-folha-t"><span class="dt-rot">Quem falou</span><h2 id="dt-t-pessoa">Dar um nome</h2></div>
+        <button type="button" class="dt-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="dt-ic" aria-hidden="true"><use href="#dt-i-fechar"/></svg></button>
+      </div>
+      <label class="dt-campo"><span class="dt-so-leitor">Nome de quem falou</span><input type="text" class="dt-campo-c dt-campo-nome" id="dt-nome" autocomplete="off" enterkeyhint="done" placeholder="Nome"></label>
+      <div class="dt-sug"></div>
+      <button type="button" class="dt-btn dt-btn-cheio dt-largo" data-acao="guardar-nome">Guardar o nome</button>
+      <p class="dt-miudo">O nome vale para a nota inteira, inclusive nas tarefas.</p>
+    </section>
+    <section class="dt-folha" data-folha="planos" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="dt-t-planos">
+      <div class="dt-puxador" aria-hidden="true"></div>
+      <div class="dt-folha-topo">
+        <div class="dt-folha-t"><span class="dt-rot">7 dias grátis para usar tudo</span><h2 id="dt-t-planos">Dito Completo</h2></div>
+        <button type="button" class="dt-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="dt-ic" aria-hidden="true"><use href="#dt-i-fechar"/></svg></button>
+      </div>
+      <ul class="dt-leva">
+        <li class="dt-leva-i">Transcrição neste aparelho<span class="dt-leva-s">O áudio não sai do iPhone. Nem para transcrever, nem para resumir.</span></li>
+        <li class="dt-leva-i">Resumo, decisões e tarefas<span class="dt-leva-s">A ata pronta quando a reunião acaba, com quem ficou de fazer o quê.</span></li>
+        <li class="dt-leva-i">Busca em tudo o que foi dito<span class="dt-leva-s">Uma palavra acha a fala, a nota e o minuto.</span></li>
+      </ul>
+      <div class="dt-planos" role="group" aria-label="Plano depois do teste">
+        <button type="button" class="dt-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><i class="dt-opcao-m" aria-hidden="true"></i><span class="dt-opcao-t">Anual<span class="dt-opcao-s">R$ 16,58 por mês, 33% a menos</span></span><b class="dt-opcao-n dt-num">R$ 199</b></button>
+        <button type="button" class="dt-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><i class="dt-opcao-m" aria-hidden="true"></i><span class="dt-opcao-t">Mensal<span class="dt-opcao-s">sem fidelidade</span></span><b class="dt-opcao-n dt-num">R$ 24,90</b></button>
+      </div>
+      <div class="dt-folha-pe"><button type="button" class="dt-btn dt-btn-cheio dt-largo" data-acao="comprar">Começar os 7 dias grátis</button></div>
+      <p class="dt-depois">Depois, R$ 199 por ano. Cancele quando quiser.</p>
+      <button type="button" class="dt-fino" data-acao="restaurar">Restaurar compra</button>
+      <p class="dt-miudo">Sem assinar, o Dito grava e toca. Maquete: os valores são hipótese e nada é cobrado aqui.</p>
+    </section>
+    <div class="dt-aviso" role="status" aria-live="polite"><span class="dt-aviso-t"></span><button type="button" class="dt-aviso-b" data-acao="desfazer">Desfazer</button></div>
+  </div>
+</main>
+<script id="app-script">
+// Dito: o app sozinho. Não usa microfone nem áudio: a onda é desenhada, a gravação e a reprodução andam pelo relógio, e nada sai da tela.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ── ajudantes de DOM: todo texto entra como texto, nunca como HTML ──
+  function h(tag, attrs, filhos) {
+    var n = document.createElement(tag), k;
+    for (k in attrs || {}) {
+      if (attrs[k] == null || attrs[k] === false) continue;
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    [].concat(filhos || []).forEach(function (f) { if (f != null && f !== false) n.appendChild(typeof f === "string" ? document.createTextNode(f) : f); });
+    return n;
+  }
+  function svg(tag, attrs) { var n = document.createElementNS(SVGNS, tag), k; for (k in attrs) n.setAttribute(k, attrs[k]); return n; }
+  function ic(nome) { var s = svg("svg", {"class": "dt-ic", "aria-hidden": "true"}); s.appendChild(svg("use", {href: "#dt-i-" + nome})); return s; }
+  function $(sel, raiz) { return (raiz || app).querySelector(sel); }
+  function todos(sel, raiz) { return Array.prototype.slice.call((raiz || app).querySelectorAll(sel)); }
+  function limpar(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+  function d2(n) { return (n < 10 ? "0" : "") + n; }
+  function pl(n, um, muitos) { return n + " " + (n === 1 ? um : muitos); }
+  function semAcento(s) { return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+  function relogio(ms) { var t = Math.floor(Math.max(0, ms) / 1000); return d2(Math.floor(t / 60)) + ":" + d2(t % 60); }
+  function acaso(k) { var x = Math.sin(k * 12.9898 + 4.1) * 43758.5453; return x - Math.floor(x); }
+  // um texto com o termo procurado em destaque (o termo entra como texto, dentro de mark)
+  function comDestaque(texto, termo) {
+    var base = semAcento(texto), q = semAcento(termo), i = q.length > 1 ? base.indexOf(q) : -1;
+    if (i < 0) return [texto];
+    return [texto.slice(0, i), h("mark", {text: texto.slice(i, i + q.length)})].concat(comDestaque(texto.slice(i + q.length), termo));
+  }
+
+  // ── datas ──
+  var agora = new Date(), HOJE = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  var SEMANA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+  var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  function diaTxt(n) { if (n === 0) return "Hoje"; if (n === 1) return "Ontem"; var d = new Date(HOJE); d.setDate(d.getDate() - n); return SEMANA[d.getDay()] + ", " + d.getDate() + " de " + MESES[d.getMonth()]; }
+  // quantos dias atrás fica o k-ésimo dia útil anterior. O dia 0 é hoje, se já passou das 11h de um dia útil; senão, o último
+  // dia útil antes de hoje (reunião de trabalho não cai no fim de semana nem "hoje às 10:42" antes das 10:42)
+  function recuo(k) {
+    var d = new Date(HOJE), dias = 0, util = function (x) { return x.getDay() !== 0 && x.getDay() !== 6; };
+    var volta = function () { do { d.setDate(d.getDate() - 1); dias++; } while (!util(d)); };
+    if (!(util(d) && agora.getHours() >= 11)) volta();
+    for (; k > 0; k--) volta();
+    return dias;
+  }
+
+  // ── dados fictícios: uma agência pequena inventada; falas curtas, com cara de fala ──
+  var NOTAS = [
+    {id: "site", titulo: "Cronograma do site da Casa Aroeira", pasta: "Estúdio", util: 0, inteira: true, hora: "10:42", durTxt: "2 min", pessoas: {m: "Marina", c: "Caio", h: "Helô", p: ""}, marcos: [3, 6],
+      falas: [["m", "Bom, o objetivo de hoje é fechar o cronograma do site da Casa Aroeira. A cliente quer no ar antes da feira, que abre no sábado da semana que vem."],
+        ["c", "Do meu lado, o layout da página inicial está pronto. Faltam a página de produto e o carrinho, que dependem das fotos."],
+        ["h", "As fotos novas chegam quando? Sem elas eu não fecho o tamanho das imagens no código."],
+        ["m", "A fotógrafa prometeu para quinta. Se atrasar, a gente usa as antigas e troca depois."],
+        ["c", "Então eu entrego produto e carrinho na segunda. Só preciso que a cliente aprove a paleta até sexta."],
+        ["h", "Com o layout na segunda, eu subo a versão de teste na quarta. O pagamento é o que mais me preocupa: a conta da loja ainda não foi aprovada."],
+        ["m", "Deixa que eu cobro a cliente hoje sobre a conta. Decidido, então: teste na quarta, revisão na sexta e publicação na quinta da semana que vem, dois dias antes da feira."],
+        ["p", "E o texto das páginas? Eu consigo revisar tudo até terça, se alguém me mandar o arquivo hoje."],
+        ["m", "Mando agora, assim que a gente sair daqui."]],
+      curto: ["O site da Casa Aroeira entra no ar na quinta da semana que vem, dois dias antes da feira.", "Layout de produto e carrinho na segunda; versão de teste na quarta.", "Dois riscos: as fotos novas, prometidas para quinta, e a conta de pagamento, ainda sem aprovação."],
+      longo: ["O site da Casa Aroeira entra no ar na quinta da semana que vem, dois dias antes da feira.", "A página inicial está pronta; produto e carrinho dependem das fotos e ficam para segunda.", "Se as fotos novas atrasarem, o site sai com as antigas e elas são trocadas depois.",
+        "A cliente precisa aprovar a paleta até sexta.", "Versão de teste na quarta e revisão geral na sexta.", "A conta de pagamento da loja ainda não foi aprovada: é o maior risco do prazo.", "Os textos das páginas serão revisados até terça."],
+      decisoes: ["Publicar na quinta da semana que vem, com teste na quarta e revisão na sexta.", "Sem fotos novas até quinta, seguir com as antigas."],
+      tarefas: [["Cobrar a cliente sobre a conta de pagamento", "m", "hoje"], ["Entregar as páginas de produto e carrinho", "c", "segunda"], ["Subir a versão de teste", "h", "quarta"], ["Revisar os textos das páginas", "p", "terça"], ["Mandar o arquivo dos textos", "m", "hoje"]]},
+    {id: "aula", titulo: "Aula 7: tipografia para telas", pasta: "Curso", util: 1, hora: "19:10", durTxt: "52 min", pessoas: {a: "Professora Lia"}, marcos: [1],
+      falas: [["a", "Corpo de texto em tela pede entrelinha mais aberta do que no papel."], ["a", "A regra das fotos de capa é simples: nunca texto em cima de rosto."], ["a", "Para a semana que vem, cada um traz três pares de fontes e explica a escolha."]],
+      curto: ["Entrelinha em tela é mais aberta do que no papel.", "Exercício: três pares de fontes para a próxima aula."], longo: [], decisoes: [], tarefas: [["Escolher três pares de fontes e justificar", "=Você", "próxima aula"]]},
+    {id: "grafica", titulo: "Ligação com a gráfica", pasta: "Fornecedores", util: 1, hora: "11:25", durTxt: "9 min", pessoas: {m: "Marina", g: "Seu Anselmo"}, marcos: [],
+      falas: [["g", "O orçamento dos cartões fica pronto amanhã cedo."], ["m", "Se as fotos do catálogo chegarem até quinta, dá para imprimir na sexta?"], ["g", "Dá, sim. Papel de trezentos gramas, sem laminação, como da outra vez."]],
+      curto: ["Orçamento dos cartões chega amanhã cedo.", "Catálogo imprime na sexta se as fotos chegarem até quinta."], longo: [], decisoes: ["Papel de 300 gramas, sem laminação."], tarefas: []},
+    {id: "semanal", titulo: "Reunião semanal do estúdio", pasta: "Estúdio", util: 3, hora: "09:00", durTxt: "31 min", pessoas: {m: "Marina", c: "Caio", h: "Helô"}, marcos: [],
+      falas: [["m", "Três projetos em andamento e nenhum atrasado, o que é raro e merece registro."], ["c", "A identidade da padaria vai para aprovação na quinta."], ["h", "Eu fico fora na sexta à tarde, já deixo tudo publicado antes."]],
+      curto: ["Três projetos em andamento, nenhum atrasado.", "Identidade da padaria vai para aprovação na quinta."], longo: [], decisoes: [], tarefas: []},
+    {id: "ideias", titulo: "Ideias para o portfólio", pasta: "Pessoal", util: 5, hora: "22:14", durTxt: "4 min", pessoas: {m: "Marina"}, marcos: [],
+      falas: [["m", "Mostrar menos projetos e contar melhor cada um: o problema, o caminho e o resultado."], ["m", "Trocar a página de sobre por um texto curto, na primeira pessoa."]],
+      curto: ["Menos projetos, mais história em cada um.", "Página de sobre mais curta, na primeira pessoa."], longo: [], decisoes: [], tarefas: []}
+  ];
+  var PASTAS = ["Todas", "Estúdio", "Curso", "Fornecedores", "Pessoal"];
+  function duracaoTxt(ms) { var seg = Math.round(ms / 1000); return seg < 60 ? seg + " s" : Math.floor(seg / 60) + " min " + d2(seg % 60) + " s"; }
+  // cada nota ganha o tempo de cada palavra (a reprodução anda pelo relógio) e a sua onda parada. "ate" é a duração gravada, quando se sabe
+  function preparar(n, k, ate) {
+    var t = 400, i, j;
+    n.pal = []; n.t0 = [];
+    for (i = 0; i < n.falas.length; i++) {
+      var partes = n.falas[i][1].split(" ");
+      n.t0.push(t);
+      for (j = 0; j < partes.length; j++) { var dur = 170 + 58 * partes[j].replace(/[.,:;?!…]/g, "").length; n.pal.push({f: i, txt: partes[j], t0: t, t1: t + dur, fim: j === partes.length - 1}); t += dur + (/[.?!:]$/.test(partes[j]) ? 260 : 0); }
+      t += 520;
+    }
+    n.dur = ate || t;
+    n.onda = [];
+    for (i = 0; i < 64; i++) {
+      var meio = (i + 0.5) / 64 * n.dur, falando = n.pal.some(function (p) { return meio >= p.t0 - 90 && meio <= p.t1 + 90; });
+      n.onda.push(falando ? 0.22 + 0.78 * acaso(i * 3 + k * 17) : 0.05);
+    }
+    n.mini = []; for (i = 0; i < 12; i++) n.mini.push(0.2 + 0.8 * acaso(i * 5 + k * 29));
+    n.feitas = {};
+    if (n.inteira) n.durTxt = duracaoTxt(n.dur);
+  }
+  NOTAS.forEach(function (n, k) { n.dia = recuo(n.util); preparar(n, k); });
+  // a conversa que está sendo gravada agora: outra reunião, que só vira nota quando a gravação termina. Cada fala pode trazer
+  // o tópico de resumo (r), a decisão (d) e as tarefas (t) que saem dela; a nota fica com o que foi dito até o momento de terminar
+  var VIVA = {titulo: "Fotos do cardápio da Padaria Trigal", pasta: "Estúdio", pessoas: {m: "Marina", c: "Caio", h: "Helô"}, falas: [
+    ["m", "Vamos fechar as fotos do cardápio da Padaria Trigal. São doze pães e o balcão.", {r: "Sessão de fotos do cardápio da Padaria Trigal: doze pães e o balcão."}],
+    ["c", "Eu prefiro fotografar de manhã cedo, com a luz da vitrine. Depois das dez o sol bate direto e estoura o branco.", {r: "Fotos de manhã cedo, com a luz da vitrine."}],
+    ["h", "Na quinta eu consigo levar o fundo de madeira. Na sexta, não."],
+    ["m", "Então fica quinta, às sete. O Caio leva a câmera e o tripé, e eu combino a fornada com o padeiro.", {d: "Sessão na quinta, às sete da manhã.", t: [["Levar a câmera e o tripé", "c", "quinta"], ["Combinar a fornada com o padeiro", "m", "hoje"]]}],
+    ["c", "Preciso da lista dos doze pães até amanhã, para montar a ordem das fotos.", {t: [["Mandar a lista dos doze pães para o Caio", "m", "amanhã"]]}],
+    ["h", "Eu levo o fundo de madeira e separo os panos claros.", {t: [["Levar o fundo de madeira e os panos claros", "h", "quinta"]]}],
+    ["m", "E as fotos tratadas, quando a padaria recebe?"],
+    ["c", "No fim de semana eu trato. Na segunda eu mando a prévia.", {r: "Prévia das fotos tratadas na segunda.", t: [["Mandar a prévia das fotos tratadas", "c", "segunda"]]}],
+    ["m", "Fechado. Qualquer mudança, eu aviso no grupo."]
+  ]};
+  preparar(VIVA, 7);
+  var gravadas = 0;
+  // a nota da gravação que acabou: as falas ditas até ali (a última pode ficar pela metade), os momentos marcados e o que saiu delas
+  function notaGravada(tempo, marcas) {
+    var agoraD = new Date(), n = {id: "g" + (++gravadas), titulo: VIVA.titulo + (gravadas > 1 ? " (" + gravadas + ")" : ""), pasta: VIVA.pasta, dia: 0, inteira: true,
+      hora: d2(agoraD.getHours()) + ":" + d2(agoraD.getMinutes()), pessoas: {}, marcos: [], falas: [], curto: [], longo: [], decisoes: [], tarefas: []}, i;
+    for (i = 0; i < VIVA.falas.length && VIVA.t0[i] < tempo; i++) {
+      var ditas = VIVA.pal.filter(function (p) { return p.f === i && p.t0 < tempo; }), ultima = ditas[ditas.length - 1], inteira = ultima.fim && ultima.t1 <= tempo + 250, extra = inteira && VIVA.falas[i][2];
+      n.falas.push([VIVA.falas[i][0], ditas.map(function (p) { return p.txt; }).join(" ") + (inteira ? "" : "…")]);
+      n.pessoas[VIVA.falas[i][0]] = VIVA.pessoas[VIVA.falas[i][0]];
+      if (extra) { if (extra.r) n.curto.push(extra.r); if (extra.d) n.decisoes.push(extra.d); (extra.t || []).forEach(function (x) { n.tarefas.push(x); }); }
+    }
+    if (!n.falas.length) { n.falas.push(["m", "…"]); n.pessoas.m = VIVA.pessoas.m; }
+    if (!n.curto.length) n.curto.push("Gravação curta: ainda não há o que resumir.");
+    preparar(n, 40 + gravadas, tempo);
+    n.marcasMs = marcas.map(function (seg) { return seg * 1000; }).filter(function (ms) { return ms <= tempo; });
+    n.marcasMs.forEach(function (ms) { var k = -1; n.t0.forEach(function (t0, j) { if (t0 <= ms) k = j; }); if (k >= 0 && n.marcos.indexOf(k) < 0) n.marcos.push(k); });
+    return n;
+  }
+  function nota(id) { for (var i = 0; i < NOTAS.length; i++) if (NOTAS[i].id === id) return NOTAS[i]; return NOTAS[0]; }
+
+  var ui = {vista: "gravar", nota: "site", resumo: "curto", pasta: "Todas", busca: "", buscaNota: "", buscando: false, nomes: {}, pessoa: null, pilula: "7 dias grátis", plano: "ano", ultimoFoco: null, desfazer: null, relAviso: 0};
+  // a gravação: começa em curso, como quem abriu o app no meio da reunião
+  var g = {estado: "gravando", ms: 21000, marco: performance.now(), marcas: [12], amp: [], quadro: 0, rel: 0, ultimo: 0, txt: "", completas: -1, silencio: false};
+  // a reprodução da nota aberta; "seguir" é a tela acompanhar a palavra corrente (rolar à mão desliga, tocar de novo religa)
+  var toc = {tocando: false, t: 0, marco: 0, rel: 0, w: -1, seguir: true};
+  var N_VIVA = 44, i0;
+  for (i0 = 0; i0 < N_VIVA; i0++) g.amp.push(0.1 + 0.8 * acaso(i0 * 7) * (i0 % 9 < 7 ? 1 : 0.15));
+
+  function nomeDe(n, pid) {
+    var dado = ui.nomes[n.id + ":" + pid];
+    if (dado) return dado;
+    return n.pessoas[pid] || "Pessoa " + (Object.keys(n.pessoas).indexOf(pid) + 1);
+  }
+  function semNome(n, pid) { return !ui.nomes[n.id + ":" + pid] && !n.pessoas[pid]; }
+  function tempoGravado() { return g.ms + (g.estado === "gravando" ? performance.now() - g.marco : 0); }
+
+  function avisar(texto, desfazer) {
+    var a = $(".dt-aviso");
+    $(".dt-aviso-t").textContent = texto;
+    $(".dt-aviso-b").hidden = !desfazer;
+    ui.desfazer = desfazer || null;
+    a.setAttribute("data-visivel", "");
+    clearTimeout(ui.relAviso);
+    ui.relAviso = setTimeout(function () { a.removeAttribute("data-visivel"); ui.desfazer = null; }, 5200);
+  }
+  function onda(valores) {
+    var o = h("div", {"class": "dt-onda", "aria-hidden": "true"});
+    valores.forEach(function (v) { var b = h("i", {"class": "dt-onda-b"}); b.style.transform = "scaleY(" + Math.max(0.04, v).toFixed(3) + ")"; o.appendChild(b); });
+    return o;
+  }
+
+  // ── estado 1: gravar. A onda viva anda por quadros e para quando a tela não está à vista ──
+  // o que a conversa já disse até o instante ms: quem fala, a frase até a palavra corrente e quantas falas já fecharam
+  function falaViva(ms) {
+    var w = -1, i, p;
+    for (i = 0; i < VIVA.pal.length; i++) if (ms >= VIVA.pal[i].t0) w = i; else break;
+    if (w < 0) return {quem: VIVA.falas[0][0], texto: "", meio: true, falando: false, completas: 0, silencio: false};
+    p = VIVA.pal[w];
+    return {quem: VIVA.falas[p.f][0], texto: VIVA.pal.filter(function (x, k) { return x.f === p.f && k <= w; }).map(function (x) { return x.txt; }).join(" "),
+      meio: !p.fim, falando: ms <= p.t1 + 120, completas: p.fim && ms > p.t1 ? p.f + 1 : p.f, silencio: ms - p.t1 > 2600};
+  }
+  function legendaDe(viva) { return viva.texto ? "“" + (viva.meio ? viva.texto.replace(/[,;:]$/, "") + "…" : viva.texto) + "”" : "…"; }
+  // o tempo, a frase e quem fala: a parte que continua andando mesmo com o movimento reduzido
+  function pintarLegenda(ms) {
+    var viva = falaViva(ms), t = $(".dt-tempo"), leg = $(".dt-legenda"), quem = $(".dt-quem-n"), txt = relogio(ms);
+    if (t && t.textContent !== txt) t.textContent = txt;
+    todos(".dt-seg-b .dt-seg-t").forEach(function (x) { if (x.textContent !== txt) x.textContent = txt; });
+    if (viva.silencio !== g.silencio) { g.silencio = viva.silencio; if (ui.vista === "gravar") desenharGravar(); return viva; }
+    if (leg && g.txt !== viva.texto) { g.txt = viva.texto; leg.textContent = legendaDe(viva); if (quem) quem.textContent = VIVA.pessoas[viva.quem]; }
+    if (viva.completas !== g.completas) { g.completas = viva.completas; if (ui.vista === "gravar" && app.clientWidth >= 1120) { desenharLado(); var l = $(".dt-lado"); l.scrollTop = l.scrollHeight; } }
+    return viva;
+  }
+  function pintarGravacao(agoraMs) {
+    g.quadro = 0;
+    if (ui.vista !== "gravar" || g.estado !== "gravando" || document.hidden) return;
+    g.quadro = requestAnimationFrame(pintarGravacao);
+    if (agoraMs - g.ultimo < 70) return;
+    g.ultimo = agoraMs;
+    var ms = tempoGravado(), fase = ms / 1000, viva = pintarLegenda(ms), barras = todos(".dt-gravar .dt-onda-b"), k;
+    g.amp.shift();
+    g.amp.push(Math.max(0.05, (viva.falando ? 0.2 + 0.8 * Math.abs(Math.sin(fase * 7.3) * Math.sin(fase * 2.1)) : 0.07) * (0.55 + 0.45 * acaso(Math.floor(ms / 70)))));
+    for (k = 0; k < barras.length; k++) barras[k].style.transform = "scaleY(" + g.amp[k].toFixed(3) + ")";
+  }
+  // o relógio da gravação: por quadros, com a onda; com o movimento reduzido, um tique leve só para o tempo e a frase.
+  // Fora da tela de gravar ele continua só para o tempo ao lado de "Gravar", na barra de cima.
+  function acertarOnda() {
+    var gravando = g.estado === "gravando" && !document.hidden, naTela = gravando && ui.vista === "gravar";
+    if (naTela && !calmo && !g.quadro) g.quadro = requestAnimationFrame(pintarGravacao);
+    var leve = gravando && (calmo || !naTela);
+    if (leve && !g.rel) g.rel = setInterval(function () { if (g.estado !== "gravando" || document.hidden) { clearInterval(g.rel); g.rel = 0; return; } pintarLegenda(tempoGravado()); }, 500);
+    else if (!leve && g.rel) { clearInterval(g.rel); g.rel = 0; }
+  }
+  function desenharGravar() {
+    var raiz = limpar($(".dt-gravar")), ms = tempoGravado(), viva = falaViva(ms), e = g.estado;
+    todos(".dt-aba .dt-ponto,.dt-seg-b .dt-ponto,.dt-seg-b .dt-seg-t").forEach(function (x) { x.hidden = e !== "gravando"; });
+    todos(".dt-seg-b .dt-seg-t").forEach(function (x) { x.textContent = relogio(ms); });
+    g.silencio = viva.silencio;
+    raiz.appendChild(h("div", {"class": "dt-g-topo"}, [h("span", {"class": "dt-selo"}, [ic("cadeado"), "Transcrito neste aparelho"]), h("button", {type: "button", "class": "dt-plano", "data-acao": "planos", text: ui.pilula})]));
+    var meio = h("div", {"class": "dt-g-meio"});
+    meio.appendChild(h("p", {"class": "dt-g-estado", "aria-live": "polite"}, [e === "gravando" ? h("i", {"class": "dt-ponto", "aria-hidden": "true"}) : null,
+      e === "gravando" ? "Gravando" : e === "pausa" ? "Em pausa" : e === "transcrevendo" ? "Transcrevendo neste aparelho" : "Pronto para gravar",
+      e !== "parado" && e !== "transcrevendo" && g.marcas.length ? " · " + pl(g.marcas.length, "momento", "momentos") : ""]));
+    meio.appendChild(h("div", {"class": "dt-tempo", role: "timer", "aria-label": "Tempo de gravação", text: relogio(ms)}));
+    if ((e === "gravando" || e === "pausa") && viva.silencio) meio.appendChild(h("p", {"class": "dt-quem", text: e === "pausa" ? "Em silêncio quando pausou." : "Silêncio. A gravação continua."}));
+    else if (e === "gravando" || e === "pausa") meio.appendChild(h("p", {"class": "dt-quem"}, [h("span", {"class": "dt-ini", "aria-hidden": "true", text: VIVA.pessoas[viva.quem].charAt(0)}), h("b", {"class": "dt-quem-n", text: VIVA.pessoas[viva.quem]}), e === "pausa" ? "falava por último" : "está falando"]));
+    else meio.appendChild(h("p", {"class": "dt-quem", text: e === "transcrevendo" ? "Separando as vozes e escrevendo a nota." : "Reunião, aula ou ligação."}));
+    meio.appendChild(e === "gravando" || e === "pausa" ? onda(g.amp) : onda(g.amp.map(function () { return 0.04; })));
+    if (e === "pausa") $(".dt-onda", meio).setAttribute("data-parada", "");
+    if (e === "transcrevendo") { var tr = h("div", {"class": "dt-trilho"}, h("i", {"class": "dt-trilho-i"})); meio.appendChild(tr); requestAnimationFrame(function () { requestAnimationFrame(function () { tr.setAttribute("data-indo", ""); }); }); }
+    meio.appendChild(h("p", {"class": "dt-legenda", "aria-live": "off", text: e === "gravando" || e === "pausa" ? legendaDe(viva) : e === "transcrevendo" ? "O áudio fica aqui. Só o texto aparece." : "Fale, e a nota chega escrita, organizada e resumida."}));
+    g.txt = viva.texto;
+    raiz.appendChild(meio);
+    if (e === "gravando" || e === "pausa") raiz.appendChild(h("div", {"class": "dt-g-ctl"}, [
+      h("button", {type: "button", "class": "dt-ctl", "data-acao": "marcar", "data-foco": "marcar"}, [h("span", {"class": "dt-ctl-c"}, ic("marco")), "Marcar momento"]),
+      h("button", {type: "button", "class": "dt-rec", "data-acao": "rec", "data-foco": "rec", "data-estado": e, "aria-label": e === "gravando" ? "Pausar a gravação" : "Retomar a gravação"}, h("i", {"class": "dt-rec-i"})),
+      h("button", {type: "button", "class": "dt-ctl", "data-acao": "terminar", "data-foco": "terminar"}, [h("span", {"class": "dt-ctl-c"}, ic("fim")), "Terminar"])]));
+    else if (e === "parado") raiz.appendChild(h("div", {"class": "dt-g-ctl"}, [
+      h("span"), h("button", {type: "button", "class": "dt-rec", "data-acao": "rec", "data-foco": "rec", "data-estado": "parado", "aria-label": "Começar a gravar"}, h("i", {"class": "dt-rec-i"})),
+      h("button", {type: "button", "class": "dt-ctl", "data-acao": "vista", "data-vista": "nota", "data-foco": "ultima"}, [h("span", {"class": "dt-ctl-c"}, ic("tocar")), "Última nota"])]));
+    acertarOnda();
+  }
+
+  // ── estado 2: a nota ──
+  function parar() { if (!toc.tocando) return; toc.t = Math.min(nota(ui.nota).dur, toc.t + performance.now() - toc.marco); toc.tocando = false; clearInterval(toc.rel); toc.rel = 0; }
+  function tocar() { var n = nota(ui.nota); if (toc.tocando) return; if (toc.t >= n.dur - 50) toc.t = 0; toc.tocando = true; toc.seguir = true; toc.marco = performance.now(); toc.rel = setInterval(pintarToque, 80); }
+  function posicao() { return Math.min(nota(ui.nota).dur, toc.t + (toc.tocando ? performance.now() - toc.marco : 0)); }
+  // repinta só o que mudou: a palavra corrente, as que já foram ditas, as barras tocadas e o tempo
+  function pintarToque(tudo) {
+    var n = nota(ui.nota), pos = posicao(), w = -1, i, pals = todos(".dt-trans .dt-pal"), barras = todos(".dt-tocador .dt-onda-b"), t = $(".dt-toc-t"), ate = Math.floor(pos / n.dur * barras.length), regua = $(".dt-tocador .dt-onda");
+    if (document.hidden && toc.tocando) { parar(); desenharTocador(); return; }
+    for (i = 0; i < n.pal.length; i++) if (pos >= n.pal[i].t0) w = i; else break;
+    if (pos <= 0 && !toc.tocando) w = -1;
+    if (tudo === true || w !== toc.w) {
+      for (i = 0; i < pals.length; i++) { pals[i].toggleAttribute("data-dita", i < w); pals[i].toggleAttribute("data-agora", i === w && (toc.tocando || pos > 0)); }
+      if (w >= 0 && pals[w] && toc.tocando && toc.seguir) manterVisivel(pals[w]);
+      toc.w = w;
+    }
+    for (i = 0; i < barras.length; i++) barras[i].toggleAttribute("data-tocada", i <= ate && pos > 0);
+    if (t) t.textContent = relogio(pos) + " / " + relogio(n.dur);
+    if (regua) { regua.setAttribute("aria-valuenow", String(Math.round(pos / 1000))); regua.setAttribute("aria-valuetext", relogio(pos) + " de " + relogio(n.dur)); }
+    $(".dt-trans").toggleAttribute("data-tocando", toc.tocando || pos > 0);
+    if (toc.tocando && pos >= n.dur) { parar(); toc.t = 0; toc.w = -1; desenharTocador(); pintarToque(true); }
+  }
+  function manterVisivel(el) {
+    if (!el.offsetParent) return;   // palavra fora da tela (outra vista): não mexe na rolagem de ninguém
+    var r = el.closest(".dt-centro"), rolo = r && getComputedStyle(r).overflowY !== "visible" && getComputedStyle(r).display !== "contents" ? r : $(".dt-corpo");
+    var a = el.getBoundingClientRect(), b = rolo.getBoundingClientRect();
+    if (a.bottom > b.bottom - 150 || a.top < b.top + 60) rolo.scrollTop += a.top - b.top - (b.height * 0.4);
+  }
+  function desenharCab() {
+    var raiz = limpar($(".dt-nota-cab")), n = nota(ui.nota);
+    raiz.appendChild(h("span", {"class": "dt-rot", text: diaTxt(n.dia) + ", " + n.hora + " · " + n.durTxt + " · " + pl(Object.keys(n.pessoas).length, "voz", "vozes")}));
+    raiz.appendChild(h("h1", {"class": "dt-titulo", text: n.titulo}));
+    raiz.appendChild(h("div", {"class": "dt-nota-acoes"}, [
+      h("button", {type: "button", "class": "dt-btn", "data-acao": "buscar-nota", "data-foco": "buscar-nota", "aria-pressed": String(ui.buscando)}, [ic("busca"), "Buscar na nota"]),
+      h("button", {type: "button", "class": "dt-btn", "data-acao": "compartilhar", "data-foco": "compartilhar"}, [ic("enviar"), "Compartilhar"])]));
+    if (ui.buscando) {
+      raiz.appendChild(h("label", {"class": "dt-campo"}, [h("span", {"class": "dt-so-leitor", text: "Buscar nesta nota"}), ic("busca"), h("input", {type: "text", "class": "dt-campo-c", id: "dt-busca-nota", placeholder: "Uma palavra que foi dita", autocomplete: "off", enterkeyhint: "search", value: ui.buscaNota})]));
+      raiz.appendChild(h("p", {"class": "dt-achou", "aria-live": "polite"}));
+    }
+    if (!n.inteira) raiz.appendChild(h("p", {"class": "dt-achou", text: "Na maquete, as notas antigas trazem só um trecho da gravação."}));
+  }
+  function desenharTrans() {
+    var raiz = limpar($(".dt-trans")), n = nota(ui.nota), q = ui.buscando ? ui.buscaNota.trim() : "", achou = 0, w = 0;
+    raiz.appendChild(h("header", {"class": "dt-sec"}, [h("h2", {text: "Transcrição"}), h("span", {"class": "dt-sec-lado", text: pl(n.falas.length, "fala", "falas")})]));
+    n.falas.forEach(function (f, i) {
+      // o texto dito é o nome do botão (um leitor de tela lê a fala); a busca olha a fala inteira, então acha frases com espaço
+      var p = h("button", {type: "button", "class": "dt-fala-t", "data-acao": "tocar-fala", "data-i": i, title: "Tocar a partir daqui"}), partes = f[1].split(" "), base = semAcento(f[1]), alvo = semAcento(q), faixas = [], de = 0, pos = 0;
+      if (q.length > 1) while ((de = base.indexOf(alvo, de)) >= 0) { faixas.push([de, de + alvo.length]); de += alvo.length; achou++; }
+      partes.forEach(function (txt, j) {
+        var ini = pos, fim = pos + txt.length, filhos = [], c = ini;
+        faixas.forEach(function (fx) {
+          var a = Math.max(fx[0], ini), b = Math.min(fx[1], fim);
+          if (a >= b) return;
+          if (a > c) filhos.push(f[1].slice(c, a));
+          filhos.push(h("mark", {text: f[1].slice(a, b)}));
+          c = b;
+        });
+        if (c < fim) filhos.push(f[1].slice(c, fim));
+        p.appendChild(h("span", {"class": "dt-pal", "data-w": w++}, filhos));
+        if (j < partes.length - 1) p.appendChild(document.createTextNode(" "));
+        pos = fim + 1;
+      });
+      raiz.appendChild(h("article", {"class": "dt-fala"}, [h("header", {"class": "dt-fala-cab"}, [
+        h("button", {type: "button", "class": "dt-fala-quem", "data-acao": "pessoa", "data-id": f[0], "data-foco": "quem-" + i, "data-sem-nome": semNome(n, f[0]), "aria-label": nomeDe(n, f[0]) + ": trocar o nome", text: nomeDe(n, f[0])}),
+        h("span", {"class": "dt-fala-h dt-num", text: relogio(n.t0[i])}), n.marcos.indexOf(i) >= 0 ? h("span", {"class": "dt-fala-m"}, [ic("marco"), "momento marcado"]) : null]), p]));
+    });
+    var fala = $(".dt-achou");
+    if (fala && ui.buscando) {
+      limpar(fala);
+      if (q.length > 1) fala.appendChild(document.createTextNode(achou ? pl(achou, "trecho", "trechos") + " com “" + q + "”." : "Ninguém disse “" + q + "” nesta nota."));
+      if (q.length > 1 && achou) fala.appendChild(h("button", {type: "button", "class": "dt-link", "data-acao": "primeiro-achado", "data-foco": "primeiro-achado", text: "Ver o primeiro"}));
+    }
+    toc.w = -2;
+  }
+  function desenharTocador() {
+    var raiz = limpar($(".dt-tocador")), n = nota(ui.nota);
+    raiz.appendChild(h("button", {type: "button", "class": "dt-tocar", "data-acao": "tocar", "data-foco": "tocar", "aria-label": toc.tocando ? "Pausar" : "Tocar"}, ic(toc.tocando ? "pausa" : "tocar")));
+    var o = onda(n.onda);
+    // os momentos marcados são âncoras por cima da onda, no tempo em que foram marcados (ou no começo da fala marcada)
+    (n.marcasMs || n.marcos.map(function (i) { return n.t0[i]; })).forEach(function (ms) { var m = h("i", {"class": "dt-onda-m"}); m.style.left = (Math.min(1, ms / n.dur) * 100).toFixed(2) + "%"; o.appendChild(m); });
+    o.setAttribute("data-acao", "buscar-tempo"); o.setAttribute("data-foco", "onda"); o.removeAttribute("aria-hidden"); o.setAttribute("role", "slider"); o.setAttribute("tabindex", "0"); o.setAttribute("aria-label", "Posição na gravação");
+    o.setAttribute("aria-valuemin", "0"); o.setAttribute("aria-valuemax", String(Math.round(n.dur / 1000))); o.setAttribute("aria-valuenow", String(Math.round(posicao() / 1000)));
+    raiz.appendChild(o);
+    raiz.appendChild(h("span", {"class": "dt-toc-t dt-num"}));
+  }
+  function ladoAoVivo(raiz) {
+    var e = g.estado, viva = falaViva(tempoGravado()), i;
+    raiz.appendChild(h("header", {"class": "dt-sec"}, [h("h2", {text: "Ao vivo"}), h("span", {"class": "dt-sec-lado", text: e === "gravando" ? "neste aparelho" : e === "pausa" ? "em pausa" : ""})]));
+    if (e === "parado" || e === "transcrevendo") { raiz.appendChild(h("p", {"class": "dt-vazio-s", text: e === "parado" ? "Quando você gravar, as frases aparecem aqui conforme são ditas." : "Fechando a nota."})); return; }
+    for (i = 0; i < viva.completas; i++) raiz.appendChild(h("p", {"class": "dt-vivo"}, [h("b", {text: VIVA.pessoas[VIVA.falas[i][0]]}), h("span", {"class": "dt-num", text: relogio(VIVA.t0[i])}), h("span", {"class": "dt-vivo-t", text: VIVA.falas[i][1]})]));
+    if (!viva.completas) raiz.appendChild(h("p", {"class": "dt-vazio-s", text: "A primeira frase aparece aqui assim que terminar de ser dita."}));
+    raiz.appendChild(h("header", {"class": "dt-sec"}, [h("h2", {text: "Momentos"}), h("span", {"class": "dt-sec-lado", text: String(g.marcas.length)})]));
+    if (g.marcas.length) raiz.appendChild(h("ul", {"class": "dt-topicos"}, g.marcas.map(function (seg) { return h("li", {"class": "dt-topico dt-num", text: "Marcado em " + relogio(seg * 1000)}); })));
+    else raiz.appendChild(h("p", {"class": "dt-vazio-s", text: "Marque um momento para voltar a ele depois."}));
+  }
+  function feitasTxt(feitas, total) { return feitas + " de " + total + (total === 1 ? " feita" : " feitas"); }
+  function desenharLado() {
+    var raiz = limpar($(".dt-lado")), n = nota(ui.nota), topicos = ui.resumo === "detalhado" && n.longo.length ? n.longo : n.curto;
+    if (ui.vista === "gravar") { ladoAoVivo(raiz); return; }
+    // na biblioteca em tela ampla esta coluna é a prévia da nota escolhida
+    if (ui.vista === "biblioteca") raiz.appendChild(h("div", {"class": "dt-previa"}, [h("span", {"class": "dt-rot", text: diaTxt(n.dia) + ", " + n.hora + " · " + n.durTxt}), h("h2", {"class": "dt-previa-t", text: n.titulo}),
+      h("button", {type: "button", "class": "dt-btn dt-btn-cheio", "data-acao": "abrir", "data-id": n.id, "data-ir": true, "data-foco": "abrir-previa", text: "Abrir a nota"})]));
+    raiz.appendChild(h("header", {"class": "dt-sec"}, [h("h2", {text: "Resumo"}), n.longo.length ? h("div", {"class": "dt-modo", role: "group", "aria-label": "Tamanho do resumo"}, [
+      h("button", {type: "button", "class": "dt-modo-b", "data-acao": "resumo", "data-id": "curto", "data-foco": "res-curto", "aria-pressed": String(ui.resumo === "curto"), text: "Curto"}),
+      h("button", {type: "button", "class": "dt-modo-b", "data-acao": "resumo", "data-id": "detalhado", "data-foco": "res-detalhado", "aria-pressed": String(ui.resumo === "detalhado"), text: "Detalhado"})]) : null]));
+    raiz.appendChild(h("ul", {"class": "dt-topicos"}, topicos.map(function (t) { return h("li", {"class": "dt-topico", text: t}); })));
+    if (n.decisoes.length) {
+      raiz.appendChild(h("header", {"class": "dt-sec"}, [h("h2", {text: "Decisões"}), h("span", {"class": "dt-sec-lado", text: String(n.decisoes.length)})]));
+      raiz.appendChild(h("ul", {"class": "dt-topicos"}, n.decisoes.map(function (t) { return h("li", {"class": "dt-topico", text: t}); })));
+    }
+    var feitas = n.tarefas.filter(function (t, i) { return n.feitas[i]; }).length;
+    raiz.appendChild(h("header", {"class": "dt-sec"}, [h("h2", {text: "Tarefas"}), h("span", {"class": "dt-sec-lado", text: n.tarefas.length ? feitasTxt(feitas, n.tarefas.length) : "nenhuma"})]));
+    if (!n.tarefas.length) raiz.appendChild(h("p", {"class": "dt-vazio-s", text: "Ninguém ficou de fazer nada nesta conversa."}));
+    n.tarefas.forEach(function (t, i) {
+      raiz.appendChild(h("button", {type: "button", "class": "dt-tarefa", "data-acao": "tarefa", "data-i": i, "data-foco": "tar-" + i, "aria-pressed": String(!!n.feitas[i])}, [
+        h("span", {"class": "dt-caixa", "aria-hidden": "true"}, ic("certo")), h("span", {"class": "dt-tarefa-t"}, [t[0], h("span", {"class": "dt-tarefa-q", text: (t[1].charAt(0) === "=" ? t[1].slice(1) : nomeDe(n, t[1])) + " · " + t[2]})])]));
+    });
+  }
+
+  // ── estado 3: a biblioteca ──
+  function desenharBib() {
+    var raiz = limpar($(".dt-bib")), q = ui.busca.trim(), pastas = h("div", {"class": "dt-pastas", role: "group", "aria-label": "Pastas"}), ultimoDia = -1, quantas = 0;
+    raiz.appendChild(h("div", {"class": "dt-cab"}, [h("h1", {"class": "dt-h1", text: "Notas"}), h("button", {type: "button", "class": "dt-plano", "data-acao": "planos", text: ui.pilula})]));
+    raiz.appendChild(h("label", {"class": "dt-campo"}, [h("span", {"class": "dt-so-leitor", text: "Buscar no que foi dito"}), ic("busca"), h("input", {type: "text", "class": "dt-campo-c", id: "dt-busca", placeholder: "Buscar no que foi dito", autocomplete: "off", enterkeyhint: "search", value: ui.busca})]));
+    PASTAS.forEach(function (p) { pastas.appendChild(h("button", {type: "button", "class": "dt-pasta", "data-acao": "pasta", "data-id": p, "data-foco": "pasta-" + p, "aria-pressed": String(ui.pasta === p), text: p})); });
+    raiz.appendChild(pastas);
+    NOTAS.forEach(function (n) {
+      if (ui.pasta !== "Todas" && n.pasta !== ui.pasta) return;
+      var trecho = null, qual = -1;
+      if (q.length > 1) {
+        n.falas.forEach(function (x, k) { if (qual < 0 && semAcento(x[1]).indexOf(semAcento(q)) >= 0) qual = k; });
+        if (qual < 0 && semAcento(n.titulo).indexOf(semAcento(q)) < 0) return;
+        if (qual >= 0) trecho = h("span", {"class": "dt-trecho"}, [h("b", {"class": "dt-num", text: relogio(n.t0[qual]) + " · " + nomeDe(n, n.falas[qual][0])}), " “"].concat(comDestaque(n.falas[qual][1], q)).concat(["”"]));
+      }
+      if (n.dia !== ultimoDia) { raiz.appendChild(h("h2", {"class": "dt-dia", text: diaTxt(n.dia)})); ultimoDia = n.dia; }
+      quantas++;
+      raiz.appendChild(h("button", {type: "button", "class": "dt-n", "data-acao": "abrir", "data-id": n.id, "data-foco": "n-" + n.id, "data-aberta": ui.nota === n.id, "data-fala": qual >= 0 ? qual : null}, [
+        h("span", null, [h("span", {"class": "dt-n-t"}, q.length > 1 ? comDestaque(n.titulo, q) : n.titulo), h("span", {"class": "dt-n-m", text: n.hora + " · " + n.durTxt + " · " + n.pasta})]),
+        onda(n.mini), trecho]));
+    });
+    if (!quantas) {
+      var parada = []; for (var i = 0; i < 16; i++) parada.push(0.06);
+      raiz.appendChild(h("div", {"class": "dt-vazio"}, [onda(parada), h("p", {"class": "dt-vazio-t", text: "Silêncio"}),
+        h("p", {"class": "dt-vazio-s", text: q.length > 1 ? "Ninguém disse “" + q + "” em nenhuma nota" + (ui.pasta === "Todas" ? "." : " da pasta " + ui.pasta + ".") : "Nenhuma nota nesta pasta ainda."})]));
+    }
+  }
+  function desenhar() {
+    var f = document.activeElement, chave = f && app.contains(f) ? f.getAttribute("data-foco") : null;
+    var rolos = todos(".dt-corpo,.dt-bib,.dt-centro,.dt-lado").map(function (x) { return [x, x.scrollTop]; });
+    app.setAttribute("data-vista", ui.vista);
+    todos(".dt-seg-b,.dt-aba").forEach(function (b) { if (b.getAttribute("data-vista") === ui.vista) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    arrumarLado();
+    desenharGravar(); desenharCab(); desenharTrans(); desenharTocador(); desenharLado(); desenharBib(); pintarToque(true);
+    rolos.forEach(function (x) { if (x[1]) x[0].scrollTop = x[1]; });
+    if (chave) { var alvo = todos('[data-foco="' + chave + '"]').filter(function (x) { return x.offsetParent && !x.disabled; })[0]; if (alvo) alvo.focus({preventScroll: true}); }
+  }
+  // no celular a nota e o resumo são a mesma coluna, e o resumo vem antes da transcrição: a ordem do Tab segue a da tela.
+  // Em tela média e ampla o resumo é uma coluna à parte.
+  function arrumarLado() {
+    var lado = $(".dt-lado"), estreito = app.clientWidth < 720, dentro = lado.parentNode === $(".dt-nota");
+    if (estreito && !dentro) $(".dt-nota").insertBefore(lado, $(".dt-trans"));
+    else if (!estreito && dentro) $(".dt-corpo").appendChild(lado);
+  }
+  function irPara(vista) {
+    // sair da nota para a reprodução; em tela ampla ela continua na biblioteca, onde a nota segue à vista
+    if (vista !== "nota" && (vista !== "biblioteca" || app.clientWidth < 720)) parar();
+    ui.vista = vista;
+    desenhar();
+    todos(".dt-corpo,.dt-centro").forEach(function (x) { x.scrollTop = 0; });
+    sincronizarEstado();
+  }
+  function abrirNota(id) { parar(); toc.t = 0; toc.w = -1; ui.nota = id; ui.buscaNota = ""; ui.buscando = false; ui.resumo = "curto"; }
+
+  // ── folhas ──
+  function pintarPlanos() {
+    todos(".dt-opcao").forEach(function (o) { o.setAttribute("aria-pressed", String(o.getAttribute("data-id") === ui.plano)); });
+    $(".dt-depois").textContent = "Depois, " + (ui.plano === "ano" ? "R$ 199 por ano" : "R$ 24,90 por mês") + ". Cancele quando quiser.";
+  }
+  function abrirFolha(qual) {
+    ui.ultimoFoco = document.activeElement;
+    $(".dt-aviso").removeAttribute("data-visivel"); ui.desfazer = null;
+    app.setAttribute("data-folha", qual);
+    todos(".dt-topo,.dt-corpo,.dt-abas").forEach(function (x) { x.inert = true; });
+    setTimeout(function () { var alvo = qual === "pessoa" ? $("#dt-nome") : $('.dt-folha[data-folha="' + qual + '"] .dt-fechar'); alvo.focus({preventScroll: true}); if (alvo.select) alvo.select(); }, calmo ? 0 : 160);
+  }
+  function fecharFolha() {
+    if (!app.hasAttribute("data-folha")) return;
+    app.removeAttribute("data-folha");
+    todos(".dt-topo,.dt-corpo,.dt-abas").forEach(function (x) { x.inert = false; });
+    if (ui.ultimoFoco && ui.ultimoFoco.focus && app.contains(ui.ultimoFoco)) ui.ultimoFoco.focus({preventScroll: true});
+  }
+  function folhaPessoa(pid) {
+    var n = nota(ui.nota), sug = limpar($(".dt-sug"));
+    ui.pessoa = pid;
+    $("#dt-t-pessoa").textContent = semNome(n, pid) ? "Quem é a " + nomeDe(n, pid) + "?" : "Trocar o nome";
+    $("#dt-nome").value = semNome(n, pid) ? "" : nomeDe(n, pid);
+    ["Bia", "Rafael", "Lu", "Cliente"].forEach(function (s) { sug.appendChild(h("button", {type: "button", "class": "dt-btn", "data-acao": "sugestao", "data-id": s, text: s})); });
+    abrirFolha("pessoa");
+  }
+  function guardarNome() {
+    var n = nota(ui.nota), chave = n.id + ":" + ui.pessoa, antes = ui.nomes[chave], era = nomeDe(n, ui.pessoa), novo = $("#dt-nome").value.trim().slice(0, 28);
+    fecharFolha();
+    if (!novo || novo === era) return;
+    ui.nomes[chave] = novo;
+    desenhar();
+    avisar(era + " agora é " + novo + ".", function () { if (antes) ui.nomes[chave] = antes; else delete ui.nomes[chave]; desenhar(); });
+  }
+
+  // ── ações da gravação ──
+  function alternarGravacao() {
+    if (g.estado === "gravando") { g.ms = tempoGravado(); g.estado = "pausa"; }
+    else if (g.estado === "pausa") { g.estado = "gravando"; g.marco = performance.now(); }
+    else if (g.estado === "parado") { g.estado = "gravando"; g.ms = 0; g.marco = performance.now(); g.marcas = []; g.completas = -1; }
+    desenhar();
+  }
+  function terminar() {
+    if (g.estado !== "gravando" && g.estado !== "pausa") return;
+    var tempo = tempoGravado(), marcas = g.marcas.slice();
+    g.ms = tempo; g.estado = "transcrevendo";
+    desenhar();
+    setTimeout(function () {
+      var n = notaGravada(tempo, marcas);
+      NOTAS.unshift(n);
+      g.estado = "parado"; g.ms = 0; g.marcas = []; g.completas = -1;
+      abrirNota(n.id);
+      // quem ficou esperando vê a nota abrir; quem já foi para outra tela fica onde está e recebe só o aviso
+      if (ui.vista === "gravar") irPara("nota"); else desenhar();
+      avisar("Nota pronta: " + pl(n.falas.length, "fala", "falas") + ", " + pl(n.tarefas.length, "tarefa", "tarefas") + ".");
+    }, calmo ? 300 : 1500);
+  }
+
+  // ── os três estados do stand: 1 Gravar · 2 Nota · 3 Biblioteca ──
+  function estadoDaTela() { return ui.vista === "nota" ? 2 : ui.vista === "biblioteca" ? 3 : 1; }
+  function sincronizarEstado() { var n = String(estadoDaTela()); if (app.getAttribute("data-estado") !== n) app.setAttribute("data-estado", n); }
+  function aplicarEstado(n) {
+    var vista = n === 2 ? "nota" : n === 3 ? "biblioteca" : "gravar";
+    if (vista === ui.vista) return;
+    fecharFolha();
+    irPara(vista);
+  }
+  app.addEventListener("maquete:estado", function (e) { fecharFolha(); aplicarEstado(e.detail && e.detail.estado); });   // pedido da barra do stand: folha aberta fecha, mesmo no mesmo estado
+  new MutationObserver(function () { aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1); }).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+
+  // ── eventos ──
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-acao]");
+    if (!b || !app.contains(b) || b.disabled) return;
+    var acao = b.getAttribute("data-acao"), id = b.getAttribute("data-id"), n = nota(ui.nota);
+    if (acao === "vista") irPara(b.getAttribute("data-vista"));
+    else if (acao === "rec") alternarGravacao();
+    else if (acao === "marcar") { var s = Math.floor(tempoGravado() / 1000); g.marcas.push(s); desenhar(); avisar("Momento marcado em " + relogio(s * 1000) + ".", function () { g.marcas.pop(); desenhar(); }); }
+    else if (acao === "terminar") terminar();
+    else if (acao === "tocar") { if (toc.tocando) parar(); else tocar(); desenharTocador(); pintarToque(true); var bt = $('[data-foco="tocar"]'); if (bt) bt.focus({preventScroll: true}); }
+    else if (acao === "tocar-fala") { var p = e.target.closest(".dt-pal"), w = p ? +p.getAttribute("data-w") : -1; parar(); toc.t = w >= 0 ? n.pal[w].t0 : n.t0[+b.getAttribute("data-i")]; tocar(); desenharTocador(); pintarToque(true); }
+    else if (acao === "buscar-tempo") {   // tocar na onda reproduz dali (o toque do teclado, que vem sem posição, só alterna tocar e pausar)
+      var r = b.getBoundingClientRect(), era = toc.tocando;
+      if (e.detail === 0) { if (era) parar(); else tocar(); }
+      else { parar(); toc.t = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * n.dur; tocar(); }
+      desenharTocador(); pintarToque(true);
+      var regua = $('[data-foco="onda"]'); if (regua) regua.focus({preventScroll: true});
+    }
+    else if (acao === "primeiro-achado") { var achado = $(".dt-trans mark"); if (achado) { toc.seguir = false; achado.scrollIntoView({block: "center", behavior: calmo ? "auto" : "smooth"}); } }
+    else if (acao === "buscar-nota") { ui.buscando = !ui.buscando; if (!ui.buscando) ui.buscaNota = ""; desenhar(); if (ui.buscando) $("#dt-busca-nota").focus({preventScroll: true}); }
+    else if (acao === "compartilhar") avisar("Maquete: aqui abriria a folha de compartilhar, com texto e PDF.");
+    else if (acao === "resumo") { ui.resumo = id; desenhar(); }
+    else if (acao === "tarefa") { var i = +b.getAttribute("data-i"); n.feitas[i] = !n.feitas[i]; desenhar(); }
+    else if (acao === "pessoa") folhaPessoa(id);
+    else if (acao === "sugestao") { $("#dt-nome").value = id; guardarNome(); }
+    else if (acao === "guardar-nome") guardarNome();
+    else if (acao === "pasta") { ui.pasta = id; desenhar(); }
+    else if (acao === "abrir") {
+      var fala = b.getAttribute("data-fala"), termo = ui.busca.trim();
+      abrirNota(id);
+      // pelo resultado de uma busca: a nota abre naquela fala, com a palavra ainda em destaque
+      if (fala !== null) { toc.t = nota(id).t0[+fala]; ui.buscando = true; ui.buscaNota = termo; }
+      // na biblioteca em tela ampla, tocar numa nota só a escolhe (a prévia fica ao lado); o botão da prévia é que abre
+      if (ui.vista === "biblioteca" && app.clientWidth >= 1120 && !b.hasAttribute("data-ir")) desenhar();
+      else { irPara("nota"); if (fala !== null) { var m = $(".dt-trans mark"); if (m) m.scrollIntoView({block: "center"}); } }
+    }
+    else if (acao === "planos") { pintarPlanos(); abrirFolha("planos"); }
+    else if (acao === "plano") { ui.plano = id; pintarPlanos(); }
+    else if (acao === "fechar-folha") fecharFolha();
+    else if (acao === "comprar") { fecharFolha(); ui.pilula = "Teste: 7 dias"; todos(".dt-plano").forEach(function (x) { x.textContent = ui.pilula; }); avisar("Maquete: nada foi cobrado."); }
+    else if (acao === "restaurar") { fecharFolha(); avisar("Maquete: não há compra para restaurar."); }
+    else if (acao === "desfazer") { var d = ui.desfazer; $(".dt-aviso").removeAttribute("data-visivel"); ui.desfazer = null; if (d) d(); }
+  });
+  app.addEventListener("input", function (e) {
+    if (e.target.id === "dt-busca") { ui.busca = e.target.value; var pos = e.target.selectionStart; desenharBib(); var c = $("#dt-busca"); c.focus({preventScroll: true}); c.setSelectionRange(pos, pos); }
+    else if (e.target.id === "dt-busca-nota") { ui.buscaNota = e.target.value; desenharTrans(); pintarToque(true); }
+  });
+  // a folha aberta prende o foco: o Tab dá a volta dentro dela, e o Esc fecha de onde quer que o foco esteja
+  document.addEventListener("keydown", function (e) {
+    var nome = app.getAttribute("data-folha"), folha = nome && app.querySelector('[role="dialog"][data-folha="' + nome + '"]'), itens, a, fora;
+    if (!folha || e.defaultPrevented || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") { fecharFolha(); return; }
+    if (e.key !== "Tab") return;
+    itens = Array.prototype.filter.call(folha.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]'), function (x) { return !x.disabled && x.tabIndex >= 0 && x.offsetParent; });
+    a = document.activeElement; fora = !folha.contains(a) || a === folha;
+    if (!itens.length) { e.preventDefault(); folha.focus({preventScroll: true}); }
+    else if (fora || a === itens[e.shiftKey ? 0 : itens.length - 1]) { e.preventDefault(); itens[e.shiftKey ? itens.length - 1 : 0].focus({preventScroll: true}); }
+  });
+  app.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && app.hasAttribute("data-folha")) { e.stopPropagation(); fecharFolha(); }
+    else if (e.key === "Enter" && e.target.id === "dt-nome") { e.preventDefault(); guardarNome(); }
+    else if (e.key === "Enter" && e.target.id === "dt-busca-nota") { e.preventDefault(); var achado = $(".dt-trans mark"); if (achado) { toc.seguir = false; e.target.blur(); achado.scrollIntoView({block: "center", behavior: calmo ? "auto" : "smooth"}); } }
+    else if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && e.target.getAttribute && e.target.getAttribute("data-acao") === "buscar-tempo") {
+      var n = nota(ui.nota), era = toc.tocando; parar(); toc.t = Math.max(0, Math.min(n.dur, toc.t + (e.key === "ArrowRight" ? 5000 : -5000))); if (era) tocar(); pintarToque(true); e.preventDefault();
+    }
+  });
+  document.addEventListener("visibilitychange", function () { if (document.hidden) { if (toc.tocando) { parar(); desenharTocador(); pintarToque(true); } } else acertarOnda(); });
+  // rolar à mão durante a reprodução desliga o acompanhar (a tela para de voltar para a palavra corrente)
+  ["wheel", "touchmove"].forEach(function (ev) { $(".dt-corpo").addEventListener(ev, function () { toc.seguir = false; }, {passive: true}); });
+  if (window.ResizeObserver) new ResizeObserver(arrumarLado).observe(app); else window.addEventListener("resize", arrumarLado);
+  $(".dt-veu").addEventListener("wheel", function (e) { e.preventDefault(); }, {passive: false});
+  $(".dt-veu").addEventListener("touchmove", function (e) { e.preventDefault(); }, {passive: false});
+  // arrastar a folha para baixo pelo topo fecha; soltar antes do limite devolve ao lugar
+  todos(".dt-folha").forEach(function (folha) {
+    var y0 = null, dy = 0;
+    folha.addEventListener("pointerdown", function (e) {
+      if (app.clientWidth >= 720 || !e.target.closest(".dt-puxador,.dt-folha-topo") || e.target.closest("button")) return;
+      y0 = e.clientY; dy = 0; folha.setPointerCapture(e.pointerId); folha.style.transition = "none";
+    });
+    folha.addEventListener("pointermove", function (e) { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); folha.style.transform = "translateY(" + dy + "px)"; });
+    var soltar = function () { if (y0 === null) return; y0 = null; folha.style.transition = ""; folha.style.transform = ""; if (dy > 90) fecharFolha(); };
+    folha.addEventListener("pointerup", soltar);
+    folha.addEventListener("pointercancel", soltar);
+  });
+
+  desenhar();
+  aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1);
+})();
+</script>
+</body>
+</html>

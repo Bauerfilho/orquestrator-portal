@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carga</title>
+<meta name="description" content="O caderno de treino de musculação que anota a série em dois toques. A carga e as repetições ficam em tamanho de placar, o descanso se cronometra sozinho e, exercício por exercício, dá para ver a força subir: quando a série bate o recorde, o selo aparece na hora e o gráfico ganha o ponto de hoje.">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Carga">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#e8eae5">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121413">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="icon" type="image/png" href="icone-192.png">
+<style>:root[data-tema=claro]{background:#e8eae5}:root[data-tema=escuro]{background:#121413}</style>
+
+<style id="app-estilo">
+/* ===== Carga · tokens =====
+   Tese visual: ferro e giz. Grafite quase preto, branco de giz e um verde-lima elétrico só em ação e em conquista;
+   números em tamanho de placar, na variante arredondada e pesada da fonte do sistema, sempre tabulares; chapas lisas
+   de canto firme, sem sombra nem enfeite. O claro é a academia de manhã: concreto, tinta grafite, lima escurecida.
+   Tese de interação: direto e firme como travar a anilha. Toque responde em 100 ms com um aperto curto; o placar vira
+   o anel de descanso em 280 ms, sem quique; saídas em 180 ms. O anel anda por passos do relógio: nada gira, nada pulsa. */
+:root{
+  --cg-redonda:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --cg-sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+  --cg-fundo:#e8eae5;--cg-chapa:#f6f7f3;--cg-chapa2:#dcdfd8;--cg-tinta:#161816;--cg-suave:#565c53;--cg-leve:#636960;
+  --cg-fio:rgba(22,24,22,.13);--cg-fio2:rgba(22,24,22,.3);
+  --cg-lima:#3d6200;--cg-acao:#161816;--cg-sobre-acao:#c4f23a;--cg-selo:#c4f23a;--cg-sobre-selo:#161816;--cg-selo-fio:#161816;
+  --cg-veu:rgba(22,24,22,.42);
+  --cg-rapido:.1s;--cg-sai:.18s;--cg-vira:.28s;--cg-mola:cubic-bezier(.2,.8,.2,1);--cg-some:cubic-bezier(.4,0,1,1);
+  color-scheme:light;
+}
+:root[data-tema=escuro]{
+  --cg-fundo:#121413;--cg-chapa:#1c1f1d;--cg-chapa2:#272b28;--cg-tinta:#f3f5ef;--cg-suave:#a8aea3;--cg-leve:#838a7f;
+  --cg-fio:rgba(243,245,239,.12);--cg-fio2:rgba(243,245,239,.28);
+  --cg-lima:#c4f23a;--cg-acao:#c4f23a;--cg-sobre-acao:#121413;--cg-selo:#c4f23a;--cg-sobre-selo:#121413;--cg-selo-fio:#c4f23a;
+  --cg-veu:rgba(0,0,0,.62);
+  color-scheme:dark;
+}
+html,body{margin:0}
+body{background:var(--cg-fundo)}
+
+/* ===== base: a casca tem a altura da tela; quem rola são as colunas de dentro ===== */
+#app{container:app / inline-size;position:relative;height:100vh;height:calc(100dvh - var(--stand-barra,0px));overflow:hidden;
+  background:var(--cg-fundo);color:var(--cg-tinta);font:400 16px/1.4 var(--cg-sans);-webkit-font-smoothing:antialiased}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app button{font:inherit;color:inherit;letter-spacing:inherit;cursor:pointer;border:0;background:none;padding:0;margin:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app svg{display:block;flex:none}
+#app :focus-visible{outline:2.5px solid var(--cg-lima);outline-offset:2px;border-radius:6px}
+#app .cg-so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .cg-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#app .cg-num{font-family:var(--cg-redonda);font-variant-numeric:tabular-nums}
+#app .cg-rot{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cg-suave)}
+#app .cg-casca{position:relative;height:100%;overflow:hidden;overflow:clip;display:flex;flex-direction:column}
+
+/* ===== barra de cima: a marca, as duas seções e o plano ===== */
+#app .cg-topo{display:flex;align-items:center;gap:10px;flex:none;height:56px;padding:0 16px 0 20px;border-bottom:1px solid var(--cg-fio)}
+#app .cg-marca{display:flex;align-items:center;gap:8px;font:900 20px/1 var(--cg-redonda);letter-spacing:-.01em;text-transform:uppercase}
+#app .cg-marca-i{width:10px;height:18px;border-radius:2px;background:var(--cg-lima)}
+#app .cg-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-left:auto;padding:3px;border-radius:9px;background:var(--cg-chapa2)}
+#app .cg-seg-b{position:relative;min-height:34px;padding:0 13px;border-radius:6px;font-size:14px;font-weight:700;color:var(--cg-suave);text-align:center;transition:background-color var(--cg-rapido),color var(--cg-rapido)}
+#app .cg-seg-b::after{content:"";position:absolute;inset:-6px 0}
+#app .cg-seg-b[aria-current=page]{background:var(--cg-tinta);color:var(--cg-fundo)}
+#app .cg-plano{position:relative;flex:none;min-height:34px;padding:0 10px;border:1.5px solid var(--cg-fio2);border-radius:8px;font-size:12.5px;font-weight:700;white-space:nowrap}
+#app .cg-plano::after{content:"";position:absolute;inset:-6px -2px}
+#app[data-vista=serie] .cg-topo{display:none}
+#app .cg-plano .cg-plano-l{display:none}
+
+/* ===== corpo: no celular, uma tela por vez; em tela ampla, a bancada de três colunas ===== */
+#app .cg-corpo{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#app .cg-ficha,#app .cg-centro,#app .cg-lado{display:none;min-width:0}
+#app[data-vista=treino] .cg-ficha,#app[data-vista=serie] .cg-centro,#app[data-vista=evolucao] .cg-centro,#app[data-vista=evolucao] .cg-lado{display:block}
+#app .cg-inicio,#app .cg-serie,#app .cg-evo,#app .cg-lado-ex,#app .cg-lado-geral{display:none}
+#app[data-vista=evolucao] .cg-evo,#app[data-vista=evolucao] .cg-lado-geral{display:block}
+#app[data-vista=serie] .cg-centro{display:flex;flex-direction:column;min-height:100%}
+#app[data-vista=serie] .cg-serie{display:flex;flex-direction:column;flex:1}
+#app .cg-serie .cg-centro-in{display:flex;flex-direction:column;flex:1;width:100%}
+#app .cg-serie .cg-pe{margin-top:auto}
+#app[data-vista=treino] .cg-ficha,#app[data-vista=serie] .cg-serie,#app[data-vista=evolucao] .cg-evo{animation:cg-entra var(--cg-vira) var(--cg-mola)}
+@keyframes cg-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#app .cg-pad{padding:18px 20px 0}
+#app .cg-bloco{padding:22px 20px 0}
+#app .cg-sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+#app .cg-sec h2{font:800 19px/1.2 var(--cg-redonda);letter-spacing:-.01em}
+#app .cg-sec-lado{font-size:13px;color:var(--cg-suave);white-space:nowrap}
+
+/* a abertura do treino: o nome em placar, o resumo e a semana */
+#app .cg-heroi-t{font:900 46px/.95 var(--cg-redonda);letter-spacing:-.03em;text-transform:uppercase}
+#app .cg-heroi-s{margin-top:8px;font-size:17px;font-weight:600}
+#app .cg-heroi-u{margin-top:2px;font-size:14px;color:var(--cg-suave)}
+#app .cg-fatos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+#app .cg-fato{padding:11px 12px 10px;border-radius:10px;background:var(--cg-chapa)}
+#app .cg-fato-n{display:block;font:800 24px/1 var(--cg-redonda);letter-spacing:-.02em}
+#app .cg-fato-r{display:block;margin-top:5px;font-size:12px;color:var(--cg-suave)}
+#app .cg-semana{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:14px}
+#app .cg-dia{display:grid;justify-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--cg-suave)}
+#app .cg-dia-q{display:grid;place-items:center;width:100%;height:34px;border-radius:7px;background:var(--cg-chapa);font:800 14px/1 var(--cg-redonda);color:var(--cg-leve)}
+#app .cg-dia[data-tipo=feito] .cg-dia-q{background:var(--cg-tinta);color:var(--cg-fundo)}
+#app .cg-dia[data-tipo=hoje] .cg-dia-q{background:none;box-shadow:inset 0 0 0 2px var(--cg-lima);color:var(--cg-lima)}
+#app .cg-dia[data-tipo=previsto] .cg-dia-q{color:var(--cg-tinta)}
+#app .cg-dia[data-tipo=hoje]{color:var(--cg-lima)}
+#app .cg-sobe{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;margin-top:8px;padding:8px 12px;border-radius:10px;background:var(--cg-chapa);transition:background-color var(--cg-rapido)}
+#app .cg-sobe-g{width:64px;height:26px;overflow:visible}
+#app .cg-sobe-g path{fill:none;stroke:var(--cg-lima);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+#app .cg-sobe-t{flex:1;min-width:0;font-size:15px;font-weight:700;line-height:1.25}
+#app .cg-sobe-s{display:block;font:600 12px/1.3 var(--cg-sans);color:var(--cg-suave)}
+#app .cg-sobe-n{font:800 18px/1.1 var(--cg-redonda);color:var(--cg-lima);text-align:right;white-space:nowrap}
+
+/* a ficha: uma linha por exercício, com as séries em quadradinhos */
+#app .cg-lista{border-top:1px solid var(--cg-fio)}
+#app .cg-ex{display:grid;grid-template-columns:34px minmax(0,1fr) auto;grid-template-areas:"n nome q" "n meta meta";align-items:center;align-content:center;gap:3px 10px;width:100%;min-height:72px;padding:10px 20px 10px 16px;border-bottom:1px solid var(--cg-fio);border-left:4px solid transparent;transition:background-color var(--cg-rapido)}
+#app .cg-ex-n{grid-area:n;font:800 22px/1 var(--cg-redonda);color:var(--cg-leve)}
+#app .cg-ex-nome{grid-area:nome;min-width:0;font-size:17px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+#app .cg-ex-meta{grid-area:meta;min-width:0;font-size:13px;line-height:1.3;color:var(--cg-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .cg-ex-q{grid-area:q;display:flex;gap:4px}
+#app .cg-q{width:12px;height:12px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--cg-fio2)}
+#app .cg-q[data-feita]{background:var(--cg-lima);box-shadow:none}
+#app .cg-ex[data-atual]{border-left-color:var(--cg-lima);background:var(--cg-chapa)}
+#app .cg-ex[data-atual] .cg-ex-n{color:var(--cg-lima)}
+#app .cg-ex[data-completo] .cg-ex-nome{color:var(--cg-suave)}
+
+/* o botão de laje: a ação da tela, na zona do polegar */
+#app .cg-pe{position:sticky;bottom:0;z-index:4;padding:14px 20px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,transparent,var(--cg-fundo) 30%)}
+#app .cg-laje{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:60px;padding:8px 16px;border-radius:12px;background:var(--cg-acao);color:var(--cg-sobre-acao);font:800 19px/1.15 var(--cg-redonda);letter-spacing:-.01em;text-align:center;transition:transform var(--cg-rapido)}
+#app .cg-laje:active{transform:scale(.98)}
+#app .cg-laje-s{display:block;margin-top:2px;font:600 13px/1.2 var(--cg-sans);letter-spacing:0;opacity:.8}
+#app .cg-laje .cg-ic{width:22px;height:22px;stroke-width:2.6}
+#app .cg-laje[data-fio]{background:var(--cg-fundo);box-shadow:inset 0 0 0 2px var(--cg-tinta);color:var(--cg-tinta)}
+#app .cg-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:46px;padding:0 16px;border-radius:10px;box-shadow:inset 0 0 0 1.5px var(--cg-fio2);font-size:15.5px;font-weight:700;white-space:nowrap;transition:transform var(--cg-rapido),background-color var(--cg-rapido)}
+#app .cg-btn:active{transform:scale(.97)}
+#app .cg-btn .cg-ic{width:17px;height:17px}
+
+/* ===== a série: cabeçalho do treino, o exercício, os marcadores e o placar ===== */
+#app .cg-serie{position:relative}
+#app .cg-ser-topo{display:flex;align-items:center;gap:8px;height:56px;padding:0 14px 0 8px;border-bottom:1px solid var(--cg-fio)}
+#app .cg-voltar{display:flex;align-items:center;gap:2px;min-height:44px;padding:0 8px 0 4px;font-size:15px;font-weight:700}
+#app .cg-relogio{display:flex;align-items:center;gap:7px;margin:0 auto;font:800 17px/1 var(--cg-redonda)}
+#app .cg-relogio-p{width:8px;height:8px;border-radius:50%;background:var(--cg-lima)}
+#app .cg-terminar{min-height:44px;padding:0 8px;font-size:15px;font-weight:700;color:var(--cg-lima)}
+#app .cg-ser-ex{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;padding:14px 12px 0}
+#app .cg-troca{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;color:var(--cg-suave)}
+#app .cg-troca[disabled]{opacity:.3;cursor:default}
+#app .cg-ser-t{min-width:0;text-align:center}
+#app .cg-ser-nome{font:800 25px/1.1 var(--cg-redonda);letter-spacing:-.02em}
+#app .cg-ser-ult{margin-top:4px;font-size:13.5px;color:var(--cg-suave)}
+#app .cg-marcas{display:flex;justify-content:center;gap:10px;padding:16px 20px 0}
+#app .cg-marca-s{position:relative;display:grid;place-items:center;min-width:62px;height:46px;padding:0 11px;border-radius:9px;box-shadow:inset 0 0 0 1.5px var(--cg-fio2);font:800 14px/1.1 var(--cg-redonda);color:var(--cg-suave);text-align:center}
+#app .cg-marca-s[data-tipo=feita]{background:var(--cg-chapa2);box-shadow:none;color:var(--cg-tinta)}
+#app .cg-marca-s[data-tipo=atual]{box-shadow:inset 0 0 0 2.5px var(--cg-tinta);color:var(--cg-tinta)}
+#app .cg-marca-k{display:block;font:600 10.5px/1 var(--cg-sans);color:var(--cg-suave)}
+#app .cg-selo{position:absolute;top:-10px;right:-9px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--cg-selo);color:var(--cg-sobre-selo);box-shadow:0 0 0 2px var(--cg-fundo)}
+#app .cg-selo .cg-ic{width:13px;height:13px;stroke-width:2.8}
+#app .cg-faces{position:relative;padding:8px 20px 0}
+#app .cg-face{display:none}
+#app .cg-faces[data-face=placar] .cg-face[data-face=placar],#app .cg-faces[data-face=descanso] .cg-face[data-face=descanso]{display:block;animation:cg-vira var(--cg-vira) var(--cg-mola)}
+#app .cg-faces[data-quieto] .cg-face{animation:none}
+@keyframes cg-vira{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+#app .cg-placar{display:grid;grid-template-columns:62px minmax(0,1fr) 62px;align-items:center;gap:6px;margin-top:10px}
+#app .cg-passo{display:grid;place-items:center;height:62px;border-radius:12px;background:var(--cg-chapa);box-shadow:inset 0 0 0 1px var(--cg-fio);font:800 17px/1 var(--cg-redonda);transition:transform var(--cg-rapido),background-color var(--cg-rapido)}
+#app .cg-passo:active{transform:scale(.94);background:var(--cg-chapa2)}
+#app .cg-placar-m{text-align:center;min-width:0}
+#app .cg-placar-n{display:block;font:900 clamp(64px,25cqi,104px)/.9 var(--cg-redonda);letter-spacing:-.04em;font-variant-numeric:tabular-nums;white-space:nowrap}
+#app .cg-placar-n[data-longo]{font-size:clamp(54px,20cqi,88px)}
+#app .cg-placar-u{display:block;margin-top:6px}
+#app .cg-reps .cg-placar-n{font-size:64px}
+#app .cg-reps{margin-top:16px}
+#app .cg-igual{display:flex;justify-content:center;margin-top:14px}
+#app .cg-rec-aviso{display:flex;align-items:center;justify-content:center;gap:8px;min-height:30px;margin-top:10px;font-size:13.5px;font-weight:700;color:var(--cg-lima)}
+#app .cg-rec-aviso .cg-ic{width:16px;height:16px}
+
+/* a outra face do placar: o anel de descanso */
+#app .cg-anel{position:relative;width:min(232px,62cqi);aspect-ratio:1;margin:14px auto 0}
+#app .cg-anel svg{width:100%;height:100%;transform:rotate(-90deg)}
+#app .cg-anel-fundo{fill:none;stroke:var(--cg-chapa2);stroke-width:12}
+#app .cg-anel-vivo{fill:none;stroke:var(--cg-lima);stroke-width:12;stroke-linecap:round}
+#app .cg-anel-t{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:4px}
+#app .cg-anel-n{font:900 60px/.9 var(--cg-redonda);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+#app .cg-desc-b{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+#app .cg-seguir{margin-top:14px;font-size:14.5px;line-height:1.4;color:var(--cg-suave);text-align:center}
+#app .cg-seguir b{color:var(--cg-tinta);font-weight:700}
+
+/* ===== evolução: o exercício, a carga máxima estimada, o volume, a frequência e os recordes ===== */
+#app .cg-escolha{display:flex;align-items:center;gap:8px;width:100%;min-height:52px;padding:0 12px 0 14px;border-radius:10px;background:var(--cg-chapa);box-shadow:inset 0 0 0 1px var(--cg-fio);font-size:17px;font-weight:700;letter-spacing:-.01em;transition:background-color var(--cg-rapido)}
+#app .cg-escolha-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .cg-escolha .cg-ic{width:18px;height:18px;color:var(--cg-suave)}
+#app .cg-max-rot{margin-top:18px}
+#app .cg-max{display:flex;align-items:flex-end;gap:10px;margin-top:6px}
+#app .cg-max-n{font:900 64px/.86 var(--cg-redonda);letter-spacing:-.04em}
+#app .cg-max-u{padding-bottom:4px;font:800 20px/1 var(--cg-redonda)}
+#app .cg-max-t{margin-left:auto;padding-bottom:3px;text-align:right}
+#app .cg-max-d{display:block;font:800 17px/1.1 var(--cg-redonda);color:var(--cg-lima)}
+#app .cg-max-r{display:block;font-size:12.5px;color:var(--cg-suave)}
+#app .cg-graf-c{margin-top:12px}
+#app .cg-graf{position:relative}
+#app .cg-g-y{position:absolute;left:0;transform:translateY(-50%);font:600 11.5px/1 var(--cg-sans);color:var(--cg-suave);text-align:right}
+#app .cg-g-x{margin-top:2px}
+#app .cg-graf svg{width:100%;height:auto;overflow:visible}
+#app .cg-g-grade{stroke:var(--cg-fio);stroke-width:1}
+#app .cg-g-linha{fill:none;stroke:var(--cg-tinta);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+#app .cg-g-area{fill:var(--cg-tinta);opacity:.06}
+#app .cg-g-ponto{fill:var(--cg-fundo);stroke:var(--cg-tinta);stroke-width:2}
+#app .cg-g-hoje{fill:var(--cg-selo);stroke:var(--cg-selo-fio);stroke-width:2.5}
+#app .cg-barras{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px;align-items:end;height:84px;border-bottom:1.5px solid var(--cg-fio2)}
+#app .cg-barra{display:flex;align-items:flex-end;height:100%}
+#app .cg-barra-i{display:block;width:100%;height:100%;border-radius:3px 3px 0 0;background:var(--cg-leve);transform:scaleY(0);transform-origin:50% 100%}
+#app .cg-barra[data-esta] .cg-barra-i{background:var(--cg-lima)}
+#app .cg-eixo{display:flex;justify-content:space-between;margin-top:6px;font-size:11.5px;font-weight:600;color:var(--cg-suave)}
+#app .cg-mes{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+#app .cg-mes-d{display:grid;place-items:center;aspect-ratio:1;max-height:40px;border-radius:7px;font:700 12.5px/1 var(--cg-redonda);color:var(--cg-leve)}
+#app .cg-mes-d[data-treino]{background:var(--cg-chapa2);color:var(--cg-tinta)}
+#app .cg-mes-d[data-futuro]{box-shadow:inset 0 0 0 1px var(--cg-fio)}
+#app .cg-mes-d[data-hoje]{box-shadow:inset 0 0 0 2px var(--cg-lima);color:var(--cg-lima)}
+#app .cg-mes-d[data-hoje][data-treino]{background:var(--cg-selo);color:var(--cg-sobre-selo);box-shadow:inset 0 0 0 2px var(--cg-selo-fio)}
+#app .cg-mes-c{font-size:10.5px;font-weight:700;color:var(--cg-suave);text-align:center}
+#app .cg-linhas{border-top:1px solid var(--cg-fio)}
+#app .cg-lin{display:flex;align-items:center;gap:12px;min-height:54px;padding:8px 0;border-bottom:1px solid var(--cg-fio)}
+#app .cg-lin-t{flex:1;min-width:0}
+#app .cg-lin-a{display:block;font-size:15.5px;font-weight:700;line-height:1.25}
+#app .cg-lin-b{display:block;font-size:13px;line-height:1.3;color:var(--cg-suave)}
+#app .cg-lin-n{flex:none;font:800 18px/1 var(--cg-redonda);text-align:right;white-space:nowrap}
+#app .cg-lin-u{display:block;margin-top:3px;font:600 11.5px/1 var(--cg-sans);color:var(--cg-suave)}
+#app .cg-lin[data-novo] .cg-lin-n{color:var(--cg-lima)}
+#app .cg-etq{display:inline-grid;place-items:center;height:20px;margin-left:6px;padding:0 7px;border-radius:5px;background:var(--cg-selo);box-shadow:inset 0 0 0 1px var(--cg-selo-fio);color:var(--cg-sobre-selo);font:800 10.5px/1 var(--cg-redonda);letter-spacing:.06em;text-transform:uppercase;vertical-align:2px}
+#app .cg-nota{margin-top:10px;font-size:13px;line-height:1.45;color:var(--cg-suave)}
+#app .cg-fim{height:28px}
+
+/* ===== véu, folhas e aviso ===== */
+#app .cg-veu{position:absolute;inset:0;z-index:20;background:var(--cg-veu);opacity:0;pointer-events:none;transition:opacity var(--cg-sai)}
+#app[data-folha] .cg-veu{opacity:1;pointer-events:auto}
+#app .cg-folha-pe{position:sticky;bottom:calc(-1*var(--cg-pe));z-index:1;margin:-12px 0 calc(-1*var(--cg-pe));padding:12px 0 var(--cg-pe);background:linear-gradient(to bottom,transparent,var(--cg-chapa) 12px)}
+#app .cg-folha-pe>button{display:flex}
+#app .cg-folha-pe~*{position:relative;z-index:2}
+#app .cg-folha{--cg-pe:calc(20px + env(safe-area-inset-bottom));position:absolute;left:0;right:0;bottom:0;z-index:21;max-height:90%;overflow-y:auto;overscroll-behavior:contain;padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+  background:var(--cg-chapa);border-radius:16px 16px 0 0;transform:translateY(105%);visibility:hidden;transition:transform var(--cg-sai) var(--cg-some),visibility 0s var(--cg-sai)}
+#app[data-folha=exercicios] .cg-folha[data-folha=exercicios],#app[data-folha=resumo] .cg-folha[data-folha=resumo],#app[data-folha=planos] .cg-folha[data-folha=planos]{transform:none;visibility:visible;transition:transform var(--cg-vira) var(--cg-mola),visibility 0s}
+#app .cg-puxador{width:40px;height:5px;margin:0 auto 14px;border-radius:99px;background:var(--cg-fio2)}
+#app .cg-folha-topo{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+#app .cg-folha-t{flex:1;min-width:0}
+#app .cg-folha h2{margin-top:3px;font:900 30px/1 var(--cg-redonda);letter-spacing:-.025em}
+#app .cg-fechar{position:relative;display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:9px;background:var(--cg-chapa2)}
+#app .cg-fechar::after{content:"";position:absolute;inset:-5px}
+#app .cg-fechar .cg-ic{width:16px;height:16px;stroke-width:2.6}
+#app .cg-op{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;border-bottom:1px solid var(--cg-fio);font-size:16px;font-weight:600;transition:background-color var(--cg-rapido)}
+#app .cg-op-t{flex:1;min-width:0}
+#app .cg-op-n{font:800 15px/1 var(--cg-redonda);color:var(--cg-suave);white-space:nowrap}
+#app .cg-op[aria-pressed=true]{color:var(--cg-lima)}
+#app .cg-op-g{padding:14px 0 4px}
+#app .cg-leva{margin:8px 0 14px;border-top:1px solid var(--cg-fio)}
+#app .cg-planos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+#app .cg-opcao{display:grid;align-content:start;gap:4px;padding:12px 14px;border-radius:12px;background:var(--cg-fundo);box-shadow:inset 0 0 0 1px var(--cg-fio);text-align:left;transition:box-shadow var(--cg-rapido)}
+#app .cg-opcao[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--cg-tinta)}
+#app .cg-opcao-n{font:900 26px/1 var(--cg-redonda);letter-spacing:-.03em;white-space:nowrap}
+#app .cg-opcao-s{font-size:12.5px;line-height:1.3;color:var(--cg-suave)}
+#app .cg-depois{margin-top:8px;font-size:13.5px;color:var(--cg-suave);text-align:center}
+@container app (max-width:350px){
+  #app .cg-opcao{padding:12px 10px}
+  #app .cg-opcao-n{font-size:22px}
+}
+#app .cg-leva-i{padding:12px 0;border-bottom:1px solid var(--cg-fio);font-size:16px;font-weight:700;line-height:1.3}
+#app .cg-leva-s{display:block;font-size:14px;font-weight:400;color:var(--cg-suave)}
+#app .cg-fino{display:block;width:100%;min-height:48px;font-size:15px;font-weight:700;color:var(--cg-suave);text-align:center}
+#app .cg-miudo{margin-top:6px;font-size:12.5px;line-height:1.4;color:var(--cg-suave);text-align:center}
+#app .cg-res{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:6px 0 4px}
+#app .cg-res .cg-fato{background:var(--cg-chapa2)}
+#app .cg-res-corpo .cg-laje{margin-top:18px}
+#app .cg-aviso{position:absolute;left:50%;bottom:106px;z-index:30;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 24px);min-height:48px;padding:0 6px 0 16px;border-radius:10px;background:var(--cg-tinta);color:var(--cg-fundo);
+  font-size:14.5px;font-weight:700;line-height:1.3;opacity:0;transform:translate(-50%,12px);pointer-events:none;transition:opacity var(--cg-sai),transform var(--cg-sai) var(--cg-some)}
+#app .cg-aviso[data-visivel]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition:opacity var(--cg-sai),transform var(--cg-vira) var(--cg-mola)}
+#app .cg-aviso-t{padding:9px 10px 9px 0}
+#app .cg-aviso-b{position:relative;flex:none;min-height:36px;padding:0 12px;border-radius:7px;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--cg-fundo) 50%,transparent);font-size:13px;font-weight:800}
+#app .cg-aviso-b::after{content:"";position:absolute;inset:-4px 0}
+#app .cg-aviso .cg-aviso-b[hidden]{display:none}
+
+@media (hover:hover) and (pointer:fine){
+  #app .cg-ex:hover,#app .cg-op:hover{background-color:var(--cg-chapa)}
+  #app .cg-btn:hover,#app .cg-passo:hover,#app .cg-escolha:hover,#app .cg-troca:hover,#app .cg-sobe:hover{background-color:var(--cg-chapa2)}
+  #app .cg-seg-b:hover{color:var(--cg-tinta)}
+  #app .cg-seg-b[aria-current=page]:hover{color:var(--cg-fundo)}
+}
+
+/* ===== tela ampla: a bancada (ficha · série ou abertura · evolução) ===== */
+@container app (min-width:720px){
+  #app .cg-topo,#app[data-vista=serie] .cg-topo{display:flex;height:60px;padding:0 24px}
+  #app .cg-seg{margin-left:28px}
+  #app .cg-plano{margin-left:auto}
+  #app .cg-plano .cg-plano-c{display:none}
+  #app .cg-plano .cg-plano-l{display:inline}
+  #app .cg-corpo{display:grid;grid-template-columns:320px minmax(0,1fr);grid-template-rows:minmax(0,1fr);overflow:hidden}
+  #app .cg-corpo .cg-ficha,#app .cg-corpo .cg-centro,#app .cg-corpo .cg-lado{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  #app .cg-corpo .cg-ficha,#app .cg-corpo .cg-centro{display:block}
+  #app .cg-corpo .cg-ficha{border-right:1px solid var(--cg-fio);animation:none}
+  #app .cg-corpo .cg-lado{border-left:1px solid var(--cg-fio)}
+  #app[data-vista=evolucao] .cg-corpo{grid-template-columns:minmax(0,1fr) 340px}
+  #app[data-vista=evolucao] .cg-corpo .cg-ficha{display:none}
+  #app[data-vista=treino] .cg-inicio{display:block;animation:cg-entra var(--cg-vira) var(--cg-mola)}
+  #app .cg-ficha .cg-heroi,#app .cg-ficha .cg-pe,#app .cg-serie .cg-voltar{display:none}
+  #app .cg-centro-in{max-width:560px;margin:0 auto}
+  #app .cg-heroi-t{font-size:64px}
+  #app .cg-ser-topo{padding-left:20px}
+  #app .cg-relogio{margin-left:0}
+  #app .cg-terminar{margin-left:auto}
+  #app .cg-serie .cg-pe,#app .cg-inicio .cg-pe{position:static;margin-top:0;padding:22px 20px 28px;background:none}
+  #app .cg-folha{--cg-pe:24px;left:50%;right:auto;bottom:auto;top:9%;width:min(480px,calc(100% - 64px));max-height:82%;padding:24px 26px;border-radius:14px;transform:translate(-50%,-10px);opacity:0;
+    transition:transform var(--cg-sai) var(--cg-some),opacity var(--cg-sai),visibility 0s var(--cg-sai)}
+  #app[data-folha=exercicios] .cg-folha[data-folha=exercicios],#app[data-folha=resumo] .cg-folha[data-folha=resumo],#app[data-folha=planos] .cg-folha[data-folha=planos]{transform:translate(-50%,0);opacity:1;transition:transform var(--cg-vira) var(--cg-mola),opacity var(--cg-sai),visibility 0s}
+  #app .cg-puxador{display:none}
+  #app .cg-aviso{bottom:28px}
+}
+@container app (min-width:1120px){
+  #app .cg-corpo,#app[data-vista=evolucao] .cg-corpo{grid-template-columns:330px minmax(0,1fr) 370px}
+  #app[data-vista=evolucao] .cg-corpo .cg-ficha,#app .cg-corpo .cg-lado{display:block}
+  #app[data-vista=treino] .cg-lado-ex,#app[data-vista=serie] .cg-lado-ex{display:block}
+  #app .cg-sobe{display:none}
+}
+@container app (max-width:350px){
+  #app .cg-pad,#app .cg-bloco,#app .cg-faces{padding-left:14px;padding-right:14px}
+  #app .cg-heroi-t{font-size:38px}
+  #app .cg-placar{grid-template-columns:54px minmax(0,1fr) 54px}
+  #app .cg-marca-s{min-width:56px}
+  #app .cg-marca-t{display:none}
+}
+/* acabamento da revisão: a alça da folha arrasta com o dedo; clicar dentro da folha mantém o foco nela (o Esc continua valendo);
+   e o botão do aviso fechado não fica no caminho do Tab */
+#app .cg-puxador,#app .cg-folha-topo{touch-action:none}
+#app [role=dialog]{outline:0}
+#app .cg-aviso:not([data-visivel]) button{visibility:hidden;transition:visibility 0s .2s}
+@media (prefers-reduced-motion:reduce){
+  #app *,#app *::before,#app *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+<style>html,body{margin:0}</style>
+<script>document.documentElement.dataset.tema = matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";</script>
+<script>matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) { document.documentElement.dataset.tema = e.matches ? "escuro" : "claro"; });</script>
+</head>
+<body>
+<main id="app" data-estado="1" data-vista="treino">
+  <svg class="cg-so-leitor" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="cg-i-certo" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="cg-i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="cg-i-baixo" viewBox="0 0 24 24"><path d="M5.5 9l6.5 6.5L18.5 9"/></symbol>
+      <symbol id="cg-i-antes" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></symbol>
+      <symbol id="cg-i-depois" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+      <symbol id="cg-i-tocar" viewBox="0 0 24 24"><path d="M8 5.5v13L18.5 12z"/></symbol>
+      <symbol id="cg-i-recorde" viewBox="0 0 24 24"><path d="M12 4l2.3 4.9 5.2.7-3.8 3.7.9 5.3L12 16l-4.6 2.6.9-5.3L4.5 9.6l5.2-.7z"/></symbol>
+      <symbol id="cg-i-igual" viewBox="0 0 24 24"><path d="M5 11a7 7 0 0 1 12.2-4.2L19 8.5M19 4v4.5h-4.5M19 13a7 7 0 0 1-12.2 4.2L5 15.5M5 20v-4.5h4.5"/></symbol>
+    </defs>
+  </svg>
+  <div class="cg-casca">
+    <header class="cg-topo">
+      <span class="cg-marca"><i class="cg-marca-i" aria-hidden="true"></i><span class="cg-marca-t">Carga</span></span>
+      <div class="cg-seg" role="group" aria-label="Seções">
+        <button type="button" class="cg-seg-b" data-acao="vista" data-vista="treino">Treino</button>
+        <button type="button" class="cg-seg-b" data-acao="vista" data-vista="evolucao">Evolução</button>
+      </div>
+      <button type="button" class="cg-plano" data-acao="planos" aria-label="Plano Carga Completa: 14 dias grátis"><span class="cg-plano-c">Plano</span><span class="cg-plano-l">14 dias grátis</span></button>
+    </header>
+    <div class="cg-corpo">
+      <section class="cg-ficha" aria-label="Ficha de hoje"></section>
+      <section class="cg-centro">
+        <div class="cg-inicio"></div>
+        <div class="cg-serie" aria-label="Série em andamento"></div>
+        <div class="cg-evo"></div>
+      </section>
+      <aside class="cg-lado" aria-label="Evolução">
+        <div class="cg-lado-ex"></div>
+        <div class="cg-lado-geral"></div>
+      </aside>
+    </div>
+    <div class="cg-veu" data-acao="fechar-folha"></div>
+    <section class="cg-folha" data-folha="exercicios" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="cg-t-ex">
+      <div class="cg-puxador" aria-hidden="true"></div>
+      <div class="cg-folha-topo">
+        <div class="cg-folha-t"><span class="cg-rot">Carga máxima estimada</span><h2 id="cg-t-ex">Escolher exercício</h2></div>
+        <button type="button" class="cg-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="cg-ic" aria-hidden="true"><use href="#cg-i-fechar"/></svg></button>
+      </div>
+      <div class="cg-ops"></div>
+    </section>
+    <section class="cg-folha" data-folha="resumo" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="cg-t-res">
+      <div class="cg-puxador" aria-hidden="true"></div>
+      <div class="cg-folha-topo">
+        <div class="cg-folha-t"><span class="cg-rot" id="cg-res-rot">Resumo</span><h2 id="cg-t-res">Treino A</h2></div>
+        <button type="button" class="cg-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="cg-ic" aria-hidden="true"><use href="#cg-i-fechar"/></svg></button>
+      </div>
+      <div class="cg-res-corpo"></div>
+    </section>
+    <section class="cg-folha" data-folha="planos" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="cg-t-planos">
+      <div class="cg-puxador" aria-hidden="true"></div>
+      <div class="cg-folha-topo">
+        <div class="cg-folha-t"><span class="cg-rot">14 dias para usar tudo</span><h2 id="cg-t-planos">Carga Completa</h2></div>
+        <button type="button" class="cg-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="cg-ic" aria-hidden="true"><use href="#cg-i-fechar"/></svg></button>
+      </div>
+      <ul class="cg-leva">
+        <li class="cg-leva-i">Histórico sem limite<span class="cg-leva-s">Todas as séries de todos os treinos, desde o primeiro dia.</span></li>
+        <li class="cg-leva-i">Evolução por exercício<span class="cg-leva-s">Carga máxima estimada, volume e recordes em gráfico.</span></li>
+        <li class="cg-leva-i">Descanso na Tela Bloqueada<span class="cg-leva-s">O anel segue contando com o celular no bolso.</span></li>
+      </ul>
+      <div class="cg-planos" role="group" aria-label="Plano depois do teste">
+        <button type="button" class="cg-opcao" data-acao="plano" data-id="ano" aria-pressed="true"><span class="cg-rot">Anual</span><b class="cg-opcao-n cg-num">R$ 99</b><span class="cg-opcao-s">R$ 8,25 por mês, 44% a menos</span></button>
+        <button type="button" class="cg-opcao" data-acao="plano" data-id="mes" aria-pressed="false"><span class="cg-rot">Mensal</span><b class="cg-opcao-n cg-num">R$ 14,90</b><span class="cg-opcao-s">sem fidelidade</span></button>
+      </div>
+      <div class="cg-folha-pe"><button type="button" class="cg-laje" data-acao="comprar">Começar os 14 dias grátis</button></div>
+      <p class="cg-depois">Depois, R$ 99 por ano. Cancele quando quiser.</p>
+      <button type="button" class="cg-fino" data-acao="restaurar">Restaurar compra</button>
+      <p class="cg-miudo">Maquete: os valores são hipótese e nada é cobrado aqui.</p>
+    </section>
+    <div class="cg-aviso" role="status" aria-live="polite"><span class="cg-aviso-t"></span><button type="button" class="cg-aviso-b" data-acao="desfazer">Desfazer</button></div>
+  </div>
+</main>
+<script id="app-script">
+// Carga: o app sozinho. A ficha, as séries e o histórico vivem na memória; o relógio e o descanso contam de verdade e nada sai da tela.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ── ajudantes de DOM: todo texto entra como texto, nunca como HTML ──
+  function h(tag, attrs, filhos) {
+    var n = document.createElement(tag), k;
+    for (k in attrs || {}) {
+      if (attrs[k] == null || attrs[k] === false) continue;
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    [].concat(filhos || []).forEach(function (f) { if (f != null && f !== false) n.appendChild(typeof f === "string" ? document.createTextNode(f) : f); });
+    return n;
+  }
+  function svg(tag, attrs) { var n = document.createElementNS(SVGNS, tag), k; for (k in attrs) n.setAttribute(k, attrs[k]); return n; }
+  function ic(nome) { var s = svg("svg", {"class": "cg-ic", "aria-hidden": "true"}); s.appendChild(svg("use", {href: "#cg-i-" + nome})); return s; }
+  function $(sel, raiz) { return (raiz || app).querySelector(sel); }
+  function todos(sel, raiz) { return Array.prototype.slice.call((raiz || app).querySelectorAll(sel)); }
+  function limpar(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+  function d2(n) { return (n < 10 ? "0" : "") + n; }
+  function pl(n, um, muitos) { return n + " " + (n === 1 ? um : muitos); }
+  function kg(n) { return String(Math.round(n * 10) / 10).replace(".", ","); }
+  function milhar(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  function relogio(ms) { var t = Math.floor(ms / 1000); return d2(Math.floor(t / 60)) + ":" + d2(t % 60); }
+  // carga máxima ESTIMADA de uma série (uma conta de bolso; por isso leva sempre o rótulo "estimada")
+  function estimada(carga, reps) { return carga * (1 + reps / 30); }
+
+  // ── datas ──
+  var agora = new Date(), HOJE = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  var LETRA = ["D", "S", "T", "Q", "Q", "S", "S"], DIA3 = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  var MES3 = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  function em(n) { var d = new Date(HOJE); d.setDate(d.getDate() + n); return d; }
+  function curta(d) { return d.getDate() + " " + MES3[d.getMonth()]; }
+
+  // ── dados fictícios: três fichas de quem treina há um ano ──
+  // exercício: [nome, passo de carga em kg, ganho da carga máxima estimada em 12 semanas]
+  var EX = {
+    supino: ["Supino reto", 2.5, 9], inclinado: ["Supino inclinado", 2, 4], crucifixo: ["Crucifixo na máquina", 2.5, 8],
+    desenvolvimento: ["Desenvolvimento", 2.5, 6], polia: ["Tríceps na polia", 2.5, 5], testa: ["Tríceps testa", 2.5, 3],
+    puxada: ["Puxada alta", 2.5, 7], remada: ["Remada curvada", 2.5, 8], baixa: ["Remada baixa", 2.5, 7], rosca: ["Rosca direta", 2.5, 4], martelo: ["Rosca martelo", 2, 3],
+    agachamento: ["Agachamento", 5, 14], legpress: ["Leg press", 10, 30], terra: ["Levantamento terra", 5, 15], extensora: ["Cadeira extensora", 2.5, 8], flexora: ["Mesa flexora", 2.5, 6]
+  };
+  // item da ficha: [exercício, séries, faixa de repetições, carga da última vez, repetições da última vez]
+  var FICHAS = [
+    {id: "A", nome: "Treino A", foco: "Peito e tríceps", itens: [["supino", 4, "8 a 10", 60, [8, 8, 7, 6]], ["inclinado", 3, "10", 22, [10, 9, 8]], ["crucifixo", 3, "12", 45, [12, 12, 10]],
+      ["desenvolvimento", 3, "10", 35, [10, 9, 8]], ["polia", 3, "12", 27.5, [12, 11, 10]], ["testa", 3, "10", 20, [10, 10, 8]]]},
+    {id: "B", nome: "Treino B", foco: "Costas e bíceps", itens: [["puxada", 4, "8 a 10", 65, [10, 9, 8, 8]], ["remada", 3, "10", 50, [10, 10, 8]], ["baixa", 3, "12", 55, [12, 11, 10]],
+      ["rosca", 3, "10", 27.5, [10, 9, 8]], ["martelo", 3, "12", 14, [12, 12, 10]]]},
+    {id: "C", nome: "Treino C", foco: "Pernas", itens: [["agachamento", 4, "6 a 8", 100, [8, 7, 6, 5]], ["legpress", 3, "10", 220, [10, 10, 9]], ["terra", 3, "5", 120, [5, 4, 3]],
+      ["extensora", 3, "12", 50, [12, 12, 10]], ["flexora", 3, "12", 40, [12, 11, 10]]]}
+  ];
+  var FICHA = FICHAS[0], DESCANSO = 90000, CIRC = 2 * Math.PI * 94;
+  // dias de treino já feitos, contados para trás a partir de hoje: A, B e C uma vez por semana, com uma falta do C há 16 dias.
+  // É a única agenda da maquete: o calendário, o histórico de cada exercício e o volume semanal saem dela.
+  var BASE = {A: 7, B: 4, C: 2}, FALTA = {C: 16}, AGENDA = {}, TREINOS = {};
+  ["A", "B", "C"].forEach(function (l) { var dias = [], d = BASE[l]; while (dias.length < 12) { if (d !== FALTA[l]) { dias.push(d); TREINOS[d] = l; } d += 7; } AGENDA[l] = dias; });
+  // quanto as repetições de cada sessão ficam abaixo ou acima das da última vez (a sessão 0)
+  var DELTA = [0, -1, 1, 0, -1, -2, 1, 0, -1, -2, 1, 0];
+
+  // ── a sessão de hoje ──
+  var s = {ativa: false, fechada: false, t0: 0, dur: 0, ex: 0, feitas: {}, kg: 0, reps: 0, descanso: null};
+  FICHA.itens.forEach(function (it) { s.feitas[it[0]] = []; });
+  var ui = {vista: "treino", graf: "supino", face: "", guarda: 0, plano: "ano", ultimoFoco: null, desfazer: null, relAviso: 0};
+
+  function item(i) { return FICHA.itens[i == null ? s.ex : i]; }
+  function itemDe(id) { var a = null; FICHAS.forEach(function (f) { f.itens.forEach(function (it) { if (it[0] === id) a = it; }); }); return a; }
+  function fichaDe(id) { var a = null; FICHAS.forEach(function (f) { f.itens.forEach(function (it) { if (it[0] === id) a = f; }); }); return a; }
+  function feitasDe(id) { return s.feitas[id] || []; }
+  function completo(it) { return feitasDe(it[0]).length >= it[1]; }
+  function tudoFeito() { return FICHA.itens.every(completo); }
+  function recordeBase(id) { var it = itemDe(id); return estimada(it[3], Math.max.apply(null, it[4])); }
+  function recorde(id) { var r = recordeBase(id); feitasDe(id).forEach(function (x) { r = Math.max(r, estimada(x.kg, x.reps)); }); return r; }
+  function volumeHoje() { var v = 0; FICHA.itens.forEach(function (it) { feitasDe(it[0]).forEach(function (x) { v += x.kg * x.reps; }); }); return v; }
+  function seriesHoje() { var n = 0; FICHA.itens.forEach(function (it) { n += feitasDe(it[0]).length; }); return n; }
+  // recorde não se guarda: a série i é recorde se supera a marca de antes de hoje e todas as séries anteriores de hoje
+  function ehRecorde(id, i) {
+    var l = feitasDe(id), marca = recordeBase(id), k;
+    for (k = 0; k < i; k++) marca = Math.max(marca, estimada(l[k].kg, l[k].reps));
+    return estimada(l[i].kg, l[i].reps) > marca + 0.01;
+  }
+  function recordesHoje() {
+    var saida = [];
+    FICHA.itens.forEach(function (it) {
+      var melhor = null;
+      feitasDe(it[0]).forEach(function (x) { if (!melhor || estimada(x.kg, x.reps) > estimada(melhor.kg, melhor.reps)) melhor = x; });
+      if (melhor && estimada(melhor.kg, melhor.reps) > recordeBase(it[0]) + 0.01) saida.push({id: it[0], kg: melhor.kg, reps: melhor.reps});
+    });
+    return saida;
+  }
+  function duracao() { return s.ativa ? performance.now() - s.t0 : s.dur; }
+  function preparar() {
+    var it = item(), f = feitasDe(it[0]);
+    if (f.length) { s.kg = f[f.length - 1].kg; s.reps = f[f.length - 1].reps; } else { s.kg = it[3]; s.reps = it[4][0]; }
+  }
+  function proximoAberto() {
+    for (var k = 1; k <= FICHA.itens.length; k++) { var i = (s.ex + k) % FICHA.itens.length; if (!completo(FICHA.itens[i])) return i; }
+    return -1;
+  }
+  // a sessão k de um exercício (0 é a última vez, 11 a mais antiga): a carga sobe um passo a cada quatro sessões e, em cada
+  // patamar, as repetições sobem até a carga subir de novo. O gráfico, o histórico e o volume leem todos daqui.
+  function sessaoDe(id, k) {
+    var it = itemDe(id);
+    return {quando: em(-AGENDA[fichaDe(id).id][k]), kg: Math.max(EX[id][1], it[3] - EX[id][1] * Math.floor((k + 2) / 4)), reps: it[4].map(function (x) { return Math.max(1, x + DELTA[k]); })};
+  }
+  function sessoesDe(id) { var saida = [], k; for (k = 0; k < 12; k++) saida.push(sessaoDe(id, k)); return saida; }
+  function melhorDe(x) { return estimada(x.kg, Math.max.apply(null, x.reps)); }
+  // 12 sessões de carga máxima estimada, da mais antiga para a última
+  function historico(id) { return sessoesDe(id).map(melhorDe).reverse(); }
+  function volumeDaSessao(f, k) { var v = 0; f.itens.forEach(function (it) { var x = sessaoDe(it[0], k); x.reps.forEach(function (r) { v += x.kg * r; }); }); return v; }
+  // volume de cada janela de sete dias, da mais antiga para a de agora (que soma o que já foi feito hoje)
+  function volumes() {
+    var v = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    FICHAS.forEach(function (f) { AGENDA[f.id].forEach(function (dias, k) { var j = Math.floor(dias / 7); if (j < 12) v[11 - j] += volumeDaSessao(f, k); }); });
+    v[11] += volumeHoje();
+    return v;
+  }
+  function seriesTxt(l, sep) {
+    var mesmos = l.every(function (x) { return x.kg === l[0].kg; });
+    return mesmos ? kg(l[0].kg) + " kg × " + l.map(function (x) { return x.reps; }).join(sep) : l.map(function (x) { return kg(x.kg) + " × " + x.reps; }).join(" · ");
+  }
+
+  // ── o relógio do treino e o descanso: guardam instantes, e o tique só repinta ──
+  var tique = 0;
+  function acertarTique() {
+    var quer = s.ativa && !document.hidden;
+    if (quer && !tique) tique = setInterval(pintar, 250);
+    else if (!quer && tique) { clearInterval(tique); tique = 0; }
+  }
+  function pintar() {
+    var t = relogio(duracao());
+    todos(".cg-relogio-t").forEach(function (n) { if (n.textContent !== t) n.textContent = t; });
+    if (!s.descanso) return;
+    var resta = s.descanso.fim - performance.now(), n = $(".cg-anel-n"), v = $(".cg-anel-vivo");
+    if (resta <= 0) { s.descanso = null; desenhar(); avisar("Descanso encerrado. Vai!"); return; }
+    var seg = Math.ceil(resta / 1000), txt = Math.floor(seg / 60) + ":" + d2(seg % 60);
+    if (n && n.textContent !== txt) n.textContent = txt;
+    if (v) v.setAttribute("stroke-dashoffset", (CIRC * (1 - resta / s.descanso.total)).toFixed(1));
+  }
+  function avisar(texto, desfazer) {
+    var a = $(".cg-aviso");
+    $(".cg-aviso-t").textContent = texto;
+    $(".cg-aviso-b").hidden = !desfazer;
+    ui.desfazer = desfazer || null;
+    a.setAttribute("data-visivel", "");
+    clearTimeout(ui.relAviso);
+    ui.relAviso = setTimeout(function () { a.removeAttribute("data-visivel"); ui.desfazer = null; }, 5200);
+  }
+
+  // ── ações do treino ──
+  // devolve true quando reabre um treino que já estava guardado
+  function iniciar(demo) {
+    if (s.ativa) return false;
+    if (s.fechada) { s.t0 = performance.now() - s.dur; s.fechada = false; s.ativa = true; acertarTique(); return true; }
+    s.ativa = true; s.t0 = performance.now() - (demo ? 252000 : 0);
+    // quem chega direto na série (pela barra da galeria) encontra o treino como quem acabou de fazer a primeira
+    if (demo && !seriesHoje()) { s.ex = 0; s.feitas.supino.push({kg: 62.5, reps: 8}); }
+    preparar(); acertarTique();
+    return false;
+  }
+  function concluirSerie() {
+    var it = item(), id = it[0];
+    if (completo(it)) return;
+    var antes = {ex: s.ex, kg: s.kg, reps: s.reps}, feita = {kg: s.kg, reps: s.reps}, bateu;
+    s.feitas[id].push(feita);
+    bateu = ehRecorde(id, s.feitas[id].length - 1);
+    if (completo(it)) { var prox = proximoAberto(); if (prox >= 0) s.ex = prox; }
+    preparar();
+    s.descanso = tudoFeito() ? null : {fim: performance.now() + DESCANSO, total: DESCANSO};
+    desenhar();
+    avisar((bateu ? "Recorde: " : "Série anotada: ") + kg(feita.kg) + " kg × " + feita.reps + ".", function () {
+      var l = s.feitas[id], i = l.indexOf(feita);
+      if (i >= 0) l.splice(i, 1);
+      s.ex = antes.ex; s.kg = antes.kg; s.reps = antes.reps; s.descanso = null;
+      desenhar();
+    });
+  }
+  function desmarcar(i) {
+    var it = item(), l = s.feitas[it[0]], tirada = l[i];
+    if (!tirada) return;
+    l.splice(i, 1); s.descanso = null; preparar();
+    desenhar();
+    avisar("Série " + (i + 1) + " desmarcada.", function () { l.splice(i, 0, tirada); preparar(); desenhar(); });
+  }
+  function passo(campo, d) {
+    if (campo === "kg") s.kg = Math.max(0, Math.round((s.kg + d * EX[item()[0]][1]) * 10) / 10);
+    else s.reps = Math.max(1, Math.min(50, s.reps + d));
+    desenhar();
+  }
+  function trocar(d) {
+    var n = s.ex + d;
+    if (n < 0 || n >= FICHA.itens.length) return;
+    s.ex = n; s.descanso = null; preparar(); desenhar();
+  }
+  function encerrar() { s.dur = duracao(); s.ativa = false; s.fechada = true; s.descanso = null; acertarTique(); }
+  function guardar() {
+    encerrar();
+    fecharFolha(); irPara("treino");
+    avisar("Treino guardado.", function () { iniciar(false); desenhar(); });
+  }
+  function reabrir() { iniciar(false); if (completo(item()) && !tudoFeito()) s.ex = proximoAberto(); preparar(); }
+  // sair sem guardar: a sessão some, o dia não conta como treinado, e o Desfazer devolve tudo
+  function descartar() {
+    var antes = {ativa: s.ativa, dur: duracao(), ex: s.ex, kg: s.kg, reps: s.reps, feitas: JSON.stringify(s.feitas)};
+    s.ativa = false; s.fechada = false; s.t0 = 0; s.dur = 0; s.ex = 0; s.descanso = null;
+    FICHA.itens.forEach(function (it) { s.feitas[it[0]] = []; });
+    preparar(); acertarTique();
+    fecharFolha(); irPara("treino");
+    avisar("Treino descartado: nada foi guardado.", function () {
+      s.feitas = JSON.parse(antes.feitas); s.ex = antes.ex; s.kg = antes.kg; s.reps = antes.reps; s.dur = antes.dur;
+      if (antes.ativa) { s.ativa = true; s.t0 = performance.now() - antes.dur; acertarTique(); }
+      desenhar();
+    });
+  }
+
+  // ── peças ──
+  function secao(titulo, lado) { return h("header", {"class": "cg-sec"}, [h("h2", {text: titulo}), lado ? h("span", {"class": "cg-sec-lado", text: lado}) : null]); }
+  function fato(n, r) { return h("div", {"class": "cg-fato"}, [h("b", {"class": "cg-fato-n cg-num", text: n}), h("span", {"class": "cg-fato-r", text: r})]); }
+  function laje(acao, titulo, sub, extra) {
+    var b = h("button", {type: "button", "class": "cg-laje", "data-acao": acao, "data-foco": "laje", "data-fio": extra === "fio"}, [extra === "certo" ? ic("certo") : extra === "tocar" ? ic("tocar") : null,
+      h("span", null, [titulo, sub ? h("span", {"class": "cg-laje-s", text: sub}) : null])]);
+    return h("div", {"class": "cg-pe"}, b);
+  }
+  function lajeDoTreino() {
+    var it = item(), totalSeries = 0;
+    FICHA.itens.forEach(function (x) { totalSeries += x[1]; });
+    if (s.fechada) return laje("resumo", "Treino de hoje concluído", "ver o resumo", "fio");
+    if (s.ativa) {
+      if (completo(it) && !tudoFeito()) it = item(proximoAberto());   // o exercício aberto na série já fechou: continuar leva ao próximo em aberto
+      return laje("continuar", "Continuar treino", tudoFeito() ? "todas as séries feitas" : EX[it[0]][0] + ", série " + (feitasDe(it[0]).length + 1) + " de " + it[1], "tocar");
+    }
+    return laje("comecar", "Começar treino", FICHA.itens.length + " exercícios · " + totalSeries + " séries", "tocar");
+  }
+  // a promessa na primeira tela: a carga máxima estimada do primeiro exercício subindo, com atalho para a evolução dele
+  function sobe() {
+    var id = FICHA.itens[0][0], v = historico(id), min = Math.min.apply(null, v), max = Math.max.apply(null, v), d = "", sv = svg("svg", {"class": "cg-sobe-g", viewBox: "0 0 64 26", "aria-hidden": "true"}), i;
+    for (i = 0; i < v.length; i++) d += (i ? "L" : "M") + (2 + 60 * i / (v.length - 1)).toFixed(1) + " " + (23 - 20 * (v[i] - min) / (max - min || 1)).toFixed(1);
+    sv.appendChild(svg("path", {d: d}));
+    return h("button", {type: "button", "class": "cg-sobe", "data-acao": "ver-evolucao", "data-id": id, "data-foco": "sobe"}, [sv,
+      h("span", {"class": "cg-sobe-t"}, [EX[id][0], h("span", {"class": "cg-sobe-s", text: "carga máxima estimada"})]),
+      h("span", {"class": "cg-sobe-n cg-num"}, ["+" + kg(recorde(id) - v[0]) + " kg", h("span", {"class": "cg-sobe-s", text: "em 12 semanas"})])]);
+  }
+  function heroi() {
+    var totalSeries = 0, ultima = em(-AGENDA[FICHA.id][0]), semana = h("div", {"class": "cg-semana", role: "img", "aria-label": "Semana: treino C há dois dias, treino A hoje, treino B em três dias"});
+    FICHA.itens.forEach(function (x) { totalSeries += x[1]; });
+    [-3, -2, -1, 0, 1, 2, 3].forEach(function (n) {
+      var letra = n === 0 ? FICHA.id : n < 0 ? TREINOS[-n] : n === 3 ? "B" : "", tipo = n === 0 ? (s.fechada ? "feito" : "hoje") : n < 0 && letra ? "feito" : letra ? "previsto" : null;
+      semana.appendChild(h("div", {"class": "cg-dia", "data-tipo": tipo}, [h("span", {"class": "cg-dia-q", text: letra || "·"}), h("span", {text: n === 0 ? "hoje" : DIA3[em(n).getDay()]})]));
+    });
+    return h("div", {"class": "cg-heroi"}, [
+      h("span", {"class": "cg-rot", text: "Hoje, " + DIA3[HOJE.getDay()] + " " + curta(HOJE)}),
+      h("h1", {"class": "cg-heroi-t", text: FICHA.nome}),
+      h("p", {"class": "cg-heroi-s", text: FICHA.foco}),
+      h("p", {"class": "cg-heroi-u", text: "Última vez: " + DIA3[ultima.getDay()] + ", " + curta(ultima) + " · " + milhar(volumeDaSessao(FICHA, 0)) + " kg de volume"}),
+      h("div", {"class": "cg-fatos"}, [fato(String(FICHA.itens.length), "exercícios"), fato(String(totalSeries), "séries"), fato("55", "minutos, em média")]),
+      sobe(),
+      semana]);
+  }
+  function anel() {
+    var resta = s.descanso ? Math.max(0, s.descanso.fim - performance.now()) : 0, seg = Math.ceil(resta / 1000), sv = svg("svg", {viewBox: "0 0 200 200", "aria-hidden": "true"});
+    sv.appendChild(svg("circle", {"class": "cg-anel-fundo", cx: 100, cy: 100, r: 94}));
+    sv.appendChild(svg("circle", {"class": "cg-anel-vivo", cx: 100, cy: 100, r: 94, "stroke-dasharray": CIRC.toFixed(1), "stroke-dashoffset": (s.descanso ? CIRC * (1 - resta / s.descanso.total) : 0).toFixed(1)}));
+    return h("div", {"class": "cg-anel", role: "timer", "aria-label": "Descanso"}, [sv, h("div", {"class": "cg-anel-t"}, [h("b", {"class": "cg-anel-n", text: Math.floor(seg / 60) + ":" + d2(seg % 60)}), h("span", {"class": "cg-rot", text: "descanso"})])]);
+  }
+  function grafico(id) {
+    var v = historico(id), hoje = recorde(id) > recordeBase(id) + 0.01 ? recorde(id) : null, todosV = hoje ? v.concat([hoje]) : v;
+    var min = Math.floor(Math.min.apply(null, todosV) / 5) * 5, max = Math.ceil(Math.max.apply(null, todosV) / 5) * 5, W = 320, A = 140, L = 34, R = 310, T = 12, B = 132, n = 13;
+    if (max === min) max = min + 5;
+    function px(i) { return L + (R - L) * i / (n - 1); }
+    function py(x) { return B - (B - T) * (x - min) / (max - min); }
+    var sv = svg("svg", {viewBox: "0 0 " + W + " " + A, role: "img", "aria-label": "Carga máxima estimada de " + EX[id][0] + " nas últimas doze sessões: de " + kg(v[0]) + " para " + kg(todosV[todosV.length - 1]) + " quilos"}), d = "", i;
+    var caixa = h("div", {"class": "cg-graf"}, sv), eixo = h("div", {"class": "cg-eixo cg-g-x", "aria-hidden": "true"}, [h("span", {text: "12 semanas atrás"}), h("span", {text: hoje ? "hoje" : "semana passada"})]);
+    [min, (min + max) / 2, max].forEach(function (x) {
+      sv.appendChild(svg("path", {"class": "cg-g-grade", d: "M" + L + " " + py(x).toFixed(1) + "H" + R}));
+      // os rótulos são texto de verdade, por cima do desenho: o gráfico estica com a coluna e a letra continua de letra
+      var r = h("span", {"class": "cg-g-y", "aria-hidden": "true", text: kg(x)});
+      r.style.top = (py(x) / A * 100).toFixed(2) + "%"; r.style.width = ((L - 6) / W * 100).toFixed(2) + "%";
+      caixa.appendChild(r);
+    });
+    for (i = 0; i < todosV.length; i++) d += (i ? "L" : "M") + px(i).toFixed(1) + " " + py(todosV[i]).toFixed(1);
+    sv.appendChild(svg("path", {"class": "cg-g-area", d: d + "L" + px(todosV.length - 1).toFixed(1) + " " + B + "L" + L + " " + B + "Z"}));
+    sv.appendChild(svg("path", {"class": "cg-g-linha", d: d}));
+    for (i = 0; i < v.length; i += (i === 9 ? 2 : 3)) sv.appendChild(svg("circle", {"class": "cg-g-ponto", cx: px(i).toFixed(1), cy: py(v[i]).toFixed(1), r: 3.5}));
+    if (hoje) sv.appendChild(svg("circle", {"class": "cg-g-hoje", cx: px(12).toFixed(1), cy: py(hoje).toFixed(1), r: 6}));
+    eixo.style.paddingLeft = (L / W * 100).toFixed(2) + "%"; eixo.style.paddingRight = ((W - (hoje ? R : px(11))) / W * 100).toFixed(2) + "%";
+    return h("div", {"class": "cg-graf-c"}, [caixa, eixo]);
+  }
+  function maximo(id) {
+    var v = historico(id), atual = recorde(id), subiu = atual - v[0];
+    return h("div", {"class": "cg-max"}, [h("b", {"class": "cg-max-n cg-num", text: kg(atual)}), h("span", {"class": "cg-max-u", text: "kg"}),
+      h("div", {"class": "cg-max-t"}, [h("span", {"class": "cg-max-d cg-num", text: "+" + kg(subiu) + " kg"}), h("span", {"class": "cg-max-r", text: "em 12 semanas"})])]);
+  }
+  function linhaSessao(quando, texto, melhor, etiqueta) {
+    return h("div", {"class": "cg-lin", "data-novo": !!etiqueta}, [
+      h("div", {"class": "cg-lin-t"}, [h("span", {"class": "cg-lin-a"}, [quando, etiqueta ? h("span", {"class": "cg-etq", text: etiqueta}) : null]), h("span", {"class": "cg-lin-b", text: texto})]),
+      h("b", {"class": "cg-lin-n cg-num"}, [kg(melhor), h("span", {"class": "cg-lin-u", text: "kg, estimada"})])]);
+  }
+  function historicoDe(id, quantas) {
+    var caixa = h("div", {"class": "cg-linhas"}), hoje = feitasDe(id);
+    if (hoje.length) {
+      var topo = hoje.reduce(function (a, b) { return estimada(b.kg, b.reps) > estimada(a.kg, a.reps) ? b : a; }), melhor = estimada(topo.kg, topo.reps);
+      // a linha de hoje só leva a cor e a etiqueta de conquista quando passou da marca anterior
+      caixa.appendChild(linhaSessao("Hoje", seriesTxt(hoje, " · "), melhor, melhor > recordeBase(id) + 0.01 ? "recorde" : null));
+    }
+    sessoesDe(id).slice(0, quantas).forEach(function (x) { caixa.appendChild(linhaSessao(DIA3[x.quando.getDay()] + ", " + curta(x.quando), kg(x.kg) + " kg × " + x.reps.join(" · "), melhorDe(x), null)); });
+    return caixa;
+  }
+
+  // ── a ficha (estado 1 no celular; coluna da esquerda na bancada) ──
+  function desenharFicha() {
+    var raiz = limpar($(".cg-ficha")), lista = h("div", {"class": "cg-lista"});
+    raiz.appendChild(h("div", {"class": "cg-pad"}, heroi()));
+    FICHA.itens.forEach(function (it, i) {
+      var f = feitasDe(it[0]), q = h("span", {"class": "cg-ex-q", "aria-hidden": "true"}), k;
+      for (k = 0; k < it[1]; k++) q.appendChild(h("i", {"class": "cg-q", "data-feita": k < f.length}));
+      lista.appendChild(h("button", {type: "button", "class": "cg-ex", "data-acao": "exercicio", "data-i": i, "data-foco": "ex-" + i, "data-atual": s.ativa && i === s.ex, "data-completo": completo(it),
+        "aria-label": EX[it[0]][0] + ": " + it[1] + " séries de " + it[2] + ", " + pl(f.length, "feita hoje", "feitas hoje")}, [
+        h("span", {"class": "cg-ex-n cg-num", text: String(i + 1)}),
+        h("span", {"class": "cg-ex-nome", text: EX[it[0]][0]}), q,
+        h("span", {"class": "cg-ex-meta", text: f.length ? "hoje: " + seriesTxt(f, "·") : it[1] + " × " + it[2] + " · última: " + kg(it[3]) + " kg × " + it[4].join("·")})]));
+    });
+    raiz.appendChild(h("div", {"class": "cg-bloco"}, secao("Ficha de hoje", FICHA.nome + " · " + pl(seriesHoje(), "série feita", "séries feitas"))));
+    raiz.appendChild(lista);
+    raiz.appendChild(lajeDoTreino());
+  }
+  function desenharInicio() {
+    var raiz = limpar($(".cg-inicio"));
+    raiz.appendChild(h("div", {"class": "cg-centro-in"}, [h("div", {"class": "cg-pad"}, heroi()), lajeDoTreino()]));
+  }
+
+  // ── a série (estado 2) ──
+  function desenharSerie() {
+    var raiz = limpar($(".cg-serie")), it = item(), id = it[0], f = feitasDe(id), n = f.length, fim = tudoFeito(), cheio = completo(it) && !fim, descansa = !!s.descanso && !fim && !cheio, face = descansa ? "descanso" : "placar", prox = cheio ? item(proximoAberto()) : null, i;
+    raiz.appendChild(h("div", {"class": "cg-ser-topo"}, [
+      h("button", {type: "button", "class": "cg-voltar", "data-acao": "vista", "data-vista": "treino", "data-foco": "voltar"}, [ic("antes"), "Ficha"]),
+      h("span", {"class": "cg-relogio cg-num", role: "timer", "aria-label": "Tempo de treino"}, [h("i", {"class": "cg-relogio-p", "aria-hidden": "true"}), h("span", {"class": "cg-relogio-t", text: relogio(duracao())})]),
+      h("button", {type: "button", "class": "cg-terminar", "data-acao": "terminar", "data-foco": "terminar", text: "Terminar"})]));
+    var dentro = h("div", {"class": "cg-centro-in"}), marcas = h("div", {"class": "cg-marcas", role: "group", "aria-label": "Séries deste exercício"});
+    dentro.appendChild(h("div", {"class": "cg-ser-ex"}, [
+      h("button", {type: "button", "class": "cg-troca", "data-acao": "trocar", "data-d": -1, "data-foco": "ex-antes", "aria-label": "Exercício anterior", disabled: s.ex === 0}, ic("antes")),
+      h("div", {"class": "cg-ser-t"}, [h("span", {"class": "cg-rot", text: "Exercício " + (s.ex + 1) + " de " + FICHA.itens.length}), h("h2", {"class": "cg-ser-nome", text: EX[id][0]}),
+        h("p", {"class": "cg-ser-ult", text: "Última vez: " + kg(it[3]) + " kg × " + it[4].join(" · ")})]),
+      h("button", {type: "button", "class": "cg-troca", "data-acao": "trocar", "data-d": 1, "data-foco": "ex-depois", "aria-label": "Próximo exercício", disabled: s.ex === FICHA.itens.length - 1}, ic("depois"))]));
+    for (i = 0; i < it[1]; i++) {
+      if (f[i]) marcas.appendChild(h("button", {type: "button", "class": "cg-marca-s", "data-tipo": "feita", "data-acao": "desmarcar", "data-i": i, "data-foco": "marca-" + i,
+        "aria-label": "Série " + (i + 1) + ": " + kg(f[i].kg) + " quilos, " + f[i].reps + " repetições" + (ehRecorde(id, i) ? ", recorde" : "") + ". Tocar desmarca."},
+        [kg(f[i].kg) + " × " + f[i].reps, h("span", {"class": "cg-marca-k", text: "série " + (i + 1)}), ehRecorde(id, i) ? h("i", {"class": "cg-selo", "aria-hidden": "true"}, ic("recorde")) : null]));
+      else marcas.appendChild(h("span", {"class": "cg-marca-s", "data-tipo": i === n && !fim ? "atual" : null}, [String(i + 1), h("span", {"class": "cg-marca-k", text: i === n && !fim ? "agora" : "série"})]));
+    }
+    dentro.appendChild(marcas);
+    var faces = h("div", {"class": "cg-faces", "data-face": face, "data-quieto": ui.face === face}), passoKg = kg(EX[id][1]), est = estimada(s.kg, s.reps), bate = est > recorde(id) + 0.01;
+    ui.face = face;
+    faces.appendChild(h("div", {"class": "cg-face", "data-face": "placar"}, fim ? [
+      h("p", {"class": "cg-heroi-t", text: "Feito"}),
+      h("p", {"class": "cg-heroi-s", text: "Todas as séries do " + FICHA.nome + " estão anotadas."}),
+      h("div", {"class": "cg-fatos"}, [fato(milhar(volumeHoje()), "kg de volume"), fato(String(seriesHoje()), "séries"), fato(String(recordesHoje().length), recordesHoje().length === 1 ? "recorde" : "recordes")])
+    ] : cheio ? [
+      // exercício já fechado, revisitado: nada de placar nem de concluir; a laje leva ao próximo em aberto
+      h("p", {"class": "cg-heroi-t", text: "Completo"}),
+      h("p", {"class": "cg-heroi-s", text: pl(it[1], "série anotada", "séries anotadas") + " em " + EX[id][0] + "."}),
+      h("p", {"class": "cg-nota", text: "Entrou alguma errada? Tocar numa série acima desmarca."})
+    ] : [
+      h("div", {"class": "cg-placar", role: "group", "aria-label": "Carga"}, [
+        h("button", {type: "button", "class": "cg-passo", "data-acao": "passo", "data-campo": "kg", "data-d": -1, "data-foco": "kg-menos", "aria-label": "Tirar " + passoKg + " quilos", text: "−" + passoKg}),
+        h("div", {"class": "cg-placar-m"}, [h("b", {"class": "cg-placar-n", "data-longo": kg(s.kg).length > 4, "aria-live": "polite", text: kg(s.kg)}), h("span", {"class": "cg-placar-u cg-rot", text: "quilos"})]),
+        h("button", {type: "button", "class": "cg-passo", "data-acao": "passo", "data-campo": "kg", "data-d": 1, "data-foco": "kg-mais", "aria-label": "Pôr " + passoKg + " quilos", text: "+" + passoKg})]),
+      h("div", {"class": "cg-placar cg-reps", role: "group", "aria-label": "Repetições"}, [
+        h("button", {type: "button", "class": "cg-passo", "data-acao": "passo", "data-campo": "reps", "data-d": -1, "data-foco": "reps-menos", "aria-label": "Uma repetição a menos", text: "−1"}),
+        h("div", {"class": "cg-placar-m"}, [h("b", {"class": "cg-placar-n", "aria-live": "polite", text: String(s.reps)}), h("span", {"class": "cg-placar-u cg-rot", text: "repetições"})]),
+        h("button", {type: "button", "class": "cg-passo", "data-acao": "passo", "data-campo": "reps", "data-d": 1, "data-foco": "reps-mais", "aria-label": "Uma repetição a mais", text: "+1"})]),
+      h("div", {"class": "cg-igual"}, h("button", {type: "button", "class": "cg-btn", "data-acao": "igual", "data-foco": "igual"}, [ic("igual"), "Igual à última: " + kg(it[3]) + " × " + it[4][Math.min(n, it[4].length - 1)]])),
+      h("p", {"class": "cg-rec-aviso", "aria-live": "polite"}, bate ? [ic("recorde"), "Esta série bate o seu recorde: " + kg(est) + " kg, estimada"] : null)
+    ]));
+    faces.appendChild(h("div", {"class": "cg-face", "data-face": "descanso"}, [
+      anel(),
+      h("div", {"class": "cg-desc-b"}, [h("button", {type: "button", "class": "cg-btn", "data-acao": "mais30", "data-foco": "mais30", text: "+30 s"}), h("button", {type: "button", "class": "cg-btn", "data-acao": "pular", "data-foco": "pular", text: "Pular"})]),
+      h("p", {"class": "cg-seguir"}, ["A seguir: ", h("b", {text: EX[id][0]}), ", série " + (n + 1) + " de " + it[1] + " · " + kg(s.kg) + " kg × " + s.reps])]));
+    dentro.appendChild(faces);
+    dentro.appendChild(fim ? laje("terminar", "Terminar treino", "ver o resumo e guardar", "certo")
+      : cheio ? laje("proximo", "Próximo: " + EX[prox[0]][0], "série " + (feitasDe(prox[0]).length + 1) + " de " + prox[1], "tocar")
+      : descansa ? laje("pular", "Começar a série " + (n + 1) + " agora", "pula o descanso", "fio")
+      : laje("concluir", "Concluir série " + (n + 1), kg(s.kg) + " kg × " + s.reps, "certo"));
+    raiz.appendChild(dentro);
+  }
+
+  // ── a evolução (estado 3) e a coluna da direita ──
+  function desenharEvo() {
+    var raiz = limpar($(".cg-evo")), id = ui.graf, v = volumes(), maxV = Math.max.apply(null, v), barras = h("div", {"class": "cg-barras", role: "img", "aria-label": "Volume das últimas doze semanas, de sete em sete dias"});
+    v.forEach(function (x, i) { var b = h("i", {"class": "cg-barra-i"}); b.style.transform = "scaleY(" + (x / maxV).toFixed(3) + ")"; barras.appendChild(h("span", {"class": "cg-barra", "data-esta": i === 11}, b)); });
+    raiz.appendChild(h("div", {"class": "cg-centro-in"}, [
+      h("div", {"class": "cg-pad"}, [
+        h("button", {type: "button", "class": "cg-escolha", "data-acao": "exercicios", "data-foco": "escolha", "aria-label": "Trocar o exercício do gráfico. Agora: " + EX[id][0]}, [h("span", {"class": "cg-escolha-t", text: EX[id][0]}), ic("baixo")]),
+        h("p", {"class": "cg-rot cg-max-rot", text: "Carga máxima estimada"}),
+        maximo(id),
+        h("p", {"class": "cg-nota", text: "Estimada: a carga de uma repetição, calculada a partir das suas séries."}),
+        grafico(id)]),
+      h("div", {"class": "cg-bloco"}, [secao("Volume semanal", kg(v[11] / 1000) + " t nos últimos 7 dias"), barras,
+        h("div", {"class": "cg-eixo"}, [h("span", {text: "12 semanas atrás"}), h("span", {text: "últimos 7 dias"})])]),
+      h("div", {"class": "cg-bloco"}, [secao("Histórico de " + EX[id][0], "últimas sessões"), historicoDe(id, 4)])]));
+  }
+  function desenharLado() {
+    var ex = limpar($(".cg-lado-ex")), geral = limpar($(".cg-lado-geral")), id = item()[0], d, mes = h("div", {"class": "cg-mes"}), conta = 0, segunda = em(-((HOJE.getDay() + 6) % 7) - 28);
+    ex.appendChild(h("div", {"class": "cg-pad"}, [h("span", {"class": "cg-rot", text: "Evolução de"}), h("h2", {"class": "cg-ser-nome", text: EX[id][0]}), maximo(id), grafico(id)]));
+    ex.appendChild(h("div", {"class": "cg-bloco"}, [secao("Últimas sessões", "estimada"), historicoDe(id, 3)]));
+    // frequência: cinco semanas corridas (de segunda a domingo), terminando na semana de hoje; vale em qualquer dia do mês
+    ["S", "T", "Q", "Q", "S", "S", "D"].forEach(function (l) { mes.appendChild(h("span", {"class": "cg-mes-c", text: l})); });
+    for (d = 0; d < 35; d++) {
+      var dia = new Date(segunda); dia.setDate(dia.getDate() + d);
+      var dist = Math.round((HOJE - dia) / 864e5), treino = dist === 0 ? seriesHoje() > 0 : dist > 0 && !!TREINOS[dist];
+      if (treino) conta++;
+      mes.appendChild(h("span", {"class": "cg-mes-d cg-num", "data-treino": treino, "data-hoje": dist === 0, "data-futuro": dist < 0, text: String(dia.getDate())}));
+    }
+    geral.appendChild(h("div", {"class": "cg-bloco"}, [secao("Frequência", pl(conta, "treino", "treinos") + " em 5 semanas"), mes]));
+    var rec = h("div", {"class": "cg-linhas"});
+    ["agachamento", "terra", "supino", "puxada", "desenvolvimento"].forEach(function (rid) {
+      var it = itemDe(rid), novo = recorde(rid) > recordeBase(rid) + 0.01, melhor = null, ha = AGENDA[fichaDe(rid).id][0];
+      feitasDe(rid).forEach(function (x) { if (!melhor || estimada(x.kg, x.reps) > estimada(melhor.kg, melhor.reps)) melhor = x; });
+      rec.appendChild(h("div", {"class": "cg-lin", "data-novo": novo}, [
+        h("div", {"class": "cg-lin-t"}, [h("span", {"class": "cg-lin-a"}, [EX[rid][0], novo ? h("span", {"class": "cg-etq", text: "novo"}) : null]),
+          h("span", {"class": "cg-lin-b", text: novo ? kg(melhor.kg) + " kg × " + melhor.reps + " · hoje" : kg(it[3]) + " kg × " + Math.max.apply(null, it[4]) + " · " + curta(em(-ha))})]),
+        h("b", {"class": "cg-lin-n cg-num"}, [kg(recorde(rid)), h("span", {"class": "cg-lin-u", text: "kg, estimada"})])]));
+    });
+    geral.appendChild(h("div", {"class": "cg-bloco"}, [secao("Recordes", "carga máxima estimada"), rec, h("div", {"class": "cg-fim"})]));
+  }
+  function desenhar() {
+    var f = document.activeElement, chave = f && app.contains(f) ? f.getAttribute("data-foco") : null;
+    var rolos = todos(".cg-corpo,.cg-ficha,.cg-centro,.cg-lado").map(function (n) { return [n, n.scrollTop]; });
+    app.setAttribute("data-vista", ui.vista);
+    todos(".cg-seg-b").forEach(function (b) { var meu = b.getAttribute("data-vista"); if (meu === ui.vista || (meu === "treino" && ui.vista === "serie")) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    desenharFicha(); desenharInicio(); desenharSerie(); desenharEvo(); desenharLado();
+    rolos.forEach(function (x) { if (x[1]) x[0].scrollTop = x[1]; });
+    if (chave) { var alvo = todos('[data-foco="' + chave + '"]').filter(function (n) { return n.offsetParent && !n.disabled; })[0]; if (alvo) alvo.focus({preventScroll: true}); }
+  }
+  function irPara(vista) {
+    ui.vista = vista; ui.face = "";
+    desenhar();
+    todos(".cg-corpo,.cg-centro").forEach(function (n) { n.scrollTop = 0; });
+    sincronizarEstado();
+  }
+
+  // ── folhas ──
+  function pintarPlanos() {
+    todos(".cg-opcao").forEach(function (o) { o.setAttribute("aria-pressed", String(o.getAttribute("data-id") === ui.plano)); });
+    $(".cg-depois").textContent = "Depois, " + (ui.plano === "ano" ? "R$ 99 por ano" : "R$ 14,90 por mês") + ". Cancele quando quiser.";
+  }
+  function abrirFolha(qual) {
+    ui.ultimoFoco = document.activeElement;
+    $(".cg-aviso").removeAttribute("data-visivel"); ui.desfazer = null;
+    app.setAttribute("data-folha", qual);
+    todos(".cg-topo,.cg-corpo").forEach(function (n) { n.inert = true; });
+    setTimeout(function () { $('.cg-folha[data-folha="' + qual + '"] .cg-fechar').focus({preventScroll: true}); }, calmo ? 0 : 140);
+  }
+  function fecharFolha() {
+    if (!app.hasAttribute("data-folha")) return;
+    app.removeAttribute("data-folha");
+    todos(".cg-topo,.cg-corpo").forEach(function (n) { n.inert = false; });
+    if (ui.ultimoFoco && ui.ultimoFoco.focus && app.contains(ui.ultimoFoco)) ui.ultimoFoco.focus({preventScroll: true});
+  }
+  function folhaExercicios() {
+    var alvo = limpar($(".cg-ops"));
+    FICHAS.forEach(function (fi) {
+      alvo.appendChild(h("p", {"class": "cg-rot cg-op-g", text: fi.nome + " · " + fi.foco}));
+      fi.itens.forEach(function (it) {
+        alvo.appendChild(h("button", {type: "button", "class": "cg-op", "data-acao": "escolher", "data-id": it[0], "aria-pressed": String(it[0] === ui.graf)},
+          [h("span", {"class": "cg-op-t", text: EX[it[0]][0]}), h("span", {"class": "cg-op-n cg-num", text: kg(recorde(it[0])) + " kg"})]));
+      });
+    });
+  }
+  function folhaResumo() {
+    var alvo = limpar($(".cg-res-corpo")), recs = recordesHoje(), n = seriesHoje();
+    $("#cg-res-rot").textContent = s.fechada ? "Treino guardado" : "Terminar o treino";
+    $("#cg-t-res").textContent = FICHA.nome;
+    alvo.appendChild(h("div", {"class": "cg-res"}, [fato(milhar(volumeHoje()), "kg de volume"), fato(relogio(duracao()), "de duração"), fato(String(n), n === 1 ? "série" : "séries")]));
+    if (recs.length) {
+      var lista = h("div", {"class": "cg-linhas"});
+      recs.forEach(function (r) {
+        lista.appendChild(h("div", {"class": "cg-lin", "data-novo": true}, [h("div", {"class": "cg-lin-t"}, [h("span", {"class": "cg-lin-a"}, [EX[r.id][0], h("span", {"class": "cg-etq", text: "recorde"})]), h("span", {"class": "cg-lin-b", text: kg(r.kg) + " kg × " + r.reps})]),
+          h("b", {"class": "cg-lin-n cg-num"}, [kg(estimada(r.kg, r.reps)), h("span", {"class": "cg-lin-u", text: "kg, estimada"})])]));
+      });
+      alvo.appendChild(lista);
+    } else alvo.appendChild(h("p", {"class": "cg-nota", text: n ? "Nenhum recorde hoje. Constância também conta: o gráfico agradece." : "Nenhuma série anotada ainda."}));
+    if (s.fechada) { alvo.appendChild(h("button", {type: "button", "class": "cg-fino", "data-acao": "reabrir", text: "Reabrir o treino"})); return; }
+    if (n) alvo.appendChild(h("button", {type: "button", "class": "cg-laje", "data-acao": "guardar"}, "Guardar treino"));
+    alvo.appendChild(h("button", {type: "button", "class": n ? "cg-fino" : "cg-laje", "data-acao": "descartar", text: n ? "Descartar o treino" : "Sair sem guardar"}));
+    alvo.appendChild(h("button", {type: "button", "class": "cg-fino", "data-acao": "fechar-folha", text: "Voltar ao treino"}));
+  }
+
+  // ── os três estados do stand: 1 Treino de hoje · 2 Série · 3 Evolução ──
+  function estadoDaTela() { return ui.vista === "serie" ? 2 : ui.vista === "evolucao" ? 3 : 1; }
+  function sincronizarEstado() { var n = String(estadoDaTela()); if (app.getAttribute("data-estado") !== n) app.setAttribute("data-estado", n); }
+  function aplicarEstado(n) {
+    var vista = n === 2 ? "serie" : n === 3 ? "evolucao" : "treino";
+    if (vista === ui.vista) return;
+    fecharFolha();
+    var reabriu = vista === "serie" && iniciar(true);
+    if (reabriu && completo(item()) && !tudoFeito()) { s.ex = proximoAberto(); preparar(); }
+    irPara(vista);
+    if (reabriu) avisar("Treino reaberto.", function () { encerrar(); irPara("treino"); });   // a barra da galeria pediu a série com o treino já guardado
+  }
+  app.addEventListener("maquete:estado", function (e) { fecharFolha(); aplicarEstado(e.detail && e.detail.estado); });   // pedido da barra do stand: folha aberta fecha, mesmo no mesmo estado
+  new MutationObserver(function () { aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1); }).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+
+  // ── eventos ──
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-acao]");
+    if (!b || !app.contains(b) || b.disabled) return;
+    var acao = b.getAttribute("data-acao");
+    // a laje é o botão que se toca sem olhar: um segundo toque logo em seguida não vale (senão concluir vira pular)
+    if (b.classList.contains("cg-laje")) { if (performance.now() < ui.guarda) return; ui.guarda = performance.now() + 600; }
+    if (acao === "vista") irPara(b.getAttribute("data-vista"));
+    else if (acao === "comecar" || acao === "continuar") { iniciar(false); if (completo(item()) && !tudoFeito()) { s.ex = proximoAberto(); preparar(); } irPara("serie"); }
+    else if (acao === "exercicio") {
+      // treino guardado continua guardado: o toque mostra o resumo, e reabrir é uma ação à parte
+      if (s.fechada) { folhaResumo(); abrirFolha("resumo"); }
+      else { iniciar(false); s.ex = +b.getAttribute("data-i"); s.descanso = null; preparar(); irPara("serie"); }
+    }
+    else if (acao === "proximo") { s.ex = proximoAberto(); s.descanso = null; preparar(); desenhar(); }
+    else if (acao === "ver-evolucao") { ui.graf = b.getAttribute("data-id"); irPara("evolucao"); }
+    else if (acao === "descartar") descartar();
+    else if (acao === "reabrir") { fecharFolha(); reabrir(); irPara("serie"); avisar("Treino reaberto.", function () { encerrar(); irPara("treino"); }); }
+    else if (acao === "passo") passo(b.getAttribute("data-campo"), +b.getAttribute("data-d"));
+    else if (acao === "igual") { var it = item(), n = feitasDe(it[0]).length; s.kg = it[3]; s.reps = it[4][Math.min(n, it[4].length - 1)]; desenhar(); }
+    else if (acao === "concluir") concluirSerie();
+    else if (acao === "desmarcar") desmarcar(+b.getAttribute("data-i"));
+    else if (acao === "trocar") trocar(+b.getAttribute("data-d"));
+    else if (acao === "mais30") { if (s.descanso) { s.descanso.fim += 30000; s.descanso.total += 30000; pintar(); } }
+    else if (acao === "pular") { s.descanso = null; desenhar(); }
+    else if (acao === "terminar" || acao === "resumo") { folhaResumo(); abrirFolha("resumo"); }
+    else if (acao === "guardar") guardar();
+    else if (acao === "exercicios") { folhaExercicios(); abrirFolha("exercicios"); }
+    else if (acao === "escolher") { ui.graf = b.getAttribute("data-id"); fecharFolha(); desenhar(); }
+    else if (acao === "planos") { pintarPlanos(); abrirFolha("planos"); }
+    else if (acao === "plano") { ui.plano = b.getAttribute("data-id"); pintarPlanos(); }
+    else if (acao === "fechar-folha") fecharFolha();
+    else if (acao === "comprar") { fecharFolha(); avisar("Maquete: nada foi cobrado."); }
+    else if (acao === "restaurar") { fecharFolha(); avisar("Maquete: não há compra para restaurar."); }
+    else if (acao === "desfazer") { var d = ui.desfazer; $(".cg-aviso").removeAttribute("data-visivel"); ui.desfazer = null; if (d) d(); }
+  });
+  // a folha aberta prende o foco: o Tab dá a volta dentro dela, e o Esc fecha de onde quer que o foco esteja
+  document.addEventListener("keydown", function (e) {
+    var nome = app.getAttribute("data-folha"), folha = nome && app.querySelector('[role="dialog"][data-folha="' + nome + '"]'), itens, a, fora;
+    if (!folha || e.defaultPrevented || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") { fecharFolha(); return; }
+    if (e.key !== "Tab") return;
+    itens = Array.prototype.filter.call(folha.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]'), function (x) { return !x.disabled && x.tabIndex >= 0 && x.offsetParent; });
+    a = document.activeElement; fora = !folha.contains(a) || a === folha;
+    if (!itens.length) { e.preventDefault(); folha.focus({preventScroll: true}); }
+    else if (fora || a === itens[e.shiftKey ? 0 : itens.length - 1]) { e.preventDefault(); itens[e.shiftKey ? itens.length - 1 : 0].focus({preventScroll: true}); }
+  });
+  app.addEventListener("keydown", function (e) { if (e.key === "Escape" && app.hasAttribute("data-folha")) { e.stopPropagation(); fecharFolha(); } });
+  document.addEventListener("visibilitychange", function () { acertarTique(); if (s.ativa) pintar(); });
+  $(".cg-veu").addEventListener("wheel", function (e) { e.preventDefault(); }, {passive: false});
+  $(".cg-veu").addEventListener("touchmove", function (e) { e.preventDefault(); }, {passive: false});
+  // arrastar a folha para baixo pelo topo fecha; soltar antes do limite devolve ao lugar
+  todos(".cg-folha").forEach(function (folha) {
+    var y0 = null, dy = 0;
+    folha.addEventListener("pointerdown", function (e) {
+      if (app.clientWidth >= 720 || !e.target.closest(".cg-puxador,.cg-folha-topo") || e.target.closest("button")) return;
+      y0 = e.clientY; dy = 0; folha.setPointerCapture(e.pointerId); folha.style.transition = "none";
+    });
+    folha.addEventListener("pointermove", function (e) { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); folha.style.transform = "translateY(" + dy + "px)"; });
+    var soltar = function () { if (y0 === null) return; y0 = null; folha.style.transition = ""; folha.style.transform = ""; if (dy > 90) fecharFolha(); };
+    folha.addEventListener("pointerup", soltar);
+    folha.addEventListener("pointercancel", soltar);
+  });
+
+  preparar();
+  desenhar();
+  aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1);
+})();
+</script>
+</body>
+</html>

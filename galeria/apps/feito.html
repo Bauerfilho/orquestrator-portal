@@ -1,0 +1,1637 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feito · Maquete</title>
+<script type="application/json" id="maquete-ficha">
+{
+  "id": "feito",
+  "nome": "Feito",
+  "colecao": "referencia",
+  "tipo": "App celular",
+  "tela": "celular",
+  "ordem": 20,
+  "resumo": "Tarefas pessoais para quem anda com a cabeça cheia: você escreve do jeito que fala (\"buscar o terno sexta 18h #casa\"), o Feito entende a data, a hora e o projeto, e devolve cada coisa no dia certo, com o dia de hoje numa lista curta e a noite separada do resto.",
+  "proposta": "Pago",
+  "modelo_negocio": "Compra única de R$ 59,90 no iPhone (R$ 119,90 com iPad e Mac), sem assinatura e sem conta: 14 dias para usar tudo e, depois, só leitura até comprar. Quem paga é a pessoa que já desistiu de apps de tarefas que cobram todo mês.",
+  "referencias": [
+    {"nome": "Things", "modelo": "pago"},
+    {"nome": "Todoist", "modelo": "freemium"},
+    {"nome": "Super Productivity", "modelo": "open source", "licenca": "MIT"}
+  ],
+  "direcao": "Claro e silencioso, na linguagem do iPhone. Marca fictícia: Feito. Fundo gelo quase branco, tinta azul-noite e um único azul-cobalto que só aparece onde há ação: o botão de nova tarefa, o círculo que se fecha ao concluir e a aba em que você está. Títulos grandes e apertados na fonte do sistema, listas agrupadas em cartões de 22 px sem borda, barra de abas flutuante de vidro e folhas que sobem de baixo. A assinatura visual é a faixa índigo de \"Esta noite\", que divide o dia em dois, e o anel do cabeçalho, que se completa conforme as tarefas saem. No celular é uma coluna com a barra de vidro; em tela ampla vira três colunas, como num Mac: listas e projetos, a lista do dia e o detalhe da tarefa.",
+  "estados": [
+    {
+      "nome": "Hoje",
+      "descricao": "A lista curta do dia com o anel de progresso, a tarefa atrasada no topo, a faixa \"Esta noite\" e o que já foi concluído. A barra de escrever no topo abre a entrada rápida. Tocar no círculo conclui (com desfazer), tocar na tarefa abre notas, subtarefas e os atalhos de adiar; a Entrada guarda o que ainda não tem data e a busca procura em tudo, inclusive no que já foi concluído."
+    },
+    {
+      "nome": "Entrada rápida",
+      "descricao": "A folha de captura: você digita em português comum e o Feito marca ao vivo o que entendeu (quando, hora, prazo, projeto, repetição). Os atalhos completam a frase, Enter adiciona, e a tarefa aparece na lista certa, já destacada."
+    },
+    {
+      "nome": "Planejar",
+      "descricao": "Os próximos sete dias, um bloco por dia com hora e prazos à vista, o que está marcado para mais longe no fim da lista, e os projetos por área com o anel de avanço e a próxima ação de cada um. Para trazer uma tarefa para hoje, é abrir e tocar em Hoje."
+    }
+  ],
+  "paleta": [
+    {"nome": "Gelo (fundo)", "hex": "#f3f5f9"},
+    {"nome": "Tinta azul-noite", "hex": "#0f1628"},
+    {"nome": "Cobalto Feito", "hex": "#2456e6"},
+    {"nome": "Índigo da noite", "hex": "#1a2152"},
+    {"nome": "Terracota (Casa)", "hex": "#d9682f"},
+    {"nome": "Violeta (Trabalho)", "hex": "#6253dd"},
+    {"nome": "Verde-mar (Pessoal)", "hex": "#12897c"},
+    {"nome": "Âmbar de prazo", "hex": "#a85f05"},
+    {"nome": "Vermelho de atraso", "hex": "#c9302f"}
+  ],
+  "tipografia": "Fonte do sistema (San Francisco no iPhone e no Mac). Título de tela em 800 a 34 px com entrelinha justa e tracking de -0,035 em; texto de tarefa em 17 px, o corpo padrão do iOS; metadados em 13 px; números do anel e das datas na variante arredondada, sempre tabulares.",
+  "componentes": [
+    "Título grande que recolhe na barra de vidro ao rolar",
+    "Anel de progresso do dia",
+    "Lista agrupada em cartão com linha expansível",
+    "Círculo de concluir com traço animado",
+    "Faixa Esta noite",
+    "Barra de abas flutuante de vidro",
+    "Barra de escrever e botão de nova tarefa",
+    "Folha de entrada rápida com leitura ao vivo",
+    "Fichas do que foi entendido",
+    "Bloco de dia do Em breve",
+    "Cartão de projeto com anel",
+    "Coluna de detalhe da tarefa",
+    "Aviso com desfazer",
+    "Folha de planos"
+  ],
+  "replicar": [
+    "Modelo de dados: Tarefa (título, notas, quando: data ou nulo, parte do dia: dia ou noite, hora opcional, prazo opcional, repetição, concluída em), Subtarefa (texto, feita), Projeto (nome, área) e Área (nome, cor). Hoje, Em breve e Entrada são consultas sobre a data, nunca listas guardadas: tarefa sem data é Entrada, com data até hoje é Hoje.",
+    "A leitura da frase é local, por regras, sem servidor: dia da semana, \"amanhã\", \"dia 20\", \"20/11\", hora (\"18h\", \"9h30\"), prazo (\"até sexta\"), repetição (\"toda semana\") e projeto (\"#casa\"). Mostre sempre o que foi entendido antes de salvar e deixe desfazer cada marca: regra que erra calada custa a confiança.",
+    "Pilha sugerida: SwiftUI com SwiftData no aparelho e sincronização por CloudKit (sem conta própria); lembretes por notificação local; atalho de captura pela Tela Bloqueada e pelo botão de Ação. O Mac e o iPad reaproveitam o mesmo modelo com a navegação em três colunas.",
+    "Regras que pegam: concluir uma tarefa que repete cria a próxima ocorrência e mantém o histórico; atrasada continua em Hoje até ser decidida (fazer, adiar ou apagar); \"Esta noite\" é só uma parte do dia, não outra data; desfazer vale para concluir, mover e apagar.",
+    "Corte do primeiro lançamento: Hoje, Entrada, Em breve, projetos simples, entrada rápida e compra única. Ficam para depois: tarefas compartilhadas, calendário embutido, etiquetas, anexos e widgets."
+  ]
+}
+</script>
+<!-- stand:tema:inicio -->
+<script>
+// Stand · tema. Roda no <head>, antes da primeira pintura: o portal manda o tema no fragmento (#tema=claro|escuro);
+// aberto sozinho, segue o sistema. Nada de storage: dentro da moldura do portal (sandbox sem mesma origem) ele lança.
+(function () {
+  var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+  var escuro = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-tema", m ? m[1] : (escuro ? "escuro" : "claro"));
+  if (m) document.documentElement.setAttribute("data-portal", "");
+})();
+</script>
+<!-- stand:tema:fim -->
+<!-- stand:estilo:inicio -->
+<style>
+/* Stand · estilo. A moldura de cada maquete: barra de estados, palco (tela ampla ou celular), ficha e código.
+   Tudo com prefixo stand- e variáveis --st-*: o app de dentro tem as próprias e não deve sentir o stand. */
+:root{--st-fundo:#f4f3ee;--st-papel:#fff;--st-tinta:#15211a;--st-suave:#5a655e;--st-fio:rgba(21,33,26,.10);--st-fio-forte:rgba(21,33,26,.18);
+  --st-ouro:#8d6d26;--st-ouro-forma:#cfac69;--st-tingido:rgba(21,33,26,.05);--st-tingido-forte:rgba(21,33,26,.09);
+  --st-vidro:rgba(247,246,241,.82);--st-sombra:0 1px 2px rgba(21,33,26,.05),0 18px 48px rgba(21,33,26,.12);
+  --st-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --st-sans:"Avenir Next",Avenir,"Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --st-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+:root[data-tema=escuro]{--st-fundo:#10110f;--st-papel:#191a17;--st-tinta:#f0ebdf;--st-suave:#aaa69d;--st-fio:rgba(240,235,223,.10);--st-fio-forte:rgba(240,235,223,.2);
+  --st-ouro:#ead3a3;--st-ouro-forma:#cfac69;--st-tingido:rgba(240,235,223,.06);--st-tingido-forte:rgba(240,235,223,.11);
+  --st-vidro:rgba(22,23,20,.84);--st-sombra:0 1px 2px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.45)}
+html,body{margin:0}
+body.stand-corpo{background:var(--st-fundo);min-height:100vh}
+.stand-barra,.stand-barra *,.stand-gaveta,.stand-gaveta *,.stand-pilula{box-sizing:border-box}
+.stand-barra{position:sticky;top:0;z-index:2147483000;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:9px 16px;
+  background:var(--st-vidro);border-bottom:1px solid var(--st-fio);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  font:500 13px/1.3 var(--st-sans);color:var(--st-tinta);-webkit-font-smoothing:antialiased}
+.stand-barra button,.stand-gaveta button,.stand-pilula{font:inherit;color:inherit;cursor:pointer;border:0;background:none;margin:0}
+.stand-barra :focus-visible,.stand-gaveta :focus-visible,.stand-pilula:focus-visible{outline:2px solid var(--st-ouro-forma);outline-offset:2px}
+.stand-voltar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-voltar:hover,.stand-acao:hover,.stand-seg button:hover{background:var(--st-tingido-forte)}
+.stand-id{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.stand-olho{font:700 9.5px/1.2 var(--st-sans);letter-spacing:.14em;text-transform:uppercase;color:var(--st-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-nome{font:500 19px/1.15 var(--st-serif);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stand-estados{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--st-tingido);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.stand-estados::-webkit-scrollbar{display:none}
+.stand-estado{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 6px;border-radius:9px;white-space:nowrap;color:var(--st-suave)}
+.stand-estado b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--st-tingido-forte);font:700 11px/1 var(--st-mono);color:var(--st-tinta)}
+.stand-estado[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.06)}
+.stand-estado[aria-pressed=true] b{background:var(--st-ouro-forma);color:#1b160a}
+.stand-acoes{display:flex;align-items:center;gap:6px}
+.stand-seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--st-tingido)}
+.stand-seg button{display:inline-grid;place-items:center;width:32px;height:28px;border-radius:8px;color:var(--st-suave)}
+.stand-seg button[aria-pressed=true]{background:var(--st-papel);color:var(--st-tinta);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.stand-acao{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;background:var(--st-tingido);font-weight:600;white-space:nowrap}
+.stand-acao svg,.stand-seg svg,.stand-voltar svg{flex:none}
+.stand-acao.stand-icone{width:34px;padding:0;justify-content:center}
+html:not([data-tema=escuro]) .stand-tema .stand-sol,html[data-tema=escuro] .stand-tema .stand-lua{display:none}
+.stand-pilula{position:fixed;top:10px;right:10px;z-index:2147483000;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:999px;
+  background:var(--st-vidro);border:1px solid var(--st-fio);box-shadow:var(--st-sombra);font:600 12px/1 var(--st-sans);color:var(--st-tinta);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+body.stand-recolhida .stand-barra{display:none}
+body.stand-recolhida .stand-pilula{display:inline-flex}
+
+/* palco: ampla = o app ocupa a largura; celular = moldura de 390 px, centrada, rolando por dentro */
+.stand-palco{position:relative}
+.stand-palco[data-tela=ampla]>#app{min-height:calc(100vh - var(--stand-barra, 54px))}
+.stand-palco[data-tela=celular]{display:flex;justify-content:center;align-items:flex-start;padding:28px 16px 48px;min-height:calc(100vh - var(--stand-barra, 54px));
+  background-image:radial-gradient(circle,var(--st-fio-forte) .8px,transparent 1px);background-size:18px 18px}
+.stand-palco[data-tela=celular]>#app{width:390px;max-width:100%;height:min(844px,calc(100vh - 110px));min-height:560px;overflow:auto;overscroll-behavior:contain;
+  border-radius:38px;box-shadow:0 0 0 10px #0d0e0c,0 0 0 11px rgba(255,255,255,.08),0 30px 80px rgba(0,0,0,.35);transform:translateZ(0)}
+
+/* gavetas: ficha e código */
+.stand-gaveta{position:fixed;inset:0 0 0 auto;margin:0;width:min(560px,100vw);max-width:100vw;height:100%;max-height:100%;padding:0;border:0;
+  background:var(--st-papel);color:var(--st-tinta);box-shadow:var(--st-sombra);font:400 14px/1.6 var(--st-sans);overflow:hidden}
+.stand-gaveta::backdrop{background:rgba(10,12,10,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.stand-gaveta[open]{display:flex;flex-direction:column}
+.stand-g-topo{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 16px;border-bottom:1px solid var(--st-fio)}
+.stand-g-topo h2{margin:2px 0 0;font:500 26px/1.1 var(--st-serif);letter-spacing:-.015em}
+.stand-g-topo .stand-acao{margin-left:auto}
+.stand-g-corpo{flex:1;overflow:auto;padding:20px 24px 32px}
+.stand-g-corpo h3{margin:26px 0 10px;font:700 10px/1.2 var(--st-sans);letter-spacing:.16em;text-transform:uppercase;color:var(--st-suave)}
+.stand-g-corpo h3:first-child{margin-top:0}
+.stand-g-corpo p{margin:0 0 10px}
+.stand-resumo{font:400 18px/1.45 var(--st-serif);margin:0 0 6px}
+.stand-chips{display:flex;flex-wrap:wrap;gap:6px}
+.stand-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--st-tingido);font-size:12.5px;font-weight:600}
+.stand-chip small{font-weight:500;color:var(--st-suave)}
+.stand-lista-estados{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.stand-lista-estados li{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:12px;border-radius:12px;background:var(--st-tingido)}
+.stand-lista-estados b{grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--st-ouro-forma);color:#1b160a;font:700 12px/1 var(--st-mono)}
+.stand-lista-estados strong{font-weight:650}
+.stand-lista-estados span{color:var(--st-suave);font-size:13.5px}
+.stand-paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.stand-cor{border-radius:12px;overflow:hidden;border:1px solid var(--st-fio);background:var(--st-papel)}
+.stand-cor i{display:block;height:46px}
+.stand-cor span{display:block;padding:7px 9px 8px;font-size:12px;line-height:1.3}
+.stand-cor code{font:500 11px/1 var(--st-mono);color:var(--st-suave)}
+.stand-passos{margin:0;padding-left:20px}
+.stand-passos li{margin:0 0 6px}
+.stand-nota{font-size:12.5px;color:var(--st-suave)}
+.stand-codigo-barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.stand-codigo-barra .stand-nota{margin:0 0 0 auto}
+.stand-codigo{display:block;width:100%;height:calc(100vh - 230px);min-height:280px;resize:none;margin:0;padding:14px 16px;border-radius:12px;border:1px solid var(--st-fio-forte);
+  background:var(--st-fundo);color:var(--st-tinta);font:400 12px/1.55 var(--st-mono);tab-size:2;white-space:pre;overflow:auto}
+.stand-primario{background:var(--st-ouro-forma)!important;color:#1b160a!important}
+
+@media (max-width:760px){
+  .stand-barra{padding:8px 12px;gap:8px 10px}
+  .stand-id{flex:1 1 0}
+  .stand-acoes{gap:4px}
+  .stand-estados{order:5;width:100%}
+  .stand-estado{flex:1 0 auto;justify-content:center}
+  .stand-seg{display:none}
+  .stand-barra .stand-acao .stand-rotulo{display:none}
+  .stand-barra .stand-acao{width:34px;padding:0;justify-content:center}
+  .stand-voltar .stand-rotulo{display:none}
+  .stand-voltar{width:34px;padding:0;justify-content:center}
+  .stand-nome{font-size:17px}
+  .stand-g-topo{padding:18px 18px 14px}
+  .stand-g-corpo{padding:16px 18px 28px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .stand-estado,.stand-seg button{transition:background-color .18s ease,color .18s ease,box-shadow .18s ease}
+}
+</style>
+<!-- stand:estilo:fim -->
+<style id="app-estilo">
+/* ===== Feito · tokens =====
+   Claro por padrão; escuro em :root[data-tema=escuro]. Tudo do app mora dentro de #app. */
+:root{
+  --f-fonte:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,"Segoe UI",Roboto,sans-serif;
+  --f-redonda:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --f-fundo:#f3f5f9;--f-papel:#ffffff;--f-papel2:#f6f7fb;--f-tinta:#0f1628;--f-suave:#566178;--f-leve:#606878;
+  --f-fio:rgba(15,22,40,.08);--f-fio2:rgba(15,22,40,.16);
+  --f-acento:#2456e6;--f-acento2:#1b45c2;--f-acento-bg:#e8eeff;--f-sobre-acento:#ffffff;
+  --f-noite1:#1a2152;--f-noite2:#2c3182;--f-sobre-noite:#f1f2ff;--f-sobre-noite2:rgba(241,242,255,.74);
+  --f-prazo:#a85f05;--f-prazo-bg:#fdf0d9;--f-atraso:#c9302f;--f-atraso-bg:#fde8e6;--f-ok:#16865b;
+  --f-vidro:rgba(255,255,255,.92);--f-vidro-fio:rgba(255,255,255,.95);--f-veu:rgba(10,14,28,.36);
+  --f-sombra:0 1px 1px rgba(15,22,40,.04),0 10px 28px -14px rgba(15,22,40,.22);
+  --f-sombra2:0 2px 6px rgba(15,22,40,.08),0 26px 64px -20px rgba(15,22,40,.4);
+  --f-c-casa:#d9682f;--f-c-trabalho:#6253dd;--f-c-pessoal:#12897c;
+  --f-mola:cubic-bezier(.2,.8,.2,1);--f-sai:cubic-bezier(.4,0,1,1);
+  color-scheme:light;
+}
+:root[data-tema=escuro]{
+  --f-fundo:#090d17;--f-papel:#121929;--f-papel2:#172034;--f-tinta:#e9edf8;--f-suave:#9aa6bf;--f-leve:#7f8aa0;
+  --f-fio:rgba(233,237,248,.08);--f-fio2:rgba(233,237,248,.17);
+  --f-acento:#7d9fff;--f-acento2:#9bb6ff;--f-acento-bg:rgba(125,159,255,.16);--f-sobre-acento:#08112e;
+  --f-noite1:#10163f;--f-noite2:#1e2569;--f-sobre-noite:#f1f2ff;--f-sobre-noite2:rgba(241,242,255,.72);
+  --f-prazo:#f0b95a;--f-prazo-bg:rgba(240,185,90,.14);--f-atraso:#ff8d86;--f-atraso-bg:rgba(255,141,134,.14);--f-ok:#52d6a0;
+  --f-vidro:rgba(22,30,50,.92);--f-vidro-fio:rgba(255,255,255,.12);--f-veu:rgba(2,4,10,.6);
+  --f-sombra:0 1px 1px rgba(0,0,0,.3),0 12px 30px -14px rgba(0,0,0,.7);
+  --f-sombra2:0 2px 6px rgba(0,0,0,.4),0 26px 64px -20px rgba(0,0,0,.85);
+  --f-c-casa:#ff9a63;--f-c-trabalho:#a397ff;--f-c-pessoal:#4fd1c2;
+  color-scheme:dark;
+}
+html,body{margin:0}
+body{background:var(--f-fundo)}
+
+/* ===== base: a casca tem a altura da tela e quem rola são as listas, como num app ===== */
+#app{container:app / inline-size;position:relative;height:100vh;height:calc(100dvh - var(--stand-barra,0px));overflow:hidden;
+  background:var(--f-fundo);color:var(--f-tinta);font:400 17px/1.35 var(--f-fonte);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#app *,#app *::before,#app *::after{box-sizing:border-box}
+#app h1,#app h2,#app h3,#app p,#app ul,#app ol{margin:0;padding:0}
+#app ul,#app ol{list-style:none}
+#app button,#app input{font:inherit;color:inherit;letter-spacing:inherit}
+#app button{cursor:pointer;border:0;background:none;padding:0;margin:0;text-align:inherit;-webkit-tap-highlight-color:transparent}
+#app svg{display:block;flex:none}
+#app :focus-visible{outline:2.5px solid var(--f-acento);outline-offset:2px}
+#app .f-num{font-family:var(--f-redonda);font-variant-numeric:tabular-nums}
+#app .f-so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .f-ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app .f-casca{position:relative;height:100%;overflow:hidden;overflow:clip;display:grid;grid-template-columns:minmax(0,1fr)}
+
+/* ===== coluna lateral (só em tela ampla) ===== */
+#app .f-lateral{display:none;flex-direction:column;gap:18px;min-height:0;padding:18px 12px 14px;background:var(--f-papel2);border-right:1px solid var(--f-fio);overflow-y:auto}
+#app .f-marca{display:flex;align-items:center;gap:10px;padding:4px 10px 6px;font-size:21px;font-weight:800;letter-spacing:-.035em}
+#app .f-marca i{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:var(--f-acento);color:var(--f-sobre-acento)}
+#app .f-marca .f-ic{width:18px;height:18px;stroke-width:2.6}
+#app .f-nav{display:grid;gap:2px}
+#app .f-nav button{position:relative;display:flex;align-items:center;gap:11px;width:100%;min-height:38px;padding:0 10px;border-radius:10px;font-size:15px;font-weight:600;color:var(--f-tinta);transition:background-color .12s}
+#app .f-nav button::after,#app .f-areas button::after{content:"";position:absolute;inset:-3px 0}
+#app .f-nav button .f-ic{width:19px;height:19px;color:var(--f-acento)}
+#app .f-nav button small{margin-left:auto;font:600 13px/1 var(--f-redonda);color:var(--f-suave)}
+#app .f-nav button[aria-current=page]{background:var(--f-acento-bg);color:var(--f-acento)}
+#app .f-nav button[aria-current=page] small{color:var(--f-acento)}
+#app .f-rot{padding:0 10px 4px;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--f-leve)}
+#app .f-areas{display:grid;gap:12px}
+#app .f-areas li>span{display:flex;align-items:center;gap:8px;padding:0 10px 2px;font-size:13px;font-weight:700;color:var(--f-suave)}
+#app .f-ponto{width:9px;height:9px;border-radius:50%;background:var(--cor,var(--f-leve));flex:none}
+#app .f-areas button{position:relative;display:block;width:100%;min-height:38px;padding:6px 10px 6px 27px;border-radius:9px;font-size:14.5px;line-height:1.25;color:var(--f-tinta)}
+#app .f-plano-atalho{margin-top:auto;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;background:var(--f-papel);box-shadow:var(--f-sombra);font-size:13.5px;line-height:1.3;color:var(--f-suave)}
+#app .f-plano-atalho b{display:block;font-size:14.5px;color:var(--f-tinta)}
+#app .f-plano-atalho .f-ic{color:var(--f-acento)}
+
+/* ===== coluna principal ===== */
+#app .f-principal{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column}
+#app .f-barra{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:6px;height:50px;padding:0 10px 0 14px;
+  border-bottom:1px solid transparent;transition:background-color .2s,border-color .2s}
+#app .f-barra h2{flex:1;min-width:0;font-size:17px;font-weight:700;letter-spacing:-.02em;text-align:center;opacity:0;transform:translateY(6px);transition:opacity .18s,transform .18s var(--f-mola);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:72px}
+#app .f-teste{position:relative;flex:none;min-height:32px;padding:0 12px;border-radius:999px;background:var(--f-acento-bg);color:var(--f-acento);font-size:13px;font-weight:650;white-space:nowrap}
+#app .f-teste::after{content:"";position:absolute;inset:-6px -4px}
+#app .f-barra[data-busca] .f-teste{display:none}
+#app .f-principal[data-rolado] .f-barra{background:var(--f-vidro);border-bottom-color:var(--f-fio);backdrop-filter:blur(22px) saturate(1.7);-webkit-backdrop-filter:blur(22px) saturate(1.7)}
+#app .f-principal[data-rolado] .f-barra h2{opacity:1;transform:none}
+#app .f-redondo{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:var(--f-acento);transition:background-color .12s,transform .12s}
+#app .f-redondo:active{transform:scale(.92)}
+#app .f-barra .f-nova-larga{display:none}
+#app .f-busca{position:relative;display:none;flex:1;min-width:0}
+#app .f-busca .f-ic{position:absolute;left:11px;top:50%;margin-top:-9px;width:18px;height:18px;color:var(--f-leve);pointer-events:none}
+#app .f-busca input{width:100%;height:38px;padding:0 12px 0 36px;border:0;border-radius:12px;background:var(--f-fio);color:var(--f-tinta);font-size:16px}
+#app .f-busca input::placeholder{color:var(--f-suave)}
+#app .f-busca input:focus{outline:2px solid var(--f-acento);outline-offset:0}
+#app .f-barra[data-busca] .f-busca{display:block}
+#app .f-barra[data-busca] h2{display:none}
+#app .f-rolo{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:58px 16px 128px}
+#app .f-vista{display:none;max-width:760px;margin:0 auto}
+#app[data-vista=hoje] .f-vista[data-vista=hoje],#app[data-vista=entrada] .f-vista[data-vista=entrada],#app[data-vista=breve] .f-vista[data-vista=breve],
+#app[data-vista=projetos] .f-vista[data-vista=projetos],#app[data-vista=busca] .f-vista[data-vista=busca]{display:block;animation:f-entra .26s var(--f-mola)}
+@keyframes f-entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* título grande */
+#app .f-titulo{display:flex;align-items:flex-end;gap:14px;padding:6px 4px 18px}
+#app .f-titulo-texto{flex:1;min-width:0}
+#app .f-titulo h1{font-size:34px;font-weight:800;letter-spacing:-.035em;line-height:1.08}
+#app .f-titulo p{margin-top:3px;font-size:15px;color:var(--f-suave)}
+#app .f-anel{position:relative;width:54px;height:54px;flex:none}
+#app .f-anel>svg{width:54px;height:54px;transform:rotate(-90deg)}
+#app .f-anel b .f-ic{width:24px;height:24px;stroke-width:2.6}
+#app .f-anel circle{fill:none;stroke-width:5}
+#app .f-anel .f-trilho{stroke:var(--f-fio2)}
+#app .f-anel .f-volta{stroke:var(--f-acento);stroke-linecap:round;transition:stroke-dashoffset .5s var(--f-mola)}
+#app .f-anel b{position:absolute;inset:0;display:grid;place-items:center;font:700 17px/1 var(--f-redonda);font-variant-numeric:tabular-nums}
+#app .f-anel[data-cheio] b{color:var(--f-acento)}
+
+/* cartões de lista */
+#app .f-secao{margin-bottom:22px}
+#app .f-secao>h3{display:flex;align-items:center;gap:8px;padding:0 6px 8px;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--f-suave)}
+#app .f-secao>h3 small{margin-left:auto;font:600 13px/1 var(--f-redonda);color:var(--f-leve)}
+#app .f-cartao{background:var(--f-papel);border-radius:22px;box-shadow:var(--f-sombra);overflow:hidden}
+#app .f-cartao :focus-visible{outline-offset:-3px}
+#app .f-item{scroll-margin:64px 0 132px}
+#app .f-item+.f-item{border-top:1px solid var(--f-fio)}
+#app .f-linha{display:flex;align-items:flex-start}
+#app .f-check{display:grid;place-items:center;width:52px;height:56px;flex:none;border-radius:16px}
+#app .f-check svg{width:26px;height:26px;overflow:visible}
+#app .f-check circle,#app .f-check path{fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#app .f-check .f-aro{stroke:var(--f-leve)}
+#app .f-check .f-fundo{fill:var(--f-acento);stroke:none;opacity:0;transform:scale(.6);transform-origin:12px 12px;transition:opacity .2s,transform .32s var(--f-mola)}
+#app .f-check .f-volta{stroke:var(--f-acento);stroke-dasharray:58.2;stroke-dashoffset:58.2;transform:rotate(-90deg);transform-origin:12px 12px;transition:stroke-dashoffset .38s var(--f-mola)}
+#app .f-check .f-v{stroke:var(--f-sobre-acento);stroke-width:2.3;stroke-dasharray:14;stroke-dashoffset:14;transition:stroke-dashoffset .22s var(--f-mola) .16s}
+#app .f-item[data-feita] .f-check .f-volta,#app .f-item[data-saindo] .f-check .f-volta{stroke-dashoffset:0}
+#app .f-item[data-feita] .f-check .f-fundo,#app .f-item[data-saindo] .f-check .f-fundo{opacity:1;transform:none}
+#app .f-item[data-feita] .f-check .f-v,#app .f-item[data-saindo] .f-check .f-v{stroke-dashoffset:0}
+#app .f-check:active svg{transform:scale(.9)}
+#app .f-corpo{flex:1;min-width:0;display:block;min-height:56px;padding:15px 16px 14px 0}
+#app .f-nome{display:block;font-size:17px;line-height:1.3;letter-spacing:-.012em;transition:color .25s,opacity .25s}
+#app .f-item[data-feita] .f-nome,#app .f-item[data-saindo] .f-nome{color:var(--f-leve);text-decoration:line-through;text-decoration-thickness:1.5px}
+#app .f-meta{display:flex;flex-wrap:wrap;align-items:center;gap:3px 10px;margin-top:5px;font-size:13px;line-height:1.3;color:var(--f-suave)}
+#app .f-meta:empty{display:none}
+#app .f-meta span{display:inline-flex;align-items:center;gap:5px}
+#app .f-meta .f-ic{width:14px;height:14px;stroke-width:2}
+#app .f-meta .f-prazo{color:var(--f-prazo);font-weight:600}
+#app .f-meta .f-atraso{color:var(--f-atraso);font-weight:600}
+#app .f-item[data-nova]{animation:f-nova 1.6s ease-out}
+@keyframes f-nova{0%,35%{background:var(--f-acento-bg)}100%{background:transparent}}
+#app .f-noite .f-item[data-nova]{animation-name:f-nova-noite}
+@keyframes f-nova-noite{0%,35%{background:rgba(255,255,255,.16)}100%{background:transparent}}
+
+/* detalhe da tarefa: dentro da linha (celular) ou na terceira coluna (tela ampla) */
+#app .f-detalhe{padding:2px 16px 16px 52px;animation:f-entra .24s var(--f-mola)}
+#app .f-notas{font-size:15px;line-height:1.45;color:var(--f-suave);margin-bottom:12px}
+#app .f-sub{display:grid;gap:2px;margin:0 0 12px -10px}
+#app .f-sub button{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:4px 10px;border-radius:10px;font-size:15.5px;line-height:1.3}
+#app .f-sub i{display:grid;place-items:center;width:20px;height:20px;border-radius:7px;border:1.8px solid var(--f-leve);flex:none;transition:background-color .15s,border-color .15s}
+#app .f-sub i .f-ic{width:13px;height:13px;stroke-width:3;color:var(--f-sobre-acento);opacity:0}
+#app .f-sub button[aria-pressed=true]{color:var(--f-leve);text-decoration:line-through}
+#app .f-sub button[aria-pressed=true] i{background:var(--f-acento);border-color:var(--f-acento)}
+#app .f-sub button[aria-pressed=true] i .f-ic{opacity:1}
+#app .f-campo{display:block;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--f-leve);margin:0 0 7px}
+#app .f-quando{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+#app .f-pilula{position:relative;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 13px;border-radius:999px;background:var(--f-fio);font-size:14.5px;font-weight:600;white-space:nowrap;transition:background-color .12s,color .12s,transform .12s}
+#app .f-pilula::after{content:"";position:absolute;inset:-4px 0}
+#app .f-pilula .f-ic{width:16px;height:16px;stroke-width:2}
+#app .f-pilula:active{transform:scale(.96)}
+#app .f-pilula[aria-pressed=true]{background:var(--f-acento);color:var(--f-sobre-acento)}
+#app .f-acoes{display:flex;align-items:center;gap:8px}
+#app .f-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:14px;font-size:16px;font-weight:650;white-space:nowrap;transition:transform .12s,background-color .15s,opacity .15s}
+#app .f-btn:active{transform:scale(.97)}
+#app .f-btn-pri{background:var(--f-acento);color:var(--f-sobre-acento)}
+#app .f-btn-sec{background:var(--f-fio)}
+#app .f-btn-per{color:var(--f-atraso);padding:0 12px;margin-left:auto}
+#app .f-btn-largo{width:100%;min-height:52px;border-radius:16px;font-size:17px}
+
+/* faixa Esta noite */
+#app .f-noite .f-cartao{background:linear-gradient(150deg,var(--f-noite1),var(--f-noite2));color:var(--f-sobre-noite);box-shadow:var(--f-sombra2);position:relative}
+#app .f-noite .f-cartao::before{content:"";position:absolute;right:-30px;top:-46px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.2),rgba(255,255,255,0) 68%);pointer-events:none}
+#app .f-noite .f-item+.f-item{border-top-color:rgba(255,255,255,.12)}
+#app .f-noite .f-check .f-aro{stroke:rgba(241,242,255,.6)}
+#app .f-noite .f-meta,#app .f-noite .f-notas{color:var(--f-sobre-noite2)}
+#app .f-noite .f-pilula,#app .f-noite .f-btn-sec{background:rgba(255,255,255,.14)}
+#app .f-noite .f-pilula[aria-pressed=true]{background:var(--f-sobre-noite);color:var(--f-noite1)}
+#app .f-noite .f-campo{color:var(--f-sobre-noite2)}
+#app .f-noite :focus-visible{outline-color:#fff}
+#app .f-noite>h3 .f-ic{width:16px;height:16px;stroke-width:2;color:var(--f-acento)}
+
+/* atalho da Entrada e estados vazios */
+#app .f-escreva{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;margin-bottom:22px;padding:0 16px;border-radius:18px;background:var(--f-papel);box-shadow:var(--f-sombra);font-size:16px;color:var(--f-suave);transition:transform .12s}
+#app .f-escreva:active{transform:scale(.985)}
+#app .f-escreva .f-ic{color:var(--f-acento);stroke-width:2.4}
+#app .f-escreva span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .f-limpo{display:grid;justify-items:center;gap:6px;padding:34px 20px 30px;text-align:center}
+#app .f-limpo svg{width:64px;height:64px;margin-bottom:6px}
+#app .f-limpo strong{font-size:20px;font-weight:750;letter-spacing:-.02em}
+#app .f-limpo span{font-size:15px;color:var(--f-suave);max-width:30ch}
+
+/* Em breve: um bloco por dia */
+#app .f-dia{display:grid;grid-template-columns:60px minmax(0,1fr);gap:0 10px;margin-bottom:14px}
+#app .f-dia-data{padding-top:13px;text-align:center}
+#app .f-dia-data small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--f-suave)}
+#app .f-dia-data b{display:block;font:700 25px/1.15 var(--f-redonda);letter-spacing:-.02em}
+#app .f-dia[data-amanha] .f-dia-data b,#app .f-dia[data-amanha] .f-dia-data small{color:var(--f-acento)}
+#app .f-dia .f-livre{display:flex;align-items:center;min-height:52px;padding:0 16px;border-radius:18px;border:1.5px dashed var(--f-fio2);font-size:15px;color:var(--f-suave)}
+
+/* projetos */
+#app .f-area{margin-bottom:22px}
+#app .f-area>h3{display:flex;align-items:center;gap:8px;padding:0 6px 8px;font-size:13px;font-weight:700;color:var(--f-suave)}
+#app .f-proj{display:flex;align-items:center;gap:14px;width:100%;min-height:72px;padding:12px 16px}
+#app .f-proj-anel{position:relative;width:42px;height:42px;flex:none}
+#app .f-proj-anel svg{width:42px;height:42px;transform:rotate(-90deg)}
+#app .f-proj-anel circle{fill:none;stroke-width:4.5}
+#app .f-proj-anel .f-trilho{stroke:var(--f-fio2)}
+#app .f-proj-anel .f-volta{stroke:var(--cor);stroke-linecap:round}
+#app .f-proj-texto{flex:1;min-width:0}
+#app .f-proj strong{display:block;font-size:17px;font-weight:650;letter-spacing:-.015em}
+#app .f-proj small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;margin-top:2px;font-size:13.5px;line-height:1.3;color:var(--f-suave);overflow:hidden}
+#app .f-proj em{font:600 14px/1 var(--f-redonda);font-style:normal;color:var(--f-suave);font-variant-numeric:tabular-nums}
+#app .f-proj .f-seta{width:16px;height:16px;color:var(--f-leve);stroke-width:2.2;transition:transform .2s var(--f-mola)}
+#app .f-proj[aria-expanded=true] .f-seta{transform:rotate(90deg)}
+#app .f-proj-lista{border-top:1px solid var(--f-fio);background:var(--f-papel2)}
+
+/* terceira coluna */
+#app .f-inspetor{display:none;min-height:0;overflow-y:auto;padding:22px 20px;background:var(--f-papel);border-left:1px solid var(--f-fio)}
+#app .f-inspetor h2{font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:4px 0 6px}
+#app .f-inspetor .f-meta{margin:0 0 18px;font-size:14px}
+#app .f-inspetor .f-detalhe{padding:0;animation:none}
+#app .f-resumo{display:grid;justify-items:center;gap:4px;padding:18px 0 22px;text-align:center}
+#app .f-resumo .f-anel{width:112px;height:112px;margin-bottom:8px}
+#app .f-resumo .f-anel>svg{width:112px;height:112px}
+#app .f-resumo .f-anel b .f-ic{width:46px;height:46px;stroke-width:2.4}
+#app .f-resumo .f-anel circle{stroke-width:9}
+#app .f-resumo .f-anel b{font-size:34px}
+#app .f-resumo strong{font-size:19px;font-weight:750;letter-spacing:-.02em}
+#app .f-resumo span{font-size:14.5px;color:var(--f-suave)}
+#app .f-prox{display:grid;gap:8px}
+#app .f-prox li{display:flex;gap:10px;padding:11px 13px;border-radius:14px;background:var(--f-papel2);font-size:14.5px;line-height:1.3}
+#app .f-prox li b{flex:none;font:700 13px/1.5 var(--f-redonda);color:var(--f-prazo)}
+
+/* doca: abas de vidro e o botão de nova tarefa */
+#app .f-doca{position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:center;align-items:center;gap:10px;padding:10px 14px calc(14px + env(safe-area-inset-bottom));pointer-events:none}
+#app .f-doca>*{pointer-events:auto}
+#app .f-abas{display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--f-vidro);border:1px solid var(--f-vidro-fio);box-shadow:var(--f-sombra2);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8)}
+#app .f-abas button{position:relative;display:grid;justify-items:center;gap:2px;min-width:66px;min-height:48px;padding:6px 8px 5px;border-radius:999px;font-size:11px;font-weight:650;color:var(--f-suave);transition:color .15s,background-color .2s,transform .12s}
+#app .f-abas button:active{transform:scale(.95)}
+#app .f-bolha{position:absolute;top:2px;left:50%;margin-left:7px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--f-acento);color:var(--f-sobre-acento);font-size:10.5px;font-weight:700;line-height:16px;text-align:center}
+#app .f-abas button[aria-current=page]{background:var(--f-acento-bg);color:var(--f-acento)}
+#app .f-mais{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:var(--f-acento);color:var(--f-sobre-acento);
+  box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 14px 30px -10px var(--f-acento),var(--f-sombra2);transition:transform .14s var(--f-mola)}
+#app .f-mais .f-ic{width:26px;height:26px;stroke-width:2.4}
+#app .f-mais:active{transform:scale(.92)}
+
+/* véu, folhas e aviso */
+#app .f-veu{position:absolute;inset:0;z-index:20;background:var(--f-veu);opacity:0;pointer-events:none;transition:opacity .22s}
+#app[data-folha] .f-veu{opacity:1;pointer-events:auto}
+#app .f-folha-pe{position:sticky;bottom:calc(-1*var(--f-pe));z-index:1;margin:-12px 0 calc(-1*var(--f-pe));padding:12px 0 var(--f-pe);background:linear-gradient(to bottom,transparent,var(--f-papel) 12px)}
+#app .f-folha-pe>button{display:flex}
+#app .f-folha-pe~*{position:relative;z-index:2}
+#app .f-folha{--f-pe:calc(18px + env(safe-area-inset-bottom));position:absolute;left:0;right:0;bottom:0;z-index:21;max-height:92%;overflow-y:auto;overscroll-behavior:contain;padding:8px 18px calc(18px + env(safe-area-inset-bottom));
+  background:var(--f-papel);border-radius:28px 28px 0 0;box-shadow:var(--f-sombra2);transform:translateY(105%);visibility:hidden;transition:transform .22s var(--f-sai),visibility 0s .22s}
+#app[data-folha=entrada] .f-folha[data-folha=entrada],#app[data-folha=planos] .f-folha[data-folha=planos]{transform:none;visibility:visible;transition:transform .34s var(--f-mola),visibility 0s}
+#app .f-puxador{width:38px;height:5px;margin:0 auto 12px;border-radius:99px;background:var(--f-fio2)}
+#app .f-folha-topo{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+#app .f-folha-topo h2{flex:1;font-size:20px;font-weight:750;letter-spacing:-.025em}
+#app .f-fechar{position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--f-fio);color:var(--f-suave)}
+#app .f-fechar::after{content:"";position:absolute;inset:-5px}
+#app .f-fechar .f-ic{width:16px;height:16px;stroke-width:2.6}
+#app .f-escrever{display:block;width:100%;min-height:52px;padding:0 16px;border:0;border-radius:16px;background:var(--f-fio);color:var(--f-tinta);font-size:17px}
+#app .f-escrever::placeholder{color:var(--f-suave)}
+#app .f-escrever:focus{outline:2.5px solid var(--f-acento);outline-offset:0}
+#app .f-lido{min-height:26px;margin:12px 2px 0;font-size:16px;line-height:1.6;color:var(--f-suave);word-break:break-word}
+#app .f-lido mark{padding:2px 6px;margin:0 1px;border-radius:7px;background:var(--f-acento-bg);color:var(--f-acento);font-weight:600}
+#app .f-lido mark[data-tipo=prazo]{background:var(--f-prazo-bg);color:var(--f-prazo)}
+#app .f-fichas{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px;min-height:36px}
+#app .f-ficha{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 12px 0 10px;border-radius:11px;background:var(--f-acento-bg);color:var(--f-acento);font-size:14px;font-weight:650;animation:f-ficha .28s var(--f-mola)}
+#app .f-ficha .f-ic{width:16px;height:16px;stroke-width:2}
+#app .f-ficha[data-tipo=prazo]{background:var(--f-prazo-bg);color:var(--f-prazo)}
+#app .f-ficha[data-tipo=vazio]{background:var(--f-fio);color:var(--f-suave);font-weight:500}
+@keyframes f-ficha{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+#app .f-sugestoes{display:flex;gap:6px;margin:10px -18px 12px;padding:4px 18px;overflow-x:auto;scrollbar-width:none}
+#app .f-sugestoes::-webkit-scrollbar{display:none}
+#app .f-sugestoes button{position:relative;flex:none;min-height:36px;padding:0 13px;border-radius:999px;border:1.5px solid var(--f-fio2);font-size:14.5px;color:var(--f-suave);white-space:nowrap}
+#app .f-sugestoes button::after{content:"";position:absolute;inset:-4px 0}
+#app .f-sugestoes button:active{background:var(--f-fio)}
+#app .f-opcoes{display:grid;gap:8px;margin:2px 0 4px}
+#app .f-opcao{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:10px 14px;border-radius:16px;box-shadow:inset 0 0 0 1.5px var(--f-fio2);transition:box-shadow .15s,background-color .15s}
+#app .f-opcao span{flex:1;min-width:0}
+#app .f-opcao b{display:block;font-size:16px;font-weight:650}
+#app .f-opcao small{display:block;font-size:13.5px;color:var(--f-suave)}
+#app .f-opcao strong{font-size:17px;font-weight:700;white-space:nowrap}
+#app .f-opcao[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--f-acento);background:var(--f-acento-bg)}
+#app .f-vantagens{display:grid;gap:12px;margin:16px 0 18px}
+#app .f-vantagens li{display:flex;gap:12px;font-size:15.5px;line-height:1.35}
+#app .f-vantagens li .f-ic{color:var(--f-acento);margin-top:1px}
+#app .f-vantagens li small{display:block;font-size:13.5px;color:var(--f-suave)}
+#app .f-miudo{margin-top:12px;font-size:12.5px;line-height:1.4;color:var(--f-leve);text-align:center}
+#app .f-aviso{position:absolute;left:50%;bottom:96px;z-index:30;display:flex;align-items:center;gap:14px;max-width:calc(100% - 28px);min-height:48px;padding:0 8px 0 18px;border-radius:999px;
+  background:var(--f-tinta);color:var(--f-fundo);font-size:15px;font-weight:550;box-shadow:var(--f-sombra2);white-space:nowrap;opacity:0;transform:translate(-50%,14px);pointer-events:none;transition:opacity .2s,transform .2s var(--f-sai)}
+#app .f-aviso[data-visivel]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition:opacity .2s,transform .32s var(--f-mola)}
+#app .f-aviso span{overflow:hidden;text-overflow:ellipsis;padding:0 10px 0 0}
+#app .f-aviso button{position:relative;min-height:36px;padding:0 14px;border-radius:999px;background:color-mix(in srgb,var(--f-fundo) 16%,transparent);font-weight:700}
+#app .f-aviso button::after{content:"";position:absolute;inset:-4px 0}
+#app .f-aviso button[hidden]{display:none}
+
+@media (hover:hover) and (pointer:fine){
+  #app .f-nav button:hover,#app .f-areas button:hover,#app .f-redondo:hover,#app .f-sub button:hover{background:var(--f-fio)}
+  #app .f-pilula:hover{background:var(--f-fio2)}
+  #app .f-pilula[aria-pressed=true]:hover{background:var(--f-acento2)}
+  #app .f-btn-pri:hover,#app .f-mais:hover{background:var(--f-acento2)}
+  #app .f-linha:hover .f-check .f-aro{stroke:var(--f-acento)}
+  #app .f-noite .f-linha:hover .f-check .f-aro{stroke:#fff}
+  #app .f-abas button:hover{color:var(--f-tinta)}
+}
+
+/* ===== tela média e ampla: duas e três colunas, como no iPad e no Mac ===== */
+@container app (min-width:720px){
+  #app .f-casca{grid-template-columns:248px minmax(0,1fr)}
+  #app .f-lateral{display:flex}
+  #app .f-doca{display:none}
+  #app .f-barra{position:relative;height:64px;padding:0 24px;gap:10px;background:none!important;border-bottom-color:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  #app .f-barra h2,#app .f-barra [data-acao=buscar],#app .f-teste{display:none}
+  #app .f-busca{display:block;max-width:340px}
+  #app .f-barra .f-nova-larga{display:inline-flex;margin-left:auto;min-height:38px;padding:0 15px 0 12px;border-radius:12px;font-size:15px}
+  #app .f-barra .f-nova-larga .f-ic{width:18px;height:18px;stroke-width:2.4}
+  #app .f-rolo{padding:6px 28px 48px}
+  #app .f-titulo h1{font-size:38px}
+  #app .f-folha{--f-pe:20px;left:50%;right:auto;bottom:auto;top:13%;width:min(600px,calc(100% - 48px));max-height:74%;padding:22px 22px 20px;border-radius:26px;transform:translate(-50%,-10px) scale(.98);opacity:0;
+    transition:transform .2s var(--f-sai),opacity .2s,visibility 0s .2s}
+  #app[data-folha=entrada] .f-folha[data-folha=entrada],#app[data-folha=planos] .f-folha[data-folha=planos]{transform:translate(-50%,0);opacity:1;transition:transform .3s var(--f-mola),opacity .2s,visibility 0s}
+  #app .f-puxador{display:none}
+  #app .f-sugestoes{margin:14px 0 16px;padding:0;flex-wrap:wrap;overflow:visible}
+  #app .f-aviso{bottom:26px}
+}
+@container app (min-width:1120px){
+  #app .f-casca{grid-template-columns:256px minmax(0,1fr) 352px}
+  #app .f-inspetor{display:block}
+  #app .f-vista .f-item>.f-detalhe{display:none}
+  #app .f-item[data-escolhida]{background:var(--f-acento-bg)}
+  #app .f-noite .f-item[data-escolhida]{background:rgba(255,255,255,.13)}
+}
+@container app (max-width:359px){
+  #app .f-abas button{min-width:50px;padding:6px 3px 5px;font-size:10.5px}
+  #app .f-mais{width:52px;height:52px}
+  #app .f-rolo{padding-left:12px;padding-right:12px}
+}
+/* acabamento da revisão: a alça da folha arrasta com o dedo; clicar dentro da folha mantém o foco nela (o Esc continua valendo);
+   e o botão do aviso fechado não fica no caminho do Tab */
+#app .f-puxador,#app .f-folha-topo{touch-action:none}
+#app [role=dialog]{outline:0}
+#app .f-aviso:not([data-visivel]) button{visibility:hidden;transition:visibility 0s .2s}
+@media (prefers-reduced-motion:reduce){
+  #app *,#app *::before,#app *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+}
+</style>
+</head>
+<body>
+<main id="app" data-estado="1" data-vista="hoje">
+  <svg class="f-so-leitor" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="f-i-hoje" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="4"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="f-i-breve" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="4"/><path d="M3.5 10h17M8 3v4M16 3v4M10.5 13.5l2.5 2-2.5 2M14.5 13.5l2.5 2-2.5 2"/></symbol>
+      <symbol id="f-i-projetos" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v8.5l6 6"/></symbol>
+      <symbol id="f-i-entrada" viewBox="0 0 24 24"><path d="M3.5 13l2.6-7.2A1.8 1.8 0 0 1 7.8 4.6h8.4a1.8 1.8 0 0 1 1.7 1.2L20.5 13v4.6a1.9 1.9 0 0 1-1.9 1.9H5.4a1.9 1.9 0 0 1-1.9-1.9z"/><path d="M3.5 13h4.8a3.7 3.7 0 0 0 7.4 0h4.8"/></symbol>
+      <symbol id="f-i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="f-i-busca" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.2 4.2"/></symbol>
+      <symbol id="f-i-lua" viewBox="0 0 24 24"><path d="M19.5 14.2A7.8 7.8 0 0 1 9.8 4.5a7.9 7.9 0 1 0 9.7 9.7z"/></symbol>
+      <symbol id="f-i-repete" viewBox="0 0 24 24"><path d="M17 3.5l3 3-3 3M20 6.5H8a4 4 0 0 0-4 4v1M7 20.5l-3-3 3-3M4 17.5h12a4 4 0 0 0 4-4v-1"/></symbol>
+      <symbol id="f-i-lista" viewBox="0 0 24 24"><path d="M4 7l1.8 1.8L9 5.6M4 15.5l1.8 1.8L9 14M12.5 7.5H20M12.5 16H20"/></symbol>
+      <symbol id="f-i-prazo" viewBox="0 0 24 24"><path d="M6 21V4.5M6 5.2c4-2.2 7 2.2 12 0v8.6c-5 2.2-8-2.2-12 0"/></symbol>
+      <symbol id="f-i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+      <symbol id="f-i-seta" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+      <symbol id="f-i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="f-i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+      <symbol id="f-i-selo" viewBox="0 0 24 24"><path d="M12 3l2.4 1.8 3-.2.9 2.9 2.4 1.8-1 2.8 1 2.8-2.4 1.8-.9 2.9-3-.2L12 21l-2.4-1.8-3 .2-.9-2.9-2.4-1.8 1-2.8-1-2.8 2.4-1.8.9-2.9 3 .2z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.6"/></symbol>
+      <symbol id="f-i-nuvem" viewBox="0 0 24 24"><path d="M7 18.5a4 4 0 0 1-.6-8 5.8 5.8 0 0 1 11.2 1.2 3.5 3.5 0 0 1-.6 6.8z"/></symbol>
+      <symbol id="f-i-frase" viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h10M4 17.5h7M17 14.5l1.2 2.3 2.3 1.2-2.3 1.2L17 21.5l-1.2-2.3-2.3-1.2 2.3-1.2z"/></symbol>
+      <symbol id="f-i-infinito" viewBox="0 0 24 24"><path d="M12 12c-1.8-2.3-3.3-3.5-5.2-3.5a3.5 3.5 0 0 0 0 7c1.9 0 3.4-1.2 5.2-3.5zm0 0c1.8 2.3 3.3 3.5 5.2 3.5a3.5 3.5 0 0 0 0-7c-1.9 0-3.4 1.2-5.2 3.5z"/></symbol>
+    </defs>
+  </svg>
+  <div class="f-casca">
+    <aside class="f-lateral" aria-label="Listas e projetos">
+      <div class="f-marca"><i><svg class="f-ic" aria-hidden="true"><use href="#f-i-check"/></svg></i>Feito</div>
+      <nav class="f-nav" aria-label="Listas"></nav>
+      <div>
+        <p class="f-rot">Áreas</p>
+        <ul class="f-areas"></ul>
+      </div>
+      <button type="button" class="f-plano-atalho" data-acao="planos">
+        <svg class="f-ic" aria-hidden="true"><use href="#f-i-selo"/></svg>
+        <span><b>Feito Completo</b>12 dias de teste restantes</span>
+      </button>
+    </aside>
+    <section class="f-principal">
+      <header class="f-barra">
+        <button type="button" class="f-teste" data-acao="planos" aria-label="Feito Completo: 12 dias de teste restantes. Ver o plano">12 dias de teste</button>
+        <h2 aria-hidden="true">Hoje</h2>
+        <label class="f-busca"><span class="f-so-leitor">Buscar em todas as tarefas</span><svg class="f-ic" aria-hidden="true"><use href="#f-i-busca"/></svg><input type="search" placeholder="Buscar em tudo" autocomplete="off"></label>
+        <button type="button" class="f-redondo" data-acao="buscar" aria-label="Buscar"><svg class="f-ic" aria-hidden="true"><use href="#f-i-busca"/></svg></button>
+        <button type="button" class="f-btn f-btn-pri f-nova-larga" data-acao="nova"><svg class="f-ic" aria-hidden="true"><use href="#f-i-mais"/></svg>Nova tarefa</button>
+      </header>
+      <div class="f-rolo">
+        <div class="f-vista" data-vista="hoje"></div>
+        <div class="f-vista" data-vista="entrada"></div>
+        <div class="f-vista" data-vista="breve"></div>
+        <div class="f-vista" data-vista="projetos"></div>
+        <div class="f-vista" data-vista="busca"></div>
+      </div>
+      <div class="f-doca">
+        <nav class="f-abas" aria-label="Seções"></nav>
+        <button type="button" class="f-mais" data-acao="nova" aria-label="Nova tarefa"><svg class="f-ic" aria-hidden="true"><use href="#f-i-mais"/></svg></button>
+      </div>
+    </section>
+    <aside class="f-inspetor" aria-label="Detalhe"></aside>
+    <div class="f-veu" data-acao="fechar-folha"></div>
+    <section class="f-folha" data-folha="entrada" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="f-t-entrada">
+      <div class="f-puxador" aria-hidden="true"></div>
+      <div class="f-folha-topo">
+        <h2 id="f-t-entrada">Nova tarefa</h2>
+        <button type="button" class="f-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="f-ic" aria-hidden="true"><use href="#f-i-fechar"/></svg></button>
+      </div>
+      <label class="f-so-leitor" for="f-escrever">Escreva a tarefa como você fala</label>
+      <input id="f-escrever" class="f-escrever" type="text" placeholder="Escreva como você fala" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+      <p class="f-lido" aria-live="polite"></p>
+      <div class="f-fichas" aria-live="polite"></div>
+      <div class="f-sugestoes" role="group" aria-label="Atalhos para completar a frase"></div>
+      <button type="button" class="f-btn f-btn-pri f-btn-largo" data-acao="adicionar">Adicionar</button>
+    </section>
+    <section class="f-folha" data-folha="planos" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="f-t-planos">
+      <div class="f-puxador" aria-hidden="true"></div>
+      <div class="f-folha-topo">
+        <h2 id="f-t-planos">Feito Completo</h2>
+        <button type="button" class="f-fechar" data-acao="fechar-folha" aria-label="Fechar"><svg class="f-ic" aria-hidden="true"><use href="#f-i-fechar"/></svg></button>
+      </div>
+      <p class="f-notas">Sem assinatura e sem conta. Você paga uma vez e o app é seu.</p>
+      <div class="f-opcoes" role="group" aria-label="O que comprar">
+        <button type="button" class="f-opcao" data-acao="opcao" data-preco="R$ 59,90" aria-pressed="true"><span><b>Só no iPhone</b><small>Tudo liberado neste aparelho</small></span><strong class="f-num">R$ 59,90</strong></button>
+        <button type="button" class="f-opcao" data-acao="opcao" data-preco="R$ 119,90" aria-pressed="false"><span><b>iPhone, iPad e Mac</b><small>As mesmas tarefas nos três</small></span><strong class="f-num">R$ 119,90</strong></button>
+      </div>
+      <ul class="f-vantagens">
+        <li><svg class="f-ic" aria-hidden="true"><use href="#f-i-infinito"/></svg><span>Tarefas, projetos e áreas sem limite<small>O teste de 14 dias já vem com tudo liberado.</small></span></li>
+        <li><svg class="f-ic" aria-hidden="true"><use href="#f-i-frase"/></svg><span>Entrada rápida que entende português<small>Data, hora, prazo, repetição e projeto, direto da frase.</small></span></li>
+        <li><svg class="f-ic" aria-hidden="true"><use href="#f-i-nuvem"/></svg><span>Suas tarefas no iCloud<small>Sem criar conta: usa a que já está no aparelho.</small></span></li>
+      </ul>
+      <div class="f-folha-pe"><button type="button" class="f-btn f-btn-pri f-btn-largo" data-acao="comprar">Comprar por R$ 59,90</button></div>
+      <button type="button" class="f-btn f-btn-largo" data-acao="restaurar">Restaurar compra</button>
+      <p class="f-miudo">Maquete: os valores são hipótese e nada é cobrado aqui.</p>
+    </section>
+    <div class="f-aviso" role="status" aria-live="polite"><span></span><button type="button" data-acao="desfazer">Desfazer</button></div>
+  </div>
+</main>
+<template id="maquete-miniatura">
+<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Miniatura do Feito: a lista de hoje com o anel de progresso e a faixa da noite">
+  <rect width="320" height="180" fill="#f3f5f9"/>
+  <text x="28" y="44" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="24" font-weight="800" fill="#0f1628" letter-spacing="-.8">Hoje</text>
+  <circle cx="278" cy="36" r="15" fill="none" stroke="#dfe3ec" stroke-width="5"/>
+  <path d="M278 21a15 15 0 1 1-14.3 19.6" fill="none" stroke="#2456e6" stroke-width="5" stroke-linecap="round"/>
+  <rect x="20" y="60" width="280" height="62" rx="14" fill="#fff"/>
+  <circle cx="40" cy="78" r="7" fill="#2456e6"/><path d="M36.5 78.2l2.5 2.5 4.6-5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="56" y="74" width="120" height="8" rx="4" fill="#c5cbd8"/>
+  <path d="M20 91h280" stroke="#eef0f5"/>
+  <circle cx="40" cy="106" r="7" fill="none" stroke="#8792a8" stroke-width="1.6"/>
+  <rect x="56" y="102" width="164" height="8" rx="4" fill="#0f1628"/>
+  <rect x="20" y="130" width="280" height="34" rx="14" fill="#1a2152"/>
+  <path d="M43.5 148.6a5.6 5.6 0 0 1-6.9-6.9 5.7 5.7 0 1 0 6.9 6.9z" fill="none" stroke="#9db2ff" stroke-width="1.5" stroke-linejoin="round"/>
+  <rect x="56" y="143" width="132" height="8" rx="4" fill="#f1f2ff" opacity=".9"/>
+  <circle cx="284" cy="147" r="15" fill="#2456e6"/><path d="M284 140v14M277 147h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+</svg>
+</template>
+<!-- stand:captura:inicio -->
+<script>
+// Stand · captura. Fica logo antes do script do app: neste instante o DOM ainda é exatamente a marcação escrita no
+// arquivo (o app não rodou). É daqui que sai o código do botão "Código", sem guardar uma segunda cópia no arquivo.
+window.__standFonte = "<!doctype html>\n" + document.documentElement.outerHTML;
+</script>
+<!-- stand:captura:fim -->
+<script id="app-script">
+// Feito: o app sozinho. Tudo é local: as tarefas vivem na memória, a leitura da frase é por regras e nada sai da página.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var MOLA = "cubic-bezier(.2,.8,.2,1)";
+  var calmo = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  // ── pequenos ajudantes de DOM: nada de HTML em texto, o que a pessoa digita entra sempre como texto ──
+  function h(tag, attrs, filhos) {
+    var n = document.createElement(tag), k;
+    for (k in attrs || {}) {
+      if (attrs[k] == null || attrs[k] === false) continue;
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else n.setAttribute(k, attrs[k] === true ? "" : attrs[k]);
+    }
+    [].concat(filhos || []).forEach(function (f) { if (f != null && f !== false) n.appendChild(typeof f === "string" ? document.createTextNode(f) : f); });
+    return n;
+  }
+  function ic(nome, classe) {
+    var s = document.createElementNS(SVGNS, "svg"), u = document.createElementNS(SVGNS, "use");
+    s.setAttribute("class", "f-ic" + (classe ? " " + classe : "")); s.setAttribute("aria-hidden", "true");
+    u.setAttribute("href", "#f-i-" + nome); s.appendChild(u);
+    return s;
+  }
+  function svg(tag, attrs) { var n = document.createElementNS(SVGNS, tag), k; for (k in attrs) n.setAttribute(k, attrs[k]); return n; }
+  function $(sel, raiz) { return (raiz || app).querySelector(sel); }
+  function todos(sel, raiz) { return Array.prototype.slice.call((raiz || app).querySelectorAll(sel)); }
+  function limpar(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
+
+  // ── datas: tudo relativo ao dia de hoje, em dias inteiros ──
+  var agora = new Date();
+  var hoje0 = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  var SEMANA = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
+  var SEM = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  var MES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  var MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  function dia(n) { var d = new Date(hoje0); d.setDate(d.getDate() + n); return d; }
+  function rotuloDia(n) { if (n === 0) return "Hoje"; if (n === 1) return "Amanhã"; var d = dia(n); return SEM[d.getDay()] + ", " + d.getDate() + " " + MES[d.getMonth()]; }
+  function rotuloPrazo(n) { return n < 0 ? "venceu " + (n === -1 ? "ontem" : "há " + (-n) + " dias") : n === 0 ? "vence hoje" : n === 1 ? "vence amanhã" : "até " + rotuloDia(n); }
+
+  // ── dados fictícios ──
+  var AREAS = {casa: {nome: "Casa", cor: "var(--f-c-casa)"}, trabalho: {nome: "Trabalho", cor: "var(--f-c-trabalho)"}, pessoal: {nome: "Pessoal", cor: "var(--f-c-pessoal)"}};
+  var PROJETOS = [
+    {id: "relatorio", area: "trabalho", nome: "Relatório anual", antes: [6, 9], prox: "Fechar a tabela de resultados"},
+    {id: "proposta", area: "trabalho", nome: "Proposta Tavares & Lima", antes: [2, 3], prox: "Aguardar o retorno do jurídico"},
+    {id: "escritorio", area: "casa", nome: "Escritório no quarto dos fundos", antes: [4, 8], prox: "Medir a parede para a estante"},
+    {id: "imposto", area: "casa", nome: "Imposto de renda", antes: [0, 5], prox: "Baixar os informes de rendimento"},
+    {id: "viagem", area: "pessoal", nome: "Viagem de fim de ano", antes: [1, 7], prox: "Escolher as datas com a Marina"},
+    {id: "corrida", area: "pessoal", nome: "Voltar a correr", antes: [3, 10], prox: "Corrida leve de 20 minutos"}
+  ];
+  var seq = 0;
+  function T(titulo, o) {
+    o = o || {};
+    return {id: "t" + (++seq), titulo: titulo, dia: o.dia === undefined ? 0 : o.dia, noite: !!o.noite, hora: o.hora || "", prazo: o.prazo === undefined ? null : o.prazo,
+      area: o.area || "", projeto: o.projeto || "", repetir: o.repetir || "", notas: o.notas || "",
+      itens: (o.itens || []).map(function (x) { return {t: x[0], ok: !!x[1]}; }), feita: !!o.feita};
+  }
+  var tarefas = [
+    T("Devolver a furadeira do Seu Anselmo", {dia: -1, area: "casa"}),
+    T("Enviar a proposta para a Tavares & Lima", {hora: "09:30", prazo: 0, area: "trabalho", projeto: "proposta",
+      notas: "Incluir o cronograma em duas fases e o desconto para pagamento à vista.", itens: [["Atualizar os valores", 1], ["Revisar o cronograma", 1], ["Exportar em PDF", 0]]}),
+    T("Pagar o boleto do condomínio", {prazo: 0, area: "casa"}),
+    T("Revisar o capítulo 3 do relatório", {area: "trabalho", projeto: "relatorio",
+      itens: [["Conferir os números do trimestre", 1], ["Reescrever a abertura", 1], ["Padronizar as legendas", 0], ["Checar as fontes", 0], ["Mandar para a Lívia ler", 0]]}),
+    T("Separar os documentos do imposto de renda", {noite: true, area: "casa", projeto: "imposto"}),
+    T("Ler 20 páginas do livro do clube", {noite: true, area: "pessoal", repetir: "todo dia"}),
+    T("Regar as plantas da varanda", {feita: true, area: "casa", repetir: "a cada 3 dias"}),
+    T("Responder o e-mail da contadora", {feita: true, area: "trabalho"}),
+    T("Trocar o plano de internet", {dia: null}),
+    T("Ver preço de passagem para Salvador", {dia: null, area: "pessoal"}),
+    T("Perguntar ao síndico sobre a vaga de visitantes", {dia: null, area: "casa"}),
+    T("Reunião de alinhamento com a equipe de produto", {dia: 1, hora: "10:00", area: "trabalho"}),
+    T("Levar o Thor para o banho e tosa", {dia: 1, hora: "17:30", area: "casa"}),
+    T("Ligar para a oficina sobre a revisão dos 40 mil km", {dia: 2, hora: "11:00", area: "pessoal"}),
+    T("Comprar o presente da Helena", {dia: 2, area: "pessoal", notas: "Ideias: o livro de fotografia ou a luminária da feira."}),
+    T("Regar as plantas da varanda", {dia: 3, area: "casa", repetir: "a cada 3 dias"}),
+    T("Renovar o seguro do carro", {dia: 3, prazo: 5, area: "pessoal"}),
+    T("Entregar o relatório anual", {dia: 4, prazo: 4, area: "trabalho", projeto: "relatorio"}),
+    T("Levar o bolo do aniversário da Helena", {dia: 5, hora: "16:00", area: "pessoal"}),
+    T("Planejar o roteiro da viagem de fim de ano", {dia: 6, area: "pessoal", projeto: "viagem"}),
+    T("Trocar o filtro do purificador", {dia: 7, area: "casa", repetir: "a cada 3 meses"})
+  ];
+
+  // ── estado da interface ──
+  var ui = {vista: "hoje", aberta: null, busca: "", projetoAberto: null, ultimaFolha: null, desfazer: null, relogioAviso: 0};
+  function porId(id) { for (var i = 0; i < tarefas.length; i++) if (tarefas[i].id === id) return tarefas[i]; return null; }
+  function largo() { return app.clientWidth >= 1120; }
+  function largo2() { return app.clientWidth >= 720; }
+  function pendentes(filtro) { return tarefas.filter(function (t) { return !t.feita && filtro(t); }); }
+  var deHoje = function (t) { return t.dia !== null && t.dia <= 0 && !t.noite; };
+  var daNoite = function (t) { return t.dia !== null && t.dia <= 0 && t.noite; };
+  var daEntrada = function (t) { return t.dia === null; };
+
+  // ── peças ──
+  function circulo(t) {
+    var s = svg("svg", {viewBox: "0 0 24 24", "aria-hidden": "true"});
+    s.appendChild(svg("circle", {"class": "f-aro", cx: 12, cy: 12, r: 9.25}));
+    s.appendChild(svg("circle", {"class": "f-fundo", cx: 12, cy: 12, r: 10.2}));
+    s.appendChild(svg("circle", {"class": "f-volta", cx: 12, cy: 12, r: 9.25}));
+    s.appendChild(svg("path", {"class": "f-v", d: "M7.7 12.4l2.9 2.9 5.7-6.2"}));
+    return h("button", {type: "button", "class": "f-check", "data-acao": "concluir", "aria-pressed": String(t.feita), "aria-label": (t.feita ? "Reabrir: " : "Concluir: ") + t.titulo}, s);
+  }
+  // semData: a linha está dentro do bloco do próprio dia. onde: lista que mistura dias (busca, projetos), então a linha
+  // diz para quando a tarefa está; "inspetor" é a terceira coluna, que já mostra o dia no rótulo de cima.
+  function meta(t, semData, onde) {
+    var m = h("span", {"class": "f-meta"});
+    if (t.area) m.appendChild(h("span", null, [h("i", {"class": "f-ponto", style: "--cor:" + AREAS[t.area].cor}), AREAS[t.area].nome]));
+    if (!semData && t.dia !== null && t.dia < 0 && !t.feita) m.appendChild(h("span", {"class": "f-atraso", text: t.dia === -1 ? "era para ontem" : "atrasada há " + (-t.dia) + " dias"}));
+    if (!semData && onde !== "inspetor" && !t.feita && t.dia !== null && t.dia > 0) m.appendChild(h("span", {"class": "f-num"}, [ic("breve"), rotuloDia(t.dia)]));
+    else if (onde === true && !t.feita && t.dia === null) m.appendChild(h("span", null, [ic("entrada"), "Entrada"]));
+    else if (onde === true && !t.feita && t.dia === 0) m.appendChild(h("span", null, [ic(t.noite ? "lua" : "hoje"), t.noite ? "Esta noite" : "Hoje"]));
+    if (t.noite && t.dia !== null && t.dia > 0 && !t.feita) m.appendChild(h("span", null, [ic("lua"), "à noite"]));
+    if (t.hora) m.appendChild(h("span", {"class": "f-num"}, [ic("relogio"), t.hora]));
+    if (t.prazo !== null && !t.feita) m.appendChild(h("span", {"class": t.prazo < 0 ? "f-atraso" : "f-prazo"}, [ic("prazo"), rotuloPrazo(t.prazo)]));
+    if (t.repetir) m.appendChild(h("span", null, [ic("repete"), t.repetir]));
+    if (t.itens.length) m.appendChild(h("span", {"class": "f-num"}, [ic("lista"), t.itens.filter(function (x) { return x.ok; }).length + " de " + t.itens.length]));
+    return m;
+  }
+  function detalhe(t) {
+    var d = h("div", {"class": "f-detalhe"});
+    if (t.notas) d.appendChild(h("p", {"class": "f-notas", text: t.notas}));
+    if (t.itens.length) {
+      d.appendChild(h("ul", {"class": "f-sub"}, t.itens.map(function (x, i) {
+        return h("li", null, h("button", {type: "button", "data-acao": "subtarefa", "data-i": i, "aria-pressed": String(x.ok)}, [h("i", null, ic("check")), x.t]));
+      })));
+    }
+    if (!t.feita) {
+      var onde = t.dia === null ? "entrada" : t.dia > 1 ? "depois" : t.dia === 1 ? "amanha" : t.dia < 0 ? "atrasada" : t.noite ? "noite" : "hoje";
+      d.appendChild(h("span", {"class": "f-campo", text: "Quando" + (onde === "depois" ? " · " + rotuloDia(t.dia) : onde === "atrasada" ? (t.dia === -1 ? " · era para ontem" : " · atrasada há " + (-t.dia) + " dias") : "")}));
+      d.appendChild(h("div", {"class": "f-quando", role: "group", "aria-label": "Quando fazer"}, [
+        h("button", {type: "button", "class": "f-pilula", "data-acao": "mover", "data-para": "hoje", "aria-pressed": String(onde === "hoje"), text: "Hoje"}),
+        h("button", {type: "button", "class": "f-pilula", "data-acao": "mover", "data-para": "noite", "aria-pressed": String(onde === "noite")}, [ic("lua"), "Esta noite"]),
+        h("button", {type: "button", "class": "f-pilula", "data-acao": "mover", "data-para": "amanha", "aria-pressed": String(onde === "amanha"), text: "Amanhã"}),
+        h("button", {type: "button", "class": "f-pilula", "data-acao": "mover", "data-para": "entrada", "aria-pressed": String(onde === "entrada"), text: "Sem data"})
+      ]));
+    }
+    d.appendChild(h("div", {"class": "f-acoes"}, [
+      h("button", {type: "button", "class": "f-btn f-btn-sec", "data-acao": "concluir", text: t.feita ? "Reabrir" : "Concluir"}),
+      h("button", {type: "button", "class": "f-btn f-btn-per", "data-acao": "excluir", text: "Apagar"})
+    ]));
+    return d;
+  }
+  function item(t, semData, onde) {
+    var aberta = ui.aberta === t.id;
+    var li = h("li", {"class": "f-item", "data-id": t.id, "data-feita": t.feita, "data-escolhida": aberta, "data-nova": t.nova});
+    li.appendChild(h("div", {"class": "f-linha"}, [circulo(t),
+      h("button", {type: "button", "class": "f-corpo", "data-acao": "abrir", "aria-expanded": String(aberta)}, [h("span", {"class": "f-nome", text: t.titulo}), meta(t, semData, onde)])]));
+    if (aberta) li.appendChild(detalhe(t));
+    t.nova = false;
+    return li;
+  }
+  function secao(titulo, lista, opc) {
+    opc = opc || {};
+    var cab = h("h3", null, [opc.icone ? ic(opc.icone) : null, titulo, h("small", {text: String(lista.length)})]);
+    return h("section", {"class": "f-secao" + (opc.classe ? " " + opc.classe : "")}, [cab, h("ul", {"class": "f-cartao"}, lista.map(function (t) { return item(t, opc.semData, opc.onde); }))]);
+  }
+  function anel(feitas, total, grande) {
+    var r = grande ? 51 : 24, c = 2 * Math.PI * r, lado = grande ? 112 : 54, meio = lado / 2;
+    var s = svg("svg", {viewBox: "0 0 " + lado + " " + lado, "aria-hidden": "true"});
+    s.appendChild(svg("circle", {"class": "f-trilho", cx: meio, cy: meio, r: r}));
+    var v = svg("circle", {"class": "f-volta", cx: meio, cy: meio, r: r, "stroke-dasharray": c.toFixed(1), "stroke-dashoffset": (c * (1 - (total ? feitas / total : 0))).toFixed(1)});
+    s.appendChild(v);
+    var resta = total - feitas;
+    return h("div", {"class": "f-anel", "data-cheio": total > 0 && resta === 0, role: "img", "aria-label": feitas + " de " + total + " tarefas de hoje concluídas"},
+      [s, h("b", null, resta === 0 && total ? ic("check") : String(resta))]);
+  }
+  // conta como feita hoje o que era de hoje e também o que foi concluído hoje vindo de outro dia ou da Entrada
+  function doDiaFeitas(t) { return t.feita && (t.feitaHoje || (t.dia !== null && t.dia <= 0)); }
+  function contaDoDia() {
+    var feitas = tarefas.filter(doDiaFeitas).length;
+    var abertas = pendentes(function (t) { return t.dia !== null && t.dia <= 0; }).length;
+    return {feitas: feitas, total: feitas + abertas};
+  }
+  function titulo(nome, sub, comAnel) {
+    var c = contaDoDia();
+    return h("header", {"class": "f-titulo"}, [h("div", {"class": "f-titulo-texto"}, [h("h1", {text: nome}), h("p", {text: sub})]), comAnel ? anel(c.feitas, c.total) : null]);
+  }
+  function limpo(cabeca, texto) {
+    var s = svg("svg", {viewBox: "0 0 64 64", "aria-hidden": "true"});
+    s.appendChild(svg("circle", {cx: 32, cy: 32, r: 26, fill: "none", stroke: "var(--f-acento)", "stroke-width": 5}));
+    s.appendChild(svg("path", {d: "M21 33l8 8 15-17", fill: "none", stroke: "var(--f-acento)", "stroke-width": 5, "stroke-linecap": "round", "stroke-linejoin": "round"}));
+    return h("div", {"class": "f-cartao f-limpo"}, [s, h("strong", {text: cabeca}), h("span", {text: texto})]);
+  }
+
+  // ── vistas ──
+  function vistaHoje() {
+    var v = limpar($('.f-vista[data-vista="hoje"]'));
+    var d = hoje0, manha = pendentes(deHoje), noite = pendentes(daNoite);
+    var feitas = tarefas.filter(doDiaFeitas);
+    manha.sort(function (a, b) { return (a.dia - b.dia) || ((a.hora || "99") < (b.hora || "99") ? -1 : 1); });
+    v.appendChild(titulo("Hoje", SEMANA[d.getDay()] + ", " + d.getDate() + " de " + MESES[d.getMonth()], true));
+    // a promessa do produto na primeira tela: a barra de escrever abre a entrada rápida
+    v.appendChild(h("button", {type: "button", "class": "f-escreva", "data-acao": "nova", "aria-label": "Nova tarefa: escreva como você fala"}, [ic("mais"), h("span", {text: "Escreva como você fala: “dentista quinta 15h”"})]));
+    if (manha.length) v.appendChild(secao("Para hoje", manha));
+    else if (!noite.length) v.appendChild(h("section", {"class": "f-secao"}, limpo("Dia limpo", "Nada pendente para hoje. O que chegar, o Feito guarda.")));
+    if (noite.length) v.appendChild(secao("Esta noite", noite, {classe: "f-noite", icone: "lua"}));
+    if (feitas.length) v.appendChild(secao("Concluídas hoje", feitas, {semData: true}));
+  }
+  function vistaEntrada() {
+    var v = limpar($('.f-vista[data-vista="entrada"]'));
+    var lista = pendentes(daEntrada);
+    v.appendChild(titulo("Entrada", "O que ainda não tem dia. Decida quando, ou deixe aqui."));
+    if (lista.length) v.appendChild(secao("Sem data", lista, {semData: true}));
+    else v.appendChild(limpo("Entrada vazia", "Tudo o que você anotou já tem um dia."));
+  }
+  function vistaBreve() {
+    var v = limpar($('.f-vista[data-vista="breve"]'));
+    v.appendChild(titulo("Em breve", "Os próximos sete dias, um de cada vez."));
+    for (var n = 1; n <= 7; n++) {
+      var d = dia(n), lista = pendentes(function (t) { return t.dia === n; });
+      lista.sort(function (a, b) { return (a.hora || "99") < (b.hora || "99") ? -1 : 1; });
+      v.appendChild(h("section", {"class": "f-dia", "data-amanha": n === 1, "aria-label": rotuloDia(n)}, [
+        h("div", {"class": "f-dia-data"}, [h("small", {text: n === 1 ? "amanhã" : SEM[d.getDay()]}), h("b", {text: String(d.getDate())})]),
+        lista.length ? h("ul", {"class": "f-cartao"}, lista.map(function (t) { return item(t, true); })) : h("p", {"class": "f-livre", text: "Dia livre"})
+      ]));
+    }
+    // o que tem data além dos sete dias não some: fica no fim, com o dia em cada linha
+    var adiante = pendentes(function (t) { return t.dia > 7; }).sort(function (a, b) { return a.dia - b.dia; });
+    if (adiante.length) v.appendChild(secao("Mais adiante", adiante));
+  }
+  function avanco(p) {
+    var minhas = tarefas.filter(function (t) { return t.projeto === p.id; });
+    var feitas = p.antes[0] + minhas.filter(function (t) { return t.feita; }).length;
+    return {feitas: feitas, total: p.antes[1] + minhas.length, abertas: minhas.filter(function (t) { return !t.feita; })};
+  }
+  function vistaProjetos() {
+    var v = limpar($('.f-vista[data-vista="projetos"]'));
+    v.appendChild(titulo("Projetos", "Cada projeto com o quanto já andou e a próxima ação."));
+    Object.keys(AREAS).forEach(function (chave) {
+      var cartao = h("div", {"class": "f-cartao"});
+      PROJETOS.filter(function (p) { return p.area === chave; }).forEach(function (p, i) {
+        var a = avanco(p), c = 2 * Math.PI * 16.5, aberto = ui.projetoAberto === p.id;
+        var s = svg("svg", {viewBox: "0 0 42 42", "aria-hidden": "true"});
+        s.appendChild(svg("circle", {"class": "f-trilho", cx: 21, cy: 21, r: 16.5}));
+        s.appendChild(svg("circle", {"class": "f-volta", cx: 21, cy: 21, r: 16.5, "stroke-dasharray": c.toFixed(1), "stroke-dashoffset": (c * (1 - a.feitas / a.total)).toFixed(1)}));
+        var bloco = h("div", {"class": "f-item", style: "--cor:" + AREAS[chave].cor});
+        bloco.appendChild(h("button", {type: "button", "class": "f-proj", "data-acao": "projeto", "data-projeto": p.id, "aria-expanded": String(aberto)}, [
+          h("span", {"class": "f-proj-anel"}, s),
+          h("span", {"class": "f-proj-texto"}, [h("strong", {text: p.nome}), h("small", {text: "Próxima: " + (a.abertas[0] ? a.abertas[0].titulo : p.prox)})]),
+          h("em", {text: a.feitas + " de " + a.total}), ic("seta", "f-seta")
+        ]));
+        if (aberto) {
+          bloco.appendChild(a.abertas.length ? h("ul", {"class": "f-proj-lista"}, a.abertas.map(function (t) { return item(t, false, true); }))
+            : h("p", {"class": "f-proj-lista f-notas", style: "margin:0;padding:14px 16px", text: "Nenhuma tarefa com data. A próxima ação é: " + p.prox + "."}));
+        }
+        cartao.appendChild(bloco);
+      });
+      v.appendChild(h("section", {"class": "f-area"}, [h("h3", null, [h("i", {"class": "f-ponto", style: "--cor:" + AREAS[chave].cor}), AREAS[chave].nome]), cartao]));
+    });
+  }
+  function vistaBusca() {
+    var v = limpar($('.f-vista[data-vista="busca"]'));
+    var alvo = semAcento(ui.busca).toLowerCase();
+    var lista = tarefas.filter(function (t) { return semAcento(t.titulo + " " + t.notas).toLowerCase().indexOf(alvo) >= 0; }).sort(function (a, b) { return a.feita - b.feita; });
+    v.appendChild(titulo("Busca", lista.length ? lista.length + (lista.length === 1 ? " tarefa com “" : " tarefas com “") + ui.busca + "”" : "Nada com “" + ui.busca + "”"));
+    if (lista.length) v.appendChild(secao("Em todas as listas", lista, {onde: true}));
+    else v.appendChild(limpo("Nada encontrado", "Tente outra palavra, ou anote agora para não esquecer."));
+  }
+  function lateral() {
+    var nav = limpar($(".f-nav")), abas = limpar($(".f-abas"));
+    var c = contaDoDia();
+    [["hoje", "Hoje", "hoje", c.total - c.feitas], ["entrada", "Entrada", "entrada", pendentes(daEntrada).length], ["breve", "Em breve", "breve", pendentes(function (t) { return t.dia > 0; }).length], ["projetos", "Projetos", "projetos", PROJETOS.length]]
+      .forEach(function (x) {
+        nav.appendChild(h("button", {type: "button", "data-acao": "vista", "data-vista": x[0], "aria-current": ui.vista === x[0] ? "page" : null}, [ic(x[2]), x[1], h("small", {text: String(x[3])})]));
+        abas.appendChild(h("button", {type: "button", "data-acao": "vista", "data-vista": x[0], "aria-current": ui.vista === x[0] ? "page" : null, "aria-label": x[0] === "entrada" && x[3] ? "Entrada, " + x[3] + " para organizar" : null},
+          [ic(x[2]), x[1], x[0] === "entrada" && x[3] ? h("b", {"class": "f-bolha f-num", "aria-hidden": "true", text: String(x[3])}) : null]));
+      });
+    var areas = limpar($(".f-areas"));
+    Object.keys(AREAS).forEach(function (chave) {
+      areas.appendChild(h("li", null, [h("span", null, [h("i", {"class": "f-ponto", style: "--cor:" + AREAS[chave].cor}), AREAS[chave].nome])]
+        .concat(PROJETOS.filter(function (p) { return p.area === chave; }).map(function (p) {
+          return h("button", {type: "button", "data-acao": "projeto-lateral", "data-projeto": p.id, text: p.nome});
+        }))));
+    });
+  }
+  function inspetor() {
+    var alvo = limpar($(".f-inspetor")), t = ui.aberta && porId(ui.aberta);
+    if (t) {
+      var li = h("div", {"data-id": t.id});
+      li.appendChild(h("span", {"class": "f-campo", text: t.dia === null ? "Entrada" : t.feita ? "Concluída" : t.noite && t.dia <= 0 ? "Esta noite" : rotuloDia(Math.max(t.dia, 0))}));
+      li.appendChild(h("h2", {text: t.titulo}));
+      li.appendChild(meta(t, false, "inspetor"));
+      li.appendChild(detalhe(t));
+      alvo.appendChild(li);
+      return;
+    }
+    var c = contaDoDia(), resta = c.total - c.feitas;
+    alvo.appendChild(h("div", {"class": "f-resumo"}, [anel(c.feitas, c.total, true),
+      h("strong", {text: resta === 0 ? "Dia limpo" : resta === 1 ? "Falta uma para hoje" : "Faltam " + resta + " para hoje"}),
+      h("span", {text: c.feitas + " de " + c.total + " concluídas"})]));
+    var prazos = pendentes(function (t) { return t.prazo !== null; }).sort(function (a, b) { return a.prazo - b.prazo; }).slice(0, 4);
+    if (prazos.length) {
+      alvo.appendChild(h("span", {"class": "f-campo", text: "Prazos à vista"}));
+      alvo.appendChild(h("ul", {"class": "f-prox"}, prazos.map(function (t) { return h("li", null, [h("b", {text: t.prazo <= 0 ? "hoje" : rotuloDia(t.prazo)}), h("span", {text: t.titulo})]); })));
+    }
+  }
+  var TITULOS = {hoje: "Hoje", entrada: "Entrada", breve: "Em breve", projetos: "Projetos", busca: "Busca"};
+  function desenhar() {
+    // esvaziar e refazer as listas zera a rolagem: guarda antes e devolve depois
+    var foco = document.activeElement, chave = null, caixa = null, rolos = todos(".f-rolo,.f-inspetor,.f-lateral").map(function (x) { return [x, x.scrollTop]; });
+    if (foco && foco.getAttribute) caixa = [".f-rolo", ".f-inspetor", ".f-nav", ".f-areas", ".f-abas"].filter(function (c) { return $(c).contains(foco); })[0] || null;
+    if (caixa) {
+      var dono = foco.closest("[data-id]");
+      chave = [foco.getAttribute("data-acao"), dono && dono.getAttribute("data-id"), foco.getAttribute("data-para"), foco.getAttribute("data-i"), foco.getAttribute("data-projeto"), foco.getAttribute("data-vista")];
+    }
+    app.setAttribute("data-vista", ui.vista);
+    $(".f-barra h2").textContent = TITULOS[ui.vista];
+    vistaHoje(); vistaEntrada(); vistaBreve(); vistaProjetos();
+    if (ui.vista === "busca") vistaBusca();
+    lateral(); inspetor();
+    rolos.forEach(function (x) { if (x[1]) x[0].scrollTop = x[1]; });
+    if (chave && chave[0]) {
+      var igual = todos(caixa + ' [data-acao="' + chave[0] + '"]').filter(function (n) {
+        var d = n.closest("[data-id]");
+        return n.offsetParent && (d ? d.getAttribute("data-id") : null) === chave[1] && n.getAttribute("data-para") === chave[2] && n.getAttribute("data-i") === chave[3]
+          && n.getAttribute("data-projeto") === chave[4] && n.getAttribute("data-vista") === chave[5];
+      })[0];
+      if (igual) igual.focus({preventScroll: true});
+    }
+  }
+  // FLIP: as linhas que continuam na tela deslizam do lugar antigo para o novo; as novas surgem
+  function comMovimento(mudar) {
+    if (calmo || !app.animate) { mudar(); return; }
+    var antes = {};
+    todos(".f-rolo .f-item[data-id]").forEach(function (el) { var r = el.getBoundingClientRect(); if (r.width) antes[el.getAttribute("data-id")] = r; });
+    mudar();
+    todos(".f-rolo .f-item[data-id]").forEach(function (el) {
+      var d = el.getBoundingClientRect(), a = antes[el.getAttribute("data-id")];
+      if (!d.width) return;
+      if (!a) { el.animate([{opacity: 0, transform: "translateY(10px)"}, {opacity: 1, transform: "none"}], {duration: 280, easing: MOLA}); return; }
+      var dy = a.top - d.top;
+      if (Math.abs(dy) > 1) el.animate([{transform: "translateY(" + dy + "px)"}, {transform: "none"}], {duration: 340, easing: MOLA});
+    });
+  }
+  function pintarLupa() {
+    var b = $('.f-barra [data-acao="buscar"]'), aberta = $(".f-barra").hasAttribute("data-busca");
+    b.setAttribute("aria-label", aberta ? "Fechar a busca" : "Buscar");
+    b.querySelector("use").setAttribute("href", aberta ? "#f-i-fechar" : "#f-i-busca");
+  }
+  function irPara(vista) {
+    ui.vista = vista; ui.aberta = null;
+    if (vista !== "busca") { ui.busca = ""; $(".f-busca input").value = ""; $(".f-barra").removeAttribute("data-busca"); pintarLupa(); }
+    desenhar();
+    $(".f-rolo").scrollTop = 0;
+    $(".f-principal").removeAttribute("data-rolado");
+    sincronizarEstado();
+  }
+
+  // ── avisos com desfazer ──
+  function avisar(texto, desfazer) {
+    var a = $(".f-aviso");
+    a.firstChild.textContent = texto;
+    a.lastChild.hidden = !desfazer;
+    ui.desfazer = desfazer || null;
+    a.setAttribute("data-visivel", "");
+    clearTimeout(ui.relogioAviso);
+    ui.relogioAviso = setTimeout(function () { a.removeAttribute("data-visivel"); ui.desfazer = null; }, 5200);
+  }
+
+  // ── ações sobre tarefas ──
+  function intervalo(repetir) {
+    var s = semAcento(repetir).toLowerCase(), m = /a cada (\d+) (dia|semana|mes)/.exec(s);
+    if (m) return +m[1] * (m[2] === "dia" ? 1 : m[2] === "semana" ? 7 : 30);
+    return /\bdias?\b/.test(s) ? 1 : /\bmes\b/.test(s) ? 30 : 7;
+  }
+  function tirar(t) { var i = tarefas.indexOf(t); if (i >= 0) tarefas.splice(i, 1); }
+  function concluir(id, linha) {
+    var t = porId(id);
+    if (!t || (linha && linha.hasAttribute("data-saindo"))) return;   // segundo toque enquanto a linha sai: não desfaz nem repete
+    var fechar = function () {
+      var eraAberta = ui.aberta, prox = null;
+      t.feita = !t.feita;
+      t.feitaHoje = t.feita;
+      if (t.feita && ui.aberta === id && !largo()) ui.aberta = null;
+      if (t.feita && t.repetir) {
+        // tarefa que repete: concluir cria a próxima ocorrência
+        prox = T(t.titulo, {dia: Math.max(t.dia || 0, 0) + intervalo(t.repetir), noite: t.noite, hora: t.hora, area: t.area, projeto: t.projeto, repetir: t.repetir, notas: t.notas});
+        tarefas.push(prox); t.proxima = prox;
+      } else if (!t.feita && t.proxima) { if (!t.proxima.feita) tirar(t.proxima); t.proxima = null; }
+      comMovimento(desenhar);
+      if (t.feita) avisar(prox ? "Concluída. Volta " + (prox.dia === 1 ? "amanhã" : rotuloDia(prox.dia)) : "Concluída", function () {
+        t.feita = false; t.feitaHoje = false; if (prox) { tirar(prox); t.proxima = null; } ui.aberta = eraAberta; comMovimento(desenhar);
+      });
+    };
+    if (!t.feita && linha && !calmo) { linha.setAttribute("data-saindo", ""); setTimeout(fechar, 560); } else fechar();
+  }
+  function mover(id, para) {
+    var t = porId(id);
+    if (!t) return;
+    var antes = {dia: t.dia, noite: t.noite, hora: t.hora};
+    if (para === "hoje") { t.dia = 0; t.noite = false; }
+    else if (para === "noite") { t.dia = 0; t.noite = true; if (t.hora && t.hora < "18:00") t.hora = ""; }   // hora de manhã não combina com a noite
+    else if (para === "amanha") { t.dia = 1; t.noite = false; }
+    else { t.dia = null; t.noite = false; t.hora = ""; }
+    t.nova = true;
+    comMovimento(desenhar);
+    avisar({hoje: "Fica para hoje", noite: "Fica para esta noite", amanha: "Adiada para amanhã", entrada: "Voltou para a Entrada"}[para], function () { t.dia = antes.dia; t.noite = antes.noite; t.hora = antes.hora; comMovimento(desenhar); });
+  }
+  function excluir(id) {
+    var i = tarefas.indexOf(porId(id));
+    if (i < 0) return;
+    var t = tarefas.splice(i, 1)[0];
+    if (ui.aberta === id) ui.aberta = null;
+    comMovimento(desenhar);
+    avisar("Tarefa apagada", function () { tarefas.splice(i, 0, t); comMovimento(desenhar); });
+  }
+
+  // ── entrada rápida: a frase vira tarefa, por regras, e mostra o que entendeu ──
+  function semAcento(s) { return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+  var DIA_SEM = {domingo: 0, segunda: 1, terca: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6};
+  var UM_DIA = "depois de amanha|amanha|hoje|segunda(?:-feira)?|terca(?:-feira)?|quarta(?:-feira)?|quinta(?:-feira)?|sexta(?:-feira)?|sabado|domingo|dia \\d{1,2}|\\d{1,2}\\/\\d{1,2}";
+  function ateOffset(m) {
+    if (m === "hoje") return 0;
+    if (m === "amanha") return 1;
+    if (m === "depois de amanha") return 2;
+    var s = m.replace("-feira", ""), x, alvo, k;
+    if (DIA_SEM[s] !== undefined) { x = (DIA_SEM[s] - hoje0.getDay() + 7) % 7; return x === 0 ? 7 : x; }
+    x = /^dia (\d{1,2})$/.exec(m);
+    if (x) {   // "dia 31" vale no primeiro mês, deste em diante, que tem dia 31; "dia 99" não é data
+      for (k = 0; k < 3; k++) { alvo = new Date(hoje0.getFullYear(), hoje0.getMonth() + k, +x[1]); if (alvo.getDate() === +x[1] && alvo >= hoje0) return Math.round((alvo - hoje0) / 864e5); }
+      return null;
+    }
+    x = /^(\d{1,2})\/(\d{1,2})$/.exec(m);
+    if (x) {
+      if (+x[2] < 1 || +x[2] > 12) return null;
+      for (k = 0; k < 2; k++) { alvo = new Date(hoje0.getFullYear() + k, +x[2] - 1, +x[1]); if (alvo.getDate() === +x[1] && alvo >= hoje0) return Math.round((alvo - hoje0) / 864e5); }
+      return null;
+    }
+    return null;
+  }
+  function interpretar(texto) {
+    texto = String(texto).normalize("NFC");
+    var base = semAcento(texto).toLowerCase();
+    var r = {titulo: "", dia: null, noite: false, hora: "", prazo: null, area: "", projeto: "", repetir: "", marcas: []};
+    var livre = function (i, f) { return r.marcas.every(function (m) { return f <= m.i || i >= m.f; }); };
+    function varrer(rx, tipo, usar) {
+      var m;
+      while ((m = rx.exec(base))) {
+        var i = m.index, f = i + m[0].length;
+        if (livre(i, f) && usar(m) !== false) r.marcas.push({i: i, f: f, tipo: tipo});
+      }
+    }
+    varrer(new RegExp("\\bate (" + UM_DIA + ")\\b", "g"), "prazo", function (m) { if (r.prazo !== null) return false; r.prazo = ateOffset(m[1]); return r.prazo !== null; });
+    varrer(/\b(todo dia|todos os dias|toda semana|todo mes|toda (segunda|terca|quarta|quinta|sexta)(?:-feira)?|todo (sabado|domingo))\b/g, "repetir", function (m) {
+      if (r.repetir) return false;
+      r.repetir = texto.slice(m.index, m.index + m[0].length).toLowerCase();
+      var d = m[2] || m[3];
+      if (d && r.dia === null) r.dia = ateOffset(d);
+    });
+    varrer(/\b(esta noite|hoje a noite|a noite)\b/g, "quando", function (m) {
+      // "a noite de autógrafos" é substantivo dentro do título, não a parte do dia
+      if (m[1] === "a noite" && /^ d[eao]s?\b/.test(base.slice(m.index + m[0].length))) return false;
+      r.noite = true; if (r.dia === null) r.dia = 0;
+    });
+    varrer(new RegExp("\\b(" + UM_DIA + ")\\b", "g"), "quando", function (m) { var o = ateOffset(m[1]); if (o === null) return false; r.dia = o; });
+    varrer(/\b(?:as )?(\d{1,2})(?:h(?:rs|s)?(\d{2})?|:(\d{2}))(?![\d\/a-z])/g, "quando", function (m) {
+      var hh = +m[1], mm = +(m[2] || m[3] || 0);
+      if (r.hora || hh > 23 || mm > 59) return false;
+      r.hora = (hh < 10 ? "0" : "") + hh + ":" + (mm < 10 ? "0" : "") + mm;
+      if (r.dia === null) r.dia = 0;
+      if (hh >= 19) r.noite = r.dia === 0;
+    });
+    varrer(/#([a-z0-9]+)/g, "projeto", function (m) {
+      if (AREAS[m[1]]) { r.area = m[1]; return true; }
+      var p = PROJETOS.filter(function (x) { return x.id === m[1]; })[0];
+      if (!p) return false;
+      r.projeto = p.id; r.area = p.area;
+    });
+    r.marcas.sort(function (a, b) { return a.i - b.i; });
+    var resto = "", pos = 0;
+    r.marcas.forEach(function (m) { resto += texto.slice(pos, m.i); pos = m.f; });
+    resto = (resto + texto.slice(pos)).replace(/\s+/g, " ").replace(/^[\s,;.-]+|[\s,;-]+$/g, "");
+    r.titulo = resto ? resto.charAt(0).toUpperCase() + resto.slice(1) : "";
+    r.texto = texto;
+    return r;
+  }
+  function mostrarLeitura() {
+    var campo = $("#f-escrever"), r = interpretar(campo.value), lido = limpar($(".f-lido")), fichas = limpar($(".f-fichas")), pos = 0;
+    r.marcas.forEach(function (m) {
+      if (m.i > pos) lido.appendChild(document.createTextNode(r.texto.slice(pos, m.i)));
+      lido.appendChild(h("mark", {"data-tipo": m.tipo, text: r.texto.slice(m.i, m.f)}));
+      pos = m.f;
+    });
+    if (pos < r.texto.length) lido.appendChild(document.createTextNode(r.texto.slice(pos)));
+    if (!campo.value.trim()) { fichas.appendChild(h("span", {"class": "f-ficha", "data-tipo": "vazio", text: "Exemplo: buscar o terno sexta 18h #casa"})); }
+    else {
+      if (r.dia !== null) fichas.appendChild(h("span", {"class": "f-ficha f-num"}, [ic(r.noite ? "lua" : "hoje"), (r.noite && r.dia === 0 ? "Esta noite" : rotuloDia(r.dia) + (r.noite ? " à noite" : "")) + (r.hora ? " · " + r.hora : "")]));
+      else fichas.appendChild(h("span", {"class": "f-ficha", "data-tipo": "vazio"}, [ic("entrada"), "Sem data: vai para a Entrada"]));
+      if (r.prazo !== null) fichas.appendChild(h("span", {"class": "f-ficha", "data-tipo": "prazo"}, [ic("prazo"), rotuloPrazo(r.prazo)]));
+      if (r.repetir) fichas.appendChild(h("span", {"class": "f-ficha"}, [ic("repete"), r.repetir]));
+      if (r.area) fichas.appendChild(h("span", {"class": "f-ficha"}, [h("i", {"class": "f-ponto", style: "--cor:" + AREAS[r.area].cor}), r.projeto ? PROJETOS.filter(function (p) { return p.id === r.projeto; })[0].nome : AREAS[r.area].nome]));
+    }
+    $('[data-acao="adicionar"]').disabled = !r.titulo;
+    $('[data-acao="adicionar"]').style.opacity = r.titulo ? "" : ".45";
+    return r;
+  }
+  function adicionar() {
+    var r = mostrarLeitura();
+    if (!r.titulo) { $("#f-escrever").focus(); return; }
+    var t = T(r.titulo, {dia: r.dia, noite: r.noite, hora: r.hora, prazo: r.prazo, area: r.area, projeto: r.projeto, repetir: r.repetir});
+    t.nova = true;
+    tarefas.push(t);
+    $("#f-escrever").value = "";
+    fecharFolha(true);
+    ui.vista = r.dia === null ? "entrada" : r.dia > 0 ? "breve" : "hoje";
+    ui.aberta = null;
+    comMovimento(desenhar);
+    sincronizarEstado();
+    var linha = $('.f-vista[data-vista="' + ui.vista + '"] .f-item[data-id="' + t.id + '"]');
+    if (linha && linha.scrollIntoView) linha.scrollIntoView({block: "center", behavior: calmo ? "auto" : "smooth"});
+    avisar(r.dia === null ? "Guardada na Entrada" : "Adicionada: " + (r.noite && r.dia === 0 ? "esta noite" : rotuloDia(r.dia).toLowerCase() + (r.noite ? " à noite" : "")), function () {
+      tarefas.splice(tarefas.indexOf(t), 1); comMovimento(desenhar);
+    });
+  }
+  var SUGESTOES = ["amanhã", "esta noite", "sexta 9h", "até dia 20", "toda semana", "#casa", "#trabalho"];
+  function montarSugestoes() {
+    var s = limpar($(".f-sugestoes"));
+    SUGESTOES.forEach(function (x) { s.appendChild(h("button", {type: "button", "data-acao": "sugestao", text: x})); });
+  }
+
+  // ── folhas ──
+  function abrirFolha(qual, exemplo) {
+    ui.ultimaFolha = document.activeElement;
+    $(".f-aviso").removeAttribute("data-visivel"); ui.desfazer = null;
+    app.setAttribute("data-folha", qual);
+    todos(".f-lateral,.f-principal,.f-inspetor").forEach(function (n) { n.inert = true; });
+    if (qual === "entrada") {
+      var campo = $("#f-escrever");
+      if (exemplo && !campo.value) campo.value = "Buscar o terno na lavanderia sexta 18h #casa";
+      mostrarLeitura();
+      setTimeout(function () { campo.focus({preventScroll: true}); }, calmo ? 0 : 120);
+    } else {
+      setTimeout(function () { $('.f-folha[data-folha="planos"] .f-fechar').focus({preventScroll: true}); }, calmo ? 0 : 120);
+    }
+    sincronizarEstado();
+  }
+  function fecharFolha(semEstado) {
+    if (!app.hasAttribute("data-folha")) return;
+    app.removeAttribute("data-folha");
+    todos(".f-lateral,.f-principal,.f-inspetor").forEach(function (n) { n.inert = false; });
+    if (ui.ultimaFolha && ui.ultimaFolha.focus && app.contains(ui.ultimaFolha)) ui.ultimaFolha.focus({preventScroll: true});
+    if (!semEstado) sincronizarEstado();
+  }
+
+  // ── os três estados do stand: 1 Hoje · 2 Entrada rápida · 3 Planejar ──
+  function estadoDaTela() { return app.getAttribute("data-folha") === "entrada" ? 2 : (ui.vista === "breve" || ui.vista === "projetos") ? 3 : 1; }
+  function sincronizarEstado() { var n = String(estadoDaTela()); if (app.getAttribute("data-estado") !== n) app.setAttribute("data-estado", n); }
+  function aplicarEstado(n, doStand) {
+    if (n === estadoDaTela() && !doStand) return;
+    if (n === 2) { if (app.getAttribute("data-folha") !== "entrada") { fecharFolha(true); abrirFolha("entrada", true); } return; }
+    fecharFolha(true);
+    irPara(n === 3 ? "breve" : "hoje");
+  }
+  app.addEventListener("maquete:estado", function (e) { aplicarEstado(e.detail && e.detail.estado, true); });
+  new MutationObserver(function () { aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1); }).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+
+  // ── eventos ──
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-acao]");
+    if (!b || !app.contains(b)) return;
+    var acao = b.getAttribute("data-acao"), dono = b.closest("[data-id]"), id = dono && dono.getAttribute("data-id");
+    if (acao === "concluir") concluir(id, dono && dono.classList.contains("f-item") ? dono : null);
+    else if (acao === "abrir") {
+      ui.aberta = ui.aberta === id ? null : id; comMovimento(desenhar);
+      var aberta = ui.aberta && !largo() && todos('.f-rolo .f-item[data-id="' + id + '"]').filter(function (x) { return x.offsetParent; })[0];
+      if (aberta) aberta.scrollIntoView({block: "nearest", behavior: calmo ? "auto" : "smooth"});
+    }
+    else if (acao === "subtarefa") { var t = porId(id); t.itens[+b.getAttribute("data-i")].ok = !t.itens[+b.getAttribute("data-i")].ok; desenhar(); }
+    else if (acao === "mover") mover(id, b.getAttribute("data-para"));
+    else if (acao === "excluir") excluir(id);
+    else if (acao === "vista") irPara(b.getAttribute("data-vista"));
+    else if (acao === "projeto") { ui.projetoAberto = ui.projetoAberto === b.getAttribute("data-projeto") ? null : b.getAttribute("data-projeto"); comMovimento(desenhar); }
+    else if (acao === "projeto-lateral") { ui.projetoAberto = b.getAttribute("data-projeto"); irPara("projetos"); }
+    else if (acao === "nova") abrirFolha("entrada");
+    else if (acao === "planos") abrirFolha("planos");
+    else if (acao === "opcao") {
+      todos(".f-opcao").forEach(function (o) { o.setAttribute("aria-pressed", String(o === b)); });
+      $('[data-acao="comprar"]').textContent = "Comprar por " + b.getAttribute("data-preco");
+    }
+    else if (acao === "fechar-folha") fecharFolha();
+    else if (acao === "adicionar") adicionar();
+    else if (acao === "sugestao") { var c = $("#f-escrever"); c.value = (c.value.replace(/\s+$/, "") + " " + b.textContent).replace(/^\s+/, ""); mostrarLeitura(); c.focus({preventScroll: true}); }
+    else if (acao === "desfazer") { var d = ui.desfazer; $(".f-aviso").removeAttribute("data-visivel"); ui.desfazer = null; if (d) d(); }
+    else if (acao === "comprar" || acao === "restaurar") { fecharFolha(); avisar(acao === "comprar" ? "Maquete: nada foi cobrado" : "Maquete: não há compra para restaurar"); }
+    else if (acao === "buscar") { var barra = $(".f-barra"), campo = $(".f-busca input"); if (barra.hasAttribute("data-busca")) { irPara(ui.vista === "busca" ? "hoje" : ui.vista); } else { barra.setAttribute("data-busca", ""); pintarLupa(); campo.focus({preventScroll: true}); } }
+  });
+  $("#f-escrever").addEventListener("input", mostrarLeitura);
+  $(".f-busca input").addEventListener("input", function (e) {
+    ui.busca = e.target.value.trim();
+    if (ui.busca) { ui.vista = "busca"; ui.aberta = null; desenhar(); sincronizarEstado(); }
+    else if (ui.vista === "busca") { ui.vista = "hoje"; desenhar(); sincronizarEstado(); }
+  });
+  // a folha aberta prende o foco: o Tab dá a volta dentro dela, e o Esc fecha de onde quer que o foco esteja
+  document.addEventListener("keydown", function (e) {
+    var nome = app.getAttribute("data-folha"), folha = nome && app.querySelector('[role="dialog"][data-folha="' + nome + '"]'), itens, a, fora;
+    if (!folha || e.defaultPrevented || document.querySelector("dialog[open]")) return;
+    if (e.key === "Escape") { fecharFolha(); return; }
+    if (e.key !== "Tab") return;
+    itens = Array.prototype.filter.call(folha.querySelectorAll('button,input,textarea,select,a[href],[tabindex="0"]'), function (x) { return !x.disabled && x.tabIndex >= 0 && x.offsetParent; });
+    a = document.activeElement; fora = !folha.contains(a) || a === folha;
+    if (!itens.length) { e.preventDefault(); folha.focus({preventScroll: true}); }
+    else if (fora || a === itens[e.shiftKey ? 0 : itens.length - 1]) { e.preventDefault(); itens[e.shiftKey ? itens.length - 1 : 0].focus({preventScroll: true}); }
+  });
+  app.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && app.hasAttribute("data-folha")) { e.stopPropagation(); fecharFolha(); }
+    else if (e.key === "Enter" && e.target.id === "f-escrever") { e.preventDefault(); adicionar(); }
+  });
+  $(".f-rolo").addEventListener("scroll", function () {
+    var rolado = this.scrollTop > 34, p = $(".f-principal");
+    if (rolado !== p.hasAttribute("data-rolado")) p.toggleAttribute("data-rolado", rolado);
+  }, {passive: true});
+  // o véu segura a rolagem do que está atrás
+  $(".f-veu").addEventListener("wheel", function (e) { e.preventDefault(); }, {passive: false});
+  $(".f-veu").addEventListener("touchmove", function (e) { e.preventDefault(); }, {passive: false});
+
+  // arrastar a folha para baixo pelo puxador ou pelo topo fecha; soltar antes do limite devolve ao lugar
+  todos(".f-folha").forEach(function (folha) {
+    var y0 = null, dy = 0;
+    folha.addEventListener("pointerdown", function (e) {
+      if (largo2() || !e.target.closest(".f-puxador,.f-folha-topo") || e.target.closest("button")) return;
+      y0 = e.clientY; dy = 0; folha.setPointerCapture(e.pointerId); folha.style.transition = "none";
+    });
+    folha.addEventListener("pointermove", function (e) { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); folha.style.transform = "translateY(" + dy + "px)"; });
+    var soltar = function () {
+      if (y0 === null) return;
+      y0 = null; folha.style.transition = ""; folha.style.transform = "";
+      if (dy > 90) fecharFolha();
+    };
+    folha.addEventListener("pointerup", soltar);
+    folha.addEventListener("pointercancel", soltar);
+  });
+
+  montarSugestoes();
+  desenhar();
+  aplicarEstado(parseInt(app.getAttribute("data-estado"), 10) || 1);
+})();
+</script>
+<!-- stand:roteiro:inicio -->
+<script>
+// Stand · roteiro. Monta a moldura em volta do <main id="app">: barra com os três estados, tela ampla/celular,
+// ficha técnica e o código limpo do app. Contrato com o app (ver laboratorio/README.md):
+//   · o estado vive em #app[data-estado="1|2|3"]; o stand escreve ali e avisa com o evento "maquete:estado";
+//   · o app pode mudar de estado sozinho (escrevendo o atributo): o stand só observa e acende o botão certo.
+(function () {
+  "use strict";
+  var app = document.getElementById("app");
+  if (!app) return;
+  var raiz = document.documentElement;
+  var noPortal = raiz.hasAttribute("data-portal");
+  var ficha = {};
+  try { ficha = JSON.parse((document.getElementById("maquete-ficha") || {}).textContent || "{}"); }
+  catch (e) { console.error("[stand] ficha ilegível: " + e.message); }
+  var estados = Array.isArray(ficha.estados) && ficha.estados.length ? ficha.estados : [{nome: "Estado 1"}, {nome: "Estado 2"}, {nome: "Estado 3"}];
+  // tela cheia só na moldura do portal: é ele quem tem a página do app sozinho (apps/<id>/) e quem abre a aba
+  var comTelaCheia = noPortal && window.parent !== window && !!ficha.id;
+
+  window.addEventListener("error", function (e) {
+    // o aviso benigno do ResizeObserver não é defeito do app: reprová-lo só ensinaria os apps a evitar uma API boa
+    if (/ResizeObserver loop/.test(e.message || "")) return;
+    console.error("[maquete] " + (e.message || "erro") + " @" + (e.lineno || "?"));
+  });
+
+  function el(tag, cls, txt) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt != null) n.textContent = txt;
+    return n;
+  }
+  function svg(d, w) {
+    var ns = "http://www.w3.org/2000/svg";
+    var s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", w || 16); s.setAttribute("height", w || 16);
+    s.setAttribute("fill", "none"); s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round"); s.setAttribute("aria-hidden", "true");
+    d.split("|").forEach(function (p) { var path = document.createElementNS(ns, "path"); path.setAttribute("d", p); s.appendChild(path); });
+    return s;
+  }
+  var ICONE = {
+    voltar: "M15 18l-6-6 6-6",
+    ampla: "M3 5h18v12H3z|M8 21h8|M12 17v4",
+    celular: "M7 2h10v20H7z|M11 18h2",
+    ficha: "M6 3h9l4 4v14H6z|M14 3v5h5|M9 13h7|M9 17h5",
+    codigo: "M9 8l-5 4 5 4|M15 8l5 4-5 4",
+    recolher: "M6 15l6-6 6 6",
+    expandir: "M14 4h6v6|M10 20H4v-6|M20 4l-6 6|M4 20l6-6",
+    fechar: "M6 6l12 12|M18 6L6 18",
+    sol: "M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7|M12 2v2.5|M12 19.5V22|M2 12h2.5|M19.5 12H22|M4.9 4.9l1.8 1.8|M17.3 17.3l1.8 1.8|M4.9 19.1l1.8-1.8|M17.3 6.7l1.8-1.8",
+    lua: "M20 13.5A8 8 0 0 1 10.5 4a7 7 0 1 0 9.5 9.5z",
+    copiar: "M9 9h11v11H9z|M5 15H4V4h11v1",
+    baixar: "M12 4v11|M7 11l5 5 5-5|M5 20h14"
+  };
+
+  // navegação: no portal, quem troca a página é ele (postMessage); sozinho, um link relativo comum.
+  function navegar(arquivo) {
+    if (noPortal && window.parent !== window) { window.parent.postMessage({portal: "abrir", file: arquivo}, "*"); return; }
+    location.href = /\/apps\/[^/]+$/.test(location.pathname) ? "../" + arquivo : arquivo;
+  }
+  // tela cheia: o portal abre numa aba nova a página do app sozinho, a versão para iPhone. Daqui de dentro não dá:
+  // a moldura não tem allow-popups, então só se pede (como no "abrir") e quem abre a aba é ele.
+  function telaCheia() {
+    window.parent.postMessage({portal: "tela-cheia", file: "apps/" + ficha.id + ".html"}, "*");
+  }
+
+  // ── barra ────────────────────────────────────────────────────────────────
+  document.body.classList.add("stand-corpo");
+  var barra = el("header", "stand-barra");
+  barra.setAttribute("aria-label", "Stand da maquete");
+  var voltar = el("button", "stand-voltar");
+  voltar.type = "button"; voltar.title = "Voltar à galeria";
+  voltar.append(svg(ICONE.voltar), el("span", "stand-rotulo", "Galeria"));
+  voltar.addEventListener("click", function () { navegar("index.html"); });
+
+  var id = el("div", "stand-id");
+  var olho = ["Maquete", ficha.colecao === "casa" ? "Casa" : "Referência", ficha.tipo].filter(Boolean).join(" · ");
+  id.append(el("span", "stand-olho", olho), el("span", "stand-nome", ficha.nome || document.title));
+
+  var grupo = el("div", "stand-estados");
+  grupo.setAttribute("role", "group"); grupo.setAttribute("aria-label", "Estados da maquete");
+  var botoes = estados.slice(0, 3).map(function (e, i) {
+    var b = el("button", "stand-estado");
+    b.type = "button"; b.title = (e.descricao || e.nome || "") + " · tecla " + (i + 1);
+    b.append(el("b", null, String(i + 1)), el("span", null, e.nome || "Estado " + (i + 1)));
+    b.addEventListener("click", function () { irPara(i + 1); });
+    grupo.appendChild(b);
+    return b;
+  });
+
+  var acoes = el("div", "stand-acoes");
+  var seg = el("div", "stand-seg");
+  seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tela");
+  var bAmpla = el("button"); bAmpla.type = "button"; bAmpla.title = "Tela ampla"; bAmpla.append(svg(ICONE.ampla));
+  var bCel = el("button"); bCel.type = "button"; bCel.title = "Tela de celular"; bCel.append(svg(ICONE.celular));
+  bAmpla.addEventListener("click", function () { tela("ampla"); });
+  bCel.addEventListener("click", function () { tela("celular"); });
+  seg.append(bAmpla, bCel);
+
+  function acao(rotulo, icone, fn, soIcone) {
+    var b = el("button", "stand-acao" + (soIcone ? " stand-icone" : ""));
+    b.type = "button"; b.title = rotulo; b.setAttribute("aria-label", rotulo);
+    b.append(svg(icone));
+    if (!soIcone) b.append(el("span", "stand-rotulo", rotulo));
+    b.addEventListener("click", fn);
+    return b;
+  }
+  var bTema = acao("Trocar tema", ICONE.sol, function () {
+    raiz.setAttribute("data-tema", raiz.getAttribute("data-tema") === "escuro" ? "claro" : "escuro");
+  }, true);
+  bTema.classList.add("stand-tema");
+  bTema.firstChild.classList.add("stand-sol");
+  var lua = svg(ICONE.lua); lua.classList.add("stand-lua"); bTema.appendChild(lua);
+  acoes.append(seg);
+  if (comTelaCheia) acoes.append(acao("Tela cheia", ICONE.expandir, telaCheia));
+  acoes.append(acao("Ficha", ICONE.ficha, abrirFicha), acao("Código", ICONE.codigo, abrirCodigo), bTema,
+    acao("Recolher o stand", ICONE.recolher, function () { document.body.classList.add("stand-recolhida"); pilula.focus(); }, true));
+  barra.append(voltar, id, grupo, acoes);
+
+  var pilula = el("button", "stand-pilula", "Stand");
+  pilula.type = "button"; pilula.title = "Mostrar o stand";
+  pilula.addEventListener("click", function () { document.body.classList.remove("stand-recolhida"); });
+
+  var palco = el("div", "stand-palco");
+  app.parentNode.insertBefore(palco, app);
+  palco.appendChild(app);
+  document.body.insertBefore(barra, document.body.firstChild);
+  document.body.appendChild(pilula);
+
+  // a altura real da barra (54 px numa linha, ~100 px quando quebra, 0 recolhida) vira --stand-barra: o palco desconta
+  // dela, e um app com cabeçalho grudado usa top: var(--stand-barra, 0px) — sozinho, sem o stand, o recuo some.
+  function medirBarra() {
+    var h = document.body.classList.contains("stand-recolhida") ? 0 : Math.round(barra.getBoundingClientRect().height);
+    raiz.style.setProperty("--stand-barra", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barra);
+  new MutationObserver(medirBarra).observe(document.body, {attributes: true, attributeFilter: ["class"]});
+  medirBarra();
+
+  // ── estados ──────────────────────────────────────────────────────────────
+  function estadoAtual() { var n = parseInt(app.getAttribute("data-estado"), 10); return n >= 1 && n <= 3 ? n : 1; }
+  function acender() {
+    var n = estadoAtual();
+    botoes.forEach(function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === n)); });
+  }
+  function irPara(n) {
+    n = Math.max(1, Math.min(3, n | 0));
+    app.setAttribute("data-estado", String(n));
+    app.dispatchEvent(new CustomEvent("maquete:estado", {bubbles: true, detail: {estado: n, origem: "stand"}}));
+    acender();
+    // tela nova começa do topo: na janela e dentro da moldura do celular
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    app.scrollTop = 0;
+  }
+  new MutationObserver(acender).observe(app, {attributes: true, attributeFilter: ["data-estado"]});
+  if (!app.hasAttribute("data-estado")) app.setAttribute("data-estado", "1");
+  acender();
+
+  function tela(t) {
+    t = t === "celular" ? "celular" : "ampla";
+    palco.setAttribute("data-tela", t);
+    bAmpla.setAttribute("aria-pressed", String(t === "ampla"));
+    bCel.setAttribute("aria-pressed", String(t === "celular"));
+    app.dispatchEvent(new CustomEvent("maquete:tela", {bubbles: true, detail: {tela: t}}));
+  }
+  tela(ficha.tela);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    var alvo = e.target;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) return;
+    // com o foco num controle do app (botão, slider, teclado numérico…), a tecla é do app, não do stand
+    if (alvo && alvo !== app && app.contains(alvo) && (/^(BUTTON|A)$/.test(alvo.tagName) || alvo.hasAttribute("role") || alvo.closest("[data-teclas]"))) return;
+    if (document.querySelector(".stand-gaveta[open]")) return;
+    if (e.key === "1" || e.key === "2" || e.key === "3") { irPara(+e.key); }
+  });
+  window.addEventListener("hashchange", function () {
+    var m = /(?:^#|&)tema=(claro|escuro)/.exec(location.hash);
+    if (m) raiz.setAttribute("data-tema", m[1]);
+  });
+
+  // ── gavetas ──────────────────────────────────────────────────────────────
+  function gaveta(titulo, olhoTxt) {
+    var d = el("dialog", "stand-gaveta");
+    var topo = el("div", "stand-g-topo");
+    var t = el("div");
+    t.append(el("span", "stand-olho", olhoTxt), el("h2", null, titulo));
+    var fechar = acao("Fechar", ICONE.fechar, function () { d.close(); }, true);
+    topo.append(t, fechar);
+    var corpo = el("div", "stand-g-corpo");
+    d.append(topo, corpo);
+    d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
+    d.addEventListener("close", function () { d.remove(); });
+    document.body.appendChild(d);
+    return {d: d, corpo: corpo};
+  }
+  function secao(corpo, titulo) { corpo.appendChild(el("h3", null, titulo)); }
+
+  function abrirFicha() {
+    var g = gaveta(ficha.nome || document.title, "Ficha técnica");
+    var c = g.corpo;
+    if (ficha.resumo) c.appendChild(el("p", "stand-resumo", ficha.resumo));
+    var chips = el("div", "stand-chips");
+    [ficha.tipo, ficha.colecao === "casa" ? "Conceito da casa" : "Referência de mercado",
+      ficha.origem ? "Origem: " + ficha.origem : null, ficha.proposta ? "Proposta: " + ficha.proposta : null]
+      .filter(Boolean).forEach(function (t) { chips.appendChild(el("span", "stand-chip", t)); });
+    c.appendChild(chips);
+    if (Array.isArray(ficha.referencias) && ficha.referencias.length) {
+      secao(c, "Na linha de");
+      var r = el("div", "stand-chips");
+      ficha.referencias.forEach(function (ref) {
+        var chip = el("span", "stand-chip", ref.nome);
+        chip.appendChild(el("small", null, [ref.modelo, ref.licenca].filter(Boolean).join(" · ")));
+        r.appendChild(chip);
+      });
+      c.appendChild(r);
+      c.appendChild(el("p", "stand-nota", "Maquete original, desenhada do zero na mesma categoria. Nenhum código, marca ou imagem desses produtos foi copiado."));
+    }
+    if (ficha.proposta || ficha.modelo_negocio) {
+      secao(c, "Modelo proposto" + (ficha.proposta ? " · " + ficha.proposta : ""));
+      if (ficha.modelo_negocio) c.appendChild(el("p", null, ficha.modelo_negocio));
+      c.appendChild(el("p", "stand-nota", "Hipótese para discutir, não decisão comercial."));
+    }
+    if (ficha.direcao) { secao(c, "Direção visual"); c.appendChild(el("p", null, ficha.direcao)); }
+    secao(c, "Os três estados");
+    var ul = el("ol", "stand-lista-estados");
+    estados.slice(0, 3).forEach(function (e, i) {
+      var li = el("li");
+      li.append(el("b", null, String(i + 1)), el("strong", null, e.nome || ""), el("span", null, e.descricao || ""));
+      ul.appendChild(li);
+    });
+    c.appendChild(ul);
+    if (Array.isArray(ficha.paleta) && ficha.paleta.length) {
+      secao(c, "Paleta");
+      var p = el("div", "stand-paleta");
+      ficha.paleta.forEach(function (cor) {
+        var box = el("div", "stand-cor");
+        var i = el("i"); i.style.background = cor.hex;
+        var s = el("span", null, cor.nome || ""); s.appendChild(document.createElement("br"));
+        s.appendChild(el("code", null, cor.hex));
+        box.append(i, s); p.appendChild(box);
+      });
+      c.appendChild(p);
+    }
+    if (ficha.tipografia) { secao(c, "Tipografia"); c.appendChild(el("p", null, ficha.tipografia)); }
+    if (Array.isArray(ficha.componentes) && ficha.componentes.length) {
+      secao(c, "Peças da tela");
+      var k = el("div", "stand-chips");
+      ficha.componentes.forEach(function (t) { k.appendChild(el("span", "stand-chip", t)); });
+      c.appendChild(k);
+    }
+    if (Array.isArray(ficha.replicar) && ficha.replicar.length) {
+      secao(c, "Para virar produto");
+      var ol = el("ol", "stand-passos");
+      ficha.replicar.forEach(function (t) { ol.appendChild(el("li", null, t)); });
+      c.appendChild(ol);
+    }
+    if (comTelaCheia) {
+      // para as sócias: o que o botão faz e como guardar o app no iPhone
+      secao(c, "Em tela cheia");
+      c.appendChild(el("p", null, "O botão Tela cheia abre o app sozinho numa aba nova, sem o stand, do jeito que ele rodaria num iPhone."));
+      c.appendChild(el("p", "stand-nota", "No iPhone, toque em Compartilhar e depois em “Adicionar à Tela de Início”. O app ganha um ícone e abre como aplicativo."));
+      var bTela = acao("Abrir em tela cheia", ICONE.expandir, telaCheia);
+      bTela.classList.add("stand-primario");
+      c.appendChild(bTela);
+    }
+    secao(c, "Atalhos");
+    c.appendChild(el("p", "stand-nota", "Teclas 1, 2 e 3 trocam o estado. O botão Código entrega o app sem o stand: um arquivo HTML só, que abre sozinho no navegador."));
+    g.d.showModal();
+  }
+
+  // o código limpo: o DOM capturado antes do app rodar, sem os blocos do stand, com o script do app de volta
+  function fonte() {
+    var bruto = window.__standFonte || "";
+    var scriptApp = document.getElementById("app-script");
+    // a captura acontece de dentro do próprio bloco "captura": o fim dele e tudo que vem depois ainda não existiam.
+    // \x3c no lugar de "<": este script vive inline, e a abertura de comentário HTML ou a tag de script escritas
+    // por extenso (mesmo num comentário JS) fariam o parser HTML fechar ou engolir o bloco.
+    var LT = "\x3c";
+    var s = bruto
+      .replace(/\x3c!-- stand:captura:inicio -->[\s\S]*?(?=\x3c\/body>)/, "")
+      .replace(/\x3c!-- stand:([a-z]+):inicio -->[\s\S]*?\x3c!-- stand:\1:fim -->/g, "")
+      .replace(/\x3cscript type="application\/json" id="maquete-ficha">[\s\S]*?\x3c\/script>/, "")
+      .replace(/\x3ctemplate id="maquete-miniatura">[\s\S]*?\x3c\/template>/, "")
+      .replace(/\x3chtml([^>]*)>/, function (_, a) { return LT + "html" + a.replace(/\s+data-(tema|portal)(="[^"]*")?/g, "") + ' data-tema="claro">'; })
+      .replace(/\x3c\/head>/, LT + "style>html,body{margin:0}" + LT + "/style>\n" + LT + "script>document.documentElement.dataset.tema = matchMedia(\"(prefers-color-scheme: dark)\").matches ? \"escuro\" : \"claro\";" + LT + "/script>\n" + LT + "/head>");
+    if (scriptApp) s = s.replace(/\x3c\/body>/, function () { return LT + "script>" + scriptApp.textContent + LT + "/script>\n" + LT + "/body>"; });
+    return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  }
+
+  function abrirCodigo() {
+    var g = gaveta("Código do app", "Sem o stand · HTML único");
+    var c = g.corpo;
+    var texto = fonte();
+    var barraC = el("div", "stand-codigo-barra");
+    var aviso = el("span", "stand-nota", Math.round(texto.length / 1024) + " KB · CSS e JS embutidos");
+    var area = el("textarea", "stand-codigo");
+    area.readOnly = true; area.spellcheck = false; area.value = texto;
+    area.setAttribute("aria-label", "Código HTML do app");
+    var copiar = acao("Copiar tudo", ICONE.copiar, function () {
+      var feito = function (ok) { aviso.textContent = ok ? "Copiado." : "Selecionado: use ⌘C para copiar."; };
+      area.focus(); area.select();
+      // na moldura do portal a Clipboard API é barrada pela política de permissões: vai direto ao execCommand
+      if (!noPortal && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { feito(true); }, function () { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); });
+      } else { var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} feito(ok); }
+    });
+    copiar.classList.add("stand-primario");
+    barraC.appendChild(copiar);
+    if (!noPortal) {
+      barraC.appendChild(acao("Baixar .html", ICONE.baixar, function () {
+        var a = el("a");
+        a.href = URL.createObjectURL(new Blob([texto], {type: "text/html"}));
+        a.download = (ficha.id || "maquete") + ".html";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      }));
+    }
+    barraC.appendChild(aviso);
+    c.append(barraC, area);
+    g.d.showModal();
+    area.scrollTop = 0;
+  }
+
+  // para as ferramentas (fotografar.mjs) e para quem inspeciona no console
+  window.Stand = {irPara: irPara, tela: tela, fonte: fonte, ficha: ficha};
+})();
+</script>
+<!-- stand:roteiro:fim -->
+</body>
+</html>
