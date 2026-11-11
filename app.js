@@ -18,6 +18,9 @@
   let revision = null;
   let sessionNotice = "";
   let editingPlan = null;
+  let criando = null;          // gravação pela tela (P4): formulário de criar aberto, "plan" ou "one_off"
+  let encerrando = null;       // índice da assinatura cuja confirmação de encerrar está aberta
+  let ultimaGravacao = null;   // {texto, recibo?, erro?}: o aviso do topo da página Assinaturas
   let inventorySort = "ready-desc";
   let inventoryBarrier = "";
   let cooldownTimer = null;
@@ -305,8 +308,8 @@
   function stateBadge(plan) {
     const state = subscriptionState(plan);
     const badge = element("span", "subscription-state");
-    badge.dataset.state = state;
-    badge.append(element("span", "subscription-light"), element("span", "", {active: "Ativa", inactive: "Inativa", unconfirmed: "A confirmar"}[state]));
+    badge.dataset.state = plan.ended === true ? "ended" : state;
+    badge.append(element("span", "subscription-light"), element("span", "", plan.ended === true ? "Encerrada" : {active: "Ativa", inactive: "Inativa", unconfirmed: "A confirmar"}[state]));
     badge.firstChild.setAttribute("aria-hidden", "true");
     return badge;
   }
@@ -492,6 +495,7 @@
     const benefits = benefitEntries(block);
     if (benefits.length) target.append(element("p", "benefit-explanation", "Franquias e créditos são benefícios do serviço. O valor nominal não é o saldo disponível, não reduz a cobrança e não é rateado pela sua participação."));
     else target.append(element("p", "benefit-explanation", "Benefícios e créditos: a confirmar. " + (block.benefits && block.benefits.source && block.benefits.source.exists ? "Nenhum benefício registrado nesta entrega." : "Fonte ainda não entregue.")));
+    escritaNoTopo(target, block);
     if (!plans.length) empty(target, block.source && block.source.exists ? "Nenhuma assinatura informada nesta entrega." : "sem entrega ainda");
     const planIdCounts = new Map();
     plans.forEach((plan) => { if (plan.id) planIdCounts.set(String(plan.id), (planIdCounts.get(String(plan.id)) || 0) + 1); });
@@ -522,6 +526,7 @@
       details.append(element("span", "plan-next-date", (plan.schedule_derived === true ? "Próxima data prevista: " : "Próxima data: ") + dateLabel(plan.proxima_data)));
       if (typeof plan.schedule_issue === "string" && plan.schedule_issue.trim()) details.append(element("span", "plan-schedule-issue", plan.schedule_issue));
       details.append(element("span", "badge" + (plan.overdue ? " badge-danger" : plan.due_soon ? " badge-gold" : ""), "Cobrança: " + paymentLabel(plan)));
+      rastroDaGravacao(details, plan);
       // controles honestos: na versão só de leitura, nada de formulário que depois recusa; o pagamento vira lançamento
       if (host().readOnly === true && window.financeLivro) bottom.append(details, button("Lançar pagamento", "button-quiet", () => window.financeLivro.abrirLancar({descricao: [plan.servico, plan.plano].filter(Boolean).join(" · "), planoId: plan.id})));
       else bottom.append(details, button("Editar cobrança", "button-quiet", () => {
@@ -534,12 +539,16 @@
       [["unconfirmed", "A confirmar"], ["active", "Ativa"], ["inactive", "Inativa"]].forEach(([value, caption]) => { const option = element("option", "", caption); option.value = value; option.disabled = value === "unconfirmed"; selector.append(option); });
       selector.value = subscriptionState(plan);
       if (host().readOnly === true) { selector.disabled = true; label.title = "Na versão online o estado da assinatura muda pela aba Finanças do AI Cask."; }
-      label.append(selector); management.append(label);
+      label.append(selector);
+      // encerrada: quem a traz de volta é o «Reativar» (mesma gravação do seletor), com o rastro do encerramento à vista
+      if (!(plan.ended === true && podeGravar("archive_plan"))) management.append(label);
+      acoesDoCartao(management, plan, block);
       selector.addEventListener("change", async () => {
         if (mutationBusy) { selector.value = subscriptionState(plan); return; }
         mutationBusy = true; selector.disabled = true;
         try {
-          await window.financeRequest("set_subscription", {index: plan.index, active: selector.value === "active", expected_revision: block.source && block.source.revision});
+          const feito = await window.financeRequest("set_subscription", {index: plan.index, active: selector.value === "active", expected_revision: block.source && block.source.revision});
+          if (podeGravar("undo") && feito && feito.undo) ultimaGravacao = {texto: (selector.value === "active" ? "Assinatura ativada" : "Assinatura desativada") + ". O serviço real não foi alterado.", recibo: feito.undo};
           announce("Estado registrado no painel. O serviço externo não foi alterado.");
           await loadSnapshot(true);
         } catch (failure) {
@@ -556,10 +565,12 @@
         attached.forEach((entry) => section.append(benefitCard(entry, block)));
         card.append(section);
       }
-      if (editingPlan === plan.index) card.append(planForm(plan, block.source && block.source.revision));
+      if (editingPlan === plan.index) card.append(podeGravar("update_plan") ? formularioDeEditar(plan, block) : planForm(plan, block.source && block.source.revision));
+      if (encerrando === plan.index && plan.ended !== true) card.append(confirmarEncerrar(plan, block));
       list.append(card);
     });
     if (plans.length) target.append(list);
+    pagamentosUnicos(target, block);
     if (orphanBenefits.length) {
       const section = element("section", "orphan-benefits");
       section.append(element("div", "subsection-heading"));
@@ -637,6 +648,302 @@
       } finally { mutationBusy = false; save.disabled = false; }
     });
     return form;
+  }
+
+  // ── Gravações pela tela (P4, 11/11/2026) ────────────────────────────────────────────────────────────────────────
+  // Nova assinatura, editar (valor, dia, nome do plano, próxima data, conferido), encerrar, reativar, marcar a cobrança
+  // do mês como paga, pagamento único e desfazer. Cada controle só aparece quando o anfitrião grava
+  // (financeHost.readOnly !== true) E o núcleo instalado declara a gravação no snapshot (`writes`). O site estático não
+  // traz `writes`: nada daqui se desenha lá. Tudo viaja por `edit_plan` com `op` (a ponte nativa não muda).
+  const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  const MOEDAS_DE_GRAVAR = [["BRL", "Real (R$)"], ["USD", "Dólar (US$)"], ["EUR", "Euro (€)"]];
+  const PERIODOS_DE_GRAVAR = [["mensal", "Mensal"], ["anual", "Anual"], ["semestral", "Semestral"], ["trimestral", "Trimestral"]];
+  const AVISO_ARQUIVO_MUDOU = "O arquivo mudou enquanto você editava. O painel foi atualizado; confira os dados antes de salvar de novo.";
+  function podeGravar(op) { return host().readOnly !== true && Boolean(currentSnapshot) && array(currentSnapshot.writes).includes(op); }
+  function formularioDeGravacaoAberto() { return criando !== null || encerrando !== null; }
+  function eMensal(plan) { return ["mensal", "mes", "monthly"].includes(normalized(plan.periodo)); }
+  function nomeDoMes(ciclo, maiuscula = false) {
+    const partes = /^(\d{4})-(\d{2})$/.exec(String(ciclo || ""));
+    const nome = partes ? MESES[Number(partes[2]) - 1] || "" : "";
+    return maiuscula && nome ? nome[0].toLocaleUpperCase("pt-BR") + nome.slice(1) : nome;
+  }
+  function hojeLocal() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function nomeDaAssinatura(plan) { return [plan.servico, plan.plano].filter(Boolean).join(" · ") || "Assinatura"; }
+  function revisaoDosPlanos(block) { return (block.source && block.source.revision) || null; }
+  function revisaoDoLivro(block) { const fonte = block.payments && block.payments.source; return fonte && fonte.exists ? fonte.revision || null : null; }
+  function redesenharAssinaturas() { if (currentSnapshot) renderSubscriptions(currentSnapshot.blocks.user || {}, currentSnapshot.user || {}); }
+  function focar(id) { requestAnimationFrame(() => { const campo = byId(id); if (campo) campo.focus(); }); }
+  function erroDeFormulario() { const erro = element("p", "form-error"); erro.setAttribute("role", "alert"); erro.hidden = true; return erro; }
+  function campoDeEscolha(label, id, opcoes, valor) {
+    const holder = element("div", "field");
+    const caption = element("label", "", label); caption.htmlFor = id;
+    const input = element("select"); input.id = id;
+    opcoes.forEach(([chave, rotulo]) => { const opcao = element("option", "", rotulo); opcao.value = chave; input.append(opcao); });
+    input.value = valor;
+    holder.append(caption, input);
+    return {holder, input};
+  }
+  function rodape(cancelar, rotulo, classe = "button-primary") {
+    const footer = element("div", "form-actions");
+    footer.append(button("Cancelar", "button-quiet", cancelar));
+    const salvar = element("button", "button " + classe, rotulo); salvar.type = "submit";
+    footer.append(salvar);
+    return {footer, salvar};
+  }
+
+  // Uma gravação: o pedido, o aviso com «Desfazer» e a releitura. Arquivo mudado no meio: a tela recarrega e avisa.
+  async function gravar(payload, texto, erro, acao = "edit_plan") {
+    if (mutationBusy) return false;
+    mutationBusy = true;
+    if (erro) erro.hidden = true;
+    try {
+      const feito = await window.financeRequest(acao, payload);
+      criando = null; encerrando = null; editingPlan = null;
+      ultimaGravacao = {texto, recibo: payload.op !== "undo" && podeGravar("undo") && feito && feito.undo ? feito.undo : null};
+      announce(texto);
+      redesenharAssinaturas();
+      await loadSnapshot(true);
+      return true;
+    } catch (falha) {
+      if (["stale_source", "stale_plan", "concurrent_edit"].includes(falha.code)) {
+        criando = null; encerrando = null; editingPlan = null;
+        ultimaGravacao = {texto: AVISO_ARQUIVO_MUDOU, erro: true};
+        redesenharAssinaturas();
+        await loadSnapshot(true);
+      } else if (erro) {
+        erro.textContent = text(falha.message); erro.hidden = false;
+      } else {
+        ultimaGravacao = {texto: falha.message, erro: true};
+        redesenharAssinaturas();
+      }
+      return false;
+    } finally { mutationBusy = false; }
+  }
+
+  function escritaNoTopo(target, block) {
+    if (ultimaGravacao) {
+      const aviso = element("div", "write-notice");
+      aviso.id = "aviso-de-gravacao";
+      aviso.dataset.tone = ultimaGravacao.erro ? "error" : "ok";
+      aviso.setAttribute("role", ultimaGravacao.erro ? "alert" : "status");
+      aviso.append(element("p", "", ultimaGravacao.texto));
+      const acoes = element("div", "write-notice-actions");
+      const recibo = ultimaGravacao.recibo;
+      if (recibo) {
+        const desfazer = button("Desfazer", "button-quiet", () => gravar({op: "undo", undo: recibo}, "Gravação desfeita: o arquivo voltou a ser como estava antes dela."));
+        desfazer.dataset.acao = "desfazer"; acoes.append(desfazer);
+      }
+      acoes.append(button("Fechar", "button-quiet", () => { ultimaGravacao = null; redesenharAssinaturas(); }));
+      aviso.append(acoes);
+      target.append(aviso);
+    }
+    if (!podeGravar("add_plan")) return;
+    if (criando === "plan") { target.append(formularioNovaAssinatura(block)); return; }
+    const barra = element("div", "write-toolbar");
+    const nova = button("Nova assinatura", "button-primary", () => { criando = "plan"; encerrando = null; editingPlan = null; redesenharAssinaturas(); focar("nova-servico"); });
+    nova.dataset.acao = "nova-assinatura";
+    barra.append(nova);
+    target.append(barra);
+  }
+
+  function rastroDaGravacao(details, plan) {
+    if (plan.charge_paid && plan.charge_cycle) details.append(element("span", "plan-paid", nomeDoMes(plan.charge_cycle, true) + " paga · " + (plan.charge_paid.autor || "autor não informado") + ", " + dateLabel(plan.charge_paid.em)));
+    if (plan.ended === true) details.append(element("span", "plan-trail", "Encerrada" + (plan.state_changed_by ? " por " + plan.state_changed_by : "") + (plan.state_changed_at ? " em " + dateLabel(plan.state_changed_at) : "") + (plan.state_reason ? " · " + plan.state_reason : "")));
+    else if (plan.changed_by) details.append(element("span", "plan-trail", "Alterada por " + plan.changed_by + (plan.changed_at ? " em " + dateLabel(plan.changed_at) : "")));
+    else if (plan.state_changed_by) details.append(element("span", "plan-trail", "Estado mudado por " + plan.state_changed_by + (plan.state_changed_at ? " em " + dateLabel(plan.state_changed_at) : "")));
+  }
+
+  function acoesDoCartao(management, plan, block) {
+    const acoes = element("div", "plan-actions");
+    if (podeGravar("record_payment") && subscriptionState(plan) === "active" && plan.charge_cycle && !plan.charge_paid) {
+      const paga = button("Marcar " + nomeDoMes(plan.charge_cycle) + " como paga", "button-quiet", () => gravar(
+        {op: "record_payment", index: plan.index, cycle: plan.charge_cycle, expected_revision: revisaoDosPlanos(block), payments_revision: revisaoDoLivro(block)},
+        nomeDoMes(plan.charge_cycle, true) + " de " + nomeDaAssinatura(plan) + " marcada como paga."));
+      paga.dataset.acao = "marcar-paga"; acoes.append(paga);
+    }
+    if (plan.ended === true && podeGravar("archive_plan")) {
+      const reativar = button("Reativar", "button-quiet", () => gravar({index: plan.index, active: true, expected_revision: revisaoDosPlanos(block)},
+        nomeDaAssinatura(plan) + " reativada: volta a contar no custo mensal.", null, "set_subscription"));
+      reativar.dataset.acao = "reativar"; acoes.append(reativar);
+    } else if (podeGravar("archive_plan") && encerrando !== plan.index) {
+      const encerrar = button("Encerrar", "button-quiet button-danger-quiet", () => { encerrando = plan.index; editingPlan = null; criando = null; redesenharAssinaturas(); focar("encerrar-motivo-" + plan.index); });
+      encerrar.dataset.acao = "encerrar"; acoes.append(encerrar);
+    }
+    if (acoes.childNodes.length) management.append(acoes);
+  }
+
+  function confirmarEncerrar(plan, block) {
+    const form = element("form", "end-confirm");
+    form.dataset.encerrar = String(plan.index);
+    form.setAttribute("aria-label", "Encerrar " + nomeDaAssinatura(plan));
+    form.append(element("p", "end-confirm-title", "Encerrar " + nomeDaAssinatura(plan) + "?"));
+    form.append(element("p", "end-confirm-warning", "Encerrar aqui não cancela o serviço: cancele também no site dele."));
+    form.append(element("p", "edit-explanation", "A assinatura sai do custo mensal e fica marcada como encerrada, com o seu nome e a data. Dá para reativar depois."));
+    const motivo = inputField("Motivo (opcional)", "encerrar-motivo-" + plan.index, "text", "");
+    motivo.input.maxLength = 240;
+    const erro = erroDeFormulario();
+    const {footer, salvar} = rodape(() => { encerrando = null; redesenharAssinaturas(); }, "Encerrar assinatura", "button-danger");
+    salvar.dataset.acao = "confirmar-encerrar";
+    form.append(motivo.holder, erro, footer);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      salvar.disabled = true;
+      await gravar({op: "archive_plan", index: plan.index, motivo: motivo.input.value.trim(), expected_revision: revisaoDosPlanos(block)},
+        nomeDaAssinatura(plan) + " encerrada no painel. O serviço real não foi cancelado.", erro);
+      salvar.disabled = false;
+    });
+    return form;
+  }
+
+  function valorParaEditar(plan) {
+    return typeof plan.valor === "number" && Number.isFinite(plan.valor)
+      ? new Intl.NumberFormat("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false}).format(plan.valor) : "";
+  }
+
+  function formularioDeEditar(plan, block) {
+    const form = element("form", "plan-edit-form");
+    form.dataset.planForm = String(plan.index);
+    form.append(element("p", "edit-explanation", "Serviço, moeda e período ficam como estão no arquivo. A gravação leva o seu nome e a data."));
+    const grid = element("div", "plan-edit-grid");
+    const rotulo = inputField("Nome do plano", "plan-label-" + plan.index, "text", plan.plano || "");
+    rotulo.input.maxLength = 120; rotulo.input.required = true;
+    const inicial = valorParaEditar(plan);
+    const valor = inputField("Valor (" + text(plan.moeda || "moeda não informada") + ")", "plan-value-" + plan.index, "text", inicial);
+    valor.input.inputMode = "decimal"; valor.input.maxLength = 20;
+    grid.append(rotulo.holder, valor.holder);
+    let dia = null, data = null, conferido = null;
+    if (eMensal(plan)) {
+      dia = inputField("Dia do vencimento", "plan-day-" + plan.index, "number", plan.monthly_day || "");
+      dia.input.min = "1"; dia.input.max = "31"; dia.input.step = "1";
+      grid.append(dia.holder);
+    }
+    const dataInicial = plan.date_explicit === true ? plan.proxima_data || "" : "";
+    if (!eMensal(plan) || plan.date_explicit === true) {
+      data = inputField("Próxima data de cobrança", "plan-date-" + plan.index, "date", dataInicial);
+      grid.append(data.holder);
+    }
+    form.append(grid);
+    if (plan.confirmed !== true) {
+      conferido = element("input"); conferido.type = "checkbox"; conferido.id = "plan-confirmed-" + plan.index;
+      const marca = element("label", "check-label plan-confirm-check"); marca.htmlFor = conferido.id;
+      marca.append(conferido, element("span", "", "Valor conferido com a fatura (passa a contar no custo mensal)"));
+      form.append(marca);
+    }
+    const erro = erroDeFormulario();
+    const {footer, salvar} = rodape(() => { editingPlan = null; redesenharAssinaturas(); }, "Salvar alterações");
+    salvar.dataset.acao = "salvar-edicao";
+    form.append(erro, footer);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const values = {};
+      if (rotulo.input.value.trim() !== (plan.plano || "")) values.plano = rotulo.input.value.trim();
+      if (valor.input.value.trim() !== inicial) values.valor = valor.input.value.trim();
+      if (dia && dia.input.value !== String(plan.monthly_day || "")) values.dia_vencimento = dia.input.value;
+      if (data && data.input.value !== dataInicial) values.proxima_data = data.input.value;
+      if (conferido && conferido.checked) values.confirmado = true;
+      if (!Object.keys(values).length) { editingPlan = null; redesenharAssinaturas(); return; }
+      salvar.disabled = true;
+      await gravar({op: "update_plan", index: plan.index, values, expected_revision: revisaoDosPlanos(block)}, nomeDaAssinatura({...plan, plano: values.plano || plan.plano}) + " atualizada.", erro);
+      salvar.disabled = false;
+    });
+    return form;
+  }
+
+  function formularioNovaAssinatura(block) {
+    const form = element("form", "plan-card write-panel");
+    form.id = "nova-assinatura";
+    form.setAttribute("aria-labelledby", "nova-assinatura-titulo");
+    const titulo = element("h3", "write-panel-title", "Nova assinatura"); titulo.id = "nova-assinatura-titulo";
+    form.append(titulo, element("p", "edit-explanation", "Entra ativa e conferida, com o seu nome e a data, e soma no custo mensal na hora."));
+    const grid = element("div", "plan-edit-grid write-grid");
+    const servico = inputField("Serviço", "nova-servico", "text", ""); servico.input.maxLength = 120; servico.input.required = true;
+    const plano = inputField("Plano", "nova-plano", "text", ""); plano.input.maxLength = 120; plano.input.required = true;
+    const valor = inputField("Valor", "nova-valor", "text", ""); valor.input.inputMode = "decimal"; valor.input.maxLength = 20; valor.input.placeholder = "59,90"; valor.input.required = true;
+    const moeda = campoDeEscolha("Moeda", "nova-moeda", MOEDAS_DE_GRAVAR, "BRL");
+    const periodo = campoDeEscolha("Período", "nova-periodo", PERIODOS_DE_GRAVAR, "mensal");
+    const dia = inputField("Dia do vencimento", "nova-dia", "number", "");
+    dia.input.min = "1"; dia.input.max = "31"; dia.input.step = "1";
+    const data = inputField("Próxima data de cobrança", "nova-data", "date", "");
+    const alternar = () => { const mensal = periodo.input.value === "mensal"; dia.holder.hidden = !mensal; data.holder.hidden = mensal; };
+    periodo.input.addEventListener("change", alternar); alternar();
+    grid.append(servico.holder, plano.holder, valor.holder, moeda.holder, periodo.holder, dia.holder, data.holder);
+    const erro = erroDeFormulario();
+    const {footer, salvar} = rodape(() => { criando = null; redesenharAssinaturas(); }, "Criar assinatura");
+    salvar.dataset.acao = "criar-assinatura";
+    form.append(grid, erro, footer);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const values = {servico: servico.input.value.trim(), plano: plano.input.value.trim(), valor: valor.input.value.trim(), moeda: moeda.input.value, periodo: periodo.input.value};
+      if (periodo.input.value === "mensal") values.dia_vencimento = dia.input.value; else values.proxima_data = data.input.value;
+      salvar.disabled = true;
+      await gravar({op: "add_plan", values, expected_revision: revisaoDosPlanos(block)}, "Assinatura criada: " + values.servico + " · " + values.plano + ".", erro);
+      salvar.disabled = false;
+    });
+    return form;
+  }
+
+  function formularioPagamentoUnico(block) {
+    const form = element("form", "plan-card write-panel");
+    form.id = "pagamento-unico";
+    form.setAttribute("aria-labelledby", "pagamento-unico-titulo");
+    const titulo = element("h3", "write-panel-title", "Registrar pagamento único"); titulo.id = "pagamento-unico-titulo";
+    form.append(titulo, element("p", "edit-explanation", "Um gasto que não se repete. Fica nesta lista com o seu nome e a data, fora do custo mensal."));
+    const grid = element("div", "plan-edit-grid write-grid");
+    const descricao = inputField("O que foi pago", "unico-descricao", "text", ""); descricao.input.maxLength = 120; descricao.input.required = true;
+    const valor = inputField("Valor", "unico-valor", "text", ""); valor.input.inputMode = "decimal"; valor.input.maxLength = 20; valor.input.placeholder = "350,00"; valor.input.required = true;
+    const moeda = campoDeEscolha("Moeda", "unico-moeda", MOEDAS_DE_GRAVAR, "BRL");
+    const quando = inputField("Data do pagamento", "unico-data", "date", hojeLocal()); quando.input.max = hojeLocal(); quando.input.required = true;
+    grid.append(descricao.holder, valor.holder, moeda.holder, quando.holder);
+    const erro = erroDeFormulario();
+    const {footer, salvar} = rodape(() => { criando = null; redesenharAssinaturas(); }, "Registrar pagamento");
+    salvar.dataset.acao = "registrar-pagamento";
+    form.append(grid, erro, footer);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const values = {descricao: descricao.input.value.trim(), valor: valor.input.value.trim(), moeda: moeda.input.value, pago_em: quando.input.value};
+      salvar.disabled = true;
+      await gravar({op: "add_one_off", values, payments_revision: revisaoDoLivro(block)}, "Pagamento único registrado: " + values.descricao + ". O custo mensal não mudou.", erro);
+      salvar.disabled = false;
+    });
+    return form;
+  }
+
+  function pagamentosUnicos(target, block) {
+    const livro = block.payments;
+    if (!livro || typeof livro !== "object") return;   // site e núcleo antigo: não há livro de pagamentos
+    const itens = array(livro.one_off);
+    if (!itens.length && !podeGravar("add_one_off")) return;
+    const secao = element("section", "one-off-section");
+    secao.id = "pagamentos-unicos";
+    const cabecalho = element("div", "subsection-heading");
+    cabecalho.append(element("h3", "", "Pagamentos únicos"));
+    if (podeGravar("add_one_off") && criando !== "one_off") {
+      const registrar = button("Registrar pagamento único", "button-quiet", () => { criando = "one_off"; encerrando = null; editingPlan = null; redesenharAssinaturas(); focar("unico-descricao"); });
+      registrar.dataset.acao = "pagamento-unico";
+      cabecalho.append(registrar);
+    }
+    secao.append(cabecalho, element("p", "section-intro", "Pagos uma vez, fora das assinaturas. Não entram no custo mensal nem no equivalente mensal."));
+    if (criando === "one_off") secao.append(formularioPagamentoUnico(block));
+    const doMes = array(livro.one_off_month);
+    const resumo = element("p", "one-off-month");
+    resumo.append(element("span", "amount-pair-label", "Pagos em " + (nomeDoMes(livro.cycle) || "este mês")), element("strong", "", doMes.length ? doMes.map((t) => money(t.valor, t.moeda)).join(" + ") : "nenhum"));
+    secao.append(resumo);
+    if (!itens.length) secao.append(element("p", "empty-state", "Nenhum pagamento único registrado."));
+    else {
+      const lista = element("ul", "one-off-list");
+      itens.forEach((item) => {
+        const linha = element("li", "one-off-item");
+        const texto = element("div");
+        texto.append(element("span", "one-off-what", item.descricao || "Sem descrição"), element("span", "plan-trail", "Registrado por " + (item.autor || "autor não informado") + (item.registrado_em ? " em " + dateLabel(item.registrado_em) : "")));
+        linha.append(element("span", "one-off-date", dateLabel(item.pago_em)), texto, element("span", "one-off-value", money(item.valor, item.moeda)));
+        lista.append(linha);
+      });
+      secao.append(lista);
+    }
+    target.append(secao);
   }
 
   function renderSelling(block) {
@@ -2646,7 +2953,7 @@
     const focusedId = document.activeElement && document.activeElement.id;
     const blocks = snapshot.blocks;
     renderOverview(blocks.user || {}, snapshot.user || {});
-    if (editingPlan === null) renderSubscriptions(blocks.user || {}, snapshot.user || {});
+    if (editingPlan === null && !formularioDeGravacaoAberto()) renderSubscriptions(blocks.user || {}, snapshot.user || {});
     renderSelling(blocks.sell_first || {});
     renderInventory(blocks.inventory || {}, blocks.atlas || snapshot.atlas);
     renderCash(blocks.cash || {});

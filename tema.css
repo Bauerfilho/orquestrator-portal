@@ -154,3 +154,11 @@ html[data-tema=escuro] .theme-toggle .tema-lua{display:none}
 :root[data-tema=claro] .product-passo-estado[data-estado="feito"]{color:#2f7a4f;border-color:rgba(47,122,79,.45)}
 :root[data-tema=claro] .product-passo-estado[data-estado="depois"]{color:var(--faint);border-color:var(--line)}
 :root[data-tema=claro] .product-tabela caption{color:#8a6a1e}
+/* P4 (11/11/2026) — gravações pela tela (só no AI Cask): no claro, mesmas pílulas tingidas e superfícies brancas. */
+:root[data-tema=claro] .write-notice{color:#2f6b3f;background:rgba(72,150,96,.1);border-color:rgba(72,150,96,.22)}
+:root[data-tema=claro] .write-notice[data-tone="error"]{color:var(--danger);background:var(--danger-bg);border-color:rgba(166,58,40,.22)}
+:root[data-tema=claro] .plan-paid{color:#2f6b3f}
+:root[data-tema=claro] .button-danger{border-color:rgba(166,58,40,.35)}
+:root[data-tema=claro] .subscription-state[data-state=ended]{color:var(--danger);background:var(--danger-bg)}
+:root[data-tema=claro] .one-off-list{box-shadow:var(--sombra);border-color:var(--line)}
+:root[data-tema=claro] .end-confirm{border-color:var(--line)}
