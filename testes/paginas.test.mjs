@@ -52,6 +52,9 @@ test('cada página tem chave e rota únicas, título, descrição, as três linh
   // o texto do Laboratório é o que o PR dos perfis reescreveu (tela cheia, dados fictícios)
   assert.match(W.financePaginas.find(p => p.chave === 'lab').ajuda.oque, /tela cheia/);
   assert.equal(W.financePaginas.find(p => p.chave === 'lab').requer, 'galeria');
+  // as quatro páginas do diário pedem o diário do host (financeHost.livro): na aba Finanças do AI Cask, que não o traz, elas não aparecem
+  assert.deepEqual(puro(W.financePaginas.filter(p => p.requer === 'livro').map(p => p.chave)), ['livro', 'lancamentos', 'parametros', 'historico']);
+  assert.deepEqual(puro(W.financePaginas.filter(p => p.requer && !['galeria', 'livro'].includes(p.requer)).map(p => p.chave)), []);
 });
 
 test('o index.html: gaveta vazia montada pelo registro, "+ Lançar" no topo, faixa global e paginas.js antes do app.js', () => {

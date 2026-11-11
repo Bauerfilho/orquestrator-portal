@@ -1,12 +1,14 @@
 // A ponte estática do Finanças (GitHub Pages): a mesma interface da ponte nativa do AI Cask (financeRequest), com os dados
 // vindos do pacote cifrado e o domínio (domain.js) rodando no navegador. Só leitura: as mutações respondem read_only; as
 // mudanças se fazem na aba Finanças do AI Cask. A chave mestra vive SÓ em memória (nunca em storage): recarregar = entrar de novo.
+// Esta mesma interface é a da aba Finanças do AI Cask: lá a ponte é a nativa e esta CEDE (anfitriao.js e o fim deste arquivo).
 import {unlock, fetchManifest, loadBundle, b64} from './portal-crypto.js';
 import {buildSnapshot, civilDate, validateState} from './domain.js';
 import {abrirDiario} from './diario.js';
 import {DIARIO_URL} from './endereco-diario.js';
 import {criarGaleria} from './galeria.js';
 import {carregarPerfis, cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
+import {ponteNativa, completarHostNativo} from './anfitriao.js';
 // O servidor do diário cifrado (servidor/LEIA.md). Sem ele publicado, o diário roda em modo treino e a tela diz isso.
 
 const $ = id => document.getElementById(id);
@@ -26,7 +28,7 @@ const domainMember = m => ({id: m.id, displayName: m.displayName, participationP
 // pacote cifrado entram como "Sem stand" (o do repositório vence). Só com o portal aberto pela senha.
 const galeria = criarGaleria({base, legado: () => bundle && bundle.gallery});
 // O host, para a interface saber onde está: portal = só leitura, com Laboratório, com "Minha equipe", sem decisão.
-window.financeHost = {
+const hostDoPortal = {
   kind: 'portal', tema: temaAtual(), galeria: true, team: true, readOnly: true, decide: false,
   // URL (sem fragmento) de uma página da galeria, servida de blob: nesta aba; o app acrescenta o fragmento #tema=.
   // Assíncrona: a página vem do repositório (fetch na mesma origem) e só cai no pacote se o repositório não a tiver.
@@ -113,7 +115,7 @@ function prepareForm() {
   const access = $('cloud-access'); if (access) access.hidden = true;
   const form = $('login-form'); if (form) { form.hidden = false; form.inert = false; form.removeAttribute('aria-hidden'); }
 }
-window.financeWebRequest = async (action, payload = {}) => {
+const pedidoDoPortal = async (action, payload = {}) => {
   if (action === 'restore_session') {
     if (!chave) fail('Entre com a senha do portal.', 'unauthenticated');
     try { return await activate(chave); }
@@ -131,7 +133,7 @@ window.financeWebRequest = async (action, payload = {}) => {
     return entrada;
   }
   if (action === 'logout') { esquecer(); return {logged_out: true}; }
-  if (action === 'preferences') { window.financeHost.tema = payload.tema === 'escuro' ? 'escuro' : 'claro'; return {tema: window.financeHost.tema}; }
+  if (action === 'preferences') { hostDoPortal.tema = payload.tema === 'escuro' ? 'escuro' : 'claro'; return {tema: hostDoPortal.tema}; }
   if (action === 'change_password') fail('A senha do portal é definida pelo Criador, fora do painel.', 'identity_managed');
   if (!state) fail('Entre com a senha do portal.', 'unauthenticated');
   if (action === 'snapshot') {
@@ -141,7 +143,7 @@ window.financeWebRequest = async (action, payload = {}) => {
   if (action === 'set_decision') fail('As decisões se registram na aba Finanças do AI Cask.', 'read_only');
   fail('Esta versão publicada é só de leitura. As mudanças se fazem na aba Finanças do AI Cask.', 'read_only');
 };
-window.financeOpenTeam = async () => {
+const equipeDoPortal = async () => {
   const node = (tag, text, cls) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; };
   let dialog = $('cloud-team');
   if (!dialog) { dialog = node('dialog', undefined, 'asset-dialog cloud-team'); dialog.id = 'cloud-team'; dialog.setAttribute('aria-label', 'Equipe e participação'); document.body.append(dialog); }
@@ -167,4 +169,9 @@ function olhoDaSenha() {
   const botao = document.createElement('button'); botao.type = 'button'; botao.id = 'login-olho'; botao.className = 'olho'; botao.textContent = 'Mostrar'; botao.setAttribute('aria-pressed', 'false'); botao.setAttribute('aria-controls', 'login-password'); caixa.appendChild(botao);
   botao.addEventListener('click', () => { const ver = input.type === 'password'; input.type = ver ? 'text' : 'password'; botao.textContent = ver ? 'Ocultar' : 'Mostrar'; botao.setAttribute('aria-pressed', String(ver)); input.focus(); });
 }
-prepareForm(); olhoDaSenha();
+// Quem atende. Com a ponte nativa (a aba Finanças do AI Cask), os dados e a sessão são dela: esta ponte cede, isto é,
+// não troca o host que o app apresentou, não atende pedidos e não mexe no formulário de entrada (lá o CPF vale); só
+// completa o host com o Laboratório do repositório. Sem a ponte nativa, é o portal: host, pedidos e equipe daqui.
+if (ponteNativa(window)) completarHostNativo(window, galeria);
+else { window.financeHost = hostDoPortal; window.financeWebRequest = pedidoDoPortal; window.financeOpenTeam = equipeDoPortal; prepareForm(); }
+olhoDaSenha();

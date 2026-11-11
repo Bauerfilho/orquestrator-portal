@@ -271,3 +271,44 @@ html[data-surface="grid"] body{background-image:linear-gradient(rgba(151,182,148
 .product-tabela{max-width:100%}.product-tabela table{font-size:12.5px}.product-tabela td,.product-tabela th{padding:11px 14px}.product-tabela caption{padding:12px 14px;font-size:12.5px;color:var(--gold-light)}
 .product-nota{font-size:12px;color:var(--faint);line-height:1.55;max-width:92ch;margin:0}
 @media(max-width:860px){.product-colunas{grid-template-columns:1fr}.product-numero-valor{font-size:26px}}
+/* P4 (11/11/2026) — gravações pela tela na página Assinaturas: só aparecem quando o anfitrião grava (AI Cask). */
+.write-toolbar{display:flex;justify-content:flex-end;gap:8px;margin:-8px 0 18px}
+.write-notice{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 18px;padding:10px 12px 10px 18px;border:1px solid #405638;border-radius:12px;background:rgba(38,51,35,.82);color:#bed8b0;font-size:12px;line-height:1.6}
+.write-notice p{margin:0}
+.write-notice[data-tone="error"]{color:var(--danger);border-color:#73534a;background:var(--danger-bg)}
+.write-notice-actions{display:flex;gap:4px;flex-shrink:0}
+.write-notice .button{min-height:34px;padding:6px 12px;color:inherit}
+.write-panel{margin:0 0 22px}
+.write-panel-title{font-family:var(--serif);font-size:23px;font-weight:400;margin:0 0 6px}
+.write-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.write-grid .field:last-child{grid-column:auto}
+.write-grid .field[hidden]{display:none}
+.plan-actions{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;margin-left:auto}
+.plan-actions .button{min-height:36px;padding:6px 12px;font-size:11px}
+.button-danger-quiet:hover{color:var(--danger)}
+.button-danger{background:transparent;color:var(--danger);border-color:#73534a}
+.button-danger:hover{background:var(--danger-bg)}
+.plan-paid.badge-ok{justify-self:start;display:inline-flex;align-items:center;gap:6px;font-size:10.5px;white-space:normal;padding:3px 10px;border-radius:999px;color:#bed8b0;border-color:#405638;background:#263323}
+.plan-paid.badge-ok::before{content:"✓";font-weight:600}
+.plan-bottom>.plan-edit-button{white-space:nowrap;flex-shrink:0}
+.plan-actions .button-danger-quiet:not(:hover):not(:focus-visible){color:var(--faint)}
+.button-danger-quiet:focus-visible{color:var(--danger)}
+.plan-actions .button{white-space:nowrap}
+.plan-trail{display:block;font-size:10.5px;color:var(--faint)}
+.plan-confirm-check{font-size:12px;color:var(--muted);margin:0 0 14px}
+.end-confirm{border-top:1px solid var(--line);margin-top:18px;padding-top:18px}
+.end-confirm-title{font-family:var(--serif);font-size:19px;margin:0 0 8px;color:var(--ink)}
+.end-confirm-warning{font-size:12.5px;line-height:1.6;margin:0 0 6px;padding:9px 12px;border-radius:8px;color:var(--danger);background:var(--danger-bg)}
+.end-confirm .field{margin:14px 0 12px}
+.subscription-state[data-state="ended"]{color:var(--danger);border-color:#73534a;background:var(--danger-bg)}
+.subscription-state[data-state="ended"] .subscription-light{background:transparent;border:1px solid var(--danger);box-shadow:none}
+.one-off-section{margin-top:34px}
+.one-off-month{display:flex;align-items:baseline;gap:12px;margin:0 0 14px;font-size:13px}
+.one-off-month strong{font-family:var(--serif);font-size:21px;font-weight:400;color:var(--ink)}
+.one-off-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.one-off-item{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:16px;align-items:baseline;padding:13px 18px;font-size:13px}
+.one-off-item+.one-off-item{border-top:1px solid var(--line)}
+.one-off-date{font-size:11px;color:var(--muted)}
+.one-off-what{display:block;overflow-wrap:anywhere}
+.one-off-value{font-family:var(--serif);font-size:17px;white-space:nowrap}
+@media(max-width:620px){.write-grid{grid-template-columns:1fr}.write-notice{flex-direction:column;align-items:flex-start}.one-off-item{grid-template-columns:1fr auto}.one-off-date{grid-column:1/-1}}

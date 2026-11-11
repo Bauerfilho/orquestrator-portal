@@ -169,6 +169,9 @@
 
   // ── a maquete: o arquivo em produtos/ vira blob: nesta aba (a moldura herda a CSP do portal); #tema= acompanha o tema ──
   const bases = new Map();
+  // Sem abas: a aba Finanças do AI Cask (ponte nativa) não abre janela nova. Lá os links "numa aba nova" não entram:
+  // a foto fica sem link, a maquete só na moldura e a página publicada aparece como endereço escrito.
+  const semAbas = Boolean(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.finance);
   async function baseDaMaquete(arquivo) {
     if (!bases.has(arquivo)) {
       bases.set(arquivo, (async () => {
@@ -215,7 +218,8 @@
       const fig = el("figure", "product-foto"), a = el("a"), img = el("img");
       a.href = new URL("produtos/" + f.src, document.baseURI).href; a.target = "_blank"; a.rel = "noopener noreferrer"; a.title = "Abrir a foto em tamanho cheio";
       img.src = a.href; img.alt = f.alt || f.legenda; img.loading = "lazy"; img.decoding = "async";
-      a.append(img); fig.append(a); fig.append(forte(el("figcaption"), f.legenda)); grade.append(fig);
+      if (semAbas) fig.append(img); else { a.append(img); fig.append(a); }
+      fig.append(forte(el("figcaption"), f.legenda)); grade.append(fig);
     });
     return grade;
   }
@@ -246,7 +250,7 @@
   }
   async function montaMaquete(p) {
     const mesa = secao("Veja a maquete", p.dica || "Funciona aqui dentro, numa moldura isolada, com dados fictícios.");
-    if (p.telaCheia) {
+    if (p.telaCheia && !semAbas) {
       // a maquete sozinha, numa aba nova, ocupando a tela inteira (o arquivo é o mesmo de produtos/, com o tema do portal)
       const fora = el("p", "product-actions");
       const a = el("a", "button button-primary", "Ver em tela cheia ↗");
@@ -285,7 +289,8 @@
     }
     const sobre = secao("O que é", p.texto);
     const acoes = el("p", "product-actions");
-    if (p.app) {
+    if (p.app && semAbas) acoes.append(el("span", "mp-secao-texto", "Página publicada: " + p.app.url));
+    else if (p.app) {
       const a = el("a", "button button-primary", p.app.rotulo + " ↗");
       a.href = p.app.url; a.target = "_blank"; a.rel = "noopener noreferrer";
       acoes.append(a, el("span", "mp-secao-texto", "Abre a página publicada no GitHub, numa aba nova."));
