@@ -8,7 +8,7 @@ import {abrirDiario} from './diario.js';
 import {DIARIO_URL} from './endereco-diario.js';
 import {criarGaleria} from './galeria.js';
 import {carregarPerfis, cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
-import {ponteNativa, completarHostNativo} from './anfitriao.js';
+import {ponteNativa, completarHostNativo, legadoDoAnfitriao} from './anfitriao.js';
 // O servidor do diário cifrado (servidor/LEIA.md). Sem ele publicado, o diário roda em modo treino e a tela diz isso.
 
 const $ = id => document.getElementById(id);
@@ -24,9 +24,11 @@ const nomeVisivel = m => (perfis.estado === 'ok' && perfis.membros[m.id] && perf
 const fail = (message, code) => { const error = new Error(message); error.code = code; throw error; };
 const temaAtual = () => document.documentElement.dataset.tema === 'escuro' ? 'escuro' : 'claro';
 const domainMember = m => ({id: m.id, displayName: m.displayName, participationPct: m.participationPct ?? null, role: m.role === 'owner' ? 'owner' : 'member'});
-// O Laboratório (galeria.js): o catálogo e as maquetes vêm de galeria/ deste repositório; os documentos antigos do
-// pacote cifrado entram como "Sem stand" (o do repositório vence). Só com o portal aberto pela senha.
-const galeria = criarGaleria({base, legado: () => bundle && bundle.gallery});
+// O Laboratório (galeria.js): o catálogo e as maquetes vêm de galeria/ deste repositório; os documentos antigos entram
+// como "Sem stand" (o do repositório vence). No portal eles vêm do pacote cifrado, só com o portal aberto pela senha; na
+// aba Finanças do AI Cask (ponte nativa), do que o app declarou em financeHost.galeriaLegado (anfitriao.js).
+const janela = window, nativa = ponteNativa(janela);
+const galeria = criarGaleria({base, legado: () => nativa ? legadoDoAnfitriao(janela) : bundle && bundle.gallery});
 // O host, para a interface saber onde está: portal = só leitura, com Laboratório, com "Minha equipe", sem decisão.
 const hostDoPortal = {
   kind: 'portal', tema: temaAtual(), galeria: true, team: true, readOnly: true, decide: false,
@@ -172,6 +174,6 @@ function olhoDaSenha() {
 // Quem atende. Com a ponte nativa (a aba Finanças do AI Cask), os dados e a sessão são dela: esta ponte cede, isto é,
 // não troca o host que o app apresentou, não atende pedidos e não mexe no formulário de entrada (lá o CPF vale); só
 // completa o host com o Laboratório do repositório. Sem a ponte nativa, é o portal: host, pedidos e equipe daqui.
-if (ponteNativa(window)) completarHostNativo(window, galeria);
+if (nativa) completarHostNativo(window, galeria);
 else { window.financeHost = hostDoPortal; window.financeWebRequest = pedidoDoPortal; window.financeOpenTeam = equipeDoPortal; prepareForm(); }
 olhoDaSenha();

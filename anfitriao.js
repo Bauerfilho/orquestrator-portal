@@ -21,3 +21,26 @@ export function completarHostNativo(janela, galeria) {
   }
   return host;
 }
+
+// O legado do Laboratório no app (P1c, 11/11/2026). Os documentos da galeria anterior (o «legado» do galeria.js) que só
+// existem no AI Cask, as maquetes antigas, chegam pelo host que o app apresenta: financeHost.galeriaLegado, na mesma forma
+// do pacote cifrado, {files: {"apps/<id>.html": "<html…>"}, titles: {"apps/<id>.html": "nome"}}. Sem a ponte nativa, nada
+// (no portal o legado é só o do pacote). Forma estranha é ignorada, sem exceção: só entram páginas apps/<id>.html com
+// conteúdo de texto, e só os títulos de texto dessas mesmas páginas. O galeria.js faz o resto, como com o pacote.
+const PAGINA_LEGADA = /^apps\/[a-z0-9-]+\.html$/;
+const objeto = valor => Boolean(valor) && typeof valor === 'object' && !Array.isArray(valor);
+export function legadoDoAnfitriao(janela) {
+  try {
+    if (!ponteNativa(janela) || !objeto(janela.financeHost)) return null;
+    const dado = janela.financeHost.galeriaLegado;
+    if (!objeto(dado) || !objeto(dado.files)) return null;
+    const titulos = objeto(dado.titles) ? dado.titles : {};
+    const legado = {files: {}, titles: {}};
+    for (const nome of Object.keys(dado.files)) {
+      if (!PAGINA_LEGADA.test(nome) || typeof dado.files[nome] !== 'string') continue;
+      legado.files[nome] = dado.files[nome];
+      if (typeof titulos[nome] === 'string') legado.titles[nome] = titulos[nome];
+    }
+    return Object.keys(legado.files).length ? legado : null;
+  } catch { return null; }
+}

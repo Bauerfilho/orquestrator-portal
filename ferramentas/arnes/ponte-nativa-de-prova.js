@@ -7,7 +7,13 @@
   if (window.top !== window) return;   // as molduras (maquetes) não têm ponte nem host
   const params = new URLSearchParams(location.search);
   const HOJE = '2026-10-19';
-  window.financeHost = {kind: 'aicask', tema: params.get('tema') === 'escuro' ? 'escuro' : 'claro', galeria: true, team: false, readOnly: false, decide: false};
+  window.financeHost = {kind: 'aicask', tema: params.get('tema') === 'escuro' ? 'escuro' : 'claro', galeria: true, team: false, readOnly: false, decide: false,
+    // O legado (P1c, 11/11/2026): o app declara as maquetes antigas que só existem nele. Aqui, um documento fictício que só o
+    // app tem e um que o repositório também tem (sinal: vence o do repositório).
+    galeriaLegado: {
+      files: {'apps/legado-de-prova.html': '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Maquete antiga de prova</title></head><body><main id="legado-de-prova">documento antigo, vindo do app</main></body></html>',
+        'apps/sinal.html': '<!doctype html><title>Sinal ANTIGO do app</title><p>não pode aparecer</p>'},
+      titles: {'apps/legado-de-prova.html': 'Maquete antiga de prova', 'apps/sinal.html': 'Sinal ANTIGO do app'}}};
   window.provaNativa = {pedidos: []};
   let base = null, estado = null, sessao = params.get('login') !== '1';
   const carregar = () => base ??= Promise.all([import('/domain.js'), import('/ferramentas/arnes/estado-ficticio.js')]).then(([dominio, ficticio]) => {

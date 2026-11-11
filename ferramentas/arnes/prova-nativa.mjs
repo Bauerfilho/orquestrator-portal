@@ -123,6 +123,25 @@ try {
   await pagina.waitForTimeout(500);
   await foto(pagina, 'nativo-04-laboratorio');
 
+  // o legado que o app declarou (P1c): entra no catálogo como «Sem stand», abre na moldura com o HTML do app, e o
+  // mesmo nome do repositório (sinal) continua sendo o do repositório
+  const catalogo = await quadroDoLab.evaluate(() => { const itens = JSON.parse(document.getElementById('catalogo').textContent);
+    return {legado: itens.filter(i => i.legado).map(i => i.arquivo + '=' + i.nome), sinal: itens.filter(i => i.arquivo === 'apps/sinal.html').map(i => Boolean(i.legado)),
+      selos: [...document.querySelectorAll('article.cartao.legado .selo')].map(n => n.textContent)}; });
+  confere('o legado do app entra no catálogo como «Sem stand»', JSON.stringify(catalogo.legado) === JSON.stringify(['apps/legado-de-prova.html=Maquete antiga de prova'])
+    && JSON.stringify(catalogo.selos) === JSON.stringify(['Sem stand']), JSON.stringify(catalogo));
+  confere('o mesmo nome no repositório e no legado: fica o do repositório', JSON.stringify(catalogo.sinal) === JSON.stringify([false]), JSON.stringify(catalogo.sinal));
+  const srcDoIndice = await pagina.evaluate(() => document.getElementById('lab-frame').src);
+  await quadroDoLab.evaluate(() => { const b = [...document.querySelectorAll('article.cartao.legado button.abrir')][0]; if (!b) throw new Error('sem botão do legado'); b.click(); });
+  await pagina.waitForFunction(antes => document.getElementById('lab-frame').src !== antes && document.getElementById('lab-current').textContent === 'Maquete antiga de prova', srcDoIndice, {timeout: 10000});
+  await pagina.waitForTimeout(300);
+  const doLegado = pagina.frames().find(quadro => quadro.url().startsWith('blob:') && quadro !== pagina.mainFrame() && quadro.parentFrame() === pagina.mainFrame());
+  const aberto = doLegado ? await doLegado.evaluate(() => ({titulo: document.title, marca: (document.getElementById('legado-de-prova') || {}).textContent || ''})) : null;
+  confere('o documento do legado abre na moldura blob: com o HTML do app', Boolean(aberto) && aberto.titulo === 'Maquete antiga de prova' && aberto.marca === 'documento antigo, vindo do app', JSON.stringify(aberto));
+  await foto(pagina, 'nativo-04b-laboratorio-legado');
+  await pagina.evaluate(() => document.getElementById('lab-back').click());
+  await pagina.waitForFunction(() => document.getElementById('lab-current').textContent && !document.getElementById('lab-current').textContent.includes('antiga'), null, {timeout: 10000});
+
   const primeiro = produtos[0];
   await ir(pagina, primeiro);
   await pagina.waitForFunction(() => { const moldura = document.querySelector('iframe.product-frame'); return moldura && moldura.src.startsWith('blob:'); }, null, {timeout: 15000});
