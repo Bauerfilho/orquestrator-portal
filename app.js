@@ -635,12 +635,15 @@
       mutationBusy = true;
       save.disabled = true;
       error.hidden = true;
+      const geracao = sessionGeneration;
       try {
         await window.financeRequest("edit_plan", {index: plan.index, values, expected_revision: sourceRevision});
+        if (geracao !== sessionGeneration) return;   // a sessão mudou com a gravação em voo: a resposta não é desta tela
         editingPlan = null;
         announce("Plano atualizado no arquivo local.");
         await loadSnapshot(true);
       } catch (failure) {
+        if (geracao !== sessionGeneration) return;
         if (failure.code === "stale_source" || failure.code === "stale_plan") {
           editingPlan = null;
           await loadSnapshot(true);
@@ -991,11 +994,14 @@
           const checked = checkbox.checked;
           checkbox.disabled = true;
           mutationBusy = true;
+          const geracao = sessionGeneration;
           try {
             await window.financeRequest("toggle_step", {index: step.index, checked, expected_revision: block.source && block.source.revision});
+            if (geracao !== sessionGeneration) return;   // resposta de outra sessão: não toca estado nem tela
             announce(checked ? "Passo marcado e salvo." : "Marcação removida e salva.");
             await loadSnapshot(true);
           } catch (failure) {
+            if (geracao !== sessionGeneration) return;
             checkbox.checked = !checked;
             if (failure.code === "stale_source" || failure.code === "stale_step") {
               await loadSnapshot(true);
@@ -1187,12 +1193,15 @@
         error.textContent = "O ajuste precisa ser um número inteiro entre −100 e 100."; error.hidden = false; adjust.input.focus(); return;
       }
       mutationBusy = true; save.disabled = true; error.hidden = true;
+      const geracao = sessionGeneration;
       try {
         await window.financeRequest("set_decision", {id: asset.id, destino: select.value, ajuste: value, justificativa: reason.input.value.trim(), proximo_passo: step.input.value.trim()});
+        if (geracao !== sessionGeneration) return;   // resposta de outra sessão: não toca estado nem tela
         announce("Decisão guardada.");
         await loadSnapshot(true);
         message("asset-detail-message", "Decisão guardada com o seu nome e a data.");
       } catch (failure) {
+        if (geracao !== sessionGeneration) return;
         error.textContent = text(failure.message); error.hidden = false;
       } finally { mutationBusy = false; save.disabled = false; }
     });
