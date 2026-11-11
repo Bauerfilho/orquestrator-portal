@@ -20,6 +20,9 @@ maquetes do Laboratório (`galeria/` e `apps/`), que são públicas e só têm d
 | `razao.js` | O livro-razão:<br>· parâmetros com vigência (câmbio, spread, IOF, impostos, taxas);<br>· lançamentos das sócias, conferência e conciliação da fatura;<br>· assinaturas, passos de venda, acertos, saldos e receitas;<br>· fechar e reabrir o mês, com a trava do que forma os números;<br>· o mês calculado, o acerto entre sócias e o CSV para o contador. |
 | `diario.js` | O diário cifrado: cada gravação é cifrada (AES-GCM) e assinada (ECDSA) no navegador, e o servidor só guarda texto cifrado. Fala com o armazenamento por uma **porta** (`portaHttp`, `portaMemoria` ou uma sua): o contrato está em `docs/PORTAS.md`. |
 | `livro.js` · `graficos.js` · `livro.css` | As páginas Livro do mês, Lançamentos, Parâmetros e Histórico, o botão "+ Lançar", os gráficos e os ganchos das páginas novas (`registrarPagina`, `abrirFolha`, `campoDinheiro`, `gravar`). |
+| `ferramentas/importar-livro-caixa.py` | Lê o Excel sem salvá-lo: detecta o cabeçalho de cada mês, confere movimentos, saldos e totais em centavos e grava a extração somente fora do site público. |
+| `ferramentas/atualizar-livro-caixa.mjs` | Incorpora a extração com a mesma chave e preserva diário, senhas, perfis e interface. Reconfere cifra, cadeia e assinaturas do diário com GET, exige backup externo e não publica nem grava no servidor. |
+| `endereco-diario.js` | Endereço único do diário publicado, compartilhado pela ponte e pelo atualizador. Não há seletor de ambiente nem destino vindo da planilha. |
 | `rotina.js` e `assinaturas.js` · `acerto.js` · `caixa.js` · `conciliacao.js` · `fechamento.js` · `ajuda.js` | As páginas da rotina do mês (fase 2), cada uma com o seu `.css`. |
 | `fiscal.js` | O núcleo fiscal puro: Simples (anexos III e V, com a 6ª faixa da lei), fator R, DAS estimado, Presumido e o calendário fiscal com `.ics`. Tudo informa, nada aconselha: confirmar com o contador. |
 | `app.js` · `style.css` · `tema.css` | A interface que já existia. |
@@ -60,6 +63,7 @@ Depois é commit e push; o GitHub Pages publica sozinho.
 
 ```zsh
 node --test testes/*.test.mjs                                 # livro-razão, servidor, diário, galeria e tela cheia das maquetes
+python3 testes/importar-livro-caixa.test.py                     # importador, com openpyxl e arquivos fictícios
 node ferramentas/arnes/servir.mjs 8765                        # o portal local, sem senha: http://127.0.0.1:8765/?demo=1
 node ferramentas/arnes/fotografar.mjs --query "demo=1"        # fotos de todas as páginas, claro/escuro, desktop/celular
 ```
@@ -68,3 +72,48 @@ No arnês, `?diario=local` grava de verdade, cifrado, num servidor do diário em
 como a Ana. `?galeria=1` mostra o Laboratório com a `galeria/` do repositório, e `?legado=1` junta um pacote antigo de
 mentira (um documento "Sem stand" e um Sinal antigo, que tem de perder para o do repositório). As fotos falham se a
 página registrar erro de script ou violação de CSP.
+
+## Livro-caixa, diário e conciliação
+
+O `state.livroCaixa` fica **dentro do pacote cifrado**, nunca num JSON público. Cada movimento preserva a aba, a linha,
+a data, a categoria, a forma, o documento, o saldo na ordem da planilha e as observações. As saídas alimentam o razão;
+as entradas de capital não viram receita de vendas. Meses vazios não criam pagamentos nem previsão de entrada.
+
+**Saldo escriturado não é saldo bancário conciliado.** O Caixa mostra a fonte separada dos saldos bancários informados
+no diário. Importação não inventa quem pagou, quem lançou, comprovante, repasse ou assinatura de uma sócia. A linha da
+planilha é somente leitura; a correção se faz na fonte e numa nova importação. Pagamento único não é custo mensal.
+
+Se o diário já contiver os mesmos gastos, não somar, apagar ou anular automaticamente. A decisão do responsável fica
+em `livroCaixa.conciliacao`, com os IDs aprovados, o limite de sequência e a autorização. Esses registros continuam no
+Histórico e no filtro **Histórico conciliado**, sem repetir custo nem entrar no selo novo. Isso **não perdoa dívidas**:
+reembolsos, Pix e aportes já assinados continuam nos acertos, uma vez só. O atualizador recusa levar para histórico
+uma obrigação ainda pendente; resolvê-la é uma decisão separada. Eventos novos continuam contando. A reimportação
+comum não pode revogar a conciliação nem alterar registros assinados ou meses fechados.
+O congelamento documental inclui entradas, saldos, descrições e observações da aba fechada, não só os custos do selo.
+Uma compra avulsa não converte a assinatura recorrente do mesmo fornecedor em pagamento único. Essa normalização só
+vale quando o próprio plano já declara o caráter único (período ou nome); contradição fica `PENDENTE`.
+
+Fluxo local (os caminhos abaixo são exemplos, sem credenciais reais):
+
+```zsh
+python3 ferramentas/importar-livro-caixa.py /pasta/privada/livro.xlsx --saida /pasta/privada/livro.json
+node ferramentas/atualizar-livro-caixa.mjs --portal . --livro /pasta/privada/livro.json --credenciais /pasta/privada/credenciais.json --diario /pasta/privada/diario-conferido.json --backup /pasta/privada/backup-novo
+node ferramentas/arnes/fluxos/livro-caixa.mjs --saida /pasta/privada/provas-lancamentos
+node ferramentas/arnes/fluxos/caixa.mjs --saida /pasta/privada/provas-caixa
+```
+
+O retrato do diário deve vir de leitura integral. O atualizador não confia no booleano do JSON: abre o mesmo diário
+publicado com `diario.js`, somente por GET, verifica cadeia e assinaturas, exige igualdade com o retrato e reconfere a
+cabeça imediatamente antes da troca. Servidor inacessível, assinatura adulterada, cópia antiga ou diário que avançou
+fazem parar sem substituir o manifesto. Trava e manifesto temporário ficam fora do site.
+O pacote só entra no site depois da última leitura da cabeça. Uma falha limpa o pacote novo não referenciado;
+não apaga arquivo selecionado por outro manifesto nem qualquer versão anterior. A trava coordena instâncias
+do atualizador; outros publicadores também precisam respeitá-la e reconferir o diário antes de publicar.
+
+O importador não avalia
+fórmulas: se o Excel não tiver os valores calculados, ele pede recálculo em vez de inventar zero. A extração não
+sobrescreve arquivos, e o empacotador usa trava, conferência de versão, backup e troca atômica do manifesto. Ele não
+roda o antigo `montar.mjs`, que poderia sobrescrever a interface. Projeções de `estadoEfetivo` nunca viram semente de
+planos: isso duplicaria eventos de assinatura e colaria o status pago nos meses seguintes. Vínculo da fonte a uma
+assinatura que existe **só no diário** fica `PENDENTE` e interrompe a importação; não se inventa uma semente para
+contornar a integridade da abertura ou dos selos. Commit, push e deploy continuam sendo atos separados.

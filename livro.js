@@ -17,7 +17,7 @@ export function botao(rotulo, cls, fn) { const b = el('button', 'button ' + cls,
 const host = () => (window.financeHost && typeof window.financeHost === 'object') ? window.financeHost : {};
 const livroHost = () => host().livro || null;
 let mesAtual = null;
-const filtro = {socia: 'todas', mes: null};
+const filtro = {socia: 'todas', mes: null, tipo: 'todos', origem: 'todas'};
 let paramAberto = null;
 // da rota (#livro/2026-10/fechar, #lancamentos?…&id=…, #parametros/fx.USD_BRL): a aba do Livro, o lançamento e o
 // parâmetro destacados, e de onde se chegou a eles
@@ -214,7 +214,7 @@ function renderLivro(D) {
   const eu = l.porSocia.find(s => s.id === c.membro.id);
   const kpis = el('div', 'lv-kpis');
   kpis.append(
-    kpi('Já lançado', l.realizado, `${l.linhas.filter(x => x.tipo === 'realizado' && !x.anulado).length} lançamentos no mês`, () => verConta('Já lançado em ' + mesLongo(l.mes), l.explica.realizado, c)),
+    kpi('Já lançado', l.realizado, `${l.linhas.filter(x => x.tipo === 'realizado' && !x.historicoFonte && !x.anulado).length} lançamentos no mês`, () => verConta('Já lançado em ' + mesLongo(l.mes), l.explica.realizado, c)),
     kpi('Previsto até o fim do mês', l.previsto, 'assinaturas ativas ainda sem lançamento', () => verConta('Previsto em ' + mesLongo(l.mes), l.explica.previsto, c), 'previsto'),
     kpi('Custo do mês', l.total, 'lançado + previsto', () => verConta('Custo de ' + mesLongo(l.mes), contaDoTotal(l), c), 'total'),
     kpi('Sua parte', eu && eu.parte !== null ? eu.parte : null, eu && eu.parte !== null ? `${eu.pct}% de participação` : 'participação não fecha 100%', eu && eu.parte !== null ? () => verConta('Sua parte em ' + mesLongo(l.mes), {formula: `Sua parte = custo do mês × ${eu.pct}% (rateio pelo maior resto: a soma das partes dá o total exato)`, termos: [{rotulo: 'Custo do mês', brl: l.total, op: '+', detalhe: {titulo: 'Custo de ' + mesLongo(l.mes), explica: contaDoTotal(l)}}], resultado: eu.parte, excluidos: []}, c) : null, 'destaque'),
@@ -231,7 +231,7 @@ function renderLivro(D) {
   if (l.porCategoria.length) cartaoComp.append(barra100(l.porCategoria.map(x => ({rotulo: x.rotulo, valor: x.brl, permil: x.permil, slot: x.slot})), {rotulo: `Composição do custo de ${mesLongo(l.mes)}: ${l.porCategoria.map(x => `${x.rotulo} ${permilTexto(x.permil)}`).join(', ')}.`}));
   else cartaoComp.append(el('p', 'lv-vazio', 'Nada lançado nem previsto neste mês.'));
   const cartaoRank = cartao('Os maiores itens do mês', 'Hachurado = previsto pela assinatura, ainda sem lançamento.');
-  const itens = l.linhas.filter(x => !x.anulado && x.brl !== null).sort((a, b) => b.brl - a.brl).slice(0, 8)
+  const itens = l.linhas.filter(x => !x.historicoFonte && !x.anulado && x.brl !== null).sort((a, b) => b.brl - a.brl).slice(0, 8)
     .map(x => ({rotulo: x.descricao, valor: x.brl, tipo: x.tipo, slot: R.slotCategoria(x.categoria), nota: x.original.moeda !== 'BRL' ? `${original(x.original)} · ${x.conversao === 'efetivo' ? 'fatura' : 'estimado'}` : (x.tipo === 'previsto' ? 'previsto' : '')}));
   if (itens.length) cartaoRank.append(ranking(itens, {rotulo: `Maiores itens de ${mesLongo(l.mes)}.`}));
   else cartaoRank.append(el('p', 'lv-vazio', 'Sem itens.'));
@@ -298,10 +298,11 @@ function tabelaLivro(l, c) {
     const fim = el('span', 'lv-livro-fim');
     fim.append(el('strong', null, x.brl === null ? 'sem câmbio' : dinheiro(x.brl)));
     if (x.original.moeda !== 'BRL') fim.append(el('span', 'lv-livro-orig', original(x.original)));
-    fim.append(x.anulado ? pilula('anulado', 'anulado') : x.conversao === 'estimado' ? pilula('estimado', 'estimado') : x.conversao === 'efetivo' ? pilula('fatura', 'ok') : x.tipo === 'previsto' ? pilula('previsto', 'previsto') : pilula('em reais', 'neutro'));
+    fim.append(x.historicoFonte ? pilula('histórico · não somado', 'neutro') : x.anulado ? pilula('anulado', 'anulado') : x.conversao === 'estimado' ? pilula('estimado', 'estimado') : x.conversao === 'efetivo' ? pilula('fatura', 'ok') : x.tipo === 'previsto' ? pilula('previsto', 'previsto') : pilula('em reais', 'neutro'));
     item.append(cor, meio, fim);
-    item.addEventListener('click', () => verConta(x.descricao, {formula: x.tipo === 'previsto' ? `Equivalente mensal da assinatura (${x.periodo})${x.original.moeda !== 'BRL' ? ', convertido pela estimativa de hoje' : ''}` : 'Valor do lançamento em reais',
-      termos: [{rotulo: x.descricao, brl: x.brl ?? 0, op: '+', original: x.original, conta: x.conta, conversao: x.conversao, id: x.id}], resultado: x.brl ?? 0, excluidos: x.anulado ? [{rotulo: x.descricao, motivo: 'anulado: ' + (x.gasto.motivoAnulacao || '')}] : []}, c));
+    item.addEventListener('click', () => verConta(x.descricao, {formula: x.historicoFonte ? 'Registro histórico conciliado com a planilha: não integra o custo do mês.' : x.tipo === 'previsto' ? `Equivalente mensal da assinatura (${x.periodo})${x.original.moeda !== 'BRL' ? ', convertido pela estimativa de hoje' : ''}` : 'Valor do lançamento em reais',
+      termos: x.historicoFonte ? [] : [{rotulo: x.descricao, brl: x.brl ?? 0, op: '+', original: x.original, conta: x.conta, conversao: x.conversao, id: x.id}], resultado: x.historicoFonte ? 0 : x.brl ?? 0,
+      excluidos: x.historicoFonte ? [{rotulo: x.descricao, motivo: `valor histórico ${dinheiro(x.brl)}; preservado sem somar novamente`}] : x.anulado ? [{rotulo: x.descricao, motivo: 'anulado: ' + (x.gasto.motivoAnulacao || '')}] : []}, c));
     lista.append(item);
   }
   return lista;
@@ -332,81 +333,134 @@ function renderResumo(D) {
 function renderLancamentos(D) {
   const alvo = $('lancamentos-content');
   if (!alvo) return;
-  const {c, aplicado, lista} = D;
+  const {c, aplicado} = D;
   const comFoco = document.activeElement && document.activeElement.id === 'lv-gasto-destacado';
   alvo.replaceChildren();
   // filtro de sócia vindo do endereço que não é de ninguém daqui: volta a "todas"
   if (!['todas', 'eu'].includes(filtro.socia) && !(c.estado.members || []).some(m => m.id === filtro.socia)) filtro.socia = 'todas';
   // trocar um filtro tira o destaque e atualiza o endereço (#lancamentos?mes=2026-10&socia=m-ana), sem empilhar
-  const filtrar = () => { destacado = null; trocarRota('lancamentos', [], filtrosDeLancamentos()); renderTudo(true); };
+  const filtrar = controle => {
+    const nome = controle.getAttribute('aria-label');
+    destacado = null; trocarRota('lancamentos', [], filtrosDeLancamentos()); renderTudo(true);
+    [...alvo.querySelectorAll('select')].find(s => s.getAttribute('aria-label') === nome)?.focus({preventScroll: true});
+  };
   const barra = el('div', 'lv-filtros');
   const selSocia = el('select', 'lv-select'); selSocia.setAttribute('aria-label', 'Filtrar por sócia');
   [['todas', 'Todas as sócias'], ['eu', 'Só os meus'], ...(c.estado.members || []).map(m => [m.id, m.displayName])].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; if (filtro.socia === v) o.selected = true; selSocia.append(o); });
-  selSocia.addEventListener('change', () => { filtro.socia = selSocia.value; filtrar(); });
-  const meses = [...new Set(aplicado.gastos.map(g => g.competencia))].sort().reverse();
+  selSocia.addEventListener('change', () => { filtro.socia = selSocia.value; filtrar(selSocia); });
+  const todos = R.movimentosLivro(aplicado);
+  const meses = [...new Set([...todos.map(g => g.competencia), ...(aplicado.livroCaixa?.meses || []).map(m => m.mes)])].sort().reverse();
   if (filtro.mes && !meses.includes(filtro.mes)) meses.unshift(filtro.mes);
   const selMes = el('select', 'lv-select'); selMes.setAttribute('aria-label', 'Filtrar por mês');
   [['', 'Todos os meses'], ...meses.map(m => [m, capital(mesLongo(m))])].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; if ((filtro.mes || '') === v) o.selected = true; selMes.append(o); });
-  selMes.addEventListener('change', () => { filtro.mes = selMes.value || null; filtrar(); });
-  barra.append(selSocia, selMes, el('span', 'lv-espaco'), ...desenharExtras('lancamentos-barra', D, {filtro: {...filtro}}), botao('Baixar CSV', 'button-outline', () => baixarCSV(D)), botao('+ Lançar', 'button-primary', () => abrirLancar()));
+  selMes.addEventListener('change', () => { filtro.mes = selMes.value || null; filtrar(selMes); });
+  const selTipo = el('select', 'lv-select'); selTipo.setAttribute('aria-label', 'Filtrar por tipo');
+  for (const [valor, rotulo] of [['todos', 'Entradas e saídas'], ['entrada', 'Só entradas'], ['saida', 'Só saídas']]) {
+    const o = el('option', null, rotulo); o.value = valor; o.selected = filtro.tipo === valor; selTipo.append(o);
+  }
+  selTipo.addEventListener('change', () => { filtro.tipo = selTipo.value; filtrar(selTipo); });
+  const selOrigem = el('select', 'lv-select'); selOrigem.setAttribute('aria-label', 'Filtrar por origem');
+  for (const [valor, rotulo] of [['todas', 'Todas as origens'], ['planilha', 'Livro-caixa importado'], ['diario', 'Diário do portal'], ['historico', 'Histórico conciliado']]) {
+    const o = el('option', null, rotulo); o.value = valor; o.selected = filtro.origem === valor; selOrigem.append(o);
+  }
+  selOrigem.addEventListener('change', () => { filtro.origem = selOrigem.value; filtrar(selOrigem); });
+  barra.append(selSocia, selMes, selTipo, selOrigem, el('span', 'lv-espaco'), ...desenharExtras('lancamentos-barra', D, {filtro: {...filtro}}), botao('Baixar CSV', 'button-outline', () => baixarCSV(D, movimentosVisiveis(D))), botao('+ Lançar', 'button-primary lv-lancar-contexto', () => abrirLancar()));
   alvo.append(barra);
-  let gastos = [...aplicado.gastos].sort((a, b) => (b.data || '').localeCompare(a.data || '') || (b.criadoEm || '').localeCompare(a.criadoEm || ''));
-  if (filtro.socia === 'eu') gastos = gastos.filter(g => g.criadoPor === c.membro.id || g.pagoPor === c.membro.id);
-  else if (filtro.socia !== 'todas') gastos = gastos.filter(g => g.pagoPor === filtro.socia || g.criadoPor === filtro.socia);
-  if (filtro.mes) gastos = gastos.filter(g => g.competencia === filtro.mes);
-  const totais = {};
-  for (const g of gastos) if (g.estado !== 'anulado') totais[g.moeda] = (totais[g.moeda] || 0) + g.valorMinor;
+  const gastos = movimentosVisiveis(D);
+  const totais = tipo => {
+    const moedas = new Map();
+    for (const g of gastos) if (!g.historicoFonte && g.tipo === tipo && g.estado !== 'anulado') moedas.set(g.moeda, (moedas.get(g.moeda) || 0n) + BigInt(g.valorMinor));
+    return [...moedas].map(([m, v]) => v > BigInt(Number.MAX_SAFE_INTEGER) ? `${m}: total fora do limite seguro` : dinheiro(Number(v), m)).join(' + ') || '—';
+  };
   const resumo = el('p', 'lv-totais');
-  resumo.append(el('span', null, `${gastos.filter(g => g.estado !== 'anulado').length} lançamentos · `), el('strong', null, Object.entries(totais).map(([m, v]) => dinheiro(v, m)).join(' + ') || 'nada'), el('span', 'lv-nota-inline', ' (cada moeda separada)'));
+  const historicos = gastos.filter(g => g.historicoFonte).length;
+  resumo.append(el('span', null, `${gastos.filter(g => !g.historicoFonte && g.estado !== 'anulado').length} movimentos contabilizados${historicos ? ` · ${historicos} registros históricos não somados` : ''} · `),
+    el('strong', null, 'Entradas: ' + totais('entrada')), ' · ', el('strong', null, 'Saídas: ' + totais('saida')),
+    el('span', 'lv-nota-inline', ' (cada moeda separada; aportes não são faturamento)'));
   alvo.append(resumo);
+  if (aplicado.livroCaixa) alvo.append(el('p', 'lv-nota lv-origem-nota',
+    `Fonte: ${aplicado.livroCaixa.fonte.arquivo}. Linhas importadas preservam aba, número, forma e observações; não são atribuídas a quem abriu o portal. Correções da planilha exigem nova importação.`));
   // o lançamento do link ficou fora dos filtros (ou não existe mais): diz isso, em vez de sumir calado
   if (destacado && !gastos.some(g => g.id === destacado)) {
-    const alvoDoLink = aplicado.gastos.find(g => g.id === destacado);
+    const alvoDoLink = todos.find(g => g.id === destacado);
     const av = el('div', 'notice lv-aviso');
     av.append(el('strong', null, alvoDoLink ? `${rotuloDestaque}: “${alvoDoLink.descricao}” está fora destes filtros. ` : `${rotuloDestaque}: o lançamento não foi encontrado neste diário. `));
-    if (alvoDoLink) av.append(botao('Mostrar o lançamento', 'button-quiet', () => { filtro.socia = 'todas'; filtro.mes = alvoDoLink.competencia; trocarRota('lancamentos', [], filtrosDeLancamentos()); renderTudo(true); requestAnimationFrame(() => focarDestaque('lv-gasto-destacado')); }));
+    if (alvoDoLink) av.append(botao('Mostrar o lançamento', 'button-quiet', () => { filtro.socia = 'todas'; filtro.tipo = 'todos'; filtro.origem = 'todas'; filtro.mes = alvoDoLink.competencia; trocarRota('lancamentos', [], filtrosDeLancamentos()); renderTudo(true); requestAnimationFrame(() => focarDestaque('lv-gasto-destacado')); }));
     alvo.append(av);
   }
   if (!gastos.length) {
     const vazio = el('div', 'lv-vazio-grande');
-    vazio.append(el('strong', null, 'Nenhum lançamento por aqui.'), el('span', null, 'Pagou algo pela empresa, no cartão dela ou do seu bolso? Registre em uns 10 segundos: entra no mês, no rateio e no acerto.'), botao('+ Lançar o primeiro gasto', 'button-primary', () => abrirLancar()));
+    vazio.append(el('strong', null, 'Nenhum movimento neste filtro.'), el('span', null, 'Mude os filtros para consultar os registros existentes. Um mês vazio na planilha não cria pagamentos. Para um gasto novo, use “+ Lançar”.'), botao('+ Lançar gasto', 'button-primary', () => abrirLancar()));
     alvo.append(vazio);
     return;
   }
   const ul = el('div', 'lv-lancamentos');
-  for (const g of gastos) ul.append(cartaoGasto(g, D));
+  for (const g of gastos) ul.append(g.importado ? cartaoImportado(g, D) : cartaoGasto(g, D));
   alvo.append(ul);
   if (comFoco && $('lv-gasto-destacado')) $('lv-gasto-destacado').focus({preventScroll: true});
 }
-const filtrosDeLancamentos = () => ({...(filtro.mes ? {mes: filtro.mes} : {}), ...(filtro.socia !== 'todas' ? {socia: filtro.socia} : {}), ...(destacado ? {id: destacado} : {})});
+function movimentosVisiveis(D) {
+  const socia = filtro.socia === 'eu' ? D.c.membro.id : filtro.socia;
+  return R.movimentosLivro(D.aplicado).filter(g => (!filtro.mes || g.competencia === filtro.mes) &&
+    (socia === 'todas' || g.criadoPor === socia || g.pagoPor === socia) && (filtro.tipo === 'todos' || g.tipo === filtro.tipo) &&
+    (filtro.origem === 'todas' || (filtro.origem === 'planilha' ? !!g.importado : filtro.origem === 'historico' ? !!g.historicoFonte : !g.importado && !g.historicoFonte)))
+    .sort((a, b) => (b.data || '').localeCompare(a.data || '') || (b.criadoEm || '').localeCompare(a.criadoEm || '') || a.id.localeCompare(b.id));
+}
+const filtrosDeLancamentos = () => ({...(filtro.mes ? {mes: filtro.mes} : {}), ...(filtro.socia !== 'todas' ? {socia: filtro.socia} : {}),
+  ...(filtro.tipo !== 'todos' ? {tipo: filtro.tipo} : {}), ...(filtro.origem !== 'todas' ? {origem: filtro.origem} : {}), ...(destacado ? {id: destacado} : {})});
+function cartaoImportado(g, D) {
+  const origem = g.importado;
+  const art = el('article', 'lv-gasto lv-importado'); art.dataset.tipo = g.tipo;
+  const cor = el('i', 'gf-cor'); cor.dataset.slot = String(g.tipo === 'entrada' ? 0 : R.slotCategoria(g.categoria));
+  const corpo = el('div', 'lv-gasto-corpo');
+  corpo.append(el('strong', 'lv-gasto-desc', g.descricao), el('span', 'lv-gasto-meta', `${dataBR(g.data)} · ${origem.categoria} · ${origem.forma || 'forma não informada'}`),
+    el('span', 'lv-autoria', `${origem.aba} · linha ${origem.linha} · importado da planilha, sem autoria de lançamento`));
+  if (origem.observacoes) corpo.append(el('span', 'lv-motivo', origem.observacoes));
+  if (destacado === g.id) destacar(art, corpo, 'lv-gasto-destacado');
+  const valor = el('div', 'lv-gasto-valor');
+  valor.append(el('strong', null, dinheiro(g.valorMinor)), pilula(g.tipo === 'entrada' ? 'Entrada' : 'Saída', g.tipo === 'entrada' ? 'ok' : 'neutro'));
+  const acoes = el('div', 'lv-gasto-acoes');
+  acoes.append(botao('Ver origem', 'button-quiet', () => abrirFolha({titulo: g.descricao, eyebrow: 'Registro importado · somente leitura',
+    corpo: [el('p', 'lv-nota', D.aplicado.livroCaixa.fonte.arquivo), el('p', null, `${origem.aba} · linha ${origem.linha} · ${dataBR(g.data)}`),
+      dado('Categoria na fonte', origem.categoria), dado('Forma na fonte', origem.forma || 'não informada'),
+      dado('Entrada', dinheiro(origem.entradaMinor)), dado('Saída', dinheiro(origem.saidaMinor)),
+      dado('Saldo na ordem da planilha', dinheiro(origem.saldoMinor)),
+      dado('Documento', origem.documento && origem.documento !== '0' ? origem.documento : 'não informado (vazio ou 0 na fonte)'),
+      el('p', 'lv-nota', origem.observacoes || 'Sem observações nesta linha.'),
+      el('p', 'lv-nota', 'O saldo segue a ordem das linhas da fonte, não a ordenação por data desta lista. Importação não confirma integralização de capital, repasse ou saldo bancário.')],
+  })));
+  art.append(cor, corpo, valor, acoes);
+  return art;
+}
 function cartaoGasto(g, D) {
   const {c, lista} = D;
   const r = R.reaisDoGasto(g, lista);
-  const art = el('article', 'lv-gasto' + (g.estado === 'anulado' ? ' is-anulado' : ''));
+  const art = el('article', 'lv-gasto' + (g.estado === 'anulado' ? ' is-anulado' : '') + (g.historicoFonte ? ' lv-historico-fonte' : ''));
   const cor = el('i', 'gf-cor'); cor.dataset.slot = String(R.slotCategoria(g.categoria));
   const corpo = el('div', 'lv-gasto-corpo');
   corpo.append(el('strong', 'lv-gasto-desc', g.descricao), el('span', 'lv-gasto-meta', `${dataBR(g.data)} · ${R.rotuloCategoria(g.categoria)} · ${R.rotuloForma(g.forma)}${R.formaDaEmpresa(g.forma) ? '' : ' · ' + ((R.DESTINOS.find(x => x.id === g.destino) || {}).rotulo || '')}`));
   const autoria = el('span', 'lv-autoria', `pago por ${nomeDe(c, g.pagoPor)} · lançado por ${nomeDe(c, g.criadoPor)} em ${horaBR(g.criadoEm)}${g.alteradoEm ? ' · alterado por ' + nomeDe(c, g.alteradoPor) + ' em ' + horaBR(g.alteradoEm) : ''}`);
   corpo.append(autoria);
+  if (g.historicoFonte) corpo.append(pilula('Histórico conciliado · não somado', 'neutro'), el('span', 'lv-motivo', 'A planilha é a referência contábil deste gasto. O registro original e suas versões continuam no diário, sem duplicar o custo.'));
   if (g.estado === 'anulado') corpo.append(el('span', 'lv-motivo', `Anulado por ${nomeDe(c, g.anuladoPor)}: ${g.motivoAnulacao}`));
   if (destacado && g.id === destacado) destacar(art, corpo, 'lv-gasto-destacado');
-  if (g.destino === 'empresa_reembolsa' && g.estado !== 'anulado') corpo.append(pilula(g.reembolsadoEm ? 'reembolsado' : 'reembolso pendente', g.reembolsadoEm ? 'ok' : 'pendente'));
+  if (!g.historicoFonte && g.destino === 'empresa_reembolsa' && g.estado !== 'anulado') corpo.append(pilula(g.reembolsadoEm ? 'reembolsado' : 'reembolso pendente', g.reembolsadoEm ? 'ok' : 'pendente'));
   const valor = el('div', 'lv-gasto-valor');
   valor.append(el('strong', null, dinheiro(g.valorMinor, g.moeda)));
   if (g.moeda !== 'BRL') valor.append(el('span', null, r.brl === null ? 'sem câmbio' : `≈ ${dinheiro(r.brl)} · ${r.tipo === 'efetivo' ? 'fatura' : 'estimado'}`));
   const acoes = el('div', 'lv-gasto-acoes');
-  const pode = g.estado !== 'anulado' && (g.criadoPor === c.membro.id || c.membro.papel === 'owner');
+  const pode = !g.historicoFonte && g.estado !== 'anulado' && (g.criadoPor === c.membro.id || c.membro.papel === 'owner');
   if (pode) {
     acoes.append(botao('Editar', 'button-quiet', () => abrirLancar(g)));
     acoes.append(botao('Anular', 'button-quiet', () => anular(g)));
   }
-  if (g.estado !== 'anulado' && g.destino === 'empresa_reembolsa' && !g.reembolsadoEm) acoes.append(botao('Marcar reembolsado', 'button-quiet', () => gravar({acao: 'mark_reimbursed', alvo: g.id, versao: g.versao}, 'Reembolso marcado.')));
+  if (!g.historicoFonte && g.estado !== 'anulado' && g.destino === 'empresa_reembolsa' && !g.reembolsadoEm) acoes.append(botao('Marcar reembolsado', 'button-quiet', () => gravar({acao: 'mark_reimbursed', alvo: g.id, versao: g.versao}, 'Reembolso marcado.')));
   if (g.versoes.length) acoes.append(botao(`Histórico (${g.versoes.length})`, 'button-quiet', () => window.financeNavigate && window.financeNavigate('historico')));
   art.append(cor, corpo, valor, acoes);
   return art;
 }
-function baixarCSV(D) {
-  const csv = R.csvLancamentos(D.aplicado, D.lista, id => nomeDe(D.c, id));
+function baixarCSV(D, movimentos) {
+  const csv = R.csvMovimentos(movimentos, D.lista, id => nomeDe(D.c, id));
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8'}));
   a.download = `lancamentos-${hojeDe(D.c)}.csv`;
@@ -935,7 +989,7 @@ function aplicarRota(r, origem) {
   if (!r || !PAGINAS_COM_ROTA.has(r.pagina)) return;
   const veio = origem === 'ver-a-conta' ? 'Você veio do Ver a conta' : 'Aberto pelo link';
   if (r.pagina === 'livro') { mesAtual = r.args[0] || null; abaLivro = r.args[1] || null; }
-  if (r.pagina === 'lancamentos') { filtro.socia = r.filtros.socia || 'todas'; filtro.mes = r.filtros.mes || null; destacado = r.filtros.id || null; if (destacado) rotuloDestaque = veio; }
+  if (r.pagina === 'lancamentos') { filtro.socia = r.filtros.socia || 'todas'; filtro.mes = r.filtros.mes || null; filtro.tipo = r.filtros.tipo || 'todos'; filtro.origem = r.filtros.origem || 'todas'; destacado = r.filtros.id || null; if (destacado) rotuloDestaque = veio; }
   // um link para um parâmetro fecha a "Nova vigência" que estivesse aberta (ela impede o redesenho); sem parâmetro, fica
   if (r.pagina === 'parametros') { paramDestacado = r.args[0] || null; if (paramDestacado) { paramAberto = null; rotuloDestaque = veio; } }
   renderTudo(true);
@@ -1099,7 +1153,7 @@ export function renderTudo(forcar = false) {
   if (fab) fab.hidden = !D || !document.getElementById('dashboard') || document.getElementById('dashboard').hidden;
   if (!D) return;
   if (!mesAtual) mesAtual = hojeDe(D.c).slice(0, 7);
-  const assinatura = [D.d ? D.d.modo + ':' + D.d.cabeca + ':' + D.d.eventos.length + ':' + D.d.verificacao.problemas.length : 'x', D.c.estado.revision, mesAtual, abaLivro, filtro.socia, filtro.mes, destacado, paramDestacado].join('|');
+  const assinatura = [D.d ? D.d.modo + ':' + D.d.cabeca + ':' + D.d.eventos.length + ':' + D.d.verificacao.problemas.length : 'x', D.c.estado.revision, mesAtual, abaLivro, filtro.socia, filtro.mes, filtro.tipo, filtro.origem, destacado, paramDestacado].join('|');
   if (!forcar && assinatura === ultimoDesenho) return;
   ultimoDesenho = assinatura;
   if (folhaComum && folhaComum.open) return; // nunca redesenhar com a folha aberta (§3.7): ao fechar, redesenha

@@ -1,1 +1,43 @@
-/* caixa.css: estilos da página da rotina, preenchidos na fatia que desenha caixa.js (vazio até lá). */
+/* Caixa reutiliza as superfícies, tipografia e cores semânticas do livro. Sem paleta paralela. */
+#caixa-calculado{min-width:0}
+#cx-lancar{margin-left:auto}
+.cx-cabecalho{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.cx-cabecalho .lv-cartao-titulo{margin:0}
+.cx-nota,.cx-origem{font-size:13px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
+.cx-nota{margin:8px 0 14px;max-width:85ch}
+.cx-origem{margin:0 0 18px}
+.cx-origem strong{font-weight:550;color:var(--ink)}
+#cx-fonte .lv-kpis{margin-bottom:20px}
+.cx-movimentos{list-style:none;padding:0;margin:0}
+.cx-movimento{padding:20px 0;border-top:1px solid var(--line)}
+.cx-movimento:last-child{padding-bottom:6px}
+.cx-movimento-cab{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:baseline;gap:12px;margin-bottom:15px}
+.cx-movimento h4,.cx-receita h4{font:550 16px/1.5 var(--sans);margin:0;overflow-wrap:anywhere}
+.cx-data{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cx-entrada,.cx-saida{font-size:14px;font-weight:550;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cx-entrada{color:var(--fin-entrada-texto)}
+.cx-saida{color:var(--fin-saida-texto)}
+.cx-movimento-dados{display:grid;grid-template-columns:1.5fr .8fr .8fr 1fr;gap:12px}
+.cx-movimento-rodape{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.cx-movimento-rodape .cx-origem{margin:0}
+.cx-conferencia{border-top:1px solid var(--line);margin-top:16px;padding-top:4px}
+.cx-conferencia summary{cursor:pointer;padding:12px 0;min-height:44px;font-size:13px;color:var(--ink)}
+.cx-conferencia summary:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+.cx-conferencia ul{padding-left:20px;font-size:13px;line-height:1.6;color:var(--muted)}
+.cx-conferencia li{margin-bottom:8px;overflow-wrap:anywhere}
+.cx-banco-kpis{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.cx-folego-valor{font:400 25px/1.35 var(--serif);letter-spacing:-.015em}
+.cx-conta,.cx-receita{border-top:1px solid var(--line);padding:18px 0;min-width:0}
+.cx-receita .lv-dado{margin-top:12px}
+.cx-receita.is-anulado h4{text-decoration:line-through;color:var(--muted)}
+.cx-acoes{display:flex;gap:10px;flex-wrap:wrap}
+.cx-form{display:grid;gap:14px}
+.cx-form .cx-nota{margin:0}
+.cx-form .lv-campo{margin:0}
+.cx-moeda{display:grid;grid-template-columns:100px minmax(0,1fr);gap:10px}
+.cx-moeda .lv-dinheiro{min-width:0}
+.cx-moeda .lv-dinheiro-valor{min-width:0;width:100%}
+#block-cash .registro-importado{margin-top:28px}
+#block-cash .registro-importado .source-status{margin:18px 0}
+@media(max-width:900px){#caixa-calculado .lv-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.cx-movimento-dados{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#caixa-calculado .lv-mesnav>label{display:none}.cx-movimento-cab{display:flex;flex-direction:column;gap:5px}.cx-movimento h4{font-size:16px}.cx-movimento-dados{gap:13px}.cx-banco-kpis{grid-template-columns:1fr}.cx-cabecalho{align-items:flex-start;flex-direction:column}.cx-folego-valor{font-size:24px}#caixa-calculado .lv-kpi{padding:13px 12px}#caixa-calculado .lv-kpi-valor{font-size:23px}}

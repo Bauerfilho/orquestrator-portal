@@ -77,10 +77,12 @@ export function portaHttp(url, f = (...args) => globalThis.fetch(...args), prazo
   async function pedir(metodo, rota, corpo, token) {
     let relogio;
     const prazo = new Promise((_, falhar) => { relogio = setTimeout(() => falhar(new Error('o servidor não respondeu em ' + Math.round(prazoMs / 1000) + ' s')), prazoMs); });
-    const ida = f(raiz + rota, {method: metodo, headers: {'content-type': 'application/json', ...(token ? {authorization: 'Bearer ' + token} : {})}, body: corpo === undefined ? undefined : JSON.stringify(corpo),
-      signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(prazoMs) : undefined});
     let r;
-    try { r = await Promise.race([ida, prazo]); } finally { clearTimeout(relogio); }
+    try {
+      const ida = f(raiz + rota, {method: metodo, headers: {'content-type': 'application/json', ...(token ? {authorization: 'Bearer ' + token} : {})}, body: corpo === undefined ? undefined : JSON.stringify(corpo),
+        signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(prazoMs) : undefined});
+      r = await Promise.race([ida, prazo]);
+    } finally { clearTimeout(relogio); }
     let j = null; try { j = await r.json(); } catch {}
     return {status: r.status, corpo: j && typeof j === 'object' ? j : {}};
   }

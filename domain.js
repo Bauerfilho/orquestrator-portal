@@ -4,7 +4,7 @@ export class DomainError extends Error {
 }
 
 export const MINOR_DIGITS = Object.freeze({BRL: 2, USD: 2, EUR: 2, GBP: 2, CAD: 2, AUD: 2, CHF: 2, JPY: 0, KRW: 0, CLP: 0, BHD: 3, KWD: 3});
-const PERIODS = {mensal: [1, 1], mes: [1, 1], monthly: [1, 1], anual: [1, 12], ano: [1, 12], yearly: [1, 12], trimestral: [1, 3], semestral: [1, 6], semanal: [52, 12], quinzenal: [26, 12], diario: [365, 12]};
+const PERIODS = {mensal: [1, 1], mes: [1, 1], monthly: [1, 1], anual: [1, 12], ano: [1, 12], yearly: [1, 12], trimestral: [1, 3], semestral: [1, 6], semanal: [52, 12], quinzenal: [26, 12], diario: [365, 12], unico: [0, 1]};
 const FORBIDDEN_KEYS = new Set(['cpf', 'senha', 'password', 'hash', 'token', 'secret', 'api_key', 'apikey', 'access_token', 'refresh_token', 'auth_token', 'credential', 'credentials', 'path', 'file_path', 'local_path', 'root', 'users_path', 'records_path']);
 const MUTATIONS = new Set(['toggle_step', 'edit_plan', 'set_subscription']);
 const STATICS = ['inventory', 'cash', 'projection', 'society', 'atlas', 'medpainel'];   // medpainel: 17/10, decisão dele (tudo no portal, cifrado)

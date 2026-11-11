@@ -223,6 +223,7 @@ export function acertoAcumulado(estadoBase, aplicado, lista, ate) {
   const incompletos = [], reembolsosPendentes = [], aguardandoConfirmacao = [];
   const ate_ = d => !ate || d <= ate;
   for (const g of aplicado.gastos || []) {
+    // Histórico contábil retira o custo repetido, não perdoa a dívida nem desfaz um Pix/reembolso já assinado.
     if (g.estado === 'anulado' || !ate_(g.data) || !Object.hasOwn(pagou, g.pagoPor) || R.formaDaEmpresa(g.forma)) continue;
     const r = reaisDe(g);
     if (r.brl === null) { incompletos.push({id: g.id, descricao: g.descricao, motivo: `Falta o câmbio de ${g.moeda} para ${dataBR(g.data)}.`}); continue; }
@@ -319,7 +320,7 @@ export function caixaInformado(aplicado, lista, data) {
 // A série começa no primeiro mês com dado: nada é inventado para trás.
 function primeiroMesComDado(aplicado) {
   const meses = [];
-  for (const g of aplicado.gastos || []) if (g.estado !== 'anulado' && mesValido(g.competencia)) meses.push(g.competencia);
+  for (const g of aplicado.gastos || []) if (!g.historicoFonte && g.estado !== 'anulado' && mesValido(g.competencia)) meses.push(g.competencia);
   for (const r of aplicado.receitas || []) if (r.estado !== 'anulado' && mesValido(r.competencia)) meses.push(r.competencia);
   for (const s of aplicado.saldos || []) if (diaValido(s.data)) meses.push(s.data.slice(0, 7));
   for (const m of Object.keys(aplicado.fechamentos || {})) if (mesValido(m)) meses.push(m);
@@ -404,7 +405,7 @@ export function fotoDoMes(estadoBase, aplicado, mes, cabeca) {
   const usar = conta => { if (!conta) return; for (const p of [conta.cambio, conta.spreadParam, conta.iofParam]) if (p && p.id) usados.add(p.id); };
   let variacao = 0n;
   for (const ln of l.linhas) {
-    if (ln.anulado || ln.brl === null) continue;
+    if (ln.historicoFonte || ln.anulado || ln.brl === null) continue;
     usar(ln.conta);
     if (ln.tipo === 'realizado' && ln.conversao === 'efetivo') {   // F4: variação cambial = fatura − estimativa
       const est = R.reaisDoGasto({...ln.gasto, faturaBrlMinor: null}, lista);
@@ -423,7 +424,7 @@ export function fotoDoMes(estadoBase, aplicado, mes, cabeca) {
     partes: {custo: porSocia(partesDe(l.total, membros)), resultado: porSocia(partesDe(resultado, membros))},
     pesos: Object.fromEntries(membros.map(m => [m.id, pesoInteiro(m.pct)])),
     parametros: [...usados].sort(),
-    gastos: (aplicado.gastos || []).filter(g => g.competencia === mes).map(g => {
+    gastos: (aplicado.gastos || []).filter(g => !g.historicoFonte && g.competencia === mes).map(g => {
       const ln = linhaDe.get(g.id);
       return {id: g.id, valorMinor: g.valorMinor, moeda: g.moeda, brl: g.estado === 'anulado' || !ln ? null : ln.brl, categoria: g.categoria, estado: g.estado === 'anulado' ? 'anulado' : 'valido'};
     }).sort(porId),
@@ -453,7 +454,7 @@ export function roteiroDoFechamento(estadoBase, aplicado, lista, mes, hoje) {
   const listaToda = lista || R.parametros(aplicado);
   const params = listaDoMes(aplicado, listaToda, mes);
   const l = R.livroDoMes(estadoBase, aplicado, mes, hoje);
-  const doMes = (aplicado.gastos || []).filter(g => g.competencia === mes && g.estado !== 'anulado');
+  const doMes = (aplicado.gastos || []).filter(g => !g.historicoFonte && g.competencia === mes && g.estado !== 'anulado');
   const nome = id => nomeDe(aplicado, id);
   const linhaDe = new Map(l.linhas.filter(x => x.tipo === 'realizado').map(x => [x.id, x]));
   const passos = [];
@@ -481,10 +482,11 @@ export function roteiroDoFechamento(estadoBase, aplicado, lista, mes, hoje) {
     resumo: !estrangeiros ? 'Nenhum gasto em moeda estrangeira.' : semFatura.length ? `${semFatura.length} de ${estrangeiros} ${estrangeiros === 1 ? 'gasto' : 'gastos'} sem o valor da fatura.` : 'Todas as faturas conciliadas.',
     formas: [...new Set(semFatura.map(i => i.forma))], itens: semFatura});
   // 03 Conferidos por outra sócia?
-  const naoConferidos = doMes.filter(g => g.estado !== 'conferido').map(g => ({tipo: 'gasto', id: g.id, descricao: g.descricao, criadoPor: g.criadoPor, valorMinor: g.valorMinor, moeda: g.moeda,
+  const conferiveis = doMes.filter(g => !g.importado);
+  const naoConferidos = conferiveis.filter(g => g.estado !== 'conferido').map(g => ({tipo: 'gasto', id: g.id, descricao: g.descricao, criadoPor: g.criadoPor, valorMinor: g.valorMinor, moeda: g.moeda,
     texto: `${g.descricao} · ${fmt(g.valorMinor, g.moeda)} · lançado por ${nome(g.criadoPor)}`}));
   passos.push({numero: 3, chave: 'conferencia', titulo: 'Conferidos por outra sócia?', estado: naoConferidos.length ? 'falta' : 'pronto',
-    resumo: !doMes.length ? 'Nenhum lançamento no mês.' : naoConferidos.length ? `${naoConferidos.length} de ${doMes.length} sem conferência.` : 'Todos conferidos.', itens: naoConferidos});
+    resumo: !conferiveis.length ? doMes.length ? 'Apenas linhas importadas: conferência no documento de origem, sem assinatura presumida.' : 'Nenhum lançamento no mês.' : naoConferidos.length ? `${naoConferidos.length} de ${conferiveis.length} sem conferência.` : 'Todos os lançamentos do diário conferidos.', itens: naoConferidos});
   // 04 Reembolsos e acertos (lembrete: não trava o fechamento)
   const acerto = acertoAcumulado(estadoBase, aplicado, listaToda, hoje);
   const reembolsos = acerto.reembolsosPendentes.filter(g => g.competencia <= mes).map(g => ({tipo: 'reembolso', ...g, texto: `${g.descricao}: a empresa deve ${fmt(g.brl)} a ${g.nome}`}));

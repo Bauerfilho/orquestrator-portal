@@ -127,18 +127,31 @@ test('a parte nova do livro.css (base das telas da rotina) também não desce de
 
 // ── direção dos imports: a base não conhece as telas (sem ciclo) ─────────────────────────────────────────────────────
 const importsDe = arquivo => [...semComentarios(ler(arquivo)).replace(/\/\/[^\n]*/g, '').matchAll(/(?:^|\n)\s*import\s+(?:[^'"]*?from\s+)?['"]([^'"]+)['"]/g)].map(m => m[1]);
+const reexportsDe = arquivo => [...semComentarios(ler(arquivo)).replace(/\/\/[^\n]*/g, '').matchAll(/(?:^|\n)\s*export\s+[^'";]*?\sfrom\s+['"]([^'"]+)['"]/g)].map(m => m[1]);
+const dependenciasDe = arquivo => [...importsDe(arquivo), ...reexportsDe(arquivo)];
+
+// Critério proposto pelo auditor independente: permitir o núcleo contábil previsto em F2-7 sem abrir ciclos.
+test('núcleo puro: dependências exatas, sem UI, rede ou import dinâmico', () => {
+  const nucleo = {'razao.js': [], 'selo.js': [], 'graficos.js': [], 'contas.js': ['./razao.js', './selo.js']};
+  for (const [arquivo, esperado] of Object.entries(nucleo)) {
+    assert.deepEqual(dependenciasDe(arquivo).sort(), [...esperado].sort(), `${arquivo}: direção exata das dependências`);
+    assert.doesNotMatch(semComentarios(ler(arquivo)), /import\s*\(/, `${arquivo}: sem import dinâmico`);
+  }
+  assert.doesNotMatch(semComentarios(ler('contas.js')), /\b(?:document|window|localStorage|sessionStorage|fetch)\b/, 'contas.js não acessa UI, armazenamento ou rede');
+});
 
 test('livro.js importa só o razão e os gráficos: nenhum módulo da rotina (sem ciclo)', () => {
   assert.deepEqual(importsDe('livro.js').sort(), ['./graficos.js', './razao.js']);
   assert.doesNotMatch(semComentarios(ler('livro.js')), /import\(/, 'nem import dinâmico');
 });
 
-test('rotina.js carrega os seis esqueletos, e cada um importa só da base', () => {
+test('rotina.js carrega as seis telas, que dependem só da base e do núcleo puro', () => {
   assert.deepEqual(importsDe('rotina.js'), MODULOS_ROTINA.map(f => './' + f));
   for (const f of MODULOS_ROTINA) {
-    const imports = importsDe(f);
+    const imports = dependenciasDe(f);
     assert.ok(imports.includes('./livro.js'), `${f} importa a base de './livro.js'`);
-    for (const i of imports) assert.ok(['./livro.js', './graficos.js', './razao.js'].includes(i), `${f} não importa ${i}`);
+    for (const i of imports) assert.ok(['./livro.js', './graficos.js', './razao.js', './contas.js'].includes(i), `${f} não importa ${i}`);
+    assert.doesNotMatch(semComentarios(ler(f)), /import\s*\(/, `${f}: sem import dinâmico para contornar a direção`);
   }
 });
 

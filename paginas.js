@@ -20,8 +20,8 @@
       ajuda: {oque: "O custo do mês da empresa em reais: lançamentos das sócias (já pagos) + assinaturas ativas ainda sem lançamento (previstas). Gráficos por categoria e por item, a parte de cada sócia e o acerto dos gastos divididos.", deonde: "Das assinaturas do pacote da empresa e do diário cifrado onde as sócias lançam. Moeda estrangeira vira reais pelos Parâmetros vigentes na data de cada gasto; toque em “Ver a conta” para ver a fórmula com os números.", naoe: "Não é extrato bancário: um gasto só aparece aqui depois de lançado. Estimativas em dólar ficam marcadas como estimadas até alguém informar o valor da fatura."}},
     {chave: "cash", rota: "caixa", grupo: "Dinheiro", titulo: "Caixa", descricao: "Recursos, despesas e limites da empresa. Moedas sempre separadas.", args: ["mes"],
       ajuda: {oque: "O dinheiro da empresa: custo fixo mensal, gastos do mês, saldos registrados e teto de consumo.", deonde: "Dos registros financeiros e do documento de caixa, com a data de cada fonte indicada.", naoe: "Não é conta bancária ao vivo. Mostra o último registro entregue, moeda por moeda, sem somar moedas diferentes."}},
-    {chave: "lancamentos", rota: "lancamentos", grupo: "Dinheiro", titulo: "Lançamentos", descricao: "Cada gasto da empresa, com quem pagou, como e para onde vai.", filtros: ["mes", "socia", "id"],
-      ajuda: {oque: "A lista de tudo que as sócias lançaram: data, valor na moeda original, reais, categoria, quem pagou, se a empresa reembolsa, divide ou vira aporte.", deonde: "Do diário cifrado: cada lançamento é cifrado no seu navegador e assinado por quem lançou. O servidor só guarda texto cifrado.", naoe: "Nada se apaga: corrigir cria uma versão nova e anular deixa a linha riscada, com o motivo."}},
+    {chave: "lancamentos", rota: "lancamentos", grupo: "Dinheiro", titulo: "Lançamentos", descricao: "Entradas e saídas, com a origem de cada registro.", filtros: ["mes", "socia", "id", "tipo", "origem"],
+      ajuda: {oque: "As entradas e saídas do livro-caixa e os gastos registrados no portal. Filtre por mês, tipo, origem ou sócia; o CSV respeita esses filtros.", deonde: "Da planilha importada no pacote cifrado e do diário cifrado. Cada linha da planilha preserva aba, número, forma e observações; só os eventos do diário têm assinatura de quem lançou.", naoe: "Aporte não é receita de vendas. Importar não confirma saldo bancário, repasse ou autoria. A planilha é somente leitura; no diário, corrigir cria uma versão nova e anular mantém o motivo."}},
     {chave: "subscriptions", rota: "assinaturas", grupo: "Dinheiro", titulo: "Assinaturas", descricao: "Serviços, cobranças e a sua parte em cada compromisso.", filtros: ["id"],
       ajuda: {oque: "Cada serviço que a empresa assina, com valor, vencimento e a sua parte em cada cobrança.", deonde: "Do arquivo de planos da empresa e dos registros de benefícios e cobranças, lidos a cada abertura.", naoe: "Mudar o estado aqui não contrata nem cancela nada no serviço real. Só registra o que o painel considera."}},
     {chave: "parametros", rota: "parametros", grupo: "Dinheiro", titulo: "Parâmetros", descricao: "Câmbio, spread, IOF, impostos e taxas, com vigência e fonte.", args: ["parametro"],
@@ -53,6 +53,8 @@
     // nos ids, 11 dígitos seguidos (cara de CPF) nunca entram, mesmo que um id venha assim de fora
     id: /^(?!.*\d{11})[A-Za-z0-9][A-Za-z0-9_.:-]{0,99}$/,   // id de gasto ou de plano (g-…, pl-…), como o razao.js aceita
     socia: /^(?!.*\d{11})[a-z0-9][a-z0-9_-]{0,39}$/,        // id da sócia (m-ana), "eu" ou "todas"
+    tipo: /^(entrada|saida)$/,
+    origem: /^(planilha|diario|historico)$/,
     parametro: /^[a-z][a-z0-9_]*(\.[A-Za-z0-9_]+)+$/,      // fx.USD_BRL, cartao.spread_pct
   };
   const ACOES = ["lancar"];                                // rotas que fazem algo por cima da página atual

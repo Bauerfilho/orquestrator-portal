@@ -243,16 +243,82 @@ const GRUPO = {
   close_month: aplicarMes, reopen_month: aplicarMes,
 };
 
+// A planilha é uma fonte documental, não um diário assinado nem um extrato do banco. A validação confere cada
+// saldo NA ORDEM DAS LINHAS do Excel (as datas podem estar fora de ordem) antes de aceitar qualquer valor.
+export function validarLivroCaixa(livro) {
+  const falhar = detalhe => { throw new Error('Livro-caixa inválido: ' + detalhe); };
+  const objeto = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+  const dinheiro = v => Number.isSafeInteger(v) && Math.abs(v) <= TETO;
+  const escrito = (v, max, vazio = false) => typeof v === 'string' && v.length <= max && (vazio || v.trim().length > 0);
+  if (!objeto(livro) || livro.versao !== 1) falhar('versão não suportada.');
+  const fonte = livro.fonte;
+  if (!objeto(fonte) || !escrito(fonte.arquivo, 200) || /[\\/]/.test(fonte.arquivo) ||
+      typeof fonte.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(fonte.sha256) ||
+      typeof fonte.importadoEm !== 'string' || !Number.isFinite(Date.parse(fonte.importadoEm))) falhar('origem incompleta.');
+  if (!Array.isArray(livro.meses) || !livro.meses.length || livro.meses.length > 1000 ||
+      !Array.isArray(livro.avisos) || livro.avisos.length > 100 || livro.avisos.some(v => !escrito(v, 2000))) falhar('estrutura incompleta.');
+  if (livro.conciliacao !== undefined) {
+    const c = livro.conciliacao;
+    if (!objeto(c) || !inteiro(c.diarioAteSeq, 1) || !Array.isArray(c.gastoIds) || c.gastoIds.length > 10000 ||
+        new Set(c.gastoIds).size !== c.gastoIds.length || c.gastoIds.some(id => !casa(ID_GASTO, id)) ||
+        !escrito(c.autorizacao, 1000) || typeof c.decididoEm !== 'string' || !Number.isFinite(Date.parse(c.decididoEm))) falhar('conciliação sem autorização ou limite válido.');
+  }
+  const ids = new Set();
+  let anterior = null, quantidade = 0;
+  for (const m of livro.meses) {
+    if (!objeto(m) || !mesValido(m.mes) || !escrito(m.aba, 100) || !Array.isArray(m.linhas) ||
+        ![m.saldoInicialMinor, m.entradasMinor, m.saidasMinor, m.saldoFinalMinor].every(dinheiro) ||
+        m.entradasMinor < 0 || m.saidasMinor < 0) falhar('mês incompleto.');
+    if (anterior && (m.mes <= anterior.mes || m.saldoInicialMinor !== anterior.saldoFinalMinor)) falhar('meses repetidos, fora de ordem ou saldo sem continuidade.');
+    let saldo = BigInt(m.saldoInicialMinor), entradas = 0n, saidas = 0n, ultimaLinha = 0;
+    for (const l of m.linhas) {
+      if (++quantidade > 10000) falhar('mais de 10 mil movimentos.');
+      if (!objeto(l) || !Number.isSafeInteger(l.linha) || l.linha <= ultimaLinha ||
+          l.id !== `lc-${m.mes}-${l.linha}` || ids.has(l.id) || !diaValido(l.data) || l.data.slice(0, 7) !== m.mes ||
+          ![l.entradaMinor, l.saidaMinor, l.saldoMinor].every(dinheiro) || l.entradaMinor < 0 || l.saidaMinor < 0 ||
+          (l.entradaMinor > 0) === (l.saidaMinor > 0)) falhar(`${m.aba}: movimento inválido ou repetido.`);
+      if (!escrito(l.descricao, 400) || !escrito(l.categoria, 160) || !escrito(l.documento, 160, true) ||
+          !escrito(l.forma, 100, true) || !escrito(l.observacoes, 2000, true) ||
+          !(l.planoId === null || (typeof l.planoId === 'string' && ID_GASTO.test(l.planoId)))) falhar(`${m.aba}, linha ${l.linha}: identificação inválida.`);
+      entradas += BigInt(l.entradaMinor); saidas += BigInt(l.saidaMinor);
+      saldo += BigInt(l.entradaMinor) - BigInt(l.saidaMinor);
+      if (saldo !== BigInt(l.saldoMinor)) falhar(`${m.aba}, linha ${l.linha}: saldo não confere.`);
+      ids.add(l.id); ultimaLinha = l.linha;
+    }
+    if (entradas !== BigInt(m.entradasMinor) || saidas !== BigInt(m.saidasMinor) || saldo !== BigInt(m.saldoFinalMinor)) falhar(`${m.aba}: totais não conferem.`);
+    anterior = m;
+  }
+  return true;
+}
+const CATEGORIAS_PLANILHA = [
+  [/ferramentas|apis|software|\bia\b/i, 'software_ia'], [/hospedagem|nuvem|infraestrutura/i, 'infraestrutura'],
+  [/contador|jur[ií]dico|lgpd/i, 'contabilidade_juridico'], [/tarifa|banc[aá]ria|c[âa]mbio/i, 'banco_cambio'],
+  [/imposto|taxa/i, 'impostos_taxas'], [/marketing/i, 'marketing'], [/pr[oó].?labore/i, 'pro_labore'], [/equipamento/i, 'equipamento'],
+];
+function gastoDoLivro(l, mes, aba) {
+  const categoria = (CATEGORIAS_PLANILHA.find(([re]) => re.test(l.categoria)) || [null, 'outros'])[1];
+  return {id: l.id, versao: 1, versoes: [], data: l.data, competencia: mes, descricao: l.descricao, categoria,
+    valorMinor: l.saidaMinor, moeda: 'BRL', forma: 'importado', pagoPor: null, destino: 'nao_aplica', planoId: l.planoId,
+    documento: l.documento, nota: l.observacoes, faturaBrlMinor: null, ciclo: l.planoId ? mes : null, estado: 'lancado',
+    criadoPor: null, criadoEm: null, alteradoPor: null, alteradoEm: null, importado: {...l, aba}};
+}
+
 // O fold: estado do pacote (plans e selling.steps entram como versão 1 sem autora) + eventos, em ordem. Puro e
 // determinístico: o mesmo diário dá o mesmo resultado em qualquer navegador.
 export function aplicar(estadoBase, eventos) {
+  const livroCaixa = estadoBase.livroCaixa == null ? null : estadoBase.livroCaixa;
+  if (livroCaixa !== null) validarLivroCaixa(livroCaixa);
   const membros = (estadoBase.members || []).map(m => ({id: m.id, nome: m.displayName, papel: m.role, pct: m.participationPct}));
   const S = {membros, dono: id => (membros.find(m => m.id === id) || {}).papel === 'owner', socia: id => membros.some(m => m.id === id),
     nome: id => id === 'empresa' ? 'a empresa' : (membros.find(m => m.id === id) || {}).nome || id,
     gastos: new Map(), params: [], planos: new Map(), passos: new Map(), acertos: new Map(), saldos: new Map(), receitas: new Map(), fechamentos: {},
-    recusados: [], historico: [], mudancas: []};
+    recusados: [], historico: [], mudancas: [], conciliacao: livroCaixa?.conciliacao || null};
   for (const p of estadoBase.plans || []) if (p && typeof p.id === 'string' && !S.planos.has(p.id)) S.planos.set(p.id, planoDoPacote(p));
   for (const s of (estadoBase.selling && estadoBase.selling.steps) || []) if (s && typeof s.id === 'string' && !S.passos.has(s.id)) S.passos.set(s.id, passoDoPacote(s));
+  if (livroCaixa) for (const m of livroCaixa.meses) for (const l of m.linhas) {
+    if (l.planoId && !S.planos.has(l.planoId)) throw new Error(`Livro-caixa inválido: assinatura não encontrada em ${m.aba}, linha ${l.linha}.`);
+    if (l.saidaMinor) S.gastos.set(l.id, gastoDoLivro(l, m.mes, m.aba));
+  }
   for (const ev of eventos) {
     if (!ev || typeof ev !== 'object') continue;
     const c = ev.conteudo && typeof ev.conteudo === 'object' ? ev.conteudo : {}, autora = ev.membro, quando = c.quando || ev.ts || null;
@@ -274,12 +340,23 @@ export function aplicar(estadoBase, eventos) {
   const saldos = [...S.saldos.values()], vigentes = new Map();
   for (const s of saldos) { const m = vigentes.get(s.conta); if (!m || s.data >= m.data) vigentes.set(s.conta, s); }   // em ordem do diário: no empate vale o mais novo
   for (const s of saldos) s.vigente = vigentes.get(s.conta) === s;
+  // A decisão sobre a referência contábil não muda um byte do diário assinado. Só marca os IDs aprovados como
+  // histórico fora dos totais; o prefixo continua sendo aplicado com suas edições, anulações e reembolsos originais.
+  if (S.conciliacao) for (const id of S.conciliacao.gastoIds) { const g = S.gastos.get(id); if (g) g.historicoFonte = true; }
   return {membros, gastos: [...S.gastos.values()], parametros: S.params, recusados: S.recusados, historico: S.historico,
-    planos: [...S.planos.values()], passos: [...S.passos.values()], acertos: [...S.acertos.values()], saldos, receitas: [...S.receitas.values()], fechamentos: S.fechamentos};
+    planos: [...S.planos.values()], passos: [...S.passos.values()], acertos: [...S.acertos.values()], saldos, receitas: [...S.receitas.values()], fechamentos: S.fechamentos,
+    ...(livroCaixa ? {livroCaixa: structuredClone(livroCaixa)} : {})};
 }
 
 // ── ajudantes comuns às ações ────────────────────────────────────────────────────────────────────────────────────
 const fechado = (S, mes) => mesValido(mes) && Object.hasOwn(S.fechamentos, mes) && S.fechamentos[mes].fechado === true;
+const idConciliado = (S, id) => !!S.conciliacao?.gastoIds.includes(id);
+const eventoAnterior = (S, x) => !!S.conciliacao && Number.isSafeInteger(x.ev.seq) && x.ev.seq <= S.conciliacao.diarioAteSeq;
+function historicoTravado(S, x, g) {
+  if (!idConciliado(S, g.id) || eventoAnterior(S, x)) return false;
+  x.recusa('Registro histórico conciliado com a planilha: não entra novamente nas contas. A conciliação da fonte precisa ser revista para alterá-lo.');
+  return true;
+}
 // trava do mês fechado (D8, F16): só o que forma os números do mês. Recusa e devolve true se algum dos meses está fechado.
 function travado(S, x, ...meses) {
   const m = meses.find(k => fechado(S, k));
@@ -307,6 +384,8 @@ function aplicarGasto(S, x) {
   if (c.acao === 'reconcile_statement') return conciliarFatura(S, x);
   const g = S.gastos.get(c.alvo);
   if (!g) return x.recusa('O lançamento não existe.');
+  if (historicoTravado(S, x, g)) return;
+  if (g.importado) return x.recusa('Registro importado da planilha: corrija a fonte e importe novamente. O diário não reescreve a planilha.');
   if (g.estado === 'anulado') return x.recusa('O lançamento já foi anulado.');
   // corrigir (a competência antiga e a nova), anular e conferir travam no mês fechado; reembolsar e converter, não
   if (['edit_expense', 'void_expense', 'check_expense'].includes(c.acao) && travado(S, x, g.competencia, c.acao === 'edit_expense' ? x.d.competencia : null)) return;
@@ -355,6 +434,8 @@ function novoGasto(S, x) { // add_expense e record_payment ("marcar como paga" =
   if (erro) return x.recusa(erro);
   if (!casa(ID_GASTO, c.alvo)) return x.recusa('Identificador do lançamento inválido.');
   if (S.gastos.has(c.alvo)) return x.recusa('Lançamento repetido.', 'repetido');
+  const historico = idConciliado(S, c.alvo) && eventoAnterior(S, x);
+  if (idConciliado(S, c.alvo) && !historico) return x.recusa('Identificador reservado ao histórico conciliado. Recarregue o portal.');
   if (travado(S, x, g.competencia)) return;
   let ciclo = null, plano = null;
   if (c.acao === 'record_payment') {
@@ -367,14 +448,14 @@ function novoGasto(S, x) { // add_expense e record_payment ("marcar como paga" =
     if (g.competencia !== ciclo) return x.recusa('A competência do pagamento é o mês do ciclo pago.');
     if (encerradaEm(plano, g.data)) return x.recusa('Esta assinatura está encerrada: reative antes de marcar como paga.');
     // um add_expense comum com planoId também paga o ciclo da competência dele: são dois caminhos para o mesmo fato
-    if ([...S.gastos.values()].some(o => o.estado !== 'anulado' && o.planoId === plano.id && (o.ciclo || o.competencia) === ciclo)) return x.recusa(`Esta assinatura já foi marcada como paga em ${nomeDoMes(ciclo)}.`, 'repetido');
+    if (!historico && [...S.gastos.values()].some(o => !idConciliado(S, o.id) && o.estado !== 'anulado' && o.planoId === plano.id && (o.ciclo || o.competencia) === ciclo)) return x.recusa(`Esta assinatura já foi marcada como paga em ${nomeDoMes(ciclo)}.`, 'repetido');
   } else if (g.planoId) {
     // "Lançar pagamento" grava add_expense com planoId: é o mesmo fato do record_payment, com o ciclo na competência,
     // então valem as mesmas checagens (assinatura existe, não está encerrada, o ciclo ainda não foi pago)
     plano = S.planos.get(g.planoId);
     if (!plano) return x.recusa('Escolha a assinatura que foi paga.');
     if (encerradaEm(plano, g.data)) return x.recusa('Esta assinatura está encerrada: reative antes de marcar como paga.');
-    if ([...S.gastos.values()].some(o => o.estado !== 'anulado' && o.planoId === plano.id && (o.ciclo || o.competencia) === g.competencia)) return x.recusa(`Esta assinatura já foi marcada como paga em ${nomeDoMes(g.competencia)}.`, 'repetido');
+    if (!historico && [...S.gastos.values()].some(o => !idConciliado(S, o.id) && o.estado !== 'anulado' && o.planoId === plano.id && (o.ciclo || o.competencia) === g.competencia)) return x.recusa(`Esta assinatura já foi marcada como paga em ${nomeDoMes(g.competencia)}.`, 'repetido');
     plano = null;   // o resumo do histórico continua o do gasto comum
   }
   S.gastos.set(c.alvo, {id: c.alvo, versao: 1, ...g, ciclo, estado: 'lancado', criadoPor: autora, criadoEm: quando, alteradoPor: null, alteradoEm: null,
@@ -396,6 +477,7 @@ function conciliarFatura(S, x) {
   for (const it of itens) {
     const g = it && typeof it === 'object' ? S.gastos.get(it.alvo) : null;
     if (!g) return x.recusa('Um dos gastos da fatura não existe.');
+    if (historicoTravado(S, x, g)) return;
     if (vistos.has(g.id)) return x.recusa(`"${g.descricao}" aparece duas vezes na fatura.`, 'repetido');
     vistos.add(g.id);
     if (g.estado === 'anulado') return x.recusa(`"${g.descricao}" foi anulado: tire-o da fatura.`);
@@ -594,6 +676,7 @@ function registrarAcerto(S, x) {
     for (const id of gastoIds) {
       const g = S.gastos.get(id);
       if (!g) return x.recusa('Um dos gastos escolhidos não existe.');
+      if (historicoTravado(S, x, g)) return;
       if (gastos.includes(g)) return x.recusa(`"${g.descricao}" foi escolhido duas vezes.`, 'repetido');
       if (g.estado === 'anulado' || g.destino !== 'empresa_reembolsa' || g.pagoPor !== d.para || reembolso(g) !== 'pendente') return x.recusa(`"${g.descricao}" não é um reembolso pendente de ${S.nome(d.para)}.`);
       const r = reaisDoGasto(g, listaDe(g));
@@ -725,7 +808,7 @@ function maisAntigo(lista, chave) {
 const EQUIVALENTE = semProto({mensal: [1, 1], mes: [1, 1], monthly: [1, 1], anual: [1, 12], ano: [1, 12], yearly: [1, 12], trimestral: [1, 3], semestral: [1, 6], semanal: [52, 12], quinzenal: [26, 12]});
 const normal = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]/g, '');
 // F6: entra no previsto do mês a assinatura ativa e confirmada que não foi encerrada até o último dia do mês
-const prevista = (p, ultimoDia) => (p.assinatura || 'active') === 'active' && p.confirmado === true && !(p.encerrado && p.encerrado.desde <= ultimoDia);
+const prevista = (p, ultimoDia) => normal(p.periodo) !== 'unico' && (p.assinatura || 'active') === 'active' && p.confirmado === true && !(p.encerrado && p.encerrado.desde <= ultimoDia);
 
 // ── o mês calculado ───────────────────────────────────────────────────────────────────────────────────────────────
 // realizado = gastos lançados com competência no mês; previsto = assinaturas ativas e confirmadas ainda sem gasto ligado
@@ -742,13 +825,13 @@ export function livroDoMes(estadoBase, aplicado, mes, hoje) {
   const doMes = aplicado.gastos.filter(g => g.competencia === mes);
   for (const g of doMes) {
     const r = reaisDoGasto(g, lista);
-    const linha = {tipo: 'realizado', id: g.id, descricao: g.descricao, categoria: g.categoria, data: g.data, original: {minor: g.valorMinor, moeda: g.moeda},
+    const linha = {tipo: 'realizado', id: g.id, descricao: g.descricao, categoria: g.categoria, data: g.data, original: {minor: g.valorMinor, moeda: g.moeda}, historicoFonte: !!g.historicoFonte,
       brl: r.brl, conversao: r.tipo, conta: r.conta, forma: g.forma, pagoPor: g.pagoPor, destino: g.destino, anulado: g.estado === 'anulado', gasto: g};
-    if (linha.anulado) { linhas.push(linha); continue; }
+    if (linha.anulado || linha.historicoFonte) { linhas.push(linha); continue; }
     if (r.brl === null) incompletos.push({id: g.id, motivo: `Falta o câmbio de ${g.moeda} para ${g.data}.`, descricao: g.descricao});
     linhas.push(linha);
   }
-  const ligados = new Set(doMes.filter(g => g.estado !== 'anulado' && g.planoId).map(g => g.planoId));
+  const ligados = new Set(doMes.filter(g => !g.historicoFonte && g.estado !== 'anulado' && g.planoId).map(g => g.planoId));
   for (const p of planos) {
     if (!prevista(p, ultimoDia) || ligados.has(p.id) || !DIGITOS[p.moeda] || !Number.isSafeInteger(p.valorMinor)) continue;
     const fator = EQUIVALENTE[normal(p.periodo)];
@@ -760,13 +843,13 @@ export function livroDoMes(estadoBase, aplicado, mes, hoje) {
     linhas.push({tipo: 'previsto', id: p.id, descricao: [p.servico, p.plano].filter(Boolean).join(' · '), categoria: CATEGORIA[p.categoria] ? p.categoria : palpiteCategoria(p.servico), data: p.proximaData || null,
       original: {minor: mensal, moeda: p.moeda}, periodo: p.periodo, valorPlano: p.valorMinor, brl: r.brl, conversao: r.tipo === 'real' ? 'real' : 'estimado', conta: r.conta, pagoPor: null, destino: null, anulado: false});
   }
-  const validas = linhas.filter(l => !l.anulado && l.brl !== null);
+  const validas = linhas.filter(l => !l.historicoFonte && !l.anulado && l.brl !== null);
   const soma = arr => arr.reduce((a, l) => a + l.brl, 0);
   const realizado = soma(validas.filter(l => l.tipo === 'realizado'));
   const previsto = soma(validas.filter(l => l.tipo === 'previsto'));
   const total = realizado + previsto;
   const porMoeda = {};
-  for (const l of linhas) if (!l.anulado && l.tipo === 'realizado') porMoeda[l.original.moeda] = (porMoeda[l.original.moeda] || 0) + l.original.minor;
+  for (const l of linhas) if (!l.historicoFonte && !l.anulado && l.tipo === 'realizado') porMoeda[l.original.moeda] = (porMoeda[l.original.moeda] || 0) + l.original.minor;
   const porCategoria = CATEGORIAS.map(c => ({...c, brl: soma(validas.filter(l => (CATEGORIA[l.categoria] ? l.categoria : 'outros') === c.id))})).filter(c => c.brl > 0).sort((a, b) => b.brl - a.brl);
   const permil = total > 0 && porCategoria.length ? ratearPermil(porCategoria.map(c => c.brl)) : [];
   porCategoria.forEach((c, k) => { c.permil = permil[k] ?? 0; });
@@ -790,7 +873,7 @@ export function livroDoMes(estadoBase, aplicado, mes, hoje) {
       realizado: termos('Realizado', validas.filter(l => l.tipo === 'realizado'), realizado),
       previsto: termos('Previsto', validas.filter(l => l.tipo === 'previsto'), previsto),
       total: {formula: 'Custo do mês = realizado + previsto', termos: [{rotulo: 'Realizado (já lançado)', brl: realizado, op: '+'}, {rotulo: 'Previsto (assinaturas sem lançamento no mês)', brl: previsto, op: '+'}], resultado: total,
-        excluidos: [...linhas.filter(l => l.anulado).map(l => ({rotulo: l.descricao, motivo: 'anulado'})), ...incompletos.map(i => ({rotulo: i.descricao, motivo: i.motivo}))]},
+        excluidos: [...linhas.filter(l => l.anulado || l.historicoFonte).map(l => ({rotulo: l.descricao, motivo: l.historicoFonte ? 'histórico conciliado com a planilha; não somado novamente' : 'anulado'})), ...incompletos.map(i => ({rotulo: i.descricao, motivo: i.motivo}))]},
     }};
 }
 
@@ -802,7 +885,7 @@ export function estadoEfetivo(estadoBase, aplicado, hoje) {
   const porId = new Map((aplicado.planos || []).map(p => [p.id, p]));
   const pagos = new Map();   // planoId → o pagamento do ciclo mais recente (record_payment ou add_expense com planoId)
   for (const g of aplicado.gastos || []) {
-    if (g.estado === 'anulado' || !g.planoId) continue;
+    if (g.historicoFonte || g.estado === 'anulado' || !g.planoId) continue;
     const ciclo = g.ciclo || g.competencia, atual = pagos.get(g.planoId);
     if (!atual || ciclo >= atual.ciclo) pagos.set(g.planoId, {ciclo, gasto: g});
   }
@@ -887,8 +970,9 @@ export function serieMensal(estadoBase, aplicado, ultimoMes, n = 6) {
 }
 
 // ── exportar CSV para o contador: ";", vírgula decimal, UTF-8 com BOM, centavos inteiros ao lado do valor formatado ─────
+const csvEsc = v => { let s = v === null || v === undefined ? '' : String(v); if (/^[\s]*[=+\-@]/.test(s)) s = "'" + s; return /[;"\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
 export function csvLancamentos(aplicado, lista, nomes) {
-  const esc = v => { let s = v === null || v === undefined ? '' : String(v); if (/^[=+\-@]/.test(s)) s = "'" + s; return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const esc = csvEsc;
   const fmt = minor => (minor / 100).toFixed(2).replace('.', ',');
   const cab = ['data', 'competencia', 'descricao', 'categoria', 'moeda', 'valor', 'valor_centavos', 'reais', 'reais_centavos', 'conversao', 'forma', 'pago_por', 'destino', 'estado', 'lancado_por', 'documento'];
   const linhas = aplicado.gastos.map(g => {
@@ -897,6 +981,34 @@ export function csvLancamentos(aplicado, lista, nomes) {
       (FORMA[g.forma] || {}).rotulo, nomes(g.pagoPor), g.destino, g.estado, nomes(g.criadoPor), g.documento || ''].map(esc).join(';');
   });
   return '﻿' + [cab.join(';'), ...linhas].join('\r\n') + '\r\n';
+}
+
+// Projeção única para a tela e o CSV: as saídas já estão nos gastos do razão, por isso só acrescentamos as entradas
+// documentais da planilha. Aporte não ganha receita tributável, autoria inventada nem confirmação bancária.
+export function movimentosLivro(aplicado) {
+  const movimentos = aplicado.gastos.map(g => ({...g, tipo: 'saida', entradaMinor: 0, saidaMinor: g.valorMinor}));
+  for (const m of aplicado.livroCaixa?.meses || []) for (const l of m.linhas) if (l.entradaMinor) movimentos.push({
+    id: l.id, tipo: 'entrada', data: l.data, competencia: m.mes, descricao: l.descricao, categoria: 'outros',
+    valorMinor: l.entradaMinor, moeda: 'BRL', entradaMinor: l.entradaMinor, saidaMinor: 0, forma: 'importado',
+    pagoPor: null, criadoPor: null, criadoEm: null, estado: 'importado', documento: l.documento, nota: l.observacoes,
+    versao: 1, versoes: [], importado: {...l, aba: m.aba},
+  });
+  return movimentos;
+}
+export function csvMovimentos(movimentos, lista, nomes) {
+  const fmt = v => v === null || v === undefined ? '' : (v / 100).toFixed(2).replace('.', ',');
+  const cab = ['tipo', 'data', 'competencia', 'descricao', 'categoria', 'forma', 'moeda', 'entrada', 'entrada_centavos',
+    'saida', 'saida_centavos', 'reais', 'reais_centavos', 'origem', 'aba', 'linha', 'saldo_fonte', 'saldo_fonte_centavos', 'observacoes', 'documento', 'estado', 'pago_por', 'lancado_por', 'conta_nos_totais'];
+  const linhas = movimentos.map(m => {
+    const origem = m.importado;
+    const r = m.tipo === 'entrada' ? {brl: m.valorMinor} : reaisDoGasto(m, lista);
+    return [m.tipo, m.data, m.competencia, m.descricao, origem ? origem.categoria : rotuloCategoria(m.categoria),
+      origem ? origem.forma : rotuloForma(m.forma), m.moeda, fmt(m.entradaMinor), m.entradaMinor,
+      fmt(m.saidaMinor), m.saidaMinor, fmt(r.brl), r.brl, origem ? 'Planilha importada' : 'Diário cifrado',
+      origem?.aba || '', origem?.linha || '', fmt(origem?.saldoMinor), origem?.saldoMinor ?? '', m.nota || '', m.documento || '',
+      m.estado, m.pagoPor ? nomes(m.pagoPor) : '', m.criadoPor ? nomes(m.criadoPor) : '', m.historicoFonte || m.estado === 'anulado' ? 'não' : 'sim'].map(csvEsc).join(';');
+  });
+  return '\ufeff' + [cab.join(';'), ...linhas].join('\r\n') + '\r\n';
 }
 export function rotuloCategoria(id) { return (CATEGORIA[id] || CATEGORIA.outros).rotulo; }
 export function slotCategoria(id) { return (CATEGORIA[id] || CATEGORIA.outros).slot; }

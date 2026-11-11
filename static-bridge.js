@@ -4,10 +4,11 @@
 import {unlock, fetchManifest, loadBundle, b64} from './portal-crypto.js';
 import {buildSnapshot, civilDate, validateState} from './domain.js';
 import {abrirDiario} from './diario.js';
+import {DIARIO_URL} from './endereco-diario.js';
 import {criarGaleria} from './galeria.js';
 import {carregarPerfis, cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
 // O servidor do diário cifrado (servidor/LEIA.md). Sem ele publicado, o diário roda em modo treino e a tela diz isso.
-const DIARIO_URL = 'https://orquestrator-diario.netlify.app';
+
 const $ = id => document.getElementById(id);
 const base = new URL('./', location.href);
 let manifest = null, bundle = null, member = null, state = null, chave = null;
