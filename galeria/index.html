@@ -1018,7 +1018,7 @@ html:not([data-tema=escuro]) .tema .lua,html[data-tema=escuro] .tema .sol{displa
     if (selo) linha.appendChild(el("span", "selo", selo));
     corpo.appendChild(linha);
     corpo.appendChild(el("h3", null, item.nome));
-    corpo.appendChild(el("p", "resumo", item.legado ? "Arquivo da galeria anterior: tem a descrição, ainda não tem o app montado." : item.resumo));
+    corpo.appendChild(el("p", "resumo", item.legado ? "Arquivo da galeria anterior: abre como estava, ainda sem stand." : item.resumo));
     if (item.origem) { var o = el("p", "refs"); o.append("Origem: ", el("b", null, item.origem)); corpo.appendChild(o); }
     if (item.modelo_negocio) { var mn = el("p", "refs modelo"); mn.append(el("b", null, (item.proposta || "Modelo") + ": "), item.modelo_negocio); corpo.appendChild(mn); }
     if (item.referencias && item.referencias.length) {
@@ -1051,7 +1051,7 @@ html:not([data-tema=escuro]) .tema .lua,html[data-tema=escuro] .tema .sol{displa
     return art;
   }
 
-  var SECOES = {casa: ["Da casa", "Conceitos derivados dos ativos do Orquestrator."], referencia: ["Referências de mercado", "Apps e sites pequenos, open source e pagos, refeitos como maquete para replicar."], legado: ["Sem stand", "Arquivos da galeria anterior, à espera do app montado."]};
+  var SECOES = {casa: ["Da casa", "Conceitos derivados dos ativos do Orquestrator."], referencia: ["Referências de mercado", "Apps e sites pequenos, open source e pagos, refeitos como maquete para replicar."], legado: ["Sem stand", "Arquivos da galeria anterior, ainda sem stand."]};
   function desenhar() {
     pilulas();
     var lista = document.getElementById("lista"); lista.textContent = "";
