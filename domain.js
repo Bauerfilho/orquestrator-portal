@@ -181,24 +181,52 @@ const activity = plan => ['active', 'inactive'].includes(plan.subscriptionState)
 const add = (target, key, value) => { const next = (target[key] ?? 0) + value; if (!safeInteger(next)) fail('Total monetário excede o limite seguro.', 'invalid_state'); target[key] = next; };
 const moneyGroups = groups => Object.keys(groups).sort().map(coin => ({moeda: coin, valor: display(groups[coin], coin), amount_minor: groups[coin]}));
 
+// Autoria que o diário grava no estado efetivo (razao.js estadoEfetivo): quem é a sócia pelo id do cadastro e quando,
+// exportados só quando há dado (§3.10 e §4.3: changedAt/By passam a aparecer). O nome é o do cadastro, nunca o id.
+const instant = value => typeof value === 'string' && value && Number.isFinite(Date.parse(value)) ? safeText(value) : null;
+function memberName(state, id) {
+  if (typeof id !== 'string' || !id) return null;
+  const found = state.members.find(row => row.id === id);
+  return found ? safeText(found.displayName) || 'Sócio' : null;
+}
+function authorship(state, row) {
+  const extra = {};
+  const put = (key, value) => { if (value !== null && value !== undefined && value !== '') extra[key] = value; };
+  if (safeInteger(row.version) && row.version >= 1) extra.version = row.version;
+  put('created_at', instant(row.createdAt)); put('created_by_nome', memberName(state, row.createdBy));
+  put('changed_at', instant(row.changedAt)); put('changed_by_nome', memberName(state, row.changedBy));
+  if (row.confirmed === true) { put('confirmed_at', instant(row.confirmedAt)); put('confirmed_by_nome', memberName(state, row.confirmedBy)); }
+  // encerramento: desde quando (pode ser uma data futura: a assinatura segue ativa até lá), quem encerrou e o motivo
+  if (isoDate(row.archivedAt)) {
+    put('archived_since', isoDate(row.archivedAt)); put('archived_by_nome', memberName(state, row.archivedBy));
+    put('archive_reason', typeof row.archiveReason === 'string' ? safeText(row.archiveReason).slice(0, 240) : null);
+  }
+  if (typeof row.paidCycle === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(row.paidCycle)) extra.paid_cycle = row.paidCycle;
+  return extra;
+}
+
 function plansBlock(state, context, today) {
   const totals = {}, personalTotals = {};
   const count = new Map(); state.plans.forEach(plan => count.set(plan.id, (count.get(plan.id) ?? 0) + 1));
   const plans = state.plans.map((row, index) => {
-    const schedule = planSchedule(row, today);
+    const sub = activity(row);
+    // §8.1: uma assinatura inativa não tem "sua parte" nem próxima cobrança (o dia mensal continua sendo dado do plano)
+    const inactive = sub === 'inactive';
+    const planned = planSchedule(row, today);
+    const schedule = inactive ? {due: null, derived: false, day: planned.day, issue: ''} : planned;
     const confirmed = row.confirmed === true;
     const coin = knownCurrency(row.currency) ? row.currency : safeText(row.currency) || 'não informada';
     const whole = confirmed && knownCurrency(coin) ? amount(row.amountMinor) : null;
-    const own = personalMinor(whole, context);
+    const own = inactive ? null : personalMinor(whole, context);
     const factor = PERIODS[normalized(row.period)];
     const monthly = whole !== null && factor ? roundedRatio(BigInt(whole) * BigInt(factor[0]), BigInt(factor[1])) : null;
-    const personalMonthly = personalMinor(monthly, context);
-    const status = row.paymentStatusExplicit === false ? legacyPaymentStatus(row.status, schedule.due, today) : paymentStatus(row.paymentStatus, schedule.due, today);
-    const sub = activity(row);
+    const personalMonthly = inactive ? null : personalMinor(monthly, context);
+    // o estado da cobrança segue o de sempre (pela data do plano); só os avisos de vencimento dependem da próxima data
+    const status = row.paymentStatusExplicit === false ? legacyPaymentStatus(row.status, planned.due, today) : paymentStatus(row.paymentStatus, planned.due, today);
     const pending = ['due', 'overdue'].includes(status) || (status === 'unconfirmed' && sub === 'active');
     const delta = schedule.due ? daysBetween(schedule.due, today) : null;
     if (sub === 'active' && monthly !== null) { add(totals, coin, monthly); if (personalMonthly !== null) add(personalTotals, coin, personalMonthly); }
-    return {index, id: safeText(row.id), servico: safeText(row.servico), plano: safeText(row.plano), valor: display(amount(row.amountMinor), coin), valor_texto: display(amount(row.amountMinor), coin)?.toString() ?? '', moeda: coin, periodo: safeText(row.period), proxima_data: schedule.due, schedule_derived: schedule.derived, monthly_day: schedule.day, schedule_issue: schedule.issue, status: safeText(row.status), confirmed, subscription_state: sub, payment_status: status, confirmation: confirmed ? 'confirmed' : 'unconfirmed', due_soon: !!(pending && delta !== null && delta >= 0 && delta <= 7), overdue: !!(pending && delta !== null && delta < 0), revision: `r${state.revision}`, minor_unit_digits: MINOR_DIGITS[coin] ?? null, amount_minor: whole, personal_amount_minor: own, personal_amount: display(own, coin), monthly_amount: display(monthly, coin), monthly_amount_minor: monthly, personal_monthly_amount: display(personalMonthly, coin), id_duplicated: count.get(row.id) > 1};
+    return {index, id: safeText(row.id), servico: safeText(row.servico), plano: safeText(row.plano), valor: display(amount(row.amountMinor), coin), valor_texto: display(amount(row.amountMinor), coin)?.toString() ?? '', moeda: coin, periodo: safeText(row.period), proxima_data: schedule.due, schedule_derived: schedule.derived, monthly_day: schedule.day, schedule_issue: schedule.issue, status: safeText(row.status), confirmed, subscription_state: sub, payment_status: status, confirmation: confirmed ? 'confirmed' : 'unconfirmed', due_soon: !!(pending && delta !== null && delta >= 0 && delta <= 7), overdue: !!(pending && delta !== null && delta < 0), revision: `r${state.revision}`, minor_unit_digits: MINOR_DIGITS[coin] ?? null, amount_minor: whole, personal_amount_minor: own, personal_amount: display(own, coin), monthly_amount: display(monthly, coin), monthly_amount_minor: monthly, personal_monthly_amount: display(personalMonthly, coin), id_duplicated: count.get(row.id) > 1, ...authorship(state, row)};
   });
   return {source: source(state), user_source: source(state), plans, summary: {fixed_monthly: moneyGroups(totals), personal_fixed_monthly: moneyGroups(personalTotals), current_share: context.share, allocation_balanced: context.balanced, incomplete_costs: plans.filter(plan => plan.subscription_state === 'active' && plan.monthly_amount === null).length, incomplete_personal_costs: plans.filter(plan => plan.subscription_state === 'active' && plan.personal_monthly_amount === null).length, unconfirmed_subscriptions: plans.filter(plan => plan.subscription_state === 'unconfirmed').length, due_soon: plans.filter(plan => plan.due_soon).length, overdue: plans.filter(plan => plan.overdue).length}};
 }
@@ -306,9 +334,20 @@ export function buildSnapshot(state, member, today) {
   userBlock.billing = billingBlock(state, userBlock, context, date);
   userBlock.benefits = benefitsBlock(state, userBlock.plans, date);
   const products = [];
-  const steps = state.selling.steps.map((row, index) => ({index, id: safeText(row.id), text: safeText(row.text), product: safeText(row.product) || 'Prioridades', checked: row.checked === true, revision: `r${state.revision}`}));
+  // Vender primeiro: todos os produtos (o corte em 3 acabou) e, no passo marcado, quem marcou e quando (só quando há dado;
+  // o toggle_step antigo gravava changedAt/By na hora de marcar, e vale como marcação).
+  const steps = state.selling.steps.map((row, index) => {
+    const step = {index, id: safeText(row.id), text: safeText(row.text), product: safeText(row.product) || 'Prioridades', checked: row.checked === true, revision: `r${state.revision}`};
+    if (safeInteger(row.version) && row.version >= 1) step.version = row.version;
+    if (row.checked === true) {
+      const at = instant(row.checkedAt) ?? (row.checkedBy ? null : instant(row.changedAt)), by = memberName(state, row.checkedBy) ?? (row.checkedBy ? null : memberName(state, row.changedBy));
+      if (at) step.checked_at = at;
+      if (by) step.checked_by_nome = by;
+    }
+    return step;
+  });
   for (const step of steps) { let product = products.find(item => item.name === step.product); if (!product) { product = {name: step.product, steps: []}; products.push(product); } product.steps.push(step); }
-  const sell = {source: source(state), products: products.slice(0, 3), steps, text: safeText(state.selling.text), columns: sanitizePublic(list(state.selling.columns)), rows: sanitizePublic(list(state.selling.rows))};
+  const sell = {source: source(state), products, steps, text: safeText(state.selling.text), columns: sanitizePublic(list(state.selling.columns)), rows: sanitizePublic(list(state.selling.rows))};
   const blocks = {user: userBlock, sell_first: sell};
   for (const name of STATICS) blocks[name] = staticBlock(state, name);
   const societyHistory = blocks.society;

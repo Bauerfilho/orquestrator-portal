@@ -138,7 +138,8 @@ test('rotina.js carrega os seis esqueletos, e cada um importa só da base', () =
   for (const f of MODULOS_ROTINA) {
     const imports = importsDe(f);
     assert.ok(imports.includes('./livro.js'), `${f} importa a base de './livro.js'`);
-    for (const i of imports) assert.ok(['./livro.js', './graficos.js', './razao.js'].includes(i), `${f} não importa ${i}`);
+    // a base das páginas: livro, gráficos, razão e as contas puras (contas.js só importa razao.js e selo.js: sem ciclo)
+    for (const i of imports) assert.ok(['./livro.js', './graficos.js', './razao.js', './contas.js'].includes(i), `${f} não importa ${i}`);
   }
 });
 

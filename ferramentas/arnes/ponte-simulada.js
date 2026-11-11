@@ -1,25 +1,28 @@
 // PONTE SIMULADA (arnês local de fotos e testes). Substitui a ponte estática publicada (static-bridge.publicado.js):
 // mesma interface (window.financeHost + window.financeWebRequest), mas os dados vêm de estado-ficticio.js e não há
-// senha nem pacote cifrado. O domínio é o domain.js publicado, sem mudança: buildSnapshot faz toda a conta.
+// senha nem pacote cifrado. O domínio é o domain.js publicado, sem mudança: buildSnapshot faz toda a conta, sobre o
+// estado fictício + o diário (razao.js estadoEfetivo), como na ponte publicada. As três mutações antigas (toggle_step,
+// edit_plan, set_subscription) viram eventos do razão pelo id e pela versão, gravados pelo gravar do livro.js: em
+// treino, na memória da aba; com ?diario=local, cifrados no servidor do arnês.
 //
 // Parâmetros de URL (todos opcionais):
 //   ?login=1          mostra a tela de entrada (restore_session falha; qualquer senha entra)
 //   ?data=AAAA-MM-DD  data civil do cálculo (padrão 2026-10-19, para as fotos serem reproduzíveis)
 //   ?membro=m-ana     quem está vendo (m-bauer, m-ana, m-bia)
-//   ?escrita=1        readOnly false: toggle_step / edit_plan / set_subscription aplicam applyMutation em memória
-//                     (guardado em sessionStorage; ?zerar=1 volta ao estado fictício)
+//   ?escrita=1        readOnly false (só as decisões do Portfólio ainda leem readOnly). Assinaturas e Vender primeiro
+//                     gravam sempre pelo diário (financeHost.pode): em treino ou, com ?diario=local, no servidor do arnês
 //   ?perfis=demo      perfis fictícios abertos (nome, função, contato), como se perfis.json tivesse decifrado;
 //                     ?perfis=outra-chave simula o envelope de uma chave mestra antiga; sem o parâmetro, "ausente"
 //   ?galeria=1        mostra o item Laboratório no menu, com a galeria de verdade: a pasta galeria/ do repositório
 //                     (o publicador do ia-chat a preenche) lida pelo mesmo galeria.js da ponte publicada
 //   ?legado=1         junta um pacote antigo fictício, como o do pacote cifrado: apps/antigo-exemplo.html entra no
 //                     catálogo como "Sem stand" e um apps/sinal.html antigo, que tem de PERDER para o do repositório
-import {buildSnapshot, validateState, applyMutation, civilDate} from './domain.js';
+import {buildSnapshot, validateState, civilDate} from './domain.js';
 import {estadoFicticio} from './estado-ficticio.js';
 import {abrirDiario} from './diario.js';
 import {criarGaleria} from './galeria.js';
 import {cifrarPerfis, lerColado, juntarPerfis, foneLegivel, foneDiscavel} from './perfis.js';
-import {aplicar} from './razao.js';
+import {aplicar, estadoEfetivo, centavosBR, ACOES} from './razao.js';
 import {fotoDoMes, seloDoMes} from './contas.js';
 import {demonstracao} from './demonstracao.js';
 //   ?demo=1           o diário em treino já vem com agosto a outubro de exemplo (demonstracao.js): o outubro do plano,
@@ -31,18 +34,11 @@ const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const HOJE = civilDate(params.get('data') || '2026-10-19');
 const ESCRITA = params.get('escrita') === '1';
-const GUARDA = 'arnes-financas.estado';
 const fail = (message, code) => { const error = new Error(message); error.code = code; throw error; };
 const temaAtual = () => document.documentElement.dataset.tema === 'escuro' ? 'escuro' : 'claro';
 
-function estadoInicial() {
-  if (ESCRITA && params.get('zerar') !== '1') {
-    try { const salvo = JSON.parse(sessionStorage.getItem(GUARDA) || 'null'); if (salvo) { validateState(salvo); return salvo; } } catch {}
-  }
-  try { sessionStorage.removeItem(GUARDA); } catch {}
-  return structuredClone(estadoFicticio);
-}
-let state = estadoInicial();
+// o estado do "pacote" não muda mais em memória: o que as sócias mudam vai para o diário (treino ou ?diario=local)
+let state = structuredClone(estadoFicticio);
 validateState(state);
 // Perfis (perfis.js): os rótulos do pacote ficam guardados; com perfis abertos, o nome deles substitui o rótulo.
 const ROTULOS = Object.fromEntries(state.members.map(m => [m.id, m.displayName]));
@@ -70,6 +66,8 @@ const galeria = criarGaleria({base: new URL('./', location.href), legado: () => 
 
 window.financeHost = {
   kind: 'portal', tema: temaAtual(), galeria: params.get('galeria') === '1', team: true, readOnly: !ESCRITA, decide: false,
+  // a mesma pergunta da ponte publicada: dá para gravar esta ação agora? {ok: true, treino} ou {ok: false, motivo}
+  pode(acao, alvo) { return podeNoDiario(acao, alvo); },
   // as mesmas três da ponte publicada, com a mesma exigência de entrada
   async galeriaUrl(file) { if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated'); return galeria.url(file); },
   galeriaTitle(file) { return sessao ? galeria.titulo(file) : null; },
@@ -98,6 +96,86 @@ window.financeHost = {
   },
 };
 let diario = null;
+// ── o diário nas páginas antigas (copiado da ponte publicada; aqui o diário é `diario` e a sócia, `sessao`) ─────────────
+let dobra = {estado: null, chave: null, aplicado: null, efetivo: null};
+function dobrar(hoje) {
+  const eventos = diario ? diario.eventos : [];
+  const ultimo = eventos.length ? eventos[eventos.length - 1] : null;
+  const chaveDobra = `${hoje}|${eventos.length}|${ultimo ? ultimo.seq + ':' + ultimo.id : ''}`;
+  if (dobra.estado !== state || dobra.chave !== chaveDobra) {
+    const aplicado = aplicar(state, eventos);
+    dobra = {estado: state, chave: chaveDobra, aplicado, efetivo: estadoEfetivo(state, aplicado, hoje)};
+  }
+  return dobra;
+}
+const PEDIDOS_ANTIGOS = {toggle_step: 'toggle_step', edit_plan: 'edit_plan', set_subscription: 'archive_plan'};
+function podeNoDiario(acao, alvo) {
+  if (acao === 'set_decision') return {ok: false, motivo: 'As decisões se registram na aba Finanças do AI Cask.'};
+  if (!ACOES.includes(acao) && !Object.hasOwn(PEDIDOS_ANTIGOS, acao)) return {ok: false, motivo: 'Esta ação ainda não grava no portal.'};
+  if (!sessao) return {ok: false, motivo: 'Entre com a senha do portal.'};
+  const d = diario;
+  if (!d) return {ok: false, motivo: 'O diário cifrado ainda está abrindo: um instante.'};
+  if (d.modo !== 'gravacao' && d.modo !== 'treino' && d.modo !== 'indisponivel') return {ok: false, motivo: d.motivo || 'Você lê o diário, mas não grava.'};
+  const resposta = {ok: true, treino: d.modo !== 'gravacao'};
+  if (acao === 'confirm_plan' && typeof alvo === 'string') {
+    const {aplicado} = dobrar(HOJE);
+    const plano = aplicado.planos.find(p => p.id === alvo);
+    if (plano) {
+      const previa = aplicar(state, [...d.eventos, {seq: Infinity, id: 'previa-pode', membro: sessao.id, conteudo: {acao, alvo, versao: plano.versao, quando: new Date().toISOString()}}]);
+      const recusa = previa.recusados.find(r => r.id === 'previa-pode');
+      if (recusa) return {ok: false, motivo: recusa.motivo};
+    }
+  }
+  return resposta;
+}
+function eventoDoPedido(action, payload, aplicado) {
+  const id = typeof payload.id === 'string' && payload.id ? payload.id : null;
+  if (!id) fail('Recarregue o portal: o pedido veio sem o identificador do registro.', 'invalid_request');
+  const versao = Number.isSafeInteger(payload.version) && payload.version >= 1 ? payload.version : null;
+  if (action === 'toggle_step') {
+    if (typeof payload.checked !== 'boolean') fail('Passo inválido.', 'invalid_request');
+    return {conteudo: {acao: 'toggle_step', alvo: id, versao, dados: {feito: payload.checked}}, ok: payload.checked ? 'Passo marcado.' : 'Marcação removida.'};
+  }
+  const plano = aplicado.planos.find(p => p.id === id);
+  if (!plano) fail('Esta assinatura não existe mais: recarregue o portal.', 'stale_plan');
+  if (action === 'set_subscription') {
+    if (typeof payload.active !== 'boolean') fail('Informe a assinatura e o estado desejado.', 'invalid_request');
+    if (payload.active) return {conteudo: {acao: 'reactivate_plan', alvo: id, versao}, ok: 'Assinatura reativada.'};
+    return {conteudo: {acao: 'archive_plan', alvo: id, versao, dados: {desde: typeof payload.desde === 'string' ? payload.desde : ''}, motivo: typeof payload.motivo === 'string' ? payload.motivo.trim() : ''}, ok: 'Assinatura encerrada.'};
+  }
+  const valores = payload.values && typeof payload.values === 'object' ? payload.values : {};
+  const dados = {};
+  // o valor se lê na moeda nova, se ela também mudou; moeda e período o razão confere (MOEDAS, EQUIVALENTE)
+  const moedaNova = typeof valores.moeda === 'string' && valores.moeda.trim() ? valores.moeda.trim() : null;
+  for (const [campo, bruto] of Object.entries(valores)) {
+    const v = String(bruto ?? '').trim();
+    if (campo === 'valor') { const minor = centavosBR(v, moedaNova || plano.moeda || 'BRL'); if (minor === null) fail('Valor não reconhecido: use vírgula para os centavos (ex.: 59,90).', 'invalid_request'); dados.valorMinor = minor; }
+    else if (campo === 'moeda') dados.moeda = v;
+    else if (campo === 'periodo') dados.periodo = v;
+    else if (campo === 'proxima_data') dados.proximaData = v || null;
+    else if (campo === 'dia') dados.diaVencimento = v ? Number(v) : null;
+    else if (campo === 'status') dados.status = v;
+    else fail('Edite somente valor, moeda, período, vencimento, próxima data e status.', 'invalid_request');
+  }
+  if (!Object.keys(dados).length) fail('Diga o que mudou na assinatura.', 'invalid_request');
+  return {conteudo: {acao: 'edit_plan', alvo: id, versao, dados}, ok: 'Assinatura alterada.'};
+}
+async function gravarPedido(action, payload) {
+  const pode = podeNoDiario(action);
+  if (!pode.ok) fail(pode.motivo, 'read_only');
+  const livro = window.financeLivro;
+  if (!livro || typeof livro.gravar !== 'function') fail('O portal ainda está carregando: tente de novo em instantes.', 'not_ready');
+  const {conteudo, ok} = eventoDoPedido(action, payload || {}, dobrar(HOJE).aplicado);
+  const r = await livro.gravar(conteudo, ok, {erroNoFormulario: true});
+  if (!r || !r.ok) {
+    const erro = new Error((r && r.erro) || 'Não foi possível gravar.');
+    erro.code = r && r.codigo === 'versao' ? (action === 'toggle_step' ? 'stale_step' : 'stale_plan') : (r && r.codigo) || 'recusado';
+    if (r && r.atual) erro.atual = r.atual;
+    throw erro;
+  }
+  document.dispatchEvent(new CustomEvent('financeiro:diario'));
+  return {saved: true, treino: !!r.treino, id: conteudo.alvo};
+}
 async function abrirDiarioDoArnes() {
   if (!sessao) return;
   const d = await abrirDiario({url: params.get('diario') === 'local' ? location.origin : null, membroId: sessao.id, senha: 'arnes-' + sessao.id, masterRaw: new Uint8Array(32).fill(3)});
@@ -117,17 +195,14 @@ window.financeWebRequest = async (action, payload = {}) => {
   if (action === 'change_password') fail('A senha do portal é definida pelo Criador, fora do painel.', 'identity_managed');
   if (!sessao) fail('Entre com a senha do portal.', 'unauthenticated');
   if (action === 'snapshot') {
-    const result = buildSnapshot(state, sessao, HOJE);
+    let result;
+    try { result = buildSnapshot(dobrar(HOJE).efetivo, sessao, HOJE); }
+    catch (erro) { console.error('O diário não coube no painel; mostrando só o pacote:', erro); result = buildSnapshot(state, sessao, HOJE); }
     return payload.if_revision === result.content_revision ? {unchanged: true, content_revision: result.content_revision} : result;
   }
   if (action === 'set_decision') fail('As decisões se registram na aba Finanças do AI Cask.', 'read_only');
-  if (ESCRITA && ['toggle_step', 'edit_plan', 'set_subscription'].includes(action)) {
-    const {state: next, result} = applyMutation(state, action, payload, sessao, HOJE);
-    state = next;
-    try { sessionStorage.setItem(GUARDA, JSON.stringify(state)); } catch {}
-    return result;
-  }
-  fail('Esta versão publicada é só de leitura. As mudanças se fazem na aba Finanças do AI Cask.', 'read_only');
+  if (Object.hasOwn(PEDIDOS_ANTIGOS, action)) return gravarPedido(action, payload);
+  fail('Esta ação ainda não existe na versão publicada.', 'read_only');
 };
 
 // "Minha equipe" (copiado da ponte publicada; o roster aqui é o cadastro fictício).
@@ -163,4 +238,4 @@ function olhoDaSenha() {
   botao.addEventListener('click', () => { const ver = input.type === 'password'; input.type = ver ? 'text' : 'password'; botao.textContent = ver ? 'Ocultar' : 'Mostrar'; botao.setAttribute('aria-pressed', String(ver)); input.focus(); });
 }
 prepareForm(); olhoDaSenha();
-window.arnes = {hoje: HOJE, escrita: ESCRITA, estado: () => structuredClone(state)};
+window.arnes = {hoje: HOJE, escrita: ESCRITA, estado: () => structuredClone(state), efetivo: () => structuredClone(dobrar(HOJE).efetivo)};

@@ -1,1 +1,106 @@
-/* conciliacao.css: estilos da página da rotina, preenchidos na fatia que desenha conciliacao.js (vazio até lá). */
+/* conciliacao.css: a folha "Conciliar fatura" (fatia F2-8), aberta pela barra de Lançamentos ou pelo Fechamento.
+   Gramática dos traços (plano §6.3): o estimado é itálico com contorno de 1,5px e "≈" antes do número; o efetivo (a
+   fatura) é sólido. A diferença tem sinal (+ ou −) e palavra; a cor só acompanha (aumento de custo = desfavorável, em
+   vinho; queda = azul). Mês fechado: nota com cadeado, sem vermelho, porque não é erro. Tokens do livro.css nos dois
+   temas; nenhuma letra abaixo de 12px (testes/contraste.test.mjs confere). */
+
+.cc-raiz{display:flex;flex-direction:column;gap:12px;min-width:0}
+.lv-folha-corpo>.cc-raiz p{margin:0}
+.cc-intro{color:var(--muted);font-size:14px;line-height:1.55}
+.cc-nota{font-size:13px;line-height:1.5;color:var(--muted)}
+.cc-dica{display:block;font-size:12px;line-height:1.5;color:var(--muted)}
+
+/* mês, cartão e (no cartão pessoal) de quem é o cartão */
+.cc-seletores{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 12px}
+.cc-seletores .lv-campo{margin-bottom:6px}
+.cc-folha .cc-select{width:100%}
+.cc-campo-rotulado{cursor:default}
+
+/* item a item × só o total: rádios com cara de chip, 44px de alvo */
+.cc-modo{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0;min-width:0}
+.cc-modo legend{padding:0;margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--muted)}
+.cc-chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:6px 14px;border:1px solid var(--line-strong,var(--line));border-radius:999px;cursor:pointer;font-size:14px}
+.cc-chip:has(input:checked){border-color:var(--gold);background:var(--lv-tinta-suave);font-weight:600}
+.lv-form .cc-chip input{width:18px;height:18px;min-height:0;margin:0;padding:0;border:0;accent-color:var(--gold)}
+.cc-chip input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.cc-total{margin:0}
+
+/* a lista dos gastos em moeda estrangeira */
+.cc-itens,.cc-salvo-itens{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.cc-item{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;min-width:0}
+.cc-item:has(.cc-item-titulo input:checked){border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
+.cc-item.is-fora{background:var(--lv-tinta-suave)}
+.cc-item.is-fora .cc-desc{color:var(--muted)}
+.cc-item-titulo{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:center;min-height:44px;cursor:pointer}
+.lv-form .cc-item-titulo input{width:20px;height:20px;min-height:0;margin:0;padding:0;border:0;accent-color:var(--gold)}
+.cc-item-titulo input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.cc-desc{font-weight:600;overflow-wrap:anywhere}
+.cc-meta,.cc-ptax{font-size:13px;color:var(--muted);font-variant-numeric:lining-nums tabular-nums}
+.cc-valores{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.cc-campo{margin:6px 0 0!important}
+.cc-campo .lv-dinheiro-valor{font-size:22px;min-height:46px}
+.cc-rateio{font-size:14px}
+.cc-ja{font-size:12px;color:var(--muted)}
+
+/* estimado: itálico, contorno de 1,5px, "≈"; efetivo (fatura): sólido */
+.cc-estimado,.cc-efetivo{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;font-size:13px;line-height:1.5;font-variant-numeric:lining-nums tabular-nums;white-space:nowrap}
+.cc-estimado{font-style:italic;color:var(--ink);border:1.5px solid var(--fin-contexto);background:transparent}
+.cc-estimado.is-sem{color:var(--muted);border-style:dashed}
+.cc-efetivo{font-style:normal;font-weight:600;color:var(--ink);border:1.5px solid var(--lv-tinta-media);background:var(--lv-tinta-media)}
+
+/* a conta da estimativa, à mostra */
+.cc-conta{font-size:13px;color:var(--muted)}
+.cc-conta>summary{display:inline-flex;align-items:center;min-height:32px;cursor:pointer;font-weight:600;color:var(--muted)}
+.cc-conta>summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+.cc-conta p{margin:2px 0 4px;line-height:1.55;font-variant-numeric:lining-nums tabular-nums;overflow-wrap:anywhere}
+
+/* diferença com sinal: aumento de custo em vinho, queda em azul (a palavra e o sinal dizem o mesmo sem a cor) */
+.cc-delta{font-size:13px;font-weight:600;font-variant-numeric:lining-nums tabular-nums}
+.cc-delta.is-mais,.cc-dif.is-mais{color:var(--fin-saida-texto)}
+.cc-delta.is-menos,.cc-dif.is-menos{color:var(--fin-entrada-texto)}
+
+/* PTAX: consultando, pronta ou fora do ar (aviso, não erro: a conciliação segue) */
+.cc-ptax-estado{font-size:13px;line-height:1.5;color:var(--muted)}
+.cc-ptax-estado.is-falha{padding:10px 12px;border:1px dashed var(--fin-aviso);border-radius:10px;color:var(--ink)}
+
+/* resumo: "Estimado R$ 656,51 → fatura R$ 659,22 · diferença +R$ 2,71", com o fio duplo do total */
+.lv-folha-corpo>.cc-raiz p.cc-resumo,.cc-resumo{padding:12px 0 0;border-top:3px double var(--line-strong,var(--line));font:400 18px/1.4 var(--serif);font-variant-numeric:lining-nums tabular-nums;color:var(--ink)}
+.cc-resumo strong{font-weight:600}
+
+/* por que o banco cobrou diferente */
+.cc-porque{display:flex;flex-direction:column;gap:6px}
+.cc-porque:empty{display:none}
+.cc-porque-titulo{font:600 12px/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:4px 0 0}
+.cc-porque-texto{font-size:14px;line-height:1.6;color:var(--ink);font-variant-numeric:lining-nums tabular-nums}
+.cc-spread{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:4px}
+.cc-spread .button{min-height:44px}
+.cc-spread-ok{font-size:14px;line-height:1.5;color:var(--fin-ok)}
+.cc-spread-ok:focus{outline:none}
+.cc-spread-ok:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+
+/* depois de gravar e no mês fechado: a lista curta, estimado → fatura */
+.cc-salvo{display:flex;flex-direction:column;gap:10px}
+.cc-salvo-titulo{font:400 22px/1.2 var(--serif);margin:0}
+.cc-salvo-titulo:focus{outline:none}
+.cc-salvo-titulo:focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:4px}
+.cc-salvo-itens li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.cc-salvo-conta{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:14px;font-variant-numeric:lining-nums tabular-nums}
+
+/* mês fechado: cadeado e motivo */
+.cc-trava{display:flex;align-items:flex-start;gap:8px;padding:12px 14px;border:1px dashed var(--line-strong,var(--line));border-radius:10px;font-size:14px;line-height:1.5;color:var(--ink);background:var(--lv-tinta-suave)}
+.cc-cadeado{flex:none;width:16px;height:16px;margin-top:2px;fill:none;stroke:currentColor;stroke-width:1.4}
+
+/* nada a conciliar */
+.cc-vazio{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px dashed var(--line-strong,var(--line));border-radius:12px;font-size:14px;line-height:1.5}
+.cc-vazio span{color:var(--muted)}
+
+@media (max-width:620px){
+  .cc-seletores{grid-template-columns:1fr}
+  .cc-resumo{font-size:17px}
+  .cc-salvo-itens li{flex-direction:column;align-items:flex-start}
+}
+@media (forced-colors:active){
+  .cc-estimado{border-color:CanvasText}
+  .cc-efetivo{border-color:CanvasText;background:Canvas}
+  .cc-chip:has(input:checked),.cc-item:has(.cc-item-titulo input:checked){outline:2px solid Highlight}
+}
