@@ -523,13 +523,14 @@
       const bottom = element("div", "plan-bottom");
       const details = element("div", "plan-details");
       if (Number.isInteger(plan.monthly_day) && plan.monthly_day >= 1 && plan.monthly_day <= 31) details.append(element("span", "plan-monthly-day", "Vencimento mensal: dia " + plan.monthly_day));
+      mesPago(details, plan);
       details.append(element("span", "plan-next-date", (plan.schedule_derived === true ? "Próxima data prevista: " : "Próxima data: ") + dateLabel(plan.proxima_data)));
       if (typeof plan.schedule_issue === "string" && plan.schedule_issue.trim()) details.append(element("span", "plan-schedule-issue", plan.schedule_issue));
       details.append(element("span", "badge" + (plan.overdue ? " badge-danger" : plan.due_soon ? " badge-gold" : ""), "Cobrança: " + paymentLabel(plan)));
       rastroDaGravacao(details, plan);
       // controles honestos: na versão só de leitura, nada de formulário que depois recusa; o pagamento vira lançamento
       if (host().readOnly === true && window.financeLivro) bottom.append(details, button("Lançar pagamento", "button-quiet", () => window.financeLivro.abrirLancar({descricao: [plan.servico, plan.plano].filter(Boolean).join(" · "), planoId: plan.id})));
-      else bottom.append(details, button("Editar cobrança", "button-quiet", () => {
+      else bottom.append(details, button("Editar cobrança", "button-quiet plan-edit-button", () => {
         editingPlan = plan.index; renderSubscriptions(block, user);
         const field = byId("plan-value-" + plan.index); if (field) field.focus();
       }));
@@ -746,8 +747,12 @@
     target.append(barra);
   }
 
+  // o mês pago sobe para junto do vencimento, em pílula de feito; a pílula «Cobrança: …» fica com a próxima data
+  function mesPago(details, plan) {
+    if (!(plan.charge_paid && plan.charge_cycle)) return;
+    details.append(element("span", "badge badge-ok plan-paid", nomeDoMes(plan.charge_cycle, true) + " paga · " + (plan.charge_paid.autor || "autor não informado") + ", " + dateLabel(plan.charge_paid.em)));
+  }
   function rastroDaGravacao(details, plan) {
-    if (plan.charge_paid && plan.charge_cycle) details.append(element("span", "plan-paid", nomeDoMes(plan.charge_cycle, true) + " paga · " + (plan.charge_paid.autor || "autor não informado") + ", " + dateLabel(plan.charge_paid.em)));
     if (plan.ended === true) details.append(element("span", "plan-trail", "Encerrada" + (plan.state_changed_by ? " por " + plan.state_changed_by : "") + (plan.state_changed_at ? " em " + dateLabel(plan.state_changed_at) : "") + (plan.state_reason ? " · " + plan.state_reason : "")));
     else if (plan.changed_by) details.append(element("span", "plan-trail", "Alterada por " + plan.changed_by + (plan.changed_at ? " em " + dateLabel(plan.changed_at) : "")));
     else if (plan.state_changed_by) details.append(element("span", "plan-trail", "Estado mudado por " + plan.state_changed_by + (plan.state_changed_at ? " em " + dateLabel(plan.state_changed_at) : "")));

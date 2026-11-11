@@ -288,7 +288,12 @@ html[data-surface="grid"] body{background-image:linear-gradient(rgba(151,182,148
 .button-danger-quiet:hover{color:var(--danger)}
 .button-danger{background:transparent;color:var(--danger);border-color:#73534a}
 .button-danger:hover{background:var(--danger-bg)}
-.plan-paid{font-size:11px;color:#bed8b0}
+.plan-paid.badge-ok{justify-self:start;display:inline-flex;align-items:center;gap:6px;font-size:10.5px;white-space:normal;padding:3px 10px;border-radius:999px;color:#bed8b0;border-color:#405638;background:#263323}
+.plan-paid.badge-ok::before{content:"✓";font-weight:600}
+.plan-bottom>.plan-edit-button{white-space:nowrap;flex-shrink:0}
+.plan-actions .button-danger-quiet:not(:hover):not(:focus-visible){color:var(--faint)}
+.button-danger-quiet:focus-visible{color:var(--danger)}
+.plan-actions .button{white-space:nowrap}
 .plan-trail{display:block;font-size:10.5px;color:var(--faint)}
 .plan-confirm-check{font-size:12px;color:var(--muted);margin:0 0 14px}
 .end-confirm{border-top:1px solid var(--line);margin-top:18px;padding-top:18px}
