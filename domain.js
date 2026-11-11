@@ -322,6 +322,9 @@ export function buildSnapshot(state, member, today) {
   };
   blocks.cash.fixed_monthly = userBlock.summary.fixed_monthly;
   // Med Painel (17/10): no portal os sócios vêm do cadastro (o exportador omite nomes completos dos documentos).
+  // O custo fixo do Med Painel tem uma fonte só, o resumo das assinaturas (blocks.user.summary), que a tela lê na hora.
+  // A cópia que um pacote antigo ainda trouxer dentro do bloco é descartada: ela ficava velha quando as assinaturas mudavam.
+  if (record(blocks.medpainel)) { delete blocks.medpainel.fixed_monthly; delete blocks.medpainel.incomplete_costs; }
   if (record(blocks.medpainel) && blocks.medpainel.availability !== WITHHELD) blocks.medpainel.socios = state.members.map(row => ({nome: safeText(row.displayName) || 'Sócio', participacao: percent(row.participationPct) === null ? null : row.participationPct}));   // percent() é validador (BigInt); publica-se o número original, como na sociedade
   blocks.cash.incomplete_costs = userBlock.summary.incomplete_costs;
   blocks.atlas = {schema_version: 1, assets: [], sources: [], coverage: {}, ...blocks.atlas};

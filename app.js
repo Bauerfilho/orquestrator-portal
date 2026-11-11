@@ -1772,10 +1772,11 @@
   const mpMarcos = [100, 500, 1000, 2500, 5000, 10000];
   let mpCenario = "base";
   let mpUltimoBloco = null;
+  let mpUltimoResumo = null;   // o resumo das assinaturas (blocks.user.summary): a fonte única do custo fixo da empresa
   // Tela estreita: o gráfico é desenhado na largura dela (texto em tamanho real), não encolhido de 760 para 350.
   const mpEstreita = window.matchMedia ? window.matchMedia("(max-width: 620px)") : null;
   const mpEhEstreita = () => Boolean(mpEstreita && mpEstreita.matches);
-  if (mpEstreita && mpEstreita.addEventListener) mpEstreita.addEventListener("change", () => { if (mpUltimoBloco) renderMedPainel(mpUltimoBloco); });
+  if (mpEstreita && mpEstreita.addEventListener) mpEstreita.addEventListener("change", () => { if (mpUltimoBloco) renderMedPainel(mpUltimoBloco, mpUltimoResumo); });
   const mpInteiro = new Intl.NumberFormat("pt-BR", {maximumFractionDigits: 0});
   const mpReais = new Intl.NumberFormat("pt-BR", {style: "currency", currency: "BRL", maximumFractionDigits: 0});
   const mpCentavos = new Intl.NumberFormat("pt-BR", {style: "currency", currency: "BRL"});
@@ -1788,10 +1789,11 @@
     return valor === null ? padrao : valor;
   }
 
-  function mpCustoFixoEmpresa(block, cambio) {
+  // fixos = summary.fixed_monthly das assinaturas, lido na hora (nunca uma cópia guardada no bloco do Med Painel)
+  function mpCustoFixoEmpresa(fixos, cambio) {
     let total = 0;
     const semConversao = [];
-    array(block.fixed_monthly).forEach((item) => {
+    array(fixos).forEach((item) => {
       const valor = Number(item && item.valor) || 0;
       if (item.moeda === "BRL") total += valor;
       else if (item.moeda === "USD") total += valor * cambio;
@@ -1813,12 +1815,12 @@
     return partes.map((socio, indice) => ({nome: socio.nome, participacao: socio.participacao, valor: inteiras[indice] / 100}));
   }
 
-  function projetarMedPainel(block, cenario) {
+  function projetarMedPainel(block, cenario, fixos) {
     const P = (chave, padrao) => mpPremissa(block, chave, cenario, padrao);
     const preco = P("preco", 59.9), churn = P("churn_pct", 5) / 100, indicacao = P("indicacao_pct", 2) / 100;
     const cambio = P("cambio", 5.3), meta = P("meta", 10000), parteVerba = P("verba_pct", 50) / 100;
     const meses = Math.min(120, Math.max(1, Math.round(P("meses", 48))));
-    const fixoEmpresa = mpCustoFixoEmpresa(block, cambio).total * P("empresa_fixo_pct", 100) / 100;
+    const fixoEmpresa = mpCustoFixoEmpresa(fixos, cambio).total * P("empresa_fixo_pct", 100) / 100;
     const fixoProduto = P("servidor_usd", 11) * cambio + P("apple_usd_ano", 99) * cambio / 12 + P("contador", 0);
     const comissaoPct = P("comissao_pct", 20) / 100, comissaoMeses = Math.max(0, Math.round(P("comissao_meses", 12)));
     const promotores = P("promotores", 0) * P("conv_promotor", 0);
@@ -2069,8 +2071,10 @@
   // O Med Painel no celular (23/10/2026, pedido do Criador): o bloco vive em produtos.js e entra no fim desta página.
   if (typeof window.financeMedPainelCelular === "function") { try { window.financeMedPainelCelular(target); } catch (error) { console.error(error); } }
   }
-  function renderMedPainel(block) {
+  function renderMedPainel(block, resumo) {
     mpUltimoBloco = block;
+    mpUltimoResumo = resumo;
+    const custos = resumo && typeof resumo === "object" ? resumo : {};
     renderSource(byId("medpainel-source"), block.source);
     const target = byId("medpainel-content");
     clear(target);
@@ -2096,7 +2100,7 @@
     vender.append(grade);
     target.append(vender);
 
-    const projecoes = mpCenarios.map(([chave]) => projetarMedPainel(block, chave));
+    const projecoes = mpCenarios.map(([chave]) => projetarMedPainel(block, chave, custos.fixed_monthly));
     const escolhido = projecoes.find((projecao) => projecao.cenario === mpCenario) || projecoes[1];
     const caminho = mpSecao("O caminho até " + mpCompacto(escolhido.meta) + " assinantes", "Projeção mês a mês com as premissas abaixo. Os números de aquisição ainda são chutes: viram previsão depois do piloto. O custo por assinante (CAC) fica constante na conta; na vida real ele sobe quando a verba cresce, então a reta final do cenário é otimista.");
     const seletor = element("div", "mp-cenarios");
@@ -2106,7 +2110,7 @@
       const botao = element("button", "mp-cenario", rotulo);
       botao.type = "button";
       botao.setAttribute("aria-pressed", String(chave === escolhido.cenario));
-      botao.addEventListener("click", () => { mpCenario = chave; renderMedPainel(mpUltimoBloco || block); const novo = byId("medpainel-content").querySelector('.mp-cenario[aria-pressed="true"]'); if (novo) novo.focus(); });
+      botao.addEventListener("click", () => { mpCenario = chave; renderMedPainel(mpUltimoBloco || block, mpUltimoResumo); const novo = byId("medpainel-content").querySelector('.mp-cenario[aria-pressed="true"]'); if (novo) novo.focus(); });
       seletor.append(botao);
     });
     caminho.append(seletor);
@@ -2130,8 +2134,8 @@
     target.append(caminho);
 
     const dinheiro = mpSecao("Dinheiro mês a mês (cenário " + mpCenarios.find(([chave]) => chave === escolhido.cenario)[1].toLowerCase() + ")", "Resultado = receita − meses grátis − taxas − impostos − custo fixo da empresa e do produto − comissões − verba do mês. Metade do resultado positivo vira verba do mês seguinte; a outra metade é o lucro dos sócios. Abaixo de zero, é aporte.");
-    const fixo = mpCustoFixoEmpresa(block, mpPremissa(block, "cambio", escolhido.cenario, 5.3));
-    dinheiro.append(element("p", "mp-secao-texto", "Custo fixo carregado: empresa " + mpReais.format(escolhido.fixoEmpresa) + " por mês (planos ativos" + (fixo.semConversao.length ? "; sem conversão: " + fixo.semConversao.join(", ") : "") + (block.incomplete_costs ? "; " + block.incomplete_costs + " plano(s) sem valor confirmado ficaram de fora" : "") + ") + produto " + mpReais.format(escolhido.fixoProduto) + " por mês."));
+    const fixo = mpCustoFixoEmpresa(custos.fixed_monthly, mpPremissa(block, "cambio", escolhido.cenario, 5.3));
+    dinheiro.append(element("p", "mp-secao-texto", "Custo fixo carregado: empresa " + mpReais.format(escolhido.fixoEmpresa) + " por mês (planos ativos" + (fixo.semConversao.length ? "; sem conversão: " + fixo.semConversao.join(", ") : "") + (custos.incomplete_costs ? "; " + custos.incomplete_costs + " plano(s) sem valor confirmado ficaram de fora" : "") + ") + produto " + mpReais.format(escolhido.fixoProduto) + " por mês."));
     dinheiro.append(mpLegenda([["Resultado positivo", "mp-chave-positiva mp-chave-barra"], ["Aporte necessário", "mp-chave-negativa mp-chave-barra"]]));
     dinheiro.append(mpGraficoResultado(escolhido));
     const nomes = array(block.socios).map((socio) => socio.nome);
@@ -2648,7 +2652,7 @@
     renderCash(blocks.cash || {});
     renderProjection(blocks.projection || {});
     renderSociety(blocks.society || {});
-    renderMedPainel(blocks.medpainel || {});
+    renderMedPainel(blocks.medpainel || {}, (blocks.user || {}).summary);
     if (typeof window.financeLivroRender === "function") window.financeLivroRender(snapshot);
     byId("reading-state").textContent = "Leitura às " + new Intl.DateTimeFormat("pt-BR", {hour: "2-digit", minute: "2-digit"}).format(new Date());
     const scheduledFocusGeneration = focusGeneration;
