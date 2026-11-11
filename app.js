@@ -547,12 +547,15 @@
       selector.addEventListener("change", async () => {
         if (mutationBusy) { selector.value = subscriptionState(plan); return; }
         mutationBusy = true; selector.disabled = true;
+        const geracao = sessionGeneration;
         try {
           const feito = await window.financeRequest("set_subscription", {index: plan.index, active: selector.value === "active", expected_revision: block.source && block.source.revision});
+          if (geracao !== sessionGeneration) return;
           if (podeGravar("undo") && feito && feito.undo) ultimaGravacao = {texto: (selector.value === "active" ? "Assinatura ativada" : "Assinatura desativada") + ". O serviço real não foi alterado.", recibo: feito.undo};
           announce("Estado registrado no painel. O serviço externo não foi alterado.");
           await loadSnapshot(true);
         } catch (failure) {
+          if (geracao !== sessionGeneration) return;
           selector.value = subscriptionState(plan);
           if (failure.code === "stale_source") await loadSnapshot(true);
           message("dashboard-error", failure.message);
@@ -668,7 +671,8 @@
     const nome = partes ? MESES[Number(partes[2]) - 1] || "" : "";
     return maiuscula && nome ? nome[0].toLocaleUpperCase("pt-BR") + nome.slice(1) : nome;
   }
-  function hojeLocal() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  // «hoje» é o de São Paulo, como no núcleo (que recusa data de pagamento no futuro pelo relógio de lá)
+  function hojeLocal() { return new Intl.DateTimeFormat("en-CA", {timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit"}).format(new Date()); }
   function nomeDaAssinatura(plan) { return [plan.servico, plan.plano].filter(Boolean).join(" · ") || "Assinatura"; }
   function revisaoDosPlanos(block) { return (block.source && block.source.revision) || null; }
   function revisaoDoLivro(block) { const fonte = block.payments && block.payments.source; return fonte && fonte.exists ? fonte.revision || null : null; }
@@ -697,8 +701,10 @@
     if (mutationBusy) return false;
     mutationBusy = true;
     if (erro) erro.hidden = true;
+    const geracao = sessionGeneration;
     try {
       const feito = await window.financeRequest(acao, payload);
+      if (geracao !== sessionGeneration) return false;   // a sessão mudou com a gravação em voo: a resposta não é desta tela
       criando = null; encerrando = null; editingPlan = null;
       ultimaGravacao = {texto, recibo: payload.op !== "undo" && podeGravar("undo") && feito && feito.undo ? feito.undo : null};
       announce(texto);
@@ -706,6 +712,7 @@
       await loadSnapshot(true);
       return true;
     } catch (falha) {
+      if (geracao !== sessionGeneration) return false;
       if (["stale_source", "stale_plan", "concurrent_edit"].includes(falha.code)) {
         criando = null; encerrando = null; editingPlan = null;
         ultimaGravacao = {texto: AVISO_ARQUIVO_MUDOU, erro: true};
@@ -3065,6 +3072,7 @@
     authenticated = false;
     mustChangePassword = false;
     editingPlan = null;
+    criando = null; encerrando = null; ultimaGravacao = null;   // nada da gravação passa para a sessão seguinte
     currentSnapshot = null;
     sessionNotice = "";
     snapshotQueued = false;
